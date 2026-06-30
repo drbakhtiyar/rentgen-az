@@ -10,6 +10,16 @@ export const env = {
     | "twilio"
     | "generic",
   adminPhone: process.env.ADMIN_PHONE ?? "",
+  // Notification email (new appointment requests / referrals)
+  notifyEmail: process.env.NOTIFY_EMAIL ?? "",
+  emailProvider: (process.env.EMAIL_PROVIDER ?? "formsubmit") as
+    | "formsubmit"
+    | "resend"
+    | "console",
+  resend: {
+    key: process.env.RESEND_API_KEY ?? "",
+    from: process.env.RESEND_FROM ?? "Rentgen.az <onboarding@resend.dev>",
+  },
   twilio: {
     sid: process.env.TWILIO_ACCOUNT_SID ?? "",
     token: process.env.TWILIO_AUTH_TOKEN ?? "",
