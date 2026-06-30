@@ -110,7 +110,13 @@ export function LoginForm({
           </div>
 
           <form onSubmit={submitPhone} className="mt-5 space-y-4">
-            <Field label="Telefon nömrəsi" htmlFor="phone" error={error ?? undefined} required>
+            <Field
+              label="Telefon nömrəsi"
+              htmlFor="phone"
+              error={error ?? undefined}
+              hint="0XX XXX XX XX formatında daxil edin — +994 yazmağa ehtiyac yoxdur."
+              required
+            >
               <div className="relative">
                 <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
