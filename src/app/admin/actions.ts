@@ -1,0 +1,243 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/db";
+import { requireRole } from "@/lib/auth/rbac";
+import { slugify } from "@/lib/utils";
+import { blogPostSchema } from "@/lib/validation";
+import type { Prisma } from "@/generated/prisma/client";
+import type {
+  CenterStatus,
+  ReferralStatus,
+  RequestStatus,
+} from "@/generated/prisma/enums";
+
+export type AdminResult = { ok: boolean; error?: string; message?: string; id?: string };
+
+async function logAction(
+  adminId: string,
+  action: string,
+  targetType?: string,
+  targetId?: string,
+  meta?: Prisma.InputJsonValue,
+) {
+  try {
+    await prisma.adminActionLog.create({
+      data: { adminId, action, targetType, targetId, meta },
+    });
+  } catch {
+    /* logging is best-effort */
+  }
+}
+
+export async function setCenterStatusAction(
+  centerId: string,
+  status: CenterStatus,
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    await prisma.centerProfile.update({ where: { id: centerId }, data: { status } });
+    await logAction(admin.id, `center:${status}`, "CenterProfile", centerId);
+    revalidatePath("/admin/merkezler");
+    revalidatePath("/admin");
+    return { ok: true, message: "Status yeniləndi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function setUserBlockedAction(
+  userId: string,
+  blocked: boolean,
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  if (userId === admin.id) {
+    return { ok: false, error: "Öz hesabınızı bloklaya bilməzsiniz." };
+  }
+  try {
+    await prisma.user.update({ where: { id: userId }, data: { isBlocked: blocked } });
+    await logAction(admin.id, blocked ? "user:block" : "user:unblock", "User", userId);
+    revalidatePath("/admin/pasiyentler");
+    revalidatePath("/admin/merkezler");
+    return { ok: true, message: blocked ? "İstifadəçi bloklandı." : "Blok götürüldü." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function setReferralStatusAction(
+  referralId: string,
+  status: ReferralStatus,
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    await prisma.referral.update({ where: { id: referralId }, data: { status } });
+    await logAction(admin.id, `referral:${status}`, "Referral", referralId);
+    revalidatePath("/admin/gonderisler");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function setRequestStatusAdminAction(
+  requestId: string,
+  status: RequestStatus,
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    await prisma.appointmentRequest.update({ where: { id: requestId }, data: { status } });
+    await logAction(admin.id, `request:${status}`, "AppointmentRequest", requestId);
+    revalidatePath("/admin/muracietler");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+// ----------------------------- Blog -----------------------------
+
+export async function saveBlogPostAction(input: {
+  id?: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  content: string;
+  coverImage?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  tags?: string;
+  published?: boolean;
+}): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  const parsed = blogPostSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
+  }
+  const d = parsed.data;
+  const slug = slugify(d.slug || d.title);
+  const tags = (d.tags ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const published = Boolean(d.published);
+
+  try {
+    // ensure slug uniqueness (excluding self)
+    const clash = await prisma.blogPost.findUnique({ where: { slug } });
+    if (clash && clash.id !== input.id) {
+      return { ok: false, error: "Bu slug artıq istifadə olunur." };
+    }
+
+    const data = {
+      slug,
+      title: d.title,
+      excerpt: d.excerpt || null,
+      content: d.content,
+      coverImage: d.coverImage || null,
+      metaTitle: d.metaTitle || null,
+      metaDescription: d.metaDescription || null,
+      tags,
+      published,
+      publishedAt: published ? new Date() : null,
+    };
+
+    let id = input.id;
+    if (input.id) {
+      const existing = await prisma.blogPost.findUnique({ where: { id: input.id } });
+      await prisma.blogPost.update({
+        where: { id: input.id },
+        data: {
+          ...data,
+          // keep original publishedAt if it was already published
+          publishedAt: published
+            ? existing?.publishedAt ?? new Date()
+            : null,
+        },
+      });
+    } else {
+      const created = await prisma.blogPost.create({ data });
+      id = created.id;
+    }
+
+    await logAction(admin.id, input.id ? "blog:update" : "blog:create", "BlogPost", id);
+    revalidatePath("/admin/blog");
+    revalidatePath("/blog");
+    if (id) revalidatePath(`/blog/${slug}`);
+    return { ok: true, id, message: "Məqalə yadda saxlanıldı." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function deleteBlogPostAction(id: string): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    await prisma.blogPost.delete({ where: { id } });
+    await logAction(admin.id, "blog:delete", "BlogPost", id);
+    revalidatePath("/admin/blog");
+    revalidatePath("/blog");
+    return { ok: true, message: "Məqalə silindi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function toggleServiceActiveAction(
+  serviceId: string,
+  isActive: boolean,
+): Promise<AdminResult> {
+  await requireRole("ADMIN");
+  try {
+    await prisma.service.update({ where: { id: serviceId }, data: { isActive } });
+    revalidatePath("/admin/parametrler");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function toggleCityActiveAction(
+  cityId: string,
+  isActive: boolean,
+): Promise<AdminResult> {
+  await requireRole("ADMIN");
+  try {
+    await prisma.city.update({ where: { id: cityId }, data: { isActive } });
+    revalidatePath("/admin/parametrler");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function saveSeoSettingAction(input: {
+  path: string;
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}): Promise<AdminResult> {
+  await requireRole("ADMIN");
+  const path = input.path.trim();
+  if (!path.startsWith("/")) return { ok: false, error: "Path '/' ilə başlamalıdır." };
+  try {
+    await prisma.seoSetting.upsert({
+      where: { path },
+      create: {
+        path,
+        title: input.title || null,
+        description: input.description || null,
+        ogImage: input.ogImage || null,
+      },
+      update: {
+        title: input.title || null,
+        description: input.description || null,
+        ogImage: input.ogImage || null,
+      },
+    });
+    revalidatePath("/admin/parametrler");
+    return { ok: true, message: "SEO parametri yadda saxlanıldı." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}

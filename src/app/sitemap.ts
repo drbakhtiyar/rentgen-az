@@ -1,0 +1,78 @@
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/env";
+import { SERVICES } from "@/lib/constants";
+import { prisma } from "@/lib/db";
+
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+
+  const staticPaths = [
+    "",
+    "/rentgen-merkezleri",
+    "/xidmetler",
+    "/hekimler-ucun",
+    "/merkezler-ucun",
+    "/blog",
+    "/faq",
+    "/elaqe",
+    "/gizlilik-siyaseti",
+    "/istifade-shertleri",
+  ];
+
+  const entries: MetadataRoute.Sitemap = staticPaths.map((p) => ({
+    url: `${SITE_URL}${p}`,
+    lastModified: now,
+    changeFrequency: p === "" ? "daily" : "weekly",
+    priority: p === "" ? 1 : 0.7,
+  }));
+
+  // Service pages
+  for (const s of SERVICES) {
+    entries.push({
+      url: `${SITE_URL}/xidmetler/${s.slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    });
+  }
+
+  // Approved centers
+  try {
+    const centers = await prisma.centerProfile.findMany({
+      where: { status: "APPROVED" },
+      select: { slug: true, updatedAt: true },
+    });
+    for (const c of centers) {
+      entries.push({
+        url: `${SITE_URL}/rentgen-merkezleri/${c.slug}`,
+        lastModified: c.updatedAt,
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+    }
+  } catch {
+    /* DB unavailable — skip dynamic entries */
+  }
+
+  // Published blog posts
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { published: true },
+      select: { slug: true, updatedAt: true },
+    });
+    for (const p of posts) {
+      entries.push({
+        url: `${SITE_URL}/blog/${p.slug}`,
+        lastModified: p.updatedAt,
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  } catch {
+    /* DB unavailable — skip dynamic entries */
+  }
+
+  return entries;
+}

@@ -1,0 +1,59 @@
+import "server-only";
+import { cache } from "react";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
+import { getSessionFromCookies } from "./session";
+import type { Role } from "@/generated/prisma/enums";
+
+/**
+ * Loads the current user (with profiles) from the session cookie.
+ * Memoized per request via React `cache`.
+ */
+export const getCurrentUser = cache(async () => {
+  const session = await getSessionFromCookies();
+  if (!session) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    include: { patientProfile: true, centerProfile: true },
+  });
+
+  if (!user || user.isBlocked) return null;
+  return user;
+});
+
+export type CurrentUser = NonNullable<
+  Awaited<ReturnType<typeof getCurrentUser>>
+>;
+
+/** Redirects to login if not authenticated. */
+export async function requireUser(returnTo?: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    const qs = returnTo ? `?next=${encodeURIComponent(returnTo)}` : "";
+    redirect(`/giris${qs}`);
+  }
+  return user;
+}
+
+/** Redirects to login (or home) if the user doesn't have the required role. */
+export async function requireRole(role: Role | Role[], returnTo?: string) {
+  const user = await requireUser(returnTo);
+  const roles = Array.isArray(role) ? role : [role];
+  if (!roles.includes(user.role)) {
+    redirect("/");
+  }
+  return user;
+}
+
+export function dashboardPathForRole(role: Role): string {
+  switch (role) {
+    case "ADMIN":
+      return "/admin";
+    case "CENTER":
+      return "/merkez";
+    case "PATIENT":
+    default:
+      return "/kabinet";
+  }
+}

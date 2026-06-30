@@ -1,26 +1,178 @@
 @import "tailwindcss";
 
+@theme {
+  /* ---- Brand palette: clean radiology / dental imaging ---- */
+  --color-ink-950: #050b1a;
+  --color-ink-900: #0a1124;
+  --color-ink-800: #0f1a35;
+  --color-ink-700: #16244a;
+
+  --color-brand-50: #eef6ff;
+  --color-brand-100: #d9ecff;
+  --color-brand-200: #b7daff;
+  --color-brand-300: #84c1ff;
+  --color-brand-400: #4a9dff;
+  --color-brand-500: #1f7aff;
+  --color-brand-600: #0a5ff0;
+  --color-brand-700: #0b4ccc;
+  --color-brand-800: #103fa3;
+  --color-brand-900: #143a80;
+
+  --color-cyan-400: #2ad4e6;
+  --color-cyan-500: #11bdd4;
+
+  --color-surface: #f6f9ff;
+  --color-surface-2: #eef3fb;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-manrope), ui-sans-serif, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+
+  --shadow-glow: 0 0 0 1px rgba(31, 122, 255, 0.08), 0 20px 60px -25px rgba(10, 95, 240, 0.45);
+  --shadow-soft: 0 1px 2px rgba(16, 31, 70, 0.04), 0 12px 32px -16px rgba(16, 31, 70, 0.18);
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0a1124;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* ---- Headings ---- */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* ---- Glassmorphism card ---- */
+.glass {
+  background: color-mix(in srgb, white 70%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--color-brand-200) 60%, transparent);
+}
+
+.glass-dark {
+  background: color-mix(in srgb, var(--color-ink-900) 55%, transparent);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(122, 170, 255, 0.16);
+}
+
+/* ---- Radiology grid background ---- */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(31, 122, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(31, 122, 255, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.bg-grid-dark {
+  background-image:
+    linear-gradient(to right, rgba(122, 170, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(122, 170, 255, 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* radial glow + fade for hero backgrounds */
+.radial-fade {
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+
+.glow {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--color-brand-400) 45%, transparent),
+    transparent
+  );
+  filter: blur(40px);
+}
+
+.glow-cyan {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--color-cyan-400) 45%, transparent),
+    transparent
+  );
+  filter: blur(48px);
+}
+
+/* scan line sweep */
+@keyframes scan {
+  0% { transform: translateY(-10%); opacity: 0; }
+  20% { opacity: 0.9; }
+  80% { opacity: 0.9; }
+  100% { transform: translateY(420%); opacity: 0; }
+}
+.scanline::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 18%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--color-cyan-400) 55%, transparent),
+    transparent
+  );
+  animation: scan 4.5s ease-in-out infinite;
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-floaty { animation: floaty 6s ease-in-out infinite; }
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--color-brand-600), var(--color-cyan-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanline::after,
+  .animate-floaty { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* prose tweaks for blog/markdown */
+.prose-rx :where(h2) {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-ink-900);
+  letter-spacing: -0.01em;
+}
+.prose-rx :where(h3) {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-ink-800);
+}
+.prose-rx :where(p) { margin: 0.85rem 0; line-height: 1.8; color: #2b3a5c; }
+.prose-rx :where(ul) { margin: 0.85rem 0; padding-left: 1.25rem; list-style: disc; }
+.prose-rx :where(ol) { margin: 0.85rem 0; padding-left: 1.25rem; list-style: decimal; }
+.prose-rx :where(li) { margin: 0.4rem 0; line-height: 1.7; color: #2b3a5c; }
+.prose-rx :where(strong) { color: var(--color-ink-900); font-weight: 700; }
+.prose-rx :where(a) { color: var(--color-brand-600); text-decoration: underline; }

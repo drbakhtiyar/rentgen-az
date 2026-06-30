@@ -1,0 +1,231 @@
+// Rentgen.az — dental rentgen / 3D tomoqrafiya platforması
+// Prisma schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ----------------------------- Enums -----------------------------
+
+enum Role {
+  PATIENT
+  CENTER
+  ADMIN
+}
+
+enum CenterStatus {
+  PENDING // gözləmədə
+  APPROVED // təsdiqlənib
+  DEACTIVATED // deaktiv edilib
+}
+
+enum RequestStatus {
+  NEW
+  CONTACTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ReferralStatus {
+  NEW
+  CONTACTED
+  COMPLETED
+}
+
+// ----------------------------- Core -----------------------------
+
+model User {
+  id          String    @id @default(cuid())
+  phone       String    @unique // normalized +994XXXXXXXXX
+  role        Role      @default(PATIENT)
+  isBlocked   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  patientProfile PatientProfile?
+  centerProfile  CenterProfile?
+  adminLogs      AdminActionLog[] @relation("AdminUser")
+
+  @@index([role])
+}
+
+model PatientProfile {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String?
+  lastName  String?
+  city      String?
+  district  String?
+  birthDate DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  favoriteCenters     CenterProfile[]      @relation("PatientFavorites")
+  appointmentRequests AppointmentRequest[]
+}
+
+model CenterProfile {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  slug              String       @unique
+  phone             String
+  whatsapp          String?
+  address           String?
+  city              String?
+  district          String?
+  mapsUrl           String?
+  lat               Float?
+  lng               Float?
+  workingHours      String?
+  equipment         String? // avadanlıq məlumatı (mətn)
+  responsiblePerson String?
+  description       String?
+  images            String[]     @default([])
+  status            CenterStatus @default(PENDING)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  services            CenterService[]
+  appointmentRequests AppointmentRequest[]
+  referrals           Referral[]
+  favoritedBy         PatientProfile[]     @relation("PatientFavorites")
+
+  @@index([status])
+  @@index([city])
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  shortName   String?
+  description String?
+  icon        String? // lucide icon adı
+  category    String?
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+
+  centerServices CenterService[]
+
+  @@index([isActive])
+}
+
+model CenterService {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  serviceId String
+  service   Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  price     Int? // AZN
+  priceTo   Int? // qiymət aralığı üçün yuxarı hədd
+  note      String?
+
+  @@unique([centerId, serviceId])
+  @@index([serviceId])
+}
+
+model OTPCode {
+  id        String   @id @default(cuid())
+  phone     String
+  codeHash  String // sha256(code + secret)
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  attempts  Int      @default(0)
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([phone, createdAt])
+  @@index([expiresAt])
+}
+
+model Referral {
+  id          String         @id @default(cuid())
+  doctorName  String
+  clinic      String?
+  doctorPhone String
+  patientName String
+  examType    String
+  note        String?
+  centerId    String?
+  center      CenterProfile? @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  status      ReferralStatus @default(NEW)
+  createdAt   DateTime       @default(now())
+
+  @@index([centerId])
+  @@index([status])
+}
+
+model AppointmentRequest {
+  id            String          @id @default(cuid())
+  patientId     String?
+  patient       PatientProfile? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  name          String
+  phone         String
+  centerId      String?
+  center        CenterProfile?  @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  serviceSlug   String?
+  note          String?
+  preferredDate DateTime?
+  status        RequestStatus   @default(NEW)
+  createdAt     DateTime        @default(now())
+
+  @@index([centerId])
+  @@index([status])
+}
+
+model BlogPost {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  excerpt         String?
+  content         String // markdown
+  coverImage      String?
+  metaTitle       String?
+  metaDescription String?
+  tags            String[]  @default([])
+  published       Boolean   @default(false)
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+model City {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  slug     String  @unique
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+}
+
+model SeoSetting {
+  id          String   @id @default(cuid())
+  path        String   @unique
+  title       String?
+  description String?
+  ogImage     String?
+  updatedAt   DateTime @updatedAt
+}
+
+model AdminActionLog {
+  id         String   @id @default(cuid())
+  adminId    String?
+  admin      User?    @relation("AdminUser", fields: [adminId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String?
+  targetId   String?
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
