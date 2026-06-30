@@ -26,7 +26,8 @@ export default async function LoginPage({
   const sp = await searchParams;
   if (user) redirect(sp.next || dashboardPathForRole(user.role));
 
-  const role = sp.role === "center" ? "CENTER" : "PATIENT";
+  const role =
+    sp.role === "center" ? "CENTER" : sp.role === "doctor" ? "DOCTOR" : "PATIENT";
 
   return (
     <div className="relative overflow-hidden bg-ink-950">

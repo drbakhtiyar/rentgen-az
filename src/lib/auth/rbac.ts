@@ -52,6 +52,8 @@ export function dashboardPathForRole(role: Role): string {
       return "/admin";
     case "CENTER":
       return "/merkez";
+    case "DOCTOR":
+      return "/hekim";
     case "PATIENT":
     default:
       return "/kabinet";

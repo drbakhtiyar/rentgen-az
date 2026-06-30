@@ -94,6 +94,17 @@ export async function getPostBySlug(slug: string) {
   );
 }
 
+export async function getApprovedDoctors() {
+  return safe(
+    () =>
+      prisma.doctorProfile.findMany({
+        where: { status: "APPROVED" },
+        orderBy: [{ firstName: "asc" }],
+      }),
+    [],
+  );
+}
+
 export async function getActiveCities() {
   return safe(
     () =>

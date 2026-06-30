@@ -22,6 +22,9 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/merkez") && session.role !== "CENTER") {
     return NextResponse.redirect(new URL("/", request.url));
   }
+  if (pathname.startsWith("/hekim") && session.role !== "DOCTOR") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
   if (pathname.startsWith("/kabinet") && session.role !== "PATIENT") {
     // admins/centers shouldn't use the patient cabinet
     return NextResponse.redirect(new URL("/", request.url));
@@ -31,5 +34,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/merkez/:path*", "/kabinet/:path*"],
+  matcher: ["/admin/:path*", "/merkez/:path*", "/hekim/:path*", "/kabinet/:path*"],
 };

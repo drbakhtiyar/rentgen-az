@@ -3,6 +3,7 @@ import { Stethoscope, Send, ShieldCheck, Clock, Users } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
+import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { ReferralForm } from "@/components/forms/referral-form";
 import { getApprovedCenters } from "@/lib/queries";
@@ -36,9 +37,22 @@ export default async function DoctorsPage() {
       <PageHeader
         eyebrow="Həkimlər üçün"
         title="Pasiyentinizi etibarlı mərkəzə yönləndirin"
-        description="Pasiyentinizi dental rentgen və CBCT müayinəsi üçün platformadakı təsdiqlənmiş mərkəzlərə yönləndirə bilərsiniz. Göndəriş formasını doldurun, mərkəz pasiyentlə əlaqə saxlasın."
+        description="Pasiyentinizi dental rentgen və CBCT müayinəsi üçün platformadakı təsdiqlənmiş mərkəzlərə yönləndirə bilərsiniz. Həkim kimi qeydiyyatdan keçsəniz, pasiyentlərinizin hansı mərkəzdə hansı müayinədən yararlandığını da izləyə bilərsiniz."
         breadcrumbs={[{ name: "Həkimlər üçün" }]}
-      />
+      >
+        <div className="flex flex-wrap gap-3">
+          <ButtonLink href="/giris?role=doctor" variant="primary">
+            Həkim kimi qeydiyyat
+          </ButtonLink>
+          <ButtonLink
+            href="/giris?role=doctor"
+            variant="outline"
+            className="border-white/30 bg-white/5 text-white hover:bg-white/10"
+          >
+            Həkim girişi
+          </ButtonLink>
+        </div>
+      </PageHeader>
 
       <Section className="py-12">
         <Container>

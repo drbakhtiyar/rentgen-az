@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { AppointmentForm } from "@/components/forms/appointment-form";
+import { getApprovedDoctors } from "@/lib/queries";
 import { SERVICES } from "@/lib/constants";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -49,7 +50,8 @@ const contactItems = [
   },
 ];
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const doctors = await getApprovedDoctors();
   return (
     <>
       <JsonLd
@@ -137,7 +139,16 @@ export default function ContactPage() {
                 Aşağıdakı formanı doldurun — sorğunuzu qəbul edib sizinlə əlaqə
                 saxlayacağıq.
               </p>
-              <AppointmentForm services={serviceOptions} />
+              <AppointmentForm
+                services={serviceOptions}
+                doctors={doctors.map((d) => ({
+                  value: d.id,
+                  label:
+                    `${[d.firstName, d.lastName].filter(Boolean).join(" ")}${
+                      d.clinic ? " — " + d.clinic : ""
+                    }` || "Həkim",
+                }))}
+              />
             </Card>
           </div>
         </Container>

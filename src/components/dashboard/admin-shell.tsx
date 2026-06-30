@@ -12,11 +12,15 @@ export async function AdminShell({
   userName: string;
   children: React.ReactNode;
 }) {
-  let pending = 0;
+  let pendingCenters = 0;
+  let pendingDoctors = 0;
   try {
-    pending = await prisma.centerProfile.count({ where: { status: "PENDING" } });
+    [pendingCenters, pendingDoctors] = await Promise.all([
+      prisma.centerProfile.count({ where: { status: "PENDING" } }),
+      prisma.doctorProfile.count({ where: { status: "PENDING" } }),
+    ]);
   } catch {
-    pending = 0;
+    /* keep zeros */
   }
 
   return (
@@ -25,7 +29,10 @@ export async function AdminShell({
       roleLabel="Administrator"
       userName={userName}
       nav={adminNav}
-      navBadges={{ "/admin/merkezler": pending }}
+      navBadges={{
+        "/admin/merkezler": pendingCenters,
+        "/admin/hekimler": pendingDoctors,
+      }}
     >
       {children}
     </DashboardShell>

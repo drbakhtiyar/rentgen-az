@@ -46,6 +46,22 @@ export async function setCenterStatusAction(
   }
 }
 
+export async function setDoctorStatusAction(
+  doctorId: string,
+  status: CenterStatus,
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    await prisma.doctorProfile.update({ where: { id: doctorId }, data: { status } });
+    await logAction(admin.id, `doctor:${status}`, "DoctorProfile", doctorId);
+    revalidatePath("/admin/hekimler");
+    revalidatePath("/admin");
+    return { ok: true, message: "Status yeniləndi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 export async function setUserBlockedAction(
   userId: string,
   blocked: boolean,

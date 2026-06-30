@@ -16,6 +16,7 @@ export async function submitAppointmentAction(input: {
   name: string;
   phone: string;
   centerId?: string;
+  doctorId?: string;
   serviceSlug?: string;
   note?: string;
 }): Promise<FormResult> {
@@ -48,6 +49,7 @@ export async function submitAppointmentAction(input: {
         name: data.name,
         phone,
         centerId: data.centerId || null,
+        doctorId: data.doctorId || null,
         serviceSlug: data.serviceSlug || null,
         note: data.note || null,
         patientId,

@@ -6,6 +6,7 @@ import { Check, Ban, Loader2, RotateCcw, ShieldOff, ShieldCheck } from "lucide-r
 import { Select } from "@/components/ui/field";
 import {
   setCenterStatusAction,
+  setDoctorStatusAction,
   setUserBlockedAction,
   setReferralStatusAction,
   setRequestStatusAdminAction,
@@ -64,6 +65,48 @@ export function CenterStatusControls({
           className={`${btn} bg-amber-100 text-amber-700 hover:bg-amber-200`}
           disabled={pending}
           onClick={() => run(() => setCenterStatusAction(centerId, "PENDING"))}
+        >
+          <RotateCcw className="h-3.5 w-3.5" /> Gözləməyə qaytar
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function DoctorStatusControls({
+  doctorId,
+  status,
+}: {
+  doctorId: string;
+  status: CenterStatus;
+}) {
+  const { pending, run } = useAction();
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {pending && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
+      {status !== "APPROVED" && (
+        <button
+          className={`${btn} bg-emerald-600 text-white hover:bg-emerald-700`}
+          disabled={pending}
+          onClick={() => run(() => setDoctorStatusAction(doctorId, "APPROVED"))}
+        >
+          <Check className="h-3.5 w-3.5" /> Təsdiqlə
+        </button>
+      )}
+      {status !== "DEACTIVATED" && (
+        <button
+          className={`${btn} bg-slate-100 text-slate-700 hover:bg-slate-200`}
+          disabled={pending}
+          onClick={() => run(() => setDoctorStatusAction(doctorId, "DEACTIVATED"))}
+        >
+          <Ban className="h-3.5 w-3.5" /> Deaktiv et
+        </button>
+      )}
+      {status === "DEACTIVATED" && (
+        <button
+          className={`${btn} bg-amber-100 text-amber-700 hover:bg-amber-200`}
+          disabled={pending}
+          onClick={() => run(() => setDoctorStatusAction(doctorId, "PENDING"))}
         >
           <RotateCcw className="h-3.5 w-3.5" /> Gözləməyə qaytar
         </button>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Field } from "@/components/ui/field";
 import { requestOtpAction, verifyOtpAction } from "./actions";
 
-type Role = "PATIENT" | "CENTER";
+type Role = "PATIENT" | "CENTER" | "DOCTOR";
 
 export function LoginForm({
   initialRole,
@@ -87,11 +87,12 @@ export function LoginForm({
             Telefon nömrənizi daxil edin, sizə təsdiq kodu göndərəcəyik.
           </p>
 
-          <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+          <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl bg-slate-100 p-1">
             {(
               [
                 { k: "PATIENT", label: "Pasiyent" },
-                { k: "CENTER", label: "Rentgen mərkəzi" },
+                { k: "CENTER", label: "Mərkəz" },
+                { k: "DOCTOR", label: "Həkim" },
               ] as { k: Role; label: string }[]
             ).map((opt) => (
               <button

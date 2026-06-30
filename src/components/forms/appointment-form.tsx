@@ -12,12 +12,14 @@ export function AppointmentForm({
   centerId,
   centerName,
   services,
+  doctors,
   defaultService,
   compact,
 }: {
   centerId?: string;
   centerName?: string;
   services: Option[];
+  doctors?: Option[];
   defaultService?: string;
   compact?: boolean;
 }) {
@@ -34,6 +36,7 @@ export function AppointmentForm({
         name: String(fd.get("name") ?? ""),
         phone: String(fd.get("phone") ?? ""),
         centerId,
+        doctorId: String(fd.get("doctorId") ?? ""),
         serviceSlug: String(fd.get("serviceSlug") ?? ""),
         note: String(fd.get("note") ?? ""),
       });
@@ -86,6 +89,22 @@ export function AppointmentForm({
           ))}
         </Select>
       </Field>
+      {doctors && doctors.length > 0 && (
+        <Field
+          label="Sizi yönləndirən həkim"
+          htmlFor="doctorId"
+          hint="Həkiminiz varsa seçin — o, müraciətinizi izləyə biləcək."
+        >
+          <Select id="doctorId" name="doctorId" defaultValue="">
+            <option value="">Həkim seçin (istəyə bağlı)</option>
+            {doctors.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      )}
       <Field label="Qeyd" htmlFor="note">
         <Textarea id="note" name="note" placeholder="Əlavə məlumat (istəyə bağlı)" />
       </Field>

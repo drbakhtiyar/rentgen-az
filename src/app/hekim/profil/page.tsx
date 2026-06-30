@@ -1,0 +1,61 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { DashboardShell } from "@/components/dashboard/shell";
+import { doctorNav } from "@/components/dashboard/role-navs";
+import { Card } from "@/components/ui/card";
+import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
+import { prisma } from "@/lib/db";
+import { requireRole } from "@/lib/auth/rbac";
+import { CITIES } from "@/lib/constants";
+import { buildMetadata } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Profil",
+  path: "/hekim/profil",
+  noIndex: true,
+});
+
+const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
+
+export default async function DoctorProfilePage() {
+  const user = await requireRole("DOCTOR", "/hekim/profil");
+
+  let profile = null;
+  try {
+    profile = await prisma.doctorProfile.findUnique({
+      where: { userId: user.id },
+    });
+  } catch {
+    profile = null;
+  }
+  if (!profile) redirect("/hekim/qeydiyyat");
+
+  const fullName =
+    [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Həkim";
+
+  return (
+    <DashboardShell
+      title="Profil"
+      roleLabel="Həkim"
+      userName={fullName}
+      nav={doctorNav}
+    >
+      <Card className="max-w-2xl p-6 sm:p-8">
+        <DoctorProfileForm
+          mode="edit"
+          cities={cityOptions}
+          phone={user.phone}
+          defaults={{
+            firstName: profile.firstName ?? "",
+            lastName: profile.lastName ?? "",
+            clinic: profile.clinic ?? "",
+            specialization: profile.specialization ?? "",
+            city: profile.city ?? "",
+          }}
+        />
+      </Card>
+    </DashboardShell>
+  );
+}

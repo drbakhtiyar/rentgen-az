@@ -25,7 +25,7 @@ export async function logoutAction() {
 
 export async function requestOtpAction(input: {
   phone: string;
-  role?: "PATIENT" | "CENTER";
+  role?: "PATIENT" | "CENTER" | "DOCTOR";
 }): Promise<ActionState> {
   const parsed = requestOtpSchema.safeParse(input);
   if (!parsed.success) {
@@ -65,7 +65,7 @@ export async function requestOtpAction(input: {
 export async function verifyOtpAction(input: {
   phone: string;
   code: string;
-  role?: "PATIENT" | "CENTER";
+  role?: "PATIENT" | "CENTER" | "DOCTOR";
 }): Promise<ActionState> {
   const parsed = verifyOtpSchema.safeParse(input);
   if (!parsed.success) {
@@ -89,10 +89,12 @@ export async function verifyOtpAction(input: {
   }
 
   try {
-    let user = await prisma.user.findUnique({
-      where: { phone },
-      include: { centerProfile: true, patientProfile: true },
-    });
+    const include = {
+      centerProfile: true,
+      patientProfile: true,
+      doctorProfile: true,
+    } as const;
+    let user = await prisma.user.findUnique({ where: { phone }, include });
 
     if (user?.isBlocked) {
       return { ok: false, error: "Bu hesab bloklanıb. Adminlə əlaqə saxlayın." };
@@ -108,8 +110,13 @@ export async function verifyOtpAction(input: {
     }
 
     if (!user) {
-      // New account — only PATIENT or CENTER via the public form.
-      const role: Role = desiredRole === "CENTER" ? "CENTER" : "PATIENT";
+      // New account — PATIENT, CENTER or DOCTOR via the public form.
+      const role: Role =
+        desiredRole === "CENTER"
+          ? "CENTER"
+          : desiredRole === "DOCTOR"
+            ? "DOCTOR"
+            : "PATIENT";
       user = await prisma.user.create({
         data: {
           phone,
@@ -118,13 +125,13 @@ export async function verifyOtpAction(input: {
           // create a patient profile shell for patients
           ...(role === "PATIENT" ? { patientProfile: { create: {} } } : {}),
         },
-        include: { centerProfile: true, patientProfile: true },
+        include,
       });
     } else {
       user = await prisma.user.update({
         where: { id: user.id },
         data: { lastLoginAt: new Date() },
-        include: { centerProfile: true, patientProfile: true },
+        include,
       });
     }
 
@@ -132,9 +139,10 @@ export async function verifyOtpAction(input: {
 
     // Where to send the user next
     let redirectTo = dashboardPathForRole(user.role);
-    // A center user with no profile yet → onboarding
     if (user.role === "CENTER" && !user.centerProfile) {
       redirectTo = "/merkez/qeydiyyat";
+    } else if (user.role === "DOCTOR" && !user.doctorProfile) {
+      redirectTo = "/hekim/qeydiyyat";
     }
 
     return { ok: true, redirectTo };

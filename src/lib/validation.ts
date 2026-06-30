@@ -24,7 +24,7 @@ const contactPhoneField = z
 
 export const requestOtpSchema = z.object({
   phone: phoneField,
-  role: z.enum(["PATIENT", "CENTER"]).optional(),
+  role: z.enum(["PATIENT", "CENTER", "DOCTOR"]).optional(),
 });
 
 export const verifyOtpSchema = z.object({
@@ -33,7 +33,7 @@ export const verifyOtpSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{6}$/, "Kod 6 rəqəmdən ibarət olmalıdır"),
-  role: z.enum(["PATIENT", "CENTER"]).optional(),
+  role: z.enum(["PATIENT", "CENTER", "DOCTOR"]).optional(),
 });
 
 export const patientProfileSchema = z.object({
@@ -67,8 +67,17 @@ export const appointmentRequestSchema = z.object({
   name: z.string().trim().min(2, "Ad tələb olunur").max(120),
   phone: contactPhoneField,
   centerId: z.string().trim().min(1).optional().or(z.literal("")),
+  doctorId: z.string().trim().min(1).optional().or(z.literal("")),
   serviceSlug: z.string().trim().max(80).optional().or(z.literal("")),
   note: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+
+export const doctorProfileSchema = z.object({
+  firstName: z.string().trim().min(2, "Ad ən azı 2 hərf olmalıdır").max(60),
+  lastName: z.string().trim().min(2, "Soyad ən azı 2 hərf olmalıdır").max(60),
+  clinic: z.string().trim().max(160).optional().or(z.literal("")),
+  specialization: z.string().trim().max(120).optional().or(z.literal("")),
+  city: z.string().trim().max(80).optional().or(z.literal("")),
 });
 
 export const referralSchema = z.object({
