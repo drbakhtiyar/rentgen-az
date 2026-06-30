@@ -519,6 +519,95 @@ Xeyr. Görüntüləmə əsaslı analiz ağrısızdır və qısa müddətdə apar
 Çənə sümüyünün analizi diş müalicəsində dəqiq diaqnostikaya kömək edən mühüm addımdır. Sümük həcmi və keyfiyyətinin qiymətləndirilməsi implant və cərrahi planlamanı asanlaşdıraraq həkimin daha etibarlı qərar verməsinə dəstək olur.`,
   },
   {
+    slug: "3d-tomoqrafiya-ne-vaxt-teleb-olunur",
+    title: "3D tomoqrafiya (CBCT) nə vaxt tələb olunur?",
+    excerpt:
+      "3D tomoqrafiya hər diş müayinəsində lazım deyil — yalnız adi rentgenin kifayət etmədiyi mürəkkəb hallarda tövsiyə olunur.",
+    metaTitle: "3D tomoqrafiya (CBCT) nə vaxt tələb olunur?",
+    metaDescription:
+      "3D tomoqrafiya (CBCT) implant planlaması, mürəkkəb ağıl dişi halları, endodontiya və cərrahi kimi spesifik vəziyyətlərdə adi rentgendən daha ətraflı məlumat verir.",
+    tags: ["3D tomoqrafiya", "CBCT", "diaqnostika", "dental rentgen"],
+    content: `3D tomoqrafiya (CBCT — konusşüalı kompüter tomoqrafiyası) diş təbabətinin ən güclü görüntüləmə vasitələrindən biridir. Lakin bu müayinə hər zaman lazım deyil. Həkim onu yalnız adi rentgenin (panoramik və ya periapikal) kifayət etmədiyi, üç ölçülü məlumatın klinik qərara real dəyər qatdığı hallarda tövsiyə edir.
+
+Bu yazıda hansı vəziyyətlərdə CBCT-nin tövsiyə edildiyi pasiyent-dostu bir dillə izah edilir.
+
+## İmplant planlaması
+
+Dental implant qoyulmadan əvvəl 3D tomoqrafiya ən geniş yayılmış göstərişlərdən biridir. Həkim çənə sümüyünün hündürlüyünü, enini və sıxlığını üç ölçüdə qiymətləndirərək implantın optimal mövqeyini, ölçüsünü və bucağını daha dəqiq müəyyən edə bilir.
+
+Bu müayinə həmçinin:
+
+- Alt çənə sinir kanalının dəqiq yerini göstərir
+- Üst çənədə sinus boşluqları ilə əlaqəni aydınlaşdırır
+- Sümük artırma (qreftinq) ehtiyacının əvvəlcədən aşkar edilməsinə kömək edir
+
+## Mürəkkəb ağıl dişi halları
+
+Panoramik rentgen ağıl dişinin ümumi mənzərəsini göstərsə də, kökün sinir kanalına çox yaxın olduğu hallarda dərinlik məlumatı tam əks olunmaya bilər. Belə vəziyyətlərdə CBCT:
+
+- Sinir kanalı ilə kök arasındakı real əlaqəni üç ölçüdə aydınlaşdırır
+- Cərrahi planı dəqiqləşdirərək ağırlaşma riskini azaltmağa kömək edir
+- Üst çənə ağıl dişinin sinusa yaxınlığını dəqiq göstərir
+
+## Kök kanalı müalicəsi (endodontiya)
+
+Bəzi dişlərdə kök kanalı sistemi olduqca mürəkkəbdir: əlavə kanallar, qeyri-adi budaqlanmalar və ya adi rentgendə görünməyən detallar ola bilər. Endodontist bu hallarda CBCT-dən istifadə edə bilir:
+
+- Əvvəlki müalicənin niyə uğursuz olduğunu anlamaq üçün
+- Çətin anatomiyanın tam xəritəsini çıxarmaq üçün
+- Periapikal sahədəki vəziyyəti (kistanın həcmi, sümük itkisinin dərəcəsi) qiymətləndirmək üçün
+
+## Çıxmamış (impaktlı) dişlər
+
+Qismən və ya tam çıxmamış dişlər — xüsusən köpək dişləri — çox vaxt qonşu dişlərə, sümüyə və sinir kanallarına nisbətən mürəkkəb mövqedə yerləşir. CBCT bu hallarda:
+
+- Dişin tam üç ölçülü mövqeyini göstərir
+- Qonşu dişlərin köklərinə nə dərəcədə yaxın olduğunu aydınlaşdırır
+- Ortodontik çəkmə və ya cərrahi planın qurulmasına kömək edir
+
+## Sinus lift əməliyyatı
+
+Üst çənənin arxa nahiyəsindəki sümük yetərsiz olduqda sinus lift (sinus qaldırılması) proseduru tələb oluna bilər. Bu cərrahi əməliyyatdan əvvəl:
+
+- Mövcud sümük hündürlüyü dəqiq ölçülür
+- Sinus membranının vəziyyəti qiymətləndirilir
+- Sinus daxilindəki anatomik xüsusiyyətlər (arakəsmələr, iltihab əlamətləri) aşkar edilir
+
+Bu məlumatlar olmadan sinus lift üçün etibarlı planlama aparmaq çətindir.
+
+## Çənə oynağı (TMJ) problemləri
+
+Çənə oynağı ağrısı, klikk səsi və ya hərəkət məhdudiyyəti olan pasiyentlərdə CBCT oynaq fəsalının (kondil) üç ölçülü vəziyyətini göstərərək degenerativ dəyişiklikləri, asimmetriyanı və sümük strukturunu qiymətləndirməyə imkan verir. Bu, müalicə planlamasına dəstək olur.
+
+## Çənə kistası, şişi və ya patoloji törəmələr
+
+Panoramik rentgendə şübhəli sahə aşkar edildikdə CBCT törəmənin həcmini, qonşu strukturlarla əlaqəsini və sümük bütövlüyünü daha dəqiq göstərir. Bu, cərrahi müdaxilənin planlanması üçün vacibdir.
+
+## 3D tomoqrafiya hər zaman lazım deyil
+
+Adi kariyes, rutin diş müayinəsi, sadə çıxarma və ya ilkin baxış kimi hallarda panoramik ya periapikal rentgen kifayət edir. CBCT yalnız üç ölçülü məlumatın klinik qərara real töhfə verdiyini həkim müəyyən etdikdə tövsiyə olunur. Bu, şüalanma dozasını zərurət çərçivəsində minimumda saxlamaq prinsipinə uyğundur.
+
+## Şüalanma barədə
+
+CBCT-nin şüalanma dozası adi diş rentgenindən yüksəkdir, lakin tibbi kompüter tomoqrafiyasından (CT) adətən azdır. Müasir cihazlar yalnız lazım olan sahəyə yönəlmiş dar şüa dəstəsindən istifadə edərək dozanı optimallaşdırır. Müayinə yalnız klinik zərurət olduqda təyin edilir.
+
+## Tez-tez verilən suallar
+
+**Həkim CBCT tövsiyə edirsə, nə etməliyəm?**
+Hansı məlumatın axtarıldığını həkimdən soruşa bilərsiniz. Əgər izah məntiqli görünürsə — məsələn, implant üçün sümük həcminin ölçülməsi — müayinə əsaslıdır.
+
+**CBCT rentgen mərkəzlərində aparılırmı?**
+Bəli. Bir çox diş rentgen mərkəzi CBCT xidməti göstərir. Həkim adətən göndəriş yazır, siz isə uyğun bir mərkəzdə müayinədən keçirsiniz. [Bakıda 3D tomoqrafiya mərkəzlərini rentgen.az saytında tapa bilərsiniz](/rentgen-merkezleri).
+
+**Nəticələr nə vaxt hazır olur?**
+Müasir rəqəmsal sistemlərdə görüntülər çəkilişin ardından dərhal əldə olunur. Rəqəmsal fayl həkimə göndərilir və o, şəkilləri 3D proqram vasitəsilə analiz edir.
+
+**Uşaqlarda CBCT aparılırmı?**
+Nadir hallarda — yalnız ciddi klinik zərurət olduqda. Uşaqlarda şüalanma dozası xüsusi diqqətlə nəzarətdə saxlanılır.
+
+3D tomoqrafiya müasir diş diaqnostikasının güclü alətidir. Lakin onun dəyəri məhz doğru zamanda, doğru pasiyentə tövsiyə edilməsindən qaynaqlanır. Həkim hansı vəziyyətdə bu müayinənin lazım olduğunu fərdi olaraq qiymətləndirir.`,
+  },
+  {
     slug: "sinus-lift-emeliyyatindan-evvel-tomoqrafiya",
     title: "Sinus lift əməliyyatından əvvəl tomoqrafiya niyə lazımdır?",
     excerpt:
@@ -574,5 +663,98 @@ Tomoqrafiyada iltihab əlaməti aşkar edilərsə, həkim əməliyyatı planlaş
 Xeyr, 3D tomoqrafiya ağrısız və təmassız bir prosedurdur.
 
 Sinus lift əməliyyatından əvvəl 3D tomoqrafiya dəqiq diaqnostikaya kömək edən mühüm vasitədir. Sinus boşluğunun və sümük həcminin ətraflı qiymətləndirilməsi cərrahi planlamanı asanlaşdıraraq həkimin daha təhlükəsiz və etibarlı qərar verməsinə dəstək olur.`,
+  },
+  {
+    slug: "dis-rentgeni-nedir-ve-ne-ucun-lazimdir",
+    title: "Diş rentgeni nədir və nə üçün lazımdır?",
+    excerpt:
+      "Diş rentgeni həkimin gözlə görə bilmədiyi problemləri — çürüklər, kök xəstəlikləri, sümük itkisi — aşkar etməyə kömək edən əsas diaqnostika vasitəsidir.",
+    metaTitle: "Diş rentgeni nədir və nə üçün lazımdır? | Rentgen.az",
+    metaDescription:
+      "Diş rentgeni nə üçün çəkilir, hansı növləri var, nə qədər zərərlidir? Pasiyent-dostu izahat: periapkal, panoramik, sefalometrik rentgen haqqında bilməli olduğunuz hər şey.",
+    tags: ["diş rentgeni", "dental rentgen", "panoramik rentgen", "diaqnostika", "periapkal rentgen"],
+    content: `Stomatoloq müayinəsi zamanı ağızda gördükləri həmişə tam mənzərəni vermir. Diş minası altında, kök kanallarında və çənə sümüyündə baş verən dəyişikliklər yalnız rentgen şəkilləri ilə görünür. Məhz bu səbəbdən diş rentgeni müasir stomatolojiyanın ayrılmaz hissəsinə çevrilib.
+
+## Diş rentgeni nədir?
+
+Diş rentgeni (dental rentgen) — rentgen şüaları vasitəsilə diş və çənə strukturlarının görüntüsünü əldə etmək prosesidir. Bu şüalar yumşaq toxumalardan keçərək diş minası, dentin, kök və sümük strukturlarını əks etdirir. Nəticədə həkim gözlə görünməyən problemləri müəyyən edə bilir.
+
+Diş rentgeni — tibbi diaqnoz deyil, diaqnostika vasitəsidir. Rentgen şəklinin yozumlanması və müalicə qərarı həmişə stomatoloq tərəfindən verilir.
+
+## Diş rentgeni nə üçün lazımdır?
+
+Diş rentgeni bir çox klinik vəziyyəti aşkar etməyə kömək edir:
+
+- **Gizli çürüklər** — iki diş arasındakı və ya dolgu altındakı çürüklər
+- **Kök kanalı problemləri** — iltihab, absess, kanal anatomiyası
+- **Sümük itkisi** — periodontit, implant planlaması üçün sümük həcmi
+- **Sürünmə dişlər** — müdriklıq dişi və ya süddən düşməmiş dişlər
+- **Çənə oynağı pozuntuları** — TMJ problemləri
+- **Cərrahiyyə planlaması** — implant, protez, ortodontiya
+
+Vaxtında aparılan rentgen müayinəsi xəstəliyin erkən mərhələdə aşkar edilməsinə və daha sadə müalicəyə imkan verir.
+
+## Diş rentgeninin növləri
+
+### Periapkal rentgen
+
+Bir və ya iki dişi tam göstərən kiçik formatlı şəkildir. Diş kökünü, ətraf toxumaları və çənə sümüyünü ətraflı əks etdirir. Kök kanalı müalicəsi, absess diaqnostikası və implant sonrası yoxlama üçün istifadə edilir.
+
+### Panoramik rentgen
+
+Bütün diş sırasını, çənə sümüklərini, sinusları və çənə oynaqlarını bir şəkildə göstərir. Ümumi diaqnostika, ortodontiya planlaması və müdriklıq dişi qiymətləndirilməsi üçün ideal vasitədir. [Bütün xidmətlərə bax →](/xidmetler)
+
+### Sefalometrik rentgen (TRG)
+
+Baş-boyun profilini əhatə edən geniş formatlı şəkildir. Ortodontik müalicə planlaması, çənə inkişafının qiymətləndirilməsi və cərrahiyyə hazırlığı üçün istifadə edilir.
+
+### Bitewing rentgen
+
+Üst və alt diş sıralarının çiynəmə səthlərini bir şəkildə birləşdirən metoddur. Diş sırası arası çürüklərin aşkar edilməsində xüsusilə effektivdir.
+
+### 3D tomoqrafiya (CBCT)
+
+Ən ətraflı dental görüntüləmə metodu. Çənə strukturlarının üçölçülü modeli yaradılır. İmplant planlaması, kanal morfologiyası, sinus müayinələri üçün tövsiyə edilir. [Xidmətlər haqqında →](/xidmetler)
+
+## Diş rentgeni nə qədər zərərlidir?
+
+Bu, pasiyentlərin ən çox verdikləri sualdır. Diş rentgeni zamanı aldığınız şüalanma dozu son dərəcə aşağıdır:
+
+- Bir periapkal şəkil — günlük təbii arxa fon şüalanmasının bir neçə saatına bərabərdir
+- Panoramik şəkil — transatlantik uçuşda alınan dozadan aşağıdır
+- Müasir rəqəmsal cihazlar köhnə film aparatlarına nisbətən **70–80% az şüa** istifadə edir
+
+Hamiləlik dövründə xüsusi qoruyucu önlük istifadə edilir. Lazımsız şüalanmadan qaçınmaq üçün rentgen yalnız klinik zərurət olduqda təyin edilir.
+
+## Rentgen müayinəsi necə aparılır?
+
+Proses sadə və ağrısızdır:
+
+1. Ağız içinə kiçik sensor (rəqəmsal) və ya film lövhəsi yerləşdirilir
+2. Aparat şəkil çəkir — bu 1–2 saniyədir
+3. Şəkil dərhal ekranda görünür (rəqəmsal cihazlarda)
+4. Həkim şəkli sizinlə birgə izah edir
+
+Panoramik çəkidə isə sensor ağız xaricindədir — aparat başın ətrafında dönür.
+
+## Diş rentgenini harada çəkdirmək olar?
+
+Bakıda diş rentgen mərkəzlərini [Rentgen Mərkəzləri](/rentgen-merkezleri) səhifəsindən tapa bilərsiniz. Mərkəzləri xidmət növünə, rayona və qiymətə görə filtrləmək mümkündür.
+
+## Tez-tez verilən suallar
+
+**Rentgen çəkdirmədən əvvəl hazırlıq lazımdırmı?**
+Xeyr, xüsusi hazırlıq tələb olunmur. Adi geyim kifayətdir; metal bəzəkləri çıxarmağınız xahiş oluna bilər.
+
+**Uşaqlar üçün diş rentgeni təhlükəlidirmi?**
+Müasir rəqəmsal cihazlar uşaqlar üçün də təhlükəsizdir. Doz minimaldır; həkim qoruyucu önlük təmin edir.
+
+**Rentgen nə qədər tez-tez çəkilməlidir?**
+Fərdən asılıdır. Ümumi tövsiyə: klinik sağlam pasiyentlər üçün ildə bir dəfə, risk qrupu üçün 6 ayda bir.
+
+**Şəkli özümlə apara bilərəmmi?**
+Bəli, rəqəmsal mərkəzlər şəkli CD, USB və ya elektron olaraq verə bilər.
+
+Diş rentgeni ağrısız, sürətli və dəqiq diaqnostikanın əsasıdır. Erkən diaqnoz isə daha sadə müalicə, daha az xərc deməkdir. [Yaxınlıqdakı rentgen mərkəzini tapın →](/rentgen-merkezleri)`,
   },
 ];
