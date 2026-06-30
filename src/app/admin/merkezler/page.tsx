@@ -32,7 +32,10 @@ async function getCenters(status?: CenterStatus) {
   try {
     return await prisma.centerProfile.findMany({
       where: status ? { status } : undefined,
-      include: { user: { select: { id: true, isBlocked: true } } },
+      include: {
+        user: { select: { id: true, isBlocked: true } },
+        services: { include: { service: { select: { name: true, shortName: true } } } },
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
     });
@@ -92,30 +95,63 @@ export default async function AdminCentersPage({
             {centers.map((c) => (
               <div
                 key={c.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-4"
+                className="rounded-xl border border-slate-100 p-4"
               >
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/rentgen-merkezleri/${c.slug}`}
-                      className="font-semibold text-ink-900 hover:text-brand-600"
-                    >
-                      {c.name}
-                    </Link>
-                    <StatusBadge status={c.status} />
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {c.status === "APPROVED" ? (
+                        <Link
+                          href={`/rentgen-merkezleri/${c.slug}`}
+                          className="font-semibold text-ink-900 hover:text-brand-600"
+                        >
+                          {c.name}
+                        </Link>
+                      ) : (
+                        <span className="font-semibold text-ink-900">{c.name}</span>
+                      )}
+                      <StatusBadge status={c.status} />
+                    </div>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {[c.city, c.phone].filter(Boolean).join(" · ")} ·{" "}
+                      {formatDateAz(c.createdAt)}
+                    </p>
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {[c.city, c.phone].filter(Boolean).join(" · ")} ·{" "}
-                    {formatDateAz(c.createdAt)}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CenterStatusControls centerId={c.id} status={c.status} />
+                    <BlockToggle userId={c.user.id} blocked={c.user.isBlocked} />
+                  </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <CenterStatusControls centerId={c.id} status={c.status} />
-                  <BlockToggle
-                    userId={c.user.id}
-                    blocked={c.user.isBlocked}
-                  />
-                </div>
+
+                {/* Submitted details for review */}
+                <dl className="mt-3 grid gap-x-6 gap-y-1.5 border-t border-slate-100 pt-3 text-sm sm:grid-cols-2">
+                  {c.responsiblePerson && (
+                    <Detail label="Məsul şəxs" value={c.responsiblePerson} />
+                  )}
+                  {c.whatsapp && <Detail label="WhatsApp" value={c.whatsapp} />}
+                  {c.address && <Detail label="Ünvan" value={c.address} />}
+                  {c.workingHours && (
+                    <Detail label="İş saatları" value={c.workingHours} />
+                  )}
+                  {c.equipment && <Detail label="Avadanlıq" value={c.equipment} />}
+                  {c.mapsUrl && <Detail label="Xəritə" value={c.mapsUrl} />}
+                </dl>
+                {c.description && (
+                  <p className="mt-2 text-sm text-slate-600">{c.description}</p>
+                )}
+                {c.services.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {c.services.map((cs) => (
+                      <span
+                        key={cs.id}
+                        className="inline-flex items-center rounded-full bg-cyan-50 px-2.5 py-0.5 text-xs font-medium text-cyan-700 ring-1 ring-inset ring-cyan-100"
+                      >
+                        {cs.service.shortName ?? cs.service.name}
+                        {cs.price != null ? ` · ${cs.price}₼` : ""}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -128,5 +164,14 @@ export default async function AdminCentersPage({
         )}
       </Panel>
     </DashboardShell>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-2">
+      <dt className="shrink-0 text-slate-400">{label}:</dt>
+      <dd className="min-w-0 break-words font-medium text-ink-800">{value}</dd>
+    </div>
   );
 }

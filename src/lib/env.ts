@@ -10,6 +10,8 @@ export const env = {
     | "twilio"
     | "generic",
   adminPhone: process.env.ADMIN_PHONE ?? "",
+  // Secret admin access link: /admin-giris/<ADMIN_ACCESS_KEY>
+  adminAccessKey: process.env.ADMIN_ACCESS_KEY ?? "",
   // Notification email (new appointment requests / referrals)
   notifyEmail: process.env.NOTIFY_EMAIL ?? "",
   emailProvider: (process.env.EMAIL_PROVIDER ?? "formsubmit") as
