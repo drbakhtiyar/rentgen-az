@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ScanLine } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
+import { getCurrentUser } from "@/lib/auth/rbac";
 import { DashboardNav, type NavItem } from "./nav";
+import { RoleSwitcher } from "./role-switcher";
 
-export function DashboardShell({
+export async function DashboardShell({
   title,
   roleLabel,
   userName,
@@ -18,6 +20,15 @@ export function DashboardShell({
   navBadges?: Record<string, number>;
   children: React.ReactNode;
 }) {
+  const me = await getCurrentUser();
+  const availableRoles = (
+    [
+      me?.patientProfile ? "PATIENT" : null,
+      me?.doctorProfile ? "DOCTOR" : null,
+      me?.centerProfile ? "CENTER" : null,
+    ] as ("PATIENT" | "CENTER" | "DOCTOR" | null)[]
+  ).filter((r): r is "PATIENT" | "CENTER" | "DOCTOR" => r !== null);
+
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-surface">
       <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -33,6 +44,9 @@ export function DashboardShell({
                 <p className="max-w-[150px] truncate text-xs text-slate-500">{userName}</p>
               </div>
             </div>
+            {me && availableRoles.length > 1 && (
+              <RoleSwitcher roles={availableRoles} current={me.role} />
+            )}
             <DashboardNav items={nav} badges={navBadges} />
             <div className="mt-3 border-t border-slate-100 pt-3">
               <Link

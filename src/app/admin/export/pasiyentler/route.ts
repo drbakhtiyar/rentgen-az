@@ -23,7 +23,7 @@ export async function GET() {
   await requireRole("ADMIN");
 
   const patients = await prisma.user.findMany({
-    where: { role: "PATIENT" },
+    where: { patientProfile: { isNot: null } },
     include: { patientProfile: true },
     orderBy: { createdAt: "desc" },
   });

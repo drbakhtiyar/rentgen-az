@@ -15,7 +15,7 @@ export const getCurrentUser = cache(async () => {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    include: { patientProfile: true, centerProfile: true },
+    include: { patientProfile: true, centerProfile: true, doctorProfile: true },
   });
 
   if (!user || user.isBlocked) return null;

@@ -6,7 +6,7 @@ import { createOtp, verifyOtp as verifyOtpCode } from "@/lib/otp";
 import { sendOtpSms } from "@/lib/sms";
 import { redirect } from "next/navigation";
 import { setSessionCookie, clearSessionCookie } from "@/lib/auth/session";
-import { dashboardPathForRole } from "@/lib/auth/rbac";
+import { dashboardPathForRole, getCurrentUser } from "@/lib/auth/rbac";
 import { requestOtpSchema, verifyOtpSchema } from "@/lib/validation";
 import type { Role } from "@/generated/prisma/enums";
 
@@ -21,6 +21,29 @@ export type ActionState = {
 export async function logoutAction() {
   await clearSessionCookie();
   redirect("/");
+}
+
+/** Switch the active role among the profiles this account already has. */
+export async function switchRoleAction(role: "PATIENT" | "CENTER" | "DOCTOR") {
+  const user = await getCurrentUser();
+  if (!user) redirect("/giris");
+
+  let allowed = false;
+  if (role === "PATIENT") {
+    if (!user.patientProfile) {
+      await prisma.patientProfile.create({ data: { userId: user.id } });
+    }
+    allowed = true;
+  } else if (role === "CENTER") {
+    allowed = !!user.centerProfile;
+  } else if (role === "DOCTOR") {
+    allowed = !!user.doctorProfile;
+  }
+  if (!allowed) redirect(dashboardPathForRole(user.role));
+
+  await prisma.user.update({ where: { id: user.id }, data: { role } });
+  await setSessionCookie({ userId: user.id, role, phone: user.phone });
+  redirect(dashboardPathForRole(role));
 }
 
 export async function requestOtpAction(input: {
@@ -109,39 +132,46 @@ export async function verifyOtpAction(input: {
       };
     }
 
+    // One account per phone, but the SAME person can be patient, center and/or
+    // doctor. The selected tab activates that role and creates its profile if missing.
+    const selectedRole: Role =
+      desiredRole === "CENTER"
+        ? "CENTER"
+        : desiredRole === "DOCTOR"
+          ? "DOCTOR"
+          : "PATIENT";
+
     if (!user) {
-      // New account — PATIENT, CENTER or DOCTOR via the public form.
-      const role: Role =
-        desiredRole === "CENTER"
-          ? "CENTER"
-          : desiredRole === "DOCTOR"
-            ? "DOCTOR"
-            : "PATIENT";
       user = await prisma.user.create({
         data: {
           phone,
-          role,
+          role: selectedRole,
           lastLoginAt: new Date(),
-          // create a patient profile shell for patients
-          ...(role === "PATIENT" ? { patientProfile: { create: {} } } : {}),
+          ...(selectedRole === "PATIENT" ? { patientProfile: { create: {} } } : {}),
         },
         include,
       });
     } else {
       user = await prisma.user.update({
         where: { id: user.id },
-        data: { lastLoginAt: new Date() },
+        data: {
+          role: selectedRole,
+          lastLoginAt: new Date(),
+          ...(selectedRole === "PATIENT" && !user.patientProfile
+            ? { patientProfile: { create: {} } }
+            : {}),
+        },
         include,
       });
     }
 
-    await setSessionCookie({ userId: user.id, role: user.role, phone: user.phone });
+    await setSessionCookie({ userId: user.id, role: selectedRole, phone: user.phone });
 
-    // Where to send the user next
-    let redirectTo = dashboardPathForRole(user.role);
-    if (user.role === "CENTER" && !user.centerProfile) {
+    // Where to send the user next (onboarding if the selected profile is missing)
+    let redirectTo = dashboardPathForRole(selectedRole);
+    if (selectedRole === "CENTER" && !user.centerProfile) {
       redirectTo = "/merkez/qeydiyyat";
-    } else if (user.role === "DOCTOR" && !user.doctorProfile) {
+    } else if (selectedRole === "DOCTOR" && !user.doctorProfile) {
       redirectTo = "/hekim/qeydiyyat";
     }
 

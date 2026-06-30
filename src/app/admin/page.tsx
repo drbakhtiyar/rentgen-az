@@ -29,7 +29,7 @@ async function getAdminStats() {
   try {
     const [patients, centers, approved, pending, requests, referrals] =
       await Promise.all([
-        prisma.user.count({ where: { role: "PATIENT" } }),
+        prisma.patientProfile.count(),
         prisma.centerProfile.count(),
         prisma.centerProfile.count({ where: { status: "APPROVED" } }),
         prisma.centerProfile.count({ where: { status: "PENDING" } }),

@@ -121,7 +121,7 @@ export async function getPlatformStats() {
     async () => {
       const [patients, centers, approvedCenters, requests, referrals] =
         await Promise.all([
-          prisma.user.count({ where: { role: "PATIENT" } }),
+          prisma.patientProfile.count(),
           prisma.centerProfile.count(),
           prisma.centerProfile.count({ where: { status: "APPROVED" } }),
           prisma.appointmentRequest.count(),

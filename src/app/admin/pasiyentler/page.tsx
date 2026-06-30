@@ -23,9 +23,11 @@ export const metadata: Metadata = buildMetadata({
 
 async function getPatients(q?: string) {
   try {
+    // Profile-based (not role-based): a person who is also a doctor/center but
+    // has a patient profile still shows here. Phone is the unique identity.
     const where: Prisma.UserWhereInput = q
       ? {
-          role: "PATIENT",
+          patientProfile: { isNot: null },
           OR: [
             { phone: { contains: q } },
             {
@@ -40,7 +42,7 @@ async function getPatients(q?: string) {
             },
           ],
         }
-      : { role: "PATIENT" };
+      : { patientProfile: { isNot: null } };
     return await prisma.user.findMany({
       where,
       include: { patientProfile: true },
