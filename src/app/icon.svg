@@ -1,0 +1,21 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rentgen.az">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0f1a35"/>
+      <stop offset="1" stop-color="#050b1a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.32" cy="0.26" r="0.8">
+      <stop stop-color="#11bdd4" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#11bdd4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  <rect width="32" height="32" rx="8" fill="url(#glow)"/>
+  <g transform="translate(4 4)" stroke="#2ad4e6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+    <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+    <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+    <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+    <path d="M7 12h10"/>
+  </g>
+</svg>

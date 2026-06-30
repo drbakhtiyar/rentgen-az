@@ -26,9 +26,8 @@ export const metadata: Metadata = {
   ...buildMetadata(),
   applicationName: SITE.name,
   authors: [{ name: SITE.name }],
-  icons: {
-    icon: "/favicon.ico",
-  },
+  // Icons are resolved from the app/ file conventions:
+  // favicon.ico (legacy), icon.svg (modern, crisp at any size), apple-icon.png.
 };
 
 export const viewport: Viewport = {
