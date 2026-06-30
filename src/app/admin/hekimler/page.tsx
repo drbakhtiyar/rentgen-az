@@ -92,7 +92,7 @@ export default async function AdminDoctorsPage({
                 [d.firstName, d.lastName].filter(Boolean).join(" ") || "Həkim";
               const meta = [
                 d.clinic,
-                d.specialization,
+                d.specializations.length > 0 ? d.specializations.join(", ") : null,
                 d.city,
                 formatPhoneDisplay(d.user.phone),
                 `${d._count.appointmentRequests} yönləndirmə`,
@@ -113,6 +113,35 @@ export default async function AdminDoctorsPage({
                     <p className="mt-1 text-sm text-slate-500">
                       {meta.join(" · ")}
                     </p>
+                    {(d.diplomaUrl || d.certificateUrl || d.instagram || d.website) && (
+                      <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium">
+                        {d.diplomaUrl && (
+                          <a href={d.diplomaUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+                            📄 Diplom
+                          </a>
+                        )}
+                        {d.certificateUrl && (
+                          <a href={d.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+                            📄 Sertifikat
+                          </a>
+                        )}
+                        {d.instagram && (
+                          <a
+                            href={d.instagram.startsWith("http") ? d.instagram : `https://instagram.com/${d.instagram.replace(/^@/, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-brand-600 hover:underline"
+                          >
+                            Instagram
+                          </a>
+                        )}
+                        {d.website && (
+                          <a href={d.website} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+                            Sayt
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <DoctorStatusControls doctorId={d.id} status={d.status} />

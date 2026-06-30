@@ -51,8 +51,12 @@ export default async function DoctorProfilePage() {
             firstName: profile.firstName ?? "",
             lastName: profile.lastName ?? "",
             clinic: profile.clinic ?? "",
-            specialization: profile.specialization ?? "",
+            specializations: profile.specializations ?? [],
             city: profile.city ?? "",
+            instagram: profile.instagram ?? "",
+            website: profile.website ?? "",
+            diplomaUrl: profile.diplomaUrl ?? "",
+            certificateUrl: profile.certificateUrl ?? "",
           }}
         />
       </Card>

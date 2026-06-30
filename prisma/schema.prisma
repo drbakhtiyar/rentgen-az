@@ -188,17 +188,22 @@ model AppointmentRequest {
 }
 
 model DoctorProfile {
-  id             String       @id @default(cuid())
-  userId         String       @unique
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName      String?
-  lastName       String?
-  clinic         String?
-  specialization String?
-  city           String?
-  status         CenterStatus @default(PENDING)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName       String?
+  lastName        String?
+  clinic          String? // iş yeri / klinika
+  specialization  String? // (köhnə — sərbəst mətn, istifadə olunmur)
+  specializations String[]     @default([]) // seçilmiş ixtisaslar
+  city            String?
+  instagram       String?
+  website         String?
+  diplomaUrl      String?
+  certificateUrl  String?
+  status          CenterStatus @default(PENDING)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   appointmentRequests AppointmentRequest[]
 

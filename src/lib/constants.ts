@@ -180,6 +180,21 @@ export const EXAM_TYPES: string[] = [
   "Digər",
 ];
 
+/** Dental specializations — doctors pick one or more. */
+export const DENTAL_SPECIALIZATIONS: string[] = [
+  "Ümumi diş həkimi (Terapevt)",
+  "Ortodont",
+  "İmplantoloq",
+  "Diş-üz-çənə cərrahı",
+  "Ortoped (Protezist)",
+  "Pedodont (Uşaq diş həkimi)",
+  "Endodont (Kanal müalicəsi)",
+  "Parodontoloq (Diş əti müalicəsi)",
+  "Estetik diş həkimi",
+  "Gnatoloq",
+  "Radioloq (Diş radiologiyası)",
+];
+
 export const MAIN_NAV: { label: string; href: string }[] = [
   { label: "Rentgen mərkəzləri", href: "/rentgen-merkezleri" },
   { label: "Xidmətlər", href: "/xidmetler" },

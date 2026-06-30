@@ -72,12 +72,24 @@ export const appointmentRequestSchema = z.object({
   note: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
+const optionalUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((v) => v === "" || /^https?:\/\//.test(v), "Düzgün link daxil edin (https://...)")
+  .optional()
+  .or(z.literal(""));
+
 export const doctorProfileSchema = z.object({
   firstName: z.string().trim().min(2, "Ad ən azı 2 hərf olmalıdır").max(60),
   lastName: z.string().trim().min(2, "Soyad ən azı 2 hərf olmalıdır").max(60),
   clinic: z.string().trim().max(160).optional().or(z.literal("")),
-  specialization: z.string().trim().max(120).optional().or(z.literal("")),
+  specializations: z.array(z.string().trim().max(120)).max(8).optional().default([]),
   city: z.string().trim().max(80).optional().or(z.literal("")),
+  instagram: z.string().trim().max(200).optional().or(z.literal("")),
+  website: optionalUrl,
+  diplomaUrl: optionalUrl,
+  certificateUrl: optionalUrl,
 });
 
 export const referralSchema = z.object({

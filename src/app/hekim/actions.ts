@@ -11,8 +11,12 @@ export async function saveDoctorProfileAction(input: {
   firstName: string;
   lastName: string;
   clinic?: string;
-  specialization?: string;
+  specializations?: string[];
   city?: string;
+  instagram?: string;
+  website?: string;
+  diplomaUrl?: string;
+  certificateUrl?: string;
 }): Promise<DoctorActionResult> {
   const user = await requireRole("DOCTOR");
   const parsed = doctorProfileSchema.safeParse(input);
@@ -30,8 +34,12 @@ export async function saveDoctorProfileAction(input: {
       firstName: d.firstName,
       lastName: d.lastName,
       clinic: d.clinic || null,
-      specialization: d.specialization || null,
+      specializations: d.specializations ?? [],
       city: d.city || null,
+      instagram: d.instagram || null,
+      website: d.website || null,
+      diplomaUrl: d.diplomaUrl || null,
+      certificateUrl: d.certificateUrl || null,
     };
 
     if (existing) {
