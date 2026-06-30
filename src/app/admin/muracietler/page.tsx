@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Inbox } from "lucide-react";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { RequestStatusSelectAdmin } from "@/components/admin/controls";
 import { prisma } from "@/lib/db";
@@ -36,12 +35,7 @@ export default async function AdminRequestsPage() {
   const requests = await getRequests();
 
   return (
-    <DashboardShell
-      title="Müraciətlər"
-      roleLabel="Administrator"
-      userName={admin.phone}
-      nav={adminNav}
-    >
+    <AdminShell title="Müraciətlər" userName={admin.phone}>
       <Panel title="Müraciətlər">
         {requests.length > 0 ? (
           <div className="space-y-3">
@@ -93,6 +87,6 @@ export default async function AdminRequestsPage() {
           />
         )}
       </Panel>
-    </DashboardShell>
+    </AdminShell>
   );
 }

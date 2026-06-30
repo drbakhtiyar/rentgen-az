@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2 } from "lucide-react";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { Building2, Download } from "lucide-react";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { CenterStatusControls, BlockToggle } from "@/components/admin/controls";
+import { Input } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, cn } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import type { CenterStatus } from "@/generated/prisma/enums";
+import type { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -28,10 +30,19 @@ const STATUS_FILTERS: { value: CenterStatus | "ALL"; label: string }[] = [
 
 const VALID_STATUSES: CenterStatus[] = ["PENDING", "APPROVED", "DEACTIVATED"];
 
-async function getCenters(status?: CenterStatus) {
+async function getCenters(status?: CenterStatus, q?: string) {
   try {
+    const where: Prisma.CenterProfileWhereInput = {};
+    if (status) where.status = status;
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: "insensitive" } },
+        { phone: { contains: q } },
+        { city: { contains: q, mode: "insensitive" } },
+      ];
+    }
     return await prisma.centerProfile.findMany({
-      where: status ? { status } : undefined,
+      where,
       include: {
         user: { select: { id: true, isBlocked: true } },
         services: { include: { service: { select: { name: true, shortName: true } } } },
@@ -47,23 +58,18 @@ async function getCenters(status?: CenterStatus) {
 export default async function AdminCentersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string }>;
 }) {
   const admin = await requireRole("ADMIN", "/admin/merkezler");
-  const { status: rawStatus } = await searchParams;
+  const { status: rawStatus, q } = await searchParams;
   const activeStatus = VALID_STATUSES.includes(rawStatus as CenterStatus)
     ? (rawStatus as CenterStatus)
     : undefined;
 
-  const centers = await getCenters(activeStatus);
+  const centers = await getCenters(activeStatus, q);
 
   return (
-    <DashboardShell
-      title="Mərkəzlər"
-      roleLabel="Administrator"
-      userName={admin.phone}
-      nav={adminNav}
-    >
+    <AdminShell title="Mərkəzlər" userName={admin.phone}>
       <div className="mb-5 flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => {
           const isActive =
@@ -89,7 +95,33 @@ export default async function AdminCentersPage({
         })}
       </div>
 
-      <Panel title="Mərkəzlər">
+      <form
+        action="/admin/merkezler"
+        className="mb-5 flex flex-wrap items-center gap-2"
+      >
+        {activeStatus && (
+          <input type="hidden" name="status" value={activeStatus} />
+        )}
+        <Input
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder="Ad, telefon və ya şəhər üzrə axtar"
+          className="max-w-xs"
+        />
+        <Button type="submit">Axtar</Button>
+      </form>
+
+      <Panel
+        title="Mərkəzlər"
+        action={
+          <a
+            href="/admin/export/merkezler"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-ink-800 ring-1 ring-slate-200 hover:bg-slate-50"
+          >
+            <Download className="h-4 w-4" /> CSV yüklə
+          </a>
+        }
+      >
         {centers.length > 0 ? (
           <div className="space-y-3">
             {centers.map((c) => (
@@ -163,7 +195,7 @@ export default async function AdminCentersPage({
           />
         )}
       </Panel>
-    </DashboardShell>
+    </AdminShell>
   );
 }
 

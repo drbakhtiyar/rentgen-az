@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { BlogEditor } from "@/components/admin/blog-editor";
 import { requireRole } from "@/lib/auth/rbac";
 import { buildMetadata } from "@/lib/seo";
@@ -16,8 +15,8 @@ export const metadata: Metadata = buildMetadata({
 export default async function NewBlogPostPage() {
   const admin = await requireRole("ADMIN", "/admin/blog/yeni");
   return (
-    <DashboardShell title="Yeni məqalə" roleLabel="Administrator" userName={admin.phone} nav={adminNav}>
+    <AdminShell title="Yeni məqalə" userName={admin.phone}>
       <BlogEditor />
-    </DashboardShell>
+    </AdminShell>
   );
 }

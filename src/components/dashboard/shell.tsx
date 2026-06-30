@@ -8,12 +8,14 @@ export function DashboardShell({
   roleLabel,
   userName,
   nav,
+  navBadges,
   children,
 }: {
   title: string;
   roleLabel: string;
   userName: string;
   nav: NavItem[];
+  navBadges?: Record<string, number>;
   children: React.ReactNode;
 }) {
   return (
@@ -31,7 +33,7 @@ export function DashboardShell({
                 <p className="max-w-[150px] truncate text-xs text-slate-500">{userName}</p>
               </div>
             </div>
-            <DashboardNav items={nav} />
+            <DashboardNav items={nav} badges={navBadges} />
             <div className="mt-3 border-t border-slate-100 pt-3">
               <Link
                 href="/"
@@ -52,7 +54,7 @@ export function DashboardShell({
 
           {/* Mobile nav */}
           <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-            <DashboardNav items={nav} mobile />
+            <DashboardNav items={nav} mobile badges={navBadges} />
           </div>
 
           {children}

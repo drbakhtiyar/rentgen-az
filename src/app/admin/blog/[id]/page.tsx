@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { BlogEditor } from "@/components/admin/blog-editor";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
@@ -26,7 +25,7 @@ export default async function EditBlogPostPage({
   if (!post) notFound();
 
   return (
-    <DashboardShell title="Məqaləni redaktə et" roleLabel="Administrator" userName={admin.phone} nav={adminNav}>
+    <AdminShell title="Məqaləni redaktə et" userName={admin.phone}>
       <BlogEditor
         defaults={{
           id: post.id,
@@ -41,6 +40,6 @@ export default async function EditBlogPostPage({
           published: post.published,
         }}
       />
-    </DashboardShell>
+    </AdminShell>
   );
 }

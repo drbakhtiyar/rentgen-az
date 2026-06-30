@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Stethoscope } from "lucide-react";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { ReferralStatusSelect } from "@/components/admin/controls";
 import { Badge } from "@/components/ui/badge";
@@ -37,12 +36,7 @@ export default async function AdminReferralsPage() {
   const referrals = await getReferrals();
 
   return (
-    <DashboardShell
-      title="Həkim göndərişləri"
-      roleLabel="Administrator"
-      userName={admin.phone}
-      nav={adminNav}
-    >
+    <AdminShell title="Həkim göndərişləri" userName={admin.phone}>
       <Panel title="Həkim göndərişləri">
         {referrals.length > 0 ? (
           <div className="space-y-3">
@@ -98,6 +92,6 @@ export default async function AdminReferralsPage() {
           />
         )}
       </Panel>
-    </DashboardShell>
+    </AdminShell>
   );
 }

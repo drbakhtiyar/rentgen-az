@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { FileText, Plus } from "lucide-react";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -30,7 +29,7 @@ export default async function AdminBlogPage() {
   }
 
   return (
-    <DashboardShell title="Blog" roleLabel="Administrator" userName={admin.phone} nav={adminNav}>
+    <AdminShell title="Blog" userName={admin.phone}>
       <Panel
         title={`Məqalələr (${posts.length})`}
         action={
@@ -75,6 +74,6 @@ export default async function AdminBlogPage() {
           </EmptyState>
         )}
       </Panel>
-    </DashboardShell>
+    </AdminShell>
   );
 }

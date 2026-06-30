@@ -12,6 +12,8 @@ export const env = {
   adminPhone: process.env.ADMIN_PHONE ?? "",
   // Secret admin access link: /admin-giris/<ADMIN_ACCESS_KEY>
   adminAccessKey: process.env.ADMIN_ACCESS_KEY ?? "",
+  // When true, the secret link also requires an emailed OTP code (2FA).
+  admin2fa: process.env.ADMIN_2FA === "true",
   // Notification email (new appointment requests / referrals)
   notifyEmail: process.env.NOTIFY_EMAIL ?? "",
   emailProvider: (process.env.EMAIL_PROVIDER ?? "formsubmit") as

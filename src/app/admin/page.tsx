@@ -9,8 +9,7 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { StatCard, Panel, EmptyState, StatusBadge } from "@/components/dashboard/widgets";
 import { CenterStatusControls } from "@/components/admin/controls";
 import { prisma } from "@/lib/db";
@@ -59,7 +58,7 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <DashboardShell title="Admin panel" roleLabel="Administrator" userName={admin.phone} nav={adminNav}>
+    <AdminShell title="Admin panel" userName={admin.phone}>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Pasiyentlər" value={stats.patients} icon={<Users />} />
         <StatCard label="Mərkəzlər" value={stats.centers} icon={<Building2 />} tone="cyan" />
@@ -110,6 +109,6 @@ export default async function AdminDashboardPage() {
           )}
         </Panel>
       </div>
-    </DashboardShell>
+    </AdminShell>
   );
 }

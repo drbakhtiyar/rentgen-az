@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Users, ShieldOff } from "lucide-react";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { Users, ShieldOff, Download } from "lucide-react";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { StatCard, EmptyState, Panel } from "@/components/dashboard/widgets";
 import { BlockToggle } from "@/components/admin/controls";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
+import type { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +21,28 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-async function getPatients() {
+async function getPatients(q?: string) {
   try {
+    const where: Prisma.UserWhereInput = q
+      ? {
+          role: "PATIENT",
+          OR: [
+            { phone: { contains: q } },
+            {
+              patientProfile: {
+                is: {
+                  OR: [
+                    { firstName: { contains: q, mode: "insensitive" } },
+                    { lastName: { contains: q, mode: "insensitive" } },
+                  ],
+                },
+              },
+            },
+          ],
+        }
+      : { role: "PATIENT" };
     return await prisma.user.findMany({
-      where: { role: "PATIENT" },
+      where,
       include: { patientProfile: true },
       orderBy: { createdAt: "desc" },
       take: 200,
@@ -32,20 +52,20 @@ async function getPatients() {
   }
 }
 
-export default async function AdminPatientsPage() {
+export default async function AdminPatientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const admin = await requireRole("ADMIN", "/admin/pasiyentler");
-  const patients = await getPatients();
+  const { q } = await searchParams;
+  const patients = await getPatients(q);
 
   const total = patients.length;
   const blockedCount = patients.filter((u) => u.isBlocked).length;
 
   return (
-    <DashboardShell
-      title="Pasiyentlər"
-      roleLabel="Administrator"
-      userName={admin.phone}
-      nav={adminNav}
-    >
+    <AdminShell title="Pasiyentlər" userName={admin.phone}>
       <div className="mb-5 grid gap-4 sm:grid-cols-2">
         <StatCard label="Ümumi pasiyent sayı" value={total} icon={<Users />} />
         <StatCard
@@ -56,7 +76,30 @@ export default async function AdminPatientsPage() {
         />
       </div>
 
-      <Panel title="Pasiyentlər">
+      <form
+        action="/admin/pasiyentler"
+        className="mb-5 flex flex-wrap items-center gap-2"
+      >
+        <Input
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder="Ad və ya telefon üzrə axtar"
+          className="max-w-xs"
+        />
+        <Button type="submit">Axtar</Button>
+      </form>
+
+      <Panel
+        title="Pasiyentlər"
+        action={
+          <a
+            href="/admin/export/pasiyentler"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-ink-800 ring-1 ring-slate-200 hover:bg-slate-50"
+          >
+            <Download className="h-4 w-4" /> CSV yüklə
+          </a>
+        }
+      >
         {patients.length > 0 ? (
           <div className="space-y-3">
             {patients.map((u) => {
@@ -98,6 +141,6 @@ export default async function AdminPatientsPage() {
           />
         )}
       </Panel>
-    </DashboardShell>
+    </AdminShell>
   );
 }

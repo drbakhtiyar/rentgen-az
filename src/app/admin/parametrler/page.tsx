@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { adminNav } from "@/components/dashboard/role-navs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Panel, EmptyState } from "@/components/dashboard/widgets";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { ActiveToggle, SeoSettingForm } from "@/components/admin/settings-controls";
@@ -33,7 +32,7 @@ export default async function AdminSettingsPage() {
   }
 
   return (
-    <DashboardShell title="Parametrlər" roleLabel="Administrator" userName={admin.phone} nav={adminNav}>
+    <AdminShell title="Parametrlər" userName={admin.phone}>
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel title={`Xidmətlər (${services.length})`}>
           {services.length > 0 ? (
@@ -97,6 +96,6 @@ export default async function AdminSettingsPage() {
           )}
         </Panel>
       </div>
-    </DashboardShell>
+    </AdminShell>
   );
 }

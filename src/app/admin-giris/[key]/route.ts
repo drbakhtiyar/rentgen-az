@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
-import { normalizePhone } from "@/lib/phone";
+import { adminSessionToken, ADMIN_2FA_KEY } from "@/lib/auth/admin";
+import { createOtp } from "@/lib/otp";
+import { sendNotificationEmail } from "@/lib/email";
 import {
-  createSessionToken,
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
+  ADMIN_CHALLENGE_COOKIE,
+  ADMIN_CHALLENGE_MAX_AGE_SECONDS,
+  createAdminChallengeToken,
 } from "@/lib/auth/jwt";
 
-// Secret admin access link. Not linked anywhere on the site — entered manually:
-//   /admin-giris/<ADMIN_ACCESS_KEY>
-// A correct key opens an admin session and redirects to /admin.
+// Secret admin access link, entered manually:  /admin-giris/<ADMIN_ACCESS_KEY>
+// - ADMIN_2FA off  → opens an admin session and redirects to /admin.
+// - ADMIN_2FA on   → emails a one-time code and redirects to /admin-giris to verify.
 
 export const dynamic = "force-dynamic";
 
@@ -29,30 +32,44 @@ export async function GET(
   const { key } = await params;
   const expected = env.adminAccessKey;
 
-  // No key configured, or mismatch → behave like the route doesn't exist.
   if (!expected || !safeEqual(key, expected)) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Ensure a single admin account exists, then open a session for it.
-  const phone = normalizePhone(env.adminPhone) ?? "+994500000000";
-  let user;
-  try {
-    user = await prisma.user.upsert({
-      where: { phone },
-      create: { phone, role: "ADMIN", lastLoginAt: new Date() },
-      update: { role: "ADMIN", lastLoginAt: new Date(), isBlocked: false },
+  // --- Two-factor: email a code, then require it on the verify page ---
+  if (env.admin2fa) {
+    try {
+      const otp = await createOtp(ADMIN_2FA_KEY);
+      if (otp.ok) {
+        // Safety net so the admin can recover the code from server logs.
+        console.log(`[admin-2fa] giriş kodu: ${otp.code}`);
+        await sendNotificationEmail({
+          subject: "[rentgen.az] Admin giriş kodu",
+          fields: { Kod: otp.code, Etibarlıdır: "5 dəqiqə" },
+        }).catch(() => {});
+      }
+    } catch {
+      /* even if email fails, a previous valid code may still work */
+    }
+    const challenge = await createAdminChallengeToken();
+    const res = NextResponse.redirect(new URL("/admin-giris", req.url));
+    res.cookies.set(ADMIN_CHALLENGE_COOKIE, challenge, {
+      httpOnly: true,
+      secure: env.isProd,
+      sameSite: "lax",
+      path: "/",
+      maxAge: ADMIN_CHALLENGE_MAX_AGE_SECONDS,
     });
+    return res;
+  }
+
+  // --- Direct access (no 2FA) ---
+  let token: string;
+  try {
+    token = await adminSessionToken();
   } catch {
     return NextResponse.redirect(new URL("/?admin=error", req.url));
   }
-
-  const token = await createSessionToken({
-    userId: user.id,
-    role: "ADMIN",
-    phone: user.phone,
-  });
-
   const res = NextResponse.redirect(new URL("/admin", req.url));
   res.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,

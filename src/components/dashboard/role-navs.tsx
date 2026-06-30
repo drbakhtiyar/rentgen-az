@@ -9,6 +9,7 @@ import {
   FileText,
   Settings,
   Heart,
+  History,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -32,4 +33,5 @@ export const adminNav: NavItem[] = [
   { label: "Həkim göndərişləri", href: "/admin/gonderisler", icon: <Stethoscope /> },
   { label: "Blog", href: "/admin/blog", icon: <FileText /> },
   { label: "Parametrlər", href: "/admin/parametrler", icon: <Settings /> },
+  { label: "Jurnal", href: "/admin/jurnal", icon: <History /> },
 ];
