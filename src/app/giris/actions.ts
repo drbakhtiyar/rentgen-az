@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
-import { normalizePhone } from "@/lib/phone";
 import { createOtp, verifyOtp as verifyOtpCode } from "@/lib/otp";
 import { sendOtpSms } from "@/lib/sms";
 import { redirect } from "next/navigation";
@@ -89,9 +88,6 @@ export async function verifyOtpAction(input: {
     return { ok: false, error: verify.error };
   }
 
-  const adminPhone = normalizePhone(env.adminPhone);
-  const isAdmin = adminPhone && adminPhone === phone;
-
   try {
     let user = await prisma.user.findUnique({
       where: { phone },
@@ -102,9 +98,18 @@ export async function verifyOtpAction(input: {
       return { ok: false, error: "Bu hesab bloklanıb. Adminlə əlaqə saxlayın." };
     }
 
+    // Admin access is ONLY via the secret /admin-giris link — never the public
+    // OTP form (otherwise dev-mode on-screen codes would expose the panel).
+    if (user?.role === "ADMIN") {
+      return {
+        ok: false,
+        error: "Bu hesaba bu formdan giriş mümkün deyil.",
+      };
+    }
+
     if (!user) {
-      // New account
-      const role: Role = isAdmin ? "ADMIN" : desiredRole === "CENTER" ? "CENTER" : "PATIENT";
+      // New account — only PATIENT or CENTER via the public form.
+      const role: Role = desiredRole === "CENTER" ? "CENTER" : "PATIENT";
       user = await prisma.user.create({
         data: {
           phone,
@@ -116,12 +121,9 @@ export async function verifyOtpAction(input: {
         include: { centerProfile: true, patientProfile: true },
       });
     } else {
-      // Existing account — promote to admin if configured, never silently demote.
-      const data: { lastLoginAt: Date; role?: Role } = { lastLoginAt: new Date() };
-      if (isAdmin && user.role !== "ADMIN") data.role = "ADMIN";
       user = await prisma.user.update({
         where: { id: user.id },
-        data,
+        data: { lastLoginAt: new Date() },
         include: { centerProfile: true, patientProfile: true },
       });
     }
