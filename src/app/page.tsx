@@ -51,6 +51,15 @@ export default async function HomePage() {
     <>
       <JsonLd data={faqJsonLd(HOME_FAQ.map((f) => ({ question: f.question, answer: f.answer })))} />
 
+      {/* ---------------- ANNOUNCEMENT BAR ---------------- */}
+      <Link
+        href="/waitlist"
+        className="block bg-brand-600 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-brand-700"
+      >
+        Tezliklə: onlayn randevu bron etmə — siyahıya yazılın{" "}
+        <span className="font-semibold underline underline-offset-2">/ Скоро: онлайн-запись →</span>
+      </Link>
+
       {/* ---------------- HERO ---------------- */}
       <section className="relative overflow-hidden bg-ink-950 text-white">
         <div className="absolute inset-0 bg-grid-dark opacity-50" />

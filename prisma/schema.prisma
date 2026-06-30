@@ -217,6 +217,23 @@ model SeoSetting {
   updatedAt   DateTime @updatedAt
 }
 
+// Early-access demand signal capture from the bilingual /waitlist landing page.
+// Deliberately separate from User/PatientProfile — no auth, no health data.
+model WaitlistSignup {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  city      String?
+  audience  String? // "patient" | "doctor" | "center" | null
+  locale    String   @default("az") // "az" | "ru" — language the visitor used
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([locale])
+}
+
 model AdminActionLog {
   id         String   @id @default(cuid())
   adminId    String?

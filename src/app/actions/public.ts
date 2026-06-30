@@ -3,7 +3,11 @@
 import { prisma } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { getCurrentUser } from "@/lib/auth/rbac";
-import { appointmentRequestSchema, referralSchema } from "@/lib/validation";
+import {
+  appointmentRequestSchema,
+  referralSchema,
+  waitlistSignupSchema,
+} from "@/lib/validation";
 
 export type FormResult = { ok: boolean; error?: string; message?: string };
 
@@ -104,5 +108,63 @@ export async function submitReferralAction(input: {
     };
   } catch {
     return { ok: false, error: "Texniki xəta. Bir azdan yenidən cəhd edin." };
+  }
+}
+
+export async function submitWaitlistAction(input: {
+  name: string;
+  phone?: string;
+  email?: string;
+  city?: string;
+  audience?: "patient" | "doctor" | "center";
+  locale: "az" | "ru";
+  note?: string;
+}): Promise<FormResult> {
+  const parsed = waitlistSignupSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat / Неверные данные" };
+  }
+  const data = parsed.data;
+
+  try {
+    // Light anti-spam: max 5 signups per hour per contact (phone or email)
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recent = await prisma.waitlistSignup.count({
+      where: {
+        createdAt: { gte: hourAgo },
+        OR: [
+          ...(data.phone ? [{ phone: data.phone }] : []),
+          ...(data.email ? [{ email: data.email }] : []),
+        ],
+      },
+    });
+    if (recent >= 5) {
+      return {
+        ok: false,
+        error: "Çox sayda müraciət. Bir azdan yenidən cəhd edin. / Слишком много заявок. Попробуйте позже.",
+      };
+    }
+
+    await prisma.waitlistSignup.create({
+      data: {
+        name: data.name,
+        phone: data.phone || null,
+        email: data.email || null,
+        city: data.city || null,
+        audience: data.audience || null,
+        locale: data.locale,
+        note: data.note || null,
+      },
+    });
+
+    return {
+      ok: true,
+      message:
+        data.locale === "ru"
+          ? "Спасибо! Вы в списке ожидания — мы свяжемся с вами."
+          : "Təşəkkürlər! Siz siyahıdasınız — sizinlə əlaqə saxlayacağıq.",
+    };
+  } catch {
+    return { ok: false, error: "Texniki xəta. Bir azdan yenidən cəhd edin. / Техническая ошибка." };
   }
 }

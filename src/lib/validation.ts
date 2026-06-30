@@ -93,6 +93,25 @@ export const blogPostSchema = z.object({
   published: z.boolean().optional(),
 });
 
+export const waitlistSignupSchema = z
+  .object({
+    name: z.string().trim().min(2, "Ad ən azı 2 hərf olmalıdır / Имя — минимум 2 буквы").max(120),
+    phone: z.string().trim().max(40).optional().or(z.literal("")),
+    email: z.string().trim().email("E-poçt düzgün deyil / Неверный email").max(160).optional().or(z.literal("")),
+    city: z.string().trim().max(80).optional().or(z.literal("")),
+    audience: z.enum(["patient", "doctor", "center"]).optional(),
+    locale: z.enum(["az", "ru"]).default("az"),
+    note: z.string().trim().max(500).optional().or(z.literal("")),
+  })
+  .refine((v) => (v.phone && v.phone.trim() !== "") || (v.email && v.email.trim() !== ""), {
+    message: "Telefon və ya e-poçt daxil edin / Укажите телефон или email",
+    path: ["phone"],
+  })
+  .transform((v) => ({
+    ...v,
+    phone: v.phone ? (normalizePhone(v.phone) ?? v.phone) : undefined,
+  }));
+
 export type RequestOtpInput = z.infer<typeof requestOtpSchema>;
 export type CenterProfileInput = z.infer<typeof centerProfileSchema>;
 export type PatientProfileInput = z.infer<typeof patientProfileSchema>;
