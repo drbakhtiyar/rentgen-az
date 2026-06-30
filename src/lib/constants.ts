@@ -188,5 +188,4 @@ export const MAIN_NAV: { label: string; href: string }[] = [
   { label: "Blog", href: "/blog" },
   { label: "FAQ", href: "/faq" },
   { label: "Əlaqə", href: "/elaqe" },
-  { label: "Onlayn qeydiyyat (tezliklə)", href: "/waitlist" },
 ];

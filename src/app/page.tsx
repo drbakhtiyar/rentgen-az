@@ -10,6 +10,7 @@ import {
   Users,
   Sparkles,
   Radiation,
+  CalendarClock,
 } from "lucide-react";
 import { Container, Section, SectionHeading } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
@@ -50,15 +51,6 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={faqJsonLd(HOME_FAQ.map((f) => ({ question: f.question, answer: f.answer })))} />
-
-      {/* ---------------- ANNOUNCEMENT BAR ---------------- */}
-      <Link
-        href="/waitlist"
-        className="block bg-brand-600 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-brand-700"
-      >
-        Tezliklə: onlayn randevu bron etmə — siyahıya yazılın{" "}
-        <span className="font-semibold underline underline-offset-2">/ Скоро: онлайн-запись →</span>
-      </Link>
 
       {/* ---------------- HERO ---------------- */}
       <section className="relative overflow-hidden bg-ink-950 text-white">
@@ -203,6 +195,40 @@ export default async function HomePage() {
           )}
         </Container>
       </Section>
+
+      {/* ---------------- WAITLIST BANNER ---------------- */}
+      <Container className="py-10">
+        <Link
+          href="/waitlist"
+          className="group relative block overflow-hidden rounded-3xl bg-gradient-to-r from-brand-600 to-cyan-500 p-6 shadow-[var(--shadow-glow)] sm:p-8"
+        >
+          <div className="absolute inset-0 bg-grid-dark opacity-20" />
+          <div className="glow-cyan absolute -right-10 -top-10 h-48 w-48 opacity-40" />
+          <div className="relative flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white ring-1 ring-white/20">
+                <CalendarClock className="h-6 w-6" />
+              </span>
+              <div>
+                <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold text-white">
+                  Tezliklə
+                </span>
+                <h2 className="font-display mt-2 text-xl font-bold text-white sm:text-2xl">
+                  Onlayn randevu bron etmə
+                </h2>
+                <p className="mt-1 max-w-xl text-sm text-white/85">
+                  Mərkəzlərə birbaşa onlayn vaxt seçib qeydiyyatdan keçin. İlk
+                  xəbər tutmaq üçün siyahıya yazılın.{" "}
+                  <span className="text-white/70">/ Скоро: онлайн-запись</span>
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-brand-700 transition-transform group-hover:translate-x-0.5">
+              Siyahıya yazıl <ArrowRight className="h-4 w-4" />
+            </span>
+          </div>
+        </Link>
+      </Container>
 
       {/* ---------------- HOW IT WORKS (PATIENTS) ---------------- */}
       <Section id="nece-ishleyir" className="bg-ink-950 text-white">
