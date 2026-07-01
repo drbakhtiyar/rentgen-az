@@ -1,0 +1,43 @@
+name: DB Backup
+
+# Hər gecə saat 04:00 Bakı vaxtı (UTC+4) = 00:00 UTC.
+# GitHub cron UTC-dədir və yük altında bir neçə dəqiqə gecikə bilər.
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch: {} # panel-dən əl ilə də işə salmaq üçün
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump database
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          STAMP=$(date -u +'%Y-%m-%d_%H%M')
+          FILE="rentgen-az-${STAMP}.sql.gz"
+          echo "Creating backup: $FILE"
+          pg_dump "$BACKUP_DATABASE_URL" \
+            --no-owner --no-privileges --clean --if-exists \
+            | gzip > "$FILE"
+          ls -lh "$FILE"
+          echo "FILE=$FILE" >> "$GITHUB_ENV"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: ${{ env.FILE }}
+          retention-days: 30
+          if-no-files-found: error
