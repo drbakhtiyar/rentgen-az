@@ -193,18 +193,45 @@ export async function getActiveCities() {
 export async function getPlatformStats() {
   return safe(
     async () => {
-      const [patients, centers, approvedCenters, requests, referrals] =
+      const [patients, centers, approvedCenters, doctors, requests, referrals, cityRows] =
         await Promise.all([
           prisma.patientProfile.count(),
           prisma.centerProfile.count(),
           prisma.centerProfile.count({ where: { status: "APPROVED" } }),
+          prisma.doctorProfile.count(),
           prisma.appointmentRequest.count(),
           prisma.referral.count(),
+          prisma.centerProfile.findMany({
+            where: { status: "APPROVED", city: { not: null } },
+            distinct: ["city"],
+            select: { city: true },
+          }),
         ]);
-      return { patients, centers, approvedCenters, requests, referrals };
+      return {
+        patients,
+        centers,
+        approvedCenters,
+        doctors,
+        requests,
+        referrals,
+        cities: cityRows.length,
+      };
     },
-    { patients: 0, centers: 0, approvedCenters: 0, requests: 0, referrals: 0 },
+    { patients: 0, centers: 0, approvedCenters: 0, doctors: 0, requests: 0, referrals: 0, cities: 0 },
   );
+}
+
+/** Distinct cities that already have an approved center (for the search dropdown). */
+export async function getCitiesWithCenters(): Promise<string[]> {
+  return safe(async () => {
+    const rows = await prisma.centerProfile.findMany({
+      where: { status: "APPROVED", city: { not: null } },
+      distinct: ["city"],
+      select: { city: true },
+      orderBy: { city: "asc" },
+    });
+    return rows.map((r) => r.city).filter((c): c is string => Boolean(c));
+  }, []);
 }
 
 export type CenterWithServices = Awaited<

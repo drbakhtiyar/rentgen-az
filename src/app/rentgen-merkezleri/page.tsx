@@ -7,14 +7,17 @@ import { CentersExplorer } from "@/components/map/centers-explorer";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES, CITIES, getService } from "@/lib/constants";
-import { getApprovedCenters, getRatingsForCenters } from "@/lib/queries";
+import { SERVICES, getService } from "@/lib/constants";
+import {
+  getApprovedCenters,
+  getRatingsForCenters,
+  getCitiesWithCenters,
+} from "@/lib/queries";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 120;
 
 const serviceOptions = SERVICES.map((s) => ({ value: s.slug, label: s.name }));
-const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
 
 export async function generateMetadata({
   searchParams,
@@ -52,6 +55,10 @@ export default async function CentersPage({
     service: sp.service,
   });
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
+  const cityOptions = (await getCitiesWithCenters()).map((c) => ({
+    value: c,
+    label: c,
+  }));
 
   const svc = sp.service ? getService(sp.service) : null;
   const activeFilters = [

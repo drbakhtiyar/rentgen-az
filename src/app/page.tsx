@@ -11,6 +11,8 @@ import {
   Sparkles,
   Radiation,
   CalendarClock,
+  ScanLine,
+  MapPin,
 } from "lucide-react";
 import { Container, Section, SectionHeading } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
@@ -22,13 +24,14 @@ import { HeroVisual } from "@/components/hero-visual";
 import { CenterCard } from "@/components/centers/center-card";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES, CITIES } from "@/lib/constants";
+import { SERVICES } from "@/lib/constants";
 import {
   getFeaturedCenters,
   getPublishedPosts,
   getPlatformStats,
   countApprovedCentersByService,
   getRatingsForCenters,
+  getCitiesWithCenters,
 } from "@/lib/queries";
 import { faqJsonLd } from "@/lib/seo";
 import { HOME_FAQ } from "@/content/faq";
@@ -37,15 +40,16 @@ import { formatDateAz } from "@/lib/utils";
 export const revalidate = 300;
 
 const serviceOptions = SERVICES.map((s) => ({ value: s.slug, label: s.name }));
-const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
 
 export default async function HomePage() {
-  const [centers, posts, stats, counts] = await Promise.all([
+  const [centers, posts, stats, counts, searchCities] = await Promise.all([
     getFeaturedCenters(6),
     getPublishedPosts(3),
     getPlatformStats(),
     countApprovedCentersByService(),
+    getCitiesWithCenters(),
   ]);
+  const cityOptions = searchCities.map((c) => ({ value: c, label: c }));
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
@@ -109,11 +113,12 @@ export default async function HomePage() {
       {/* ---------------- STATS STRIP ---------------- */}
       <div className="border-b border-slate-200 bg-white">
         <Container>
-          <div className="grid grid-cols-2 gap-px divide-slate-200 py-8 sm:grid-cols-4">
-            <Stat value={`${stats.approvedCenters}+`} label="Təsdiqlənmiş mərkəz" icon={<Building2 className="h-5 w-5" />} />
-            <Stat value={`${SERVICES.length}`} label="Xidmət növü" icon={<Stethoscope className="h-5 w-5" />} />
-            <Stat value={`${stats.patients}+`} label="Qeydiyyatlı pasiyent" icon={<Users className="h-5 w-5" />} />
-            <Stat value="18" label="Rayon və şəhər" icon={<Search className="h-5 w-5" />} />
+          <div className="grid grid-cols-2 gap-y-6 divide-slate-200 py-8 sm:grid-cols-3 lg:grid-cols-5">
+            <Stat value={`${stats.approvedCenters}`} label="Təsdiqlənmiş mərkəz" icon={<Building2 className="h-5 w-5" />} />
+            <Stat value={`${stats.doctors}`} label="Qeydiyyatlı həkim" icon={<Stethoscope className="h-5 w-5" />} />
+            <Stat value={`${stats.patients}`} label="Qeydiyyatlı pasiyent" icon={<Users className="h-5 w-5" />} />
+            <Stat value={`${SERVICES.length}`} label="Xidmət növü" icon={<ScanLine className="h-5 w-5" />} />
+            <Stat value={`${stats.cities}`} label="Əhatə olunan rayon" icon={<MapPin className="h-5 w-5" />} />
           </div>
         </Container>
       </div>

@@ -1,4 +1,5 @@
 /** Static catalog data: services, cities/districts, exam types, navigation. */
+import { slugify } from "./utils";
 
 export type ServiceSeed = {
   slug: string;
@@ -144,27 +145,105 @@ export function getService(slug: string) {
   return SERVICES.find((s) => s.slug === slug);
 }
 
-/** Cities & Baku districts. */
-export const CITIES: { name: string; slug: string; order: number }[] = [
-  { name: "Bakı", slug: "baki", order: 1 },
-  { name: "Bakı — Nəsimi", slug: "baki-nesimi", order: 2 },
-  { name: "Bakı — Yasamal", slug: "baki-yasamal", order: 3 },
-  { name: "Bakı — Nərimanov", slug: "baki-nerimanov", order: 4 },
-  { name: "Bakı — Xətai", slug: "baki-xetai", order: 5 },
-  { name: "Bakı — Sabunçu", slug: "baki-sabuncu", order: 6 },
-  { name: "Bakı — Binəqədi", slug: "baki-bineqedi", order: 7 },
-  { name: "Bakı — Nizami", slug: "baki-nizami", order: 8 },
-  { name: "Bakı — Suraxanı", slug: "baki-suraxani", order: 9 },
-  { name: "Bakı — Qaradağ", slug: "baki-qaradag", order: 10 },
-  { name: "Bakı — Xəzər", slug: "baki-xezer", order: 11 },
-  { name: "Bakı — Pirallahı", slug: "baki-pirallahi", order: 12 },
-  { name: "Sumqayıt", slug: "sumqayit", order: 13 },
-  { name: "Gəncə", slug: "gence", order: 14 },
-  { name: "Mingəçevir", slug: "mingecevir", order: 15 },
-  { name: "Şirvan", slug: "shirvan", order: 16 },
-  { name: "Lənkəran", slug: "lenkeran", order: 17 },
-  { name: "Naxçıvan", slug: "naxcivan", order: 18 },
+/**
+ * Bütün Azərbaycan şəhər və rayonları (mərkəz qeydiyyatda buradan seçir).
+ * Slug-lar avtomatik yaradılır. Axtarış paneli isə YALNIZ mərkəzi olan
+ * şəhərləri dinamik göstərir (getCitiesWithCenters).
+ */
+const CITY_NAMES: string[] = [
+  // Bakı və rayonları
+  "Bakı",
+  "Bakı — Binəqədi",
+  "Bakı — Qaradağ",
+  "Bakı — Xəzər",
+  "Bakı — Xətai",
+  "Bakı — Yasamal",
+  "Bakı — Nərimanov",
+  "Bakı — Nəsimi",
+  "Bakı — Nizami",
+  "Bakı — Pirallahı",
+  "Bakı — Sabunçu",
+  "Bakı — Səbail",
+  "Bakı — Suraxanı",
+  // Respublika əhəmiyyətli şəhərlər
+  "Sumqayıt",
+  "Gəncə",
+  "Mingəçevir",
+  "Şirvan",
+  "Naftalan",
+  "Yevlax",
+  "Şəki",
+  // Rayonlar (əlifba sırası)
+  "Abşeron",
+  "Ağcabədi",
+  "Ağdam",
+  "Ağdaş",
+  "Ağstafa",
+  "Ağsu",
+  "Astara",
+  "Balakən",
+  "Beyləqan",
+  "Bərdə",
+  "Biləsuvar",
+  "Cəbrayıl",
+  "Cəlilabad",
+  "Daşkəsən",
+  "Füzuli",
+  "Gədəbəy",
+  "Goranboy",
+  "Göyçay",
+  "Göygöl",
+  "Hacıqabul",
+  "İmişli",
+  "İsmayıllı",
+  "Kəlbəcər",
+  "Kürdəmir",
+  "Qax",
+  "Qazax",
+  "Qəbələ",
+  "Qobustan",
+  "Quba",
+  "Qubadlı",
+  "Qusar",
+  "Laçın",
+  "Lənkəran",
+  "Lerik",
+  "Masallı",
+  "Neftçala",
+  "Oğuz",
+  "Saatlı",
+  "Sabirabad",
+  "Salyan",
+  "Samux",
+  "Siyəzən",
+  "Şabran",
+  "Şamaxı",
+  "Şəmkir",
+  "Şuşa",
+  "Tərtər",
+  "Tovuz",
+  "Ucar",
+  "Xaçmaz",
+  "Xızı",
+  "Xocalı",
+  "Xocavənd",
+  "Yardımlı",
+  "Zaqatala",
+  "Zəngilan",
+  "Zərdab",
+  // Naxçıvan MR
+  "Naxçıvan",
+  "Naxçıvan — Babək",
+  "Naxçıvan — Culfa",
+  "Naxçıvan — Kəngərli",
+  "Naxçıvan — Ordubad",
+  "Naxçıvan — Sədərək",
+  "Naxçıvan — Şahbuz",
+  "Naxçıvan — Şərur",
 ];
+
+export const CITIES: { name: string; slug: string; order: number }[] =
+  CITY_NAMES.map((name, i) => ({ name, slug: slugify(name), order: i + 1 }));
 
 /** Exam types used in the doctor referral form. */
 export const EXAM_TYPES: string[] = [
