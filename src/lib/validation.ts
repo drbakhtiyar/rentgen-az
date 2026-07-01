@@ -61,6 +61,8 @@ export const centerProfileSchema = z.object({
   equipment: z.string().trim().max(1000).optional().or(z.literal("")),
   responsiblePerson: z.string().trim().max(120).optional().or(z.literal("")),
   description: z.string().trim().max(2000).optional().or(z.literal("")),
+  lat: z.number().min(-90).max(90).nullable().optional(),
+  lng: z.number().min(-180).max(180).nullable().optional(),
 });
 
 export const appointmentRequestSchema = z.object({

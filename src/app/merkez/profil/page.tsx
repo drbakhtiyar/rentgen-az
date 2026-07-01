@@ -42,6 +42,8 @@ export default async function CenterProfilePage() {
           equipment: center.equipment ?? "",
           responsiblePerson: center.responsiblePerson ?? "",
           description: center.description ?? "",
+          lat: center.lat,
+          lng: center.lng,
         }}
       />
     </DashboardShell>

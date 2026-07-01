@@ -25,6 +25,7 @@ import {
   getCenterReviews,
   getRatingsForCenters,
 } from "@/lib/queries";
+import { CenterMiniMap } from "@/components/map/center-mini-map";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 import { formatPrice, formatDateAz } from "@/lib/utils";
@@ -257,6 +258,16 @@ export default async function CenterDetailPage({
                     <MapPin className="h-4 w-4" /> Xəritədə bax
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
+                )}
+                {center.lat != null && center.lng != null && (
+                  <div className="mt-4">
+                    <CenterMiniMap
+                      lat={center.lat}
+                      lng={center.lng}
+                      name={center.name}
+                      slug={center.slug}
+                    />
+                  </div>
                 )}
               </Card>
 

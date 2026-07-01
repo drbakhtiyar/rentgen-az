@@ -4,6 +4,7 @@ import * as React from "react";
 import { Loader2, CheckCircle2, Building2, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
+import { LocationPicker } from "@/components/map/location-picker";
 import { saveCenterProfileAction } from "@/app/merkez/actions";
 
 type Option = { value: string; label: string };
@@ -20,6 +21,8 @@ export type CenterFormDefaults = {
   equipment?: string;
   responsiblePerson?: string;
   description?: string;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 export function CenterProfileForm({
@@ -32,6 +35,11 @@ export function CenterProfileForm({
   mode: "create" | "edit";
 }) {
   const [pending, startTransition] = React.useTransition();
+  const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(
+    typeof defaults?.lat === "number" && typeof defaults?.lng === "number"
+      ? { lat: defaults.lat, lng: defaults.lng }
+      : null,
+  );
   const [done, setDone] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -54,6 +62,8 @@ export function CenterProfileForm({
         equipment: get("equipment"),
         responsiblePerson: get("responsiblePerson"),
         description: get("description"),
+        lat: coords?.lat ?? null,
+        lng: coords?.lng ?? null,
       });
       if (!res.ok) {
         setError(res.error ?? "Xəta baş verdi");
@@ -135,6 +145,22 @@ export function CenterProfileForm({
         <Field label="Avadanlıq məlumatı" htmlFor="equipment">
           <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder="Məs: CBCT aparatı, panoramik aparat və s." />
         </Field>
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-ink-800">
+            Xəritədə yeriniz{" "}
+            <span className="font-normal text-slate-400">
+              — pasiyentlər «yaxınımdakı mərkəz» ilə sizi tapsın (istəyə bağlı)
+            </span>
+          </p>
+          <LocationPicker
+            lat={defaults?.lat}
+            lng={defaults?.lng}
+            getAddress={() =>
+              (document.getElementById("address") as HTMLInputElement | null)?.value ?? ""
+            }
+            onChange={(lat, lng) => setCoords({ lat, lng })}
+          />
+        </div>
       </FormSection>
 
       <div className="flex items-center justify-end gap-3">

@@ -3,7 +3,7 @@ import { Building2 } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { SearchPanel } from "@/components/search-panel";
-import { CenterCard } from "@/components/centers/center-card";
+import { CentersExplorer } from "@/components/map/centers-explorer";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
@@ -99,11 +99,7 @@ export default async function CentersPage({
           </div>
 
           {centers.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {centers.map((c) => (
-                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
-              ))}
-            </div>
+            <CentersExplorer centers={centers} ratings={ratings} />
           ) : (
             <Card className="p-12 text-center">
               <Building2 className="mx-auto h-12 w-12 text-slate-300" />
