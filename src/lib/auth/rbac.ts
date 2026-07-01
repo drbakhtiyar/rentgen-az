@@ -13,13 +13,26 @@ export const getCurrentUser = cache(async () => {
   const session = await getSessionFromCookies();
   if (!session) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    include: { patientProfile: true, centerProfile: true, doctorProfile: true },
-  });
-
-  if (!user || user.isBlocked) return null;
-  return user;
+  // Retry a couple of times: the (free-tier) database can briefly refuse
+  // connections. This runs in the shared layout, so an unhandled error would
+  // 500 every page — degrade gracefully to "logged out" instead.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        include: { patientProfile: true, centerProfile: true, doctorProfile: true },
+      });
+      if (!user || user.isBlocked) return null;
+      return user;
+    } catch (e) {
+      if (attempt === 2) {
+        console.error("[getCurrentUser] DB unavailable:", (e as Error).message);
+        return null;
+      }
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  return null;
 });
 
 export type CurrentUser = NonNullable<

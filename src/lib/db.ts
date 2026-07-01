@@ -7,12 +7,18 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
-  const adapter = new PrismaPg({ connectionString });
+  // Keep the pool small on serverless: many function instances each holding a
+  // large pool exhausts the (free-tier) database's connection cap. Release idle
+  // connections quickly so other instances can connect.
+  const adapter = new PrismaPg({
+    connectionString,
+    max: 3,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 15_000,
+  });
   return new PrismaClient({ adapter });
 }
 
+// Reuse a single client across hot invocations (and in dev) to avoid leaking pools.
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+globalForPrisma.prisma = prisma;
