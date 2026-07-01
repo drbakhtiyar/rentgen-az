@@ -4,7 +4,10 @@ export const env = {
   databaseUrl: process.env.DATABASE_URL ?? "",
   authSecret: process.env.AUTH_SECRET ?? "dev-insecure-secret-change-me-0000000000",
   otpSecret: process.env.OTP_SECRET ?? "dev-insecure-otp-secret-change-me",
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  // Use `||`/trim so an empty or whitespace-only value (e.g. an unset Vercel
+  // env var that resolves to "") falls back instead of producing `new URL("")`.
+  siteUrl:
+    (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim() || "http://localhost:3000",
   smsProvider: (process.env.SMS_PROVIDER ?? "dev") as
     | "dev"
     | "twilio"
