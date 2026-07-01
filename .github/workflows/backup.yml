@@ -25,12 +25,22 @@ jobs:
         env:
           BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
         run: |
+          set -euo pipefail
+          PG_DUMP=/usr/lib/postgresql/17/bin/pg_dump
+          "$PG_DUMP" --version
           STAMP=$(date -u +'%Y-%m-%d_%H%M')
           FILE="rentgen-az-${STAMP}.sql.gz"
           echo "Creating backup: $FILE"
-          pg_dump "$BACKUP_DATABASE_URL" \
-            --no-owner --no-privileges --clean --if-exists \
-            | gzip > "$FILE"
+          # Dump to a temp file first so a pg_dump failure isn't masked by the pipe.
+          "$PG_DUMP" "$BACKUP_DATABASE_URL" \
+            --no-owner --no-privileges --clean --if-exists > dump.sql
+          gzip -c dump.sql > "$FILE"
+          SIZE=$(stat -c%s "$FILE")
+          echo "Backup size: ${SIZE} bytes"
+          if [ "$SIZE" -lt 1000 ]; then
+            echo "::error::Backup faylı çox kiçikdir (${SIZE} bayt) — dump uğursuz ola bilər."
+            exit 1
+          fi
           ls -lh "$FILE"
           echo "FILE=$FILE" >> "$GITHUB_ENV"
 
