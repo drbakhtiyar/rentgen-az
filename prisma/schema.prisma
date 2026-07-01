@@ -71,6 +71,7 @@ model PatientProfile {
 
   favoriteCenters     CenterProfile[]      @relation("PatientFavorites")
   appointmentRequests AppointmentRequest[]
+  reviews             Review[]
 }
 
 model CenterProfile {
@@ -100,6 +101,7 @@ model CenterProfile {
   appointmentRequests AppointmentRequest[]
   referrals           Referral[]
   favoritedBy         PatientProfile[]     @relation("PatientFavorites")
+  reviews             Review[]
 
   @@index([status])
   @@index([city])
@@ -180,11 +182,29 @@ model AppointmentRequest {
   note          String?
   preferredDate DateTime?
   status        RequestStatus   @default(NEW)
+  completedBy   String? // "CENTER" | "PATIENT" — kim "xidmət alındı" işarələyib
   createdAt     DateTime        @default(now())
 
   @@index([centerId])
   @@index([doctorId])
   @@index([status])
+}
+
+model Review {
+  id        String         @id @default(cuid())
+  centerId  String
+  center    CenterProfile  @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  patientId String
+  patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  rating    Int // 1..5
+  comment   String?
+  verified  Boolean        @default(false) // mərkəz təsdiqləyib (self-declared deyil)
+  hidden    Boolean        @default(false) // admin moderasiyası
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([centerId, patientId])
+  @@index([centerId, hidden])
 }
 
 model DoctorProfile {

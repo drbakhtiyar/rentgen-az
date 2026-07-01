@@ -13,12 +13,21 @@ import {
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
-import { VerifiedBadge } from "@/components/ui/badge";
+import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { AppointmentForm } from "@/components/forms/appointment-form";
+import { Stars, RatingSummary } from "@/components/reviews/stars";
+import { ReviewForm } from "@/components/reviews/review-form";
 import { JsonLd } from "@/components/ui/json-ld";
-import { getCenterBySlug, getApprovedDoctors } from "@/lib/queries";
-import { formatPrice } from "@/lib/utils";
+import {
+  getCenterBySlug,
+  getApprovedDoctors,
+  getCenterReviews,
+  getRatingsForCenters,
+} from "@/lib/queries";
+import { getCurrentUser } from "@/lib/auth/rbac";
+import { prisma } from "@/lib/db";
+import { formatPrice, formatDateAz } from "@/lib/utils";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -58,6 +67,41 @@ export default async function CenterDetailPage({
 
   const doctors = await getApprovedDoctors();
   const svcNames = center.services.map((s) => s.service.name);
+
+  const [reviews, ratingsMap] = await Promise.all([
+    getCenterReviews(center.id),
+    getRatingsForCenters([center.id]),
+  ]);
+  const rating = ratingsMap[center.id] ?? { avg: 0, count: 0 };
+
+  const me = await getCurrentUser();
+  let canReview = false;
+  let existingReview: { rating: number; comment: string | null } | null = null;
+  const isPatient = me?.role === "PATIENT" && !!me.patientProfile;
+  if (isPatient && me?.patientProfile) {
+    try {
+      const completed = await prisma.appointmentRequest.findFirst({
+        where: {
+          patientId: me.patientProfile.id,
+          centerId: center.id,
+          status: "COMPLETED",
+        },
+      });
+      canReview = !!completed;
+      existingReview = await prisma.review.findUnique({
+        where: {
+          centerId_patientId: {
+            centerId: center.id,
+            patientId: me.patientProfile.id,
+          },
+        },
+        select: { rating: true, comment: true },
+      });
+    } catch {
+      canReview = false;
+      existingReview = null;
+    }
+  }
 
   return (
     <>
@@ -101,6 +145,11 @@ export default async function CenterDetailPage({
               <Clock className="h-4 w-4 text-cyan-400" /> {center.workingHours}
             </span>
           )}
+          <RatingSummary
+            avg={rating.avg}
+            count={rating.count}
+            className="[&_.text-ink-900]:text-white [&_.text-slate-400]:text-slate-300"
+          />
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           <CallButton phone={center.phone} />
@@ -209,6 +258,75 @@ export default async function CenterDetailPage({
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 )}
+              </Card>
+
+              {/* Reviews */}
+              <Card className="p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="font-display text-xl font-bold text-ink-900">
+                    Rəylər
+                  </h2>
+                  <RatingSummary avg={rating.avg} count={rating.count} />
+                </div>
+
+                {reviews.length > 0 ? (
+                  <ul className="mt-5 space-y-5">
+                    {reviews.map((r) => {
+                      const displayName =
+                        `${r.patient.firstName} ${
+                          r.patient.lastName ? r.patient.lastName[0] + "." : ""
+                        }`.trim() || "Pasiyent";
+                      return (
+                        <li
+                          key={r.id}
+                          className="border-b border-slate-100 pb-5 last:border-0 last:pb-0"
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Stars value={r.rating} size="sm" />
+                            <span className="text-sm font-semibold text-ink-900">
+                              {displayName}
+                            </span>
+                            {r.verified && (
+                              <Badge tone="green">Təsdiqlənmiş müştəri</Badge>
+                            )}
+                          </div>
+                          {r.comment && (
+                            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                              {r.comment}
+                            </p>
+                          )}
+                          <p className="mt-2 text-xs text-slate-400">
+                            {formatDateAz(r.createdAt)}
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="mt-4 text-sm text-slate-500">
+                    Hələ rəy yoxdur. İlk rəyi siz yazın.
+                  </p>
+                )}
+
+                {canReview ? (
+                  <div className="mt-6 border-t border-slate-100 pt-5">
+                    <h3 className="font-display text-base font-bold text-ink-900">
+                      {existingReview ? "Rəyinizi yeniləyin" : "Rəyinizi yazın"}
+                    </h3>
+                    <div className="mt-3">
+                      <ReviewForm
+                        centerId={center.id}
+                        centerName={center.name}
+                        defaultRating={existingReview?.rating}
+                        defaultComment={existingReview?.comment ?? undefined}
+                      />
+                    </div>
+                  </div>
+                ) : isPatient ? (
+                  <p className="mt-6 border-t border-slate-100 pt-5 text-sm text-slate-500">
+                    Bu mərkəzə yalnız xidmət aldıqdan sonra rəy yaza bilərsiniz.
+                  </p>
+                ) : null}
               </Card>
             </div>
 

@@ -28,6 +28,7 @@ import {
   getPublishedPosts,
   getPlatformStats,
   countApprovedCentersByService,
+  getRatingsForCenters,
 } from "@/lib/queries";
 import { faqJsonLd } from "@/lib/seo";
 import { HOME_FAQ } from "@/content/faq";
@@ -45,6 +46,8 @@ export default async function HomePage() {
     getPlatformStats(),
     countApprovedCentersByService(),
   ]);
+
+  const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
   const featuredServices = SERVICES.filter((s) => s.featured).slice(0, 8);
 
@@ -176,7 +179,7 @@ export default async function HomePage() {
           {centers.length > 0 ? (
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {centers.map((c) => (
-                <CenterCard key={c.id} center={c} />
+                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
               ))}
             </div>
           ) : (

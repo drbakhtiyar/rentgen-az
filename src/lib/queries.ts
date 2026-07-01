@@ -75,6 +75,80 @@ export async function countApprovedCentersByService() {
   }, {} as Record<string, number>);
 }
 
+export type CenterRating = { avg: number; count: number };
+
+/** Average rating + count per center (visible reviews only). */
+export async function getRatingsForCenters(
+  centerIds: string[],
+): Promise<Record<string, CenterRating>> {
+  if (centerIds.length === 0) return {};
+  return safe(async () => {
+    const rows = await prisma.review.groupBy({
+      by: ["centerId"],
+      where: { centerId: { in: centerIds }, hidden: false },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+    const map: Record<string, CenterRating> = {};
+    for (const r of rows) {
+      map[r.centerId] = {
+        avg: Math.round((r._avg.rating ?? 0) * 10) / 10,
+        count: r._count.rating,
+      };
+    }
+    return map;
+  }, {});
+}
+
+export async function getCenterReviews(centerId: string) {
+  return safe(
+    () =>
+      prisma.review.findMany({
+        where: { centerId, hidden: false },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        include: { patient: { select: { firstName: true, lastName: true } } },
+      }),
+    [],
+  );
+}
+
+/** For a patient: centers they can review (a COMPLETED request) + any existing review. */
+export async function getReviewableCentersForPatient(patientId: string) {
+  return safe(
+    async () => {
+      const completed = await prisma.appointmentRequest.findMany({
+        where: { patientId, status: "COMPLETED", centerId: { not: null } },
+        select: { centerId: true, center: { select: { name: true, slug: true } } },
+      });
+      const seen = new Map<string, { id: string; name: string; slug: string }>();
+      for (const c of completed) {
+        if (c.centerId && c.center && !seen.has(c.centerId)) {
+          seen.set(c.centerId, { id: c.centerId, name: c.center.name, slug: c.center.slug });
+        }
+      }
+      const ids = [...seen.keys()];
+      const reviews = ids.length
+        ? await prisma.review.findMany({
+            where: { patientId, centerId: { in: ids } },
+            select: { centerId: true, rating: true, comment: true },
+          })
+        : [];
+      const reviewedBy = new Map(reviews.map((r) => [r.centerId, r]));
+      return [...seen.values()].map((c) => ({
+        ...c,
+        review: reviewedBy.get(c.id) ?? null,
+      }));
+    },
+    [] as {
+      id: string;
+      name: string;
+      slug: string;
+      review: { rating: number; comment: string | null } | null;
+    }[],
+  );
+}
+
 export async function getPublishedPosts(take?: number) {
   return safe(
     () =>

@@ -62,6 +62,22 @@ export async function setDoctorStatusAction(
   }
 }
 
+export async function setReviewHiddenAction(
+  reviewId: string,
+  hidden: boolean,
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    await prisma.review.update({ where: { id: reviewId }, data: { hidden } });
+    await logAction(admin.id, hidden ? "review:hide" : "review:show", "Review", reviewId);
+    revalidatePath("/admin/reyler");
+    revalidatePath("/rentgen-merkezleri");
+    return { ok: true, message: hidden ? "Rəy gizlədildi." : "Rəy göstərildi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 export async function setUserBlockedAction(
   userId: string,
   blocked: boolean,

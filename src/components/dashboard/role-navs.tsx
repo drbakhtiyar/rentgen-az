@@ -10,6 +10,7 @@ import {
   Settings,
   Heart,
   History,
+  Star,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -38,6 +39,7 @@ export const adminNav: NavItem[] = [
   { label: "Müraciətlər", href: "/admin/muracietler", icon: <Inbox /> },
   { label: "Həkim göndərişləri", href: "/admin/gonderisler", icon: <Stethoscope /> },
   { label: "Blog", href: "/admin/blog", icon: <FileText /> },
+  { label: "Rəylər", href: "/admin/reyler", icon: <Star /> },
   { label: "Parametrlər", href: "/admin/parametrler", icon: <Settings /> },
   { label: "Jurnal", href: "/admin/jurnal", icon: <History /> },
 ];

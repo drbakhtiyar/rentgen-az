@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { SERVICES, CITIES, getService } from "@/lib/constants";
-import { getApprovedCenters } from "@/lib/queries";
+import { getApprovedCenters, getRatingsForCenters } from "@/lib/queries";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 120;
@@ -51,6 +51,7 @@ export default async function CentersPage({
     city: sp.city,
     service: sp.service,
   });
+  const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
   const svc = sp.service ? getService(sp.service) : null;
   const activeFilters = [
@@ -100,7 +101,7 @@ export default async function CentersPage({
           {centers.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {centers.map((c) => (
-                <CenterCard key={c.id} center={c} />
+                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
               ))}
             </div>
           ) : (

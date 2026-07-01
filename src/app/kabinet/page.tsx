@@ -5,8 +5,11 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { patientNav } from "@/components/dashboard/role-navs";
 import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { ButtonLink } from "@/components/ui/button";
+import { MarkReceivedButton } from "@/components/reviews/mark-received-button";
+import { ReviewForm } from "@/components/reviews/review-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { getReviewableCentersForPatient } from "@/lib/queries";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
@@ -34,6 +37,10 @@ export default async function PatientDashboardPage() {
     take: 10,
     include: { center: { select: { name: true, slug: true } } },
   });
+
+  const reviewable = profile
+    ? await getReviewableCentersForPatient(profile.id)
+    : [];
 
   const name =
     [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Pasiyent";
@@ -86,7 +93,14 @@ export default async function PatientDashboardPage() {
                         {formatDateAz(r.createdAt)}
                       </p>
                     </div>
-                    <StatusBadge status={r.status} />
+                    <div className="flex items-center gap-2">
+                      {r.center &&
+                        r.status !== "COMPLETED" &&
+                        r.status !== "CANCELLED" && (
+                          <MarkReceivedButton requestId={r.id} />
+                        )}
+                      <StatusBadge status={r.status} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -105,6 +119,39 @@ export default async function PatientDashboardPage() {
         </div>
 
         <div className="space-y-5">
+          {reviewable.length > 0 && (
+            <Panel title="Rəy yaza biləcəyiniz mərkəzlər">
+              <div className="space-y-5">
+                {reviewable.map((c) => (
+                  <div key={c.id} className="rounded-xl border border-slate-100 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Link
+                        href={`/rentgen-merkezleri/${c.slug}`}
+                        className="font-semibold text-ink-900 hover:text-brand-600"
+                      >
+                        {c.name}
+                      </Link>
+                      {c.review && (
+                        <span className="text-xs text-slate-400">
+                          Rəyinizi yeniləyə bilərsiniz
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <ReviewForm
+                        centerId={c.id}
+                        centerName={c.name}
+                        defaultRating={c.review?.rating}
+                        defaultComment={c.review?.comment ?? undefined}
+                        compact
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          )}
+
           <Panel title="Tez keçidlər">
             <div className="space-y-2">
               <QuickLink href="/rentgen-merkezleri" label="Mərkəz axtar" icon={<Search />} />

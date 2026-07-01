@@ -3,9 +3,16 @@ import { MapPin, Clock, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
+import { RatingSummary } from "@/components/reviews/stars";
 import type { CenterWithServices } from "@/lib/queries";
 
-export function CenterCard({ center }: { center: CenterWithServices }) {
+export function CenterCard({
+  center,
+  rating,
+}: {
+  center: CenterWithServices;
+  rating?: { avg: number; count: number };
+}) {
   const services = center.services.slice(0, 3);
   const extra = center.services.length - services.length;
 
@@ -40,6 +47,12 @@ export function CenterCard({ center }: { center: CenterWithServices }) {
             {center.name}
           </h3>
         </Link>
+
+        {rating && (
+          <div className="mt-2">
+            <RatingSummary avg={rating.avg} count={rating.count} size="sm" />
+          </div>
+        )}
 
         <div className="mt-2 space-y-1.5 text-sm text-slate-600">
           {(center.city || center.address) && (

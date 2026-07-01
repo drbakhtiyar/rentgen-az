@@ -11,7 +11,7 @@ import { CenterCard } from "@/components/centers/center-card";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { JsonLd } from "@/components/ui/json-ld";
 import { SERVICES, getService } from "@/lib/constants";
-import { getCentersForService } from "@/lib/queries";
+import { getCentersForService, getRatingsForCenters } from "@/lib/queries";
 import { getServiceContent } from "@/content/services";
 import {
   buildMetadata,
@@ -54,6 +54,7 @@ export default async function ServiceDetailPage({
 
   const content = getServiceContent(slug, service.name);
   const centers = await getCentersForService(slug, 9);
+  const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const related = SERVICES.filter((s) => s.slug !== slug && s.category === service.category).slice(0, 4);
 
   return (
@@ -171,7 +172,7 @@ export default async function ServiceDetailPage({
           {centers.length > 0 ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {centers.map((c) => (
-                <CenterCard key={c.id} center={c} />
+                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
               ))}
             </div>
           ) : (

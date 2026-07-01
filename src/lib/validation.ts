@@ -102,6 +102,12 @@ export const referralSchema = z.object({
   centerId: z.string().trim().min(1).optional().or(z.literal("")),
 });
 
+export const reviewSchema = z.object({
+  centerId: z.string().trim().min(1, "Mərkəz seçilməyib"),
+  rating: z.coerce.number().int().min(1, "Qiymət seçin").max(5),
+  comment: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+
 export const blogPostSchema = z.object({
   slug: z.string().trim().min(2).max(160),
   title: z.string().trim().min(2).max(200),

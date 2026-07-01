@@ -150,7 +150,11 @@ export async function updateRequestStatusAction(
 
     await prisma.appointmentRequest.update({
       where: { id: requestId },
-      data: { status },
+      data: {
+        status,
+        // Center confirming completion → verified review eligibility.
+        ...(status === "COMPLETED" ? { completedBy: "CENTER" } : {}),
+      },
     });
     revalidatePath("/merkez");
     return { ok: true };
