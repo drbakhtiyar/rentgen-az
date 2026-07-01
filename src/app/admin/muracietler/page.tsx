@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inbox } from "lucide-react";
+import { Inbox, User, Building2, Stethoscope, ScanLine } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
+import { Badge } from "@/components/ui/badge";
 import { RequestStatusSelectAdmin } from "@/components/admin/controls";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz } from "@/lib/utils";
 import { formatPhoneDisplay, phoneToInternational } from "@/lib/phone";
+import { getService } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +23,10 @@ export const metadata: Metadata = buildMetadata({
 async function getRequests() {
   try {
     return await prisma.appointmentRequest.findMany({
-      include: { center: { select: { name: true, slug: true } } },
+      include: {
+        center: { select: { name: true, slug: true } },
+        doctor: { select: { firstName: true, lastName: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 200,
     });
@@ -33,51 +38,85 @@ async function getRequests() {
 export default async function AdminRequestsPage() {
   const admin = await requireRole("ADMIN", "/admin/muracietler");
   const requests = await getRequests();
+  const newCount = requests.filter((r) => r.status === "NEW").length;
 
   return (
     <AdminShell title="Müraciətlər" userName={admin.phone}>
-      <Panel title="Müraciətlər">
+      <Panel
+        title={`Pasiyent müraciətləri${newCount ? ` — ${newCount} yeni` : ""}`}
+      >
         {requests.length > 0 ? (
           <div className="space-y-3">
-            {requests.map((r) => (
-              <div
-                key={r.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-4"
-              >
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold text-ink-900">{r.name}</p>
-                    <StatusBadge status={r.status} />
+            {requests.map((r) => {
+              const service = r.serviceSlug ? getService(r.serviceSlug) : null;
+              const doctorName = r.doctor
+                ? [r.doctor.firstName, r.doctor.lastName].filter(Boolean).join(" ")
+                : null;
+              return (
+                <div
+                  key={r.id}
+                  className="rounded-xl border border-slate-100 p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Badge tone="brand">Müayinə müraciəti</Badge>
+                      <StatusBadge status={r.status} />
+                    </div>
+                    <RequestStatusSelectAdmin id={r.id} status={r.status} />
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">
-                    <a
-                      href={`tel:+${phoneToInternational(r.phone)}`}
-                      className="hover:text-brand-600"
-                    >
-                      {formatPhoneDisplay(r.phone)}
-                    </a>
-                    {" · "}
-                    {r.center?.slug ? (
-                      <Link
-                        href={`/rentgen-merkezleri/${r.center.slug}`}
-                        className="hover:text-brand-600"
+
+                  <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                    <Row icon={<User />} label="Pasiyent">
+                      <span className="font-medium text-ink-900">{r.name}</span>{" "}
+                      <a
+                        href={`tel:+${phoneToInternational(r.phone)}`}
+                        className="text-slate-500 hover:text-brand-600"
                       >
-                        {r.center.name}
-                      </Link>
-                    ) : (
-                      "Ümumi"
-                    )}
-                    {r.serviceSlug ? ` · ${r.serviceSlug}` : ""}
-                    {" · "}
+                        {formatPhoneDisplay(r.phone)}
+                      </a>
+                      {r.patientId ? (
+                        <Badge tone="green" className="ml-2">
+                          Qeydiyyatlı
+                        </Badge>
+                      ) : (
+                        <Badge tone="slate" className="ml-2">
+                          Qonaq
+                        </Badge>
+                      )}
+                    </Row>
+                    <Row icon={<Building2 />} label="Mərkəz">
+                      {r.center?.slug ? (
+                        <Link
+                          href={`/rentgen-merkezleri/${r.center.slug}`}
+                          className="font-medium text-ink-900 hover:text-brand-600"
+                        >
+                          {r.center.name}
+                        </Link>
+                      ) : (
+                        <span className="text-slate-400">
+                          Seçilməyib (ümumi müraciət)
+                        </span>
+                      )}
+                    </Row>
+                    <Row icon={<ScanLine />} label="Xidmət">
+                      {service ? service.name : r.serviceSlug || <span className="text-slate-400">—</span>}
+                    </Row>
+                    <Row icon={<Stethoscope />} label="Yönləndirən həkim">
+                      {doctorName || <span className="text-slate-400">—</span>}
+                    </Row>
+                  </dl>
+
+                  {r.note && (
+                    <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                      {r.note}
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-slate-400">
                     {formatDateAz(r.createdAt)}
                   </p>
-                  {r.note && (
-                    <p className="mt-1 text-sm text-slate-600">{r.note}</p>
-                  )}
                 </div>
-                <RequestStatusSelectAdmin id={r.id} status={r.status} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <EmptyState
@@ -88,5 +127,25 @@ export default async function AdminRequestsPage() {
         )}
       </Panel>
     </AdminShell>
+  );
+}
+
+function Row({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="mt-0.5 text-slate-400 [&>svg]:h-4 [&>svg]:w-4">{icon}</span>
+      <div className="min-w-0">
+        <dt className="text-xs text-slate-400">{label}</dt>
+        <dd className="text-ink-800">{children}</dd>
+      </div>
+    </div>
   );
 }

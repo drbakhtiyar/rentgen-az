@@ -14,10 +14,14 @@ export async function AdminShell({
 }) {
   let pendingCenters = 0;
   let pendingDoctors = 0;
+  let newRequests = 0;
+  let newReferrals = 0;
   try {
-    [pendingCenters, pendingDoctors] = await Promise.all([
+    [pendingCenters, pendingDoctors, newRequests, newReferrals] = await Promise.all([
       prisma.centerProfile.count({ where: { status: "PENDING" } }),
       prisma.doctorProfile.count({ where: { status: "PENDING" } }),
+      prisma.appointmentRequest.count({ where: { status: "NEW" } }),
+      prisma.referral.count({ where: { status: "NEW" } }),
     ]);
   } catch {
     /* keep zeros */
@@ -32,6 +36,8 @@ export async function AdminShell({
       navBadges={{
         "/admin/merkezler": pendingCenters,
         "/admin/hekimler": pendingDoctors,
+        "/admin/muracietler": newRequests,
+        "/admin/gonderisler": newReferrals,
       }}
     >
       {children}
