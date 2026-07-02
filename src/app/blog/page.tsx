@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ArrowRight, Calendar, Tag } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { Card } from "@/components/ui/card";
@@ -61,8 +62,25 @@ export default async function BlogPage() {
               {posts.map((post) => (
                 <Card
                   key={post.id}
-                  className="group flex flex-col p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
+                  className="group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
                 >
+                  {post.coverImage && (
+                    <a
+                      href={`/blog/${post.slug}`}
+                      className="relative block aspect-[3/2] w-full overflow-hidden bg-slate-100"
+                      tabIndex={-1}
+                      aria-hidden
+                    >
+                      <Image
+                        src={post.coverImage}
+                        alt={post.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      />
+                    </a>
+                  )}
+                  <div className="flex flex-1 flex-col p-6">
                   {post.publishedAt && (
                     <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                       <Calendar className="h-3.5 w-3.5" />
@@ -96,6 +114,7 @@ export default async function BlogPage() {
                     Oxu
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </a>
+                  </div>
                 </Card>
               ))}
             </div>
