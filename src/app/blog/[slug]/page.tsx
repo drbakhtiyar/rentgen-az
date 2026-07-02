@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { marked } from "marked";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
@@ -87,6 +88,18 @@ export default async function BlogPostPage({
       <Section>
         <Container>
           <article className="mx-auto max-w-3xl">
+            {post.coverImage && (
+              <div className="relative mb-10 aspect-[3/2] w-full overflow-hidden rounded-2xl bg-slate-100">
+                <Image
+                  src={post.coverImage}
+                  alt={post.title}
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, 768px"
+                  className="object-cover"
+                />
+              </div>
+            )}
             <div
               className="prose-rx"
               dangerouslySetInnerHTML={{ __html: html }}

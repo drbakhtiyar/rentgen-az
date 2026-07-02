@@ -1,0 +1,52 @@
+name: Generate blog cover images
+
+# REN-21: bloq yazıları üçün AI cover şəkilləri (OpenAI Images → Vercel Blob → DB).
+# Açar sırası: OPENAI_API_KEY repo secret-i → yoxdursa Supabase Vault (openai_api_key).
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Ən yeni N yazı (0 = cover-i olmayan hamısı)"
+        default: "0"
+      quality:
+        description: "Şəkil keyfiyyəti (low | medium | high)"
+        default: "medium"
+      model:
+        description: "Şəkil modeli"
+        default: "gpt-image-2"
+      overwrite:
+        description: "Mövcud cover-ləri də yenidən yarat"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Yalnız plan göstər, şəkil yaratma"
+        type: boolean
+        default: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Skriptə yalnız pg və @vercel/blob lazımdır — tam npm ci-dən qat-qat sürətli.
+      - name: Install script dependencies
+        run: npm install --no-save --ignore-scripts pg @vercel/blob
+
+      - name: Generate covers
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LIMIT: ${{ inputs.limit }}
+          IMAGE_QUALITY: ${{ inputs.quality }}
+          IMAGE_MODEL: ${{ inputs.model }}
+          OVERWRITE: ${{ inputs.overwrite }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: node scripts/generate-blog-covers.mjs
