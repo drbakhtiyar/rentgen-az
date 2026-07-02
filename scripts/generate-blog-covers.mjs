@@ -127,6 +127,7 @@ async function resolveOpenAiKey() {
       console.log(`OpenAI açarı Supabase Vault-dan götürüldü (ad: ${rows[0].name}).`);
       return rows[0].decrypted_secret.trim();
     }
+    await diagnoseMissingKey();
     fail(
       "Supabase Vault-da openai açarı tapılmadı. Vault-a 'openai_api_key' adlı secret əlavə edin, " +
         "yaxud GitHub repo secret kimi OPENAI_API_KEY təyin edin.",
@@ -141,6 +142,35 @@ async function resolveOpenAiKey() {
     }
     throw err;
   }
+}
+
+/** Açar tapılmayanda harada ola biləcəyini araşdırır (dəyərləri çap etmir). */
+async function diagnoseMissingKey() {
+  console.log("\nDiaqnostika — açar bazanın harasındadır?");
+  const probes = [
+    ["Vault-dakı bütün secret adları", `SELECT name FROM vault.secrets ORDER BY created_at DESC LIMIT 20`],
+    [
+      "Adında 'secret/setting/config' olan cədvəllər",
+      `SELECT table_schema || '.' || table_name AS t FROM information_schema.tables
+        WHERE table_name ~* 'secret|setting|config|env' AND table_schema NOT IN ('pg_catalog','information_schema')`,
+    ],
+    [
+      "Adında 'openai/api_key' olan sütunlar",
+      `SELECT table_schema || '.' || table_name || '.' || column_name AS c FROM information_schema.columns
+        WHERE column_name ~* 'openai|api_key' AND table_schema NOT IN ('pg_catalog','information_schema')`,
+    ],
+  ];
+  for (const [label, sql] of probes) {
+    try {
+      const { rows } = await client.query(sql);
+      console.log(`  ${label}: ${rows.length ? rows.map((r) => Object.values(r)[0]).join(", ") : "(boş)"}`);
+    } catch (err) {
+      console.log(`  ${label}: sorğu alınmadı (${err.message})`);
+    }
+  }
+  console.log(
+    "Qeyd: açar Supabase-də Edge Functions → Secrets bölməsinə əlavə olunubsa, SQL ilə oxumaq mümkün deyil.\n",
+  );
 }
 
 function buildPrompt(post) {
