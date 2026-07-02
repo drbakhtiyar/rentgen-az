@@ -48,8 +48,6 @@ const client = new pg.Client({
 await client.connect();
 
 try {
-  const openaiKey = await resolveOpenAiKey();
-
   const where = overwrite
     ? `published = true`
     : `published = true AND ("coverImage" IS NULL OR "coverImage" = '')`;
@@ -70,6 +68,8 @@ try {
         (rows[0].total === 0 ? " — baza seed edilməyib?" : " — hamısının cover-i mövcuddur."),
     );
   }
+
+  const openaiKey = posts.length > 0 && !dryRun ? await resolveOpenAiKey() : null;
 
   let ok = 0;
   const failures = [];
