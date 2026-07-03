@@ -23,6 +23,7 @@ async function main() {
         icon: s.icon,
         category: s.category,
         order: s.order,
+        featured: s.featured,
         isActive: true,
       },
       update: {
@@ -32,6 +33,7 @@ async function main() {
         icon: s.icon,
         category: s.category,
         order: s.order,
+        featured: s.featured,
       },
     });
   }

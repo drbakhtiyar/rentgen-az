@@ -75,6 +75,28 @@ export async function countApprovedCentersByService() {
   }, {} as Record<string, number>);
 }
 
+export type CatalogService = Prisma.ServiceGetPayload<object>;
+
+/** All active services, ordered — the single source of truth for the catalog. */
+export async function getActiveServices() {
+  return safe(
+    () =>
+      prisma.service.findMany({
+        where: { isActive: true },
+        orderBy: { order: "asc" },
+      }),
+    [] as CatalogService[],
+  );
+}
+
+/** A single active service by slug (null if missing or deactivated). */
+export async function getServiceBySlug(slug: string) {
+  return safe(
+    () => prisma.service.findFirst({ where: { slug, isActive: true } }),
+    null,
+  );
+}
+
 export type CenterRating = { avg: number; count: number };
 
 /** Average rating + count per center (visible reviews only). */

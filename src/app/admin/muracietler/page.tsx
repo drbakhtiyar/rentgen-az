@@ -9,7 +9,6 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz } from "@/lib/utils";
 import { formatPhoneDisplay, phoneToInternational } from "@/lib/phone";
-import { getService } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +39,15 @@ export default async function AdminRequestsPage() {
   const requests = await getRequests();
   const newCount = requests.filter((r) => r.status === "NEW").length;
 
+  // Resolve service slug → name from the DB catalog.
+  const serviceNames = new Map<string, string>();
+  try {
+    const services = await prisma.service.findMany({ select: { slug: true, name: true } });
+    for (const s of services) serviceNames.set(s.slug, s.name);
+  } catch {
+    /* fall back to raw slug */
+  }
+
   return (
     <AdminShell title="Müraciətlər" userName={admin.phone}>
       <Panel
@@ -48,7 +56,9 @@ export default async function AdminRequestsPage() {
         {requests.length > 0 ? (
           <div className="space-y-3">
             {requests.map((r) => {
-              const service = r.serviceSlug ? getService(r.serviceSlug) : null;
+              const serviceName = r.serviceSlug
+                ? serviceNames.get(r.serviceSlug) ?? null
+                : null;
               const doctorName = r.doctor
                 ? [r.doctor.firstName, r.doctor.lastName].filter(Boolean).join(" ")
                 : null;
@@ -99,7 +109,7 @@ export default async function AdminRequestsPage() {
                       )}
                     </Row>
                     <Row icon={<ScanLine />} label="Xidmət">
-                      {service ? service.name : r.serviceSlug || <span className="text-slate-400">—</span>}
+                      {serviceName ?? r.serviceSlug ?? <span className="text-slate-400">—</span>}
                     </Row>
                     <Row icon={<Stethoscope />} label="Yönləndirən həkim">
                       {doctorName || <span className="text-slate-400">—</span>}

@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { ScanLine, Phone, Mail, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { SERVICES } from "@/lib/constants";
-
-const footerServices = SERVICES.filter((s) => s.featured).slice(0, 6);
+import { getActiveServices } from "@/lib/queries";
 
 const cols = [
   {
@@ -28,8 +26,11 @@ const cols = [
   },
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
   const year = 2026;
+  const footerServices = (await getActiveServices())
+    .filter((s) => s.featured)
+    .slice(0, 6);
   return (
     <footer className="relative mt-auto overflow-hidden bg-ink-950 text-slate-300">
       <div className="pointer-events-none absolute inset-0 bg-grid-dark opacity-40" />
@@ -88,7 +89,7 @@ export function SiteFooter() {
                     href={`/xidmetler/${s.slug}`}
                     className="text-sm text-slate-400 transition-colors hover:text-white"
                   >
-                    {s.shortName}
+                    {s.shortName ?? s.name}
                   </Link>
                 </li>
               ))}

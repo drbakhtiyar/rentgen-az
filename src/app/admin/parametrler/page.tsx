@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Panel, EmptyState } from "@/components/dashboard/widgets";
-import { ServiceIcon } from "@/components/ui/service-icon";
 import { ActiveToggle, SeoSettingForm } from "@/components/admin/settings-controls";
+import { ServiceManager } from "@/components/admin/service-manager";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { buildMetadata } from "@/lib/seo";
@@ -35,26 +35,7 @@ export default async function AdminSettingsPage() {
     <AdminShell title="Parametrlər" userName={admin.phone}>
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel title={`Xidmətlər (${services.length})`}>
-          {services.length > 0 ? (
-            <div className="space-y-2">
-              {services.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-3"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                      <ServiceIcon name={s.icon} className="h-4 w-4" />
-                    </span>
-                    <span className="text-sm font-medium text-ink-900">{s.name}</span>
-                  </span>
-                  <ActiveToggle id={s.id} kind="service" active={s.isActive} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="Xidmət kataloqu boşdur" description="Seed skriptini işə salın." />
-          )}
+          <ServiceManager services={services} />
         </Panel>
 
         <Panel title={`Şəhərlər / rayonlar (${cities.length})`}>

@@ -5,7 +5,13 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
-import { blogPostSchema, centerProfileSchema, doctorProfileSchema } from "@/lib/validation";
+import {
+  blogPostSchema,
+  centerProfileSchema,
+  doctorProfileSchema,
+  serviceFormSchema,
+} from "@/lib/validation";
+import { withAutoFill } from "@/lib/services";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
   CenterStatus,
@@ -318,14 +324,94 @@ export async function deleteBlogPostAction(id: string): Promise<AdminResult> {
   }
 }
 
+// Revalidate everywhere the service catalog is shown publicly.
+function revalidateServiceCatalog(slug?: string) {
+  revalidatePath("/admin/parametrler");
+  revalidatePath("/");
+  revalidatePath("/xidmetler");
+  revalidatePath("/rentgen-merkezleri");
+  revalidatePath("/elaqe");
+  if (slug) revalidatePath(`/xidmetler/${slug}`);
+}
+
+async function uniqueServiceSlug(base: string, excludeId?: string): Promise<string> {
+  const root = slugify(base) || "xidmet";
+  let slug = root;
+  let i = 1;
+  while (true) {
+    const existing = await prisma.service.findUnique({ where: { slug } });
+    if (!existing || existing.id === excludeId) return slug;
+    i += 1;
+    slug = `${root}-${i}`;
+  }
+}
+
+export async function saveServiceAction(input: {
+  id?: string;
+  name: string;
+  shortName?: string;
+  description?: string;
+  iconUrl?: string;
+  category?: string;
+  order?: number;
+  featured?: boolean;
+}): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  const parsed = serviceFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
+  }
+  const f = withAutoFill(parsed.data);
+  const data = {
+    name: f.name,
+    shortName: f.shortName,
+    description: f.description,
+    icon: f.icon,
+    iconUrl: f.iconUrl,
+    category: f.category,
+    order: f.order,
+    featured: f.featured,
+  };
+
+  try {
+    let id = input.id;
+    let slug: string;
+    if (input.id) {
+      // Preserve the existing slug so links / SEO stay stable.
+      const existing = await prisma.service.findUnique({
+        where: { id: input.id },
+        select: { slug: true },
+      });
+      if (!existing) return { ok: false, error: "Xidmət tapılmadı." };
+      slug = existing.slug;
+      await prisma.service.update({ where: { id: input.id }, data });
+    } else {
+      slug = await uniqueServiceSlug(f.slug);
+      const created = await prisma.service.create({
+        data: { ...data, slug, isActive: true },
+      });
+      id = created.id;
+    }
+    await logAction(admin.id, input.id ? "service:update" : "service:create", "Service", id);
+    revalidateServiceCatalog(slug);
+    return { ok: true, id, message: "Xidmət yadda saxlanıldı." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 export async function toggleServiceActiveAction(
   serviceId: string,
   isActive: boolean,
 ): Promise<AdminResult> {
   await requireRole("ADMIN");
   try {
-    await prisma.service.update({ where: { id: serviceId }, data: { isActive } });
-    revalidatePath("/admin/parametrler");
+    const svc = await prisma.service.update({
+      where: { id: serviceId },
+      data: { isActive },
+      select: { slug: true },
+    });
+    revalidateServiceCatalog(svc.slug);
     return { ok: true };
   } catch {
     return { ok: false, error: "Texniki xəta." };

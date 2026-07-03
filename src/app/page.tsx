@@ -24,8 +24,8 @@ import { HeroVisual } from "@/components/hero-visual";
 import { CenterCard } from "@/components/centers/center-card";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES } from "@/lib/constants";
 import {
+  getActiveServices,
   getFeaturedCenters,
   getPublishedPosts,
   getPlatformStats,
@@ -39,21 +39,21 @@ import { formatDateAz } from "@/lib/utils";
 
 export const revalidate = 300;
 
-const serviceOptions = SERVICES.map((s) => ({ value: s.slug, label: s.name }));
-
 export default async function HomePage() {
-  const [centers, posts, stats, counts, searchCities] = await Promise.all([
+  const [centers, posts, stats, counts, searchCities, allServices] = await Promise.all([
     getFeaturedCenters(6),
     getPublishedPosts(3),
     getPlatformStats(),
     countApprovedCentersByService(),
     getCitiesWithCenters(),
+    getActiveServices(),
   ]);
   const cityOptions = searchCities.map((c) => ({ value: c, label: c }));
+  const serviceOptions = allServices.map((s) => ({ value: s.slug, label: s.name }));
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
-  const featuredServices = SERVICES.filter((s) => s.featured).slice(0, 8);
+  const featuredServices = allServices.filter((s) => s.featured).slice(0, 8);
 
   return (
     <>
@@ -117,7 +117,7 @@ export default async function HomePage() {
             <Stat value={`${stats.approvedCenters}`} label="Təsdiqlənmiş mərkəz" icon={<Building2 className="h-5 w-5" />} />
             <Stat value={`${stats.doctors}`} label="Qeydiyyatlı həkim" icon={<Stethoscope className="h-5 w-5" />} />
             <Stat value={`${stats.patients}`} label="Qeydiyyatlı pasiyent" icon={<Users className="h-5 w-5" />} />
-            <Stat value={`${SERVICES.length}`} label="Xidmət növü" icon={<ScanLine className="h-5 w-5" />} />
+            <Stat value={`${allServices.length}`} label="Xidmət növü" icon={<ScanLine className="h-5 w-5" />} />
             <Stat value={`${stats.cities}`} label="Əhatə olunan rayon" icon={<MapPin className="h-5 w-5" />} />
           </div>
         </Container>
@@ -136,7 +136,7 @@ export default async function HomePage() {
               <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
                 <Card className="group h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-glow)]">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                    <ServiceIcon name={s.icon} className="h-6 w-6" />
+                    <ServiceIcon name={s.icon} url={s.iconUrl} className="h-6 w-6" />
                   </div>
                   <h3 className="font-display mt-4 text-base font-bold text-ink-900">
                     {s.name}

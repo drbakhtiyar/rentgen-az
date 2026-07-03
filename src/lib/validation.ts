@@ -110,6 +110,17 @@ export const reviewSchema = z.object({
   comment: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
+export const serviceFormSchema = z.object({
+  name: z.string().trim().min(2, "Xidmət adı ən azı 2 hərf olmalıdır").max(120),
+  shortName: z.string().trim().max(60).optional().or(z.literal("")),
+  description: z.string().trim().max(1000).optional().or(z.literal("")),
+  icon: z.string().trim().max(60).optional().or(z.literal("")),
+  iconUrl: z.string().trim().max(500).optional().or(z.literal("")),
+  category: z.string().trim().max(60).optional().or(z.literal("")),
+  order: z.coerce.number().int().min(0).max(9999).optional(),
+  featured: z.boolean().optional(),
+});
+
 export const blogPostSchema = z.object({
   slug: z.string().trim().min(2).max(160),
   title: z.string().trim().min(2).max(200),

@@ -7,17 +7,16 @@ import { CentersExplorer } from "@/components/map/centers-explorer";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES, getService } from "@/lib/constants";
 import {
   getApprovedCenters,
   getRatingsForCenters,
   getCitiesWithCenters,
+  getActiveServices,
+  getServiceBySlug,
 } from "@/lib/queries";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 120;
-
-const serviceOptions = SERVICES.map((s) => ({ value: s.slug, label: s.name }));
 
 export async function generateMetadata({
   searchParams,
@@ -25,7 +24,7 @@ export async function generateMetadata({
   searchParams: Promise<{ q?: string; city?: string; service?: string }>;
 }): Promise<Metadata> {
   const sp = await searchParams;
-  const svc = sp.service ? getService(sp.service) : null;
+  const svc = sp.service ? await getServiceBySlug(sp.service) : null;
   const titleParts = ["Rentgen mərkəzləri"];
   if (svc) titleParts.unshift(svc.name);
   if (sp.city) titleParts.push(sp.city);
@@ -59,8 +58,12 @@ export default async function CentersPage({
     value: c,
     label: c,
   }));
+  const serviceOptions = (await getActiveServices()).map((s) => ({
+    value: s.slug,
+    label: s.name,
+  }));
 
-  const svc = sp.service ? getService(sp.service) : null;
+  const svc = sp.service ? await getServiceBySlug(sp.service) : null;
   const activeFilters = [
     svc?.name,
     sp.city,

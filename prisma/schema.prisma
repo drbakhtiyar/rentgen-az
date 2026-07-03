@@ -113,9 +113,11 @@ model Service {
   name        String
   shortName   String?
   description String?
-  icon        String? // lucide icon adı
+  icon        String? // lucide icon adı (yüklənmiş ikon yoxdursa ehtiyat)
+  iconUrl     String? // admin tərəfindən yüklənmiş xüsusi ikon (şəkil URL)
   category    String?
   order       Int     @default(0)
+  featured    Boolean @default(false) // ana səhifə/footer-də vurğulanır
   isActive    Boolean @default(true)
 
   centerServices CenterService[]
