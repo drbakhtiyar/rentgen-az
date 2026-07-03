@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2, Download } from "lucide-react";
+import { Building2, Download, Pencil } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { CenterStatusControls, BlockToggle } from "@/components/admin/controls";
@@ -150,6 +150,12 @@ export default async function AdminCentersPage({
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`/admin/merkezler/${c.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Redaktə
+                    </Link>
                     <CenterStatusControls centerId={c.id} status={c.status} />
                     <BlockToggle userId={c.user.id} blocked={c.user.isBlocked} />
                   </div>

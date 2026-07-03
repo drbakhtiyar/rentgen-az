@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
-import { blogPostSchema } from "@/lib/validation";
+import { blogPostSchema, centerProfileSchema, doctorProfileSchema } from "@/lib/validation";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
   CenterStatus,
@@ -57,6 +58,108 @@ export async function setDoctorStatusAction(
     revalidatePath("/admin/hekimler");
     revalidatePath("/admin");
     return { ok: true, message: "Status yeniləndi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+// -------------------- Admin edit: center & doctor --------------------
+
+export async function adminUpdateCenterAction(
+  centerId: string,
+  input: {
+    name: string;
+    phone: string;
+    whatsapp?: string;
+    address?: string;
+    city: string;
+    district?: string;
+    mapsUrl?: string;
+    workingHours?: string;
+    equipment?: string;
+    responsiblePerson?: string;
+    description?: string;
+    lat?: number | null;
+    lng?: number | null;
+  },
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  const parsed = centerProfileSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
+  }
+  const d = parsed.data;
+  try {
+    // slug is intentionally left unchanged to preserve existing links/SEO.
+    const center = await prisma.centerProfile.update({
+      where: { id: centerId },
+      data: {
+        name: d.name,
+        phone: normalizePhone(d.phone) ?? d.phone,
+        whatsapp: d.whatsapp ? normalizePhone(d.whatsapp) ?? d.whatsapp : null,
+        address: d.address || null,
+        city: d.city,
+        district: d.district || null,
+        mapsUrl: d.mapsUrl || null,
+        workingHours: d.workingHours || null,
+        equipment: d.equipment || null,
+        responsiblePerson: d.responsiblePerson || null,
+        description: d.description || null,
+        lat: d.lat ?? null,
+        lng: d.lng ?? null,
+      },
+      select: { slug: true },
+    });
+    await logAction(admin.id, "center:edit", "CenterProfile", centerId);
+    revalidatePath("/admin/merkezler");
+    revalidatePath(`/admin/merkezler/${centerId}`);
+    revalidatePath(`/rentgen-merkezleri/${center.slug}`);
+    revalidatePath("/rentgen-merkezleri");
+    return { ok: true, message: "Mərkəz məlumatları yeniləndi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+export async function adminUpdateDoctorAction(
+  doctorId: string,
+  input: {
+    firstName: string;
+    lastName: string;
+    clinic?: string;
+    specializations?: string[];
+    city?: string;
+    instagram?: string;
+    website?: string;
+    diplomaUrl?: string;
+    certificateUrl?: string;
+  },
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  const parsed = doctorProfileSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
+  }
+  const d = parsed.data;
+  try {
+    await prisma.doctorProfile.update({
+      where: { id: doctorId },
+      data: {
+        firstName: d.firstName,
+        lastName: d.lastName,
+        clinic: d.clinic || null,
+        specializations: d.specializations ?? [],
+        city: d.city || null,
+        instagram: d.instagram || null,
+        website: d.website || null,
+        diplomaUrl: d.diplomaUrl || null,
+        certificateUrl: d.certificateUrl || null,
+      },
+    });
+    await logAction(admin.id, "doctor:edit", "DoctorProfile", doctorId);
+    revalidatePath("/admin/hekimler");
+    revalidatePath(`/admin/hekimler/${doctorId}`);
+    return { ok: true, message: "Həkim məlumatları yeniləndi." };
   } catch {
     return { ok: false, error: "Texniki xəta." };
   }

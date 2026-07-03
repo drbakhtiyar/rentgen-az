@@ -25,14 +25,33 @@ export type CenterFormDefaults = {
   lng?: number | null;
 };
 
+type SaveInput = {
+  name: string;
+  phone: string;
+  whatsapp: string;
+  address: string;
+  city: string;
+  district: string;
+  mapsUrl: string;
+  workingHours: string;
+  equipment: string;
+  responsiblePerson: string;
+  description: string;
+  lat: number | null;
+  lng: number | null;
+};
+
 export function CenterProfileForm({
   cities,
   defaults,
   mode,
+  onSave,
 }: {
   cities: Option[];
   defaults?: CenterFormDefaults;
   mode: "create" | "edit";
+  /** Overrides the default self-serve save (e.g. admin editing any center). */
+  onSave?: (input: SaveInput) => Promise<{ ok: boolean; error?: string; message?: string }>;
 }) {
   const [pending, startTransition] = React.useTransition();
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(
@@ -50,7 +69,8 @@ export function CenterProfileForm({
     const fd = new FormData(e.currentTarget);
     const get = (k: string) => String(fd.get(k) ?? "").trim();
     startTransition(async () => {
-      const res = await saveCenterProfileAction({
+      const save = onSave ?? saveCenterProfileAction;
+      const res = await save({
         name: get("name"),
         phone: get("phone"),
         whatsapp: get("whatsapp"),
