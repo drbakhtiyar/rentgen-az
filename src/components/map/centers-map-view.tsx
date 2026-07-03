@@ -24,6 +24,30 @@ function Recenter({ center, zoom }: { center: [number, number]; zoom: number }) 
   return null;
 }
 
+// Fit the view to all pins: close pins get a street-level zoom, far-apart
+// pins zoom out just enough to show them all. `maxZoom` caps how close a
+// single/tight cluster is shown.
+function FitToPoints({
+  positions,
+  maxZoom,
+}: {
+  positions: [number, number][];
+  maxZoom: number;
+}) {
+  const map = useMap();
+  const key = positions.map((p) => p.join(",")).join("|");
+  React.useEffect(() => {
+    if (positions.length === 0) return;
+    if (positions.length === 1) {
+      map.setView(positions[0], maxZoom);
+    } else {
+      map.fitBounds(positions, { padding: [40, 40], maxZoom });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, key, maxZoom]);
+  return null;
+}
+
 export default function CentersMapView({
   points,
   user,
@@ -40,14 +64,14 @@ export default function CentersMapView({
       ? [points[0].lat, points[0].lng]
       : BAKU;
 
-  // A single center should show at street level (like a pin drop); many
-  // centers stay city-wide so they all fit.
-  const initialZoom = zoom ?? (points.length === 1 ? 16 : 11);
+  // Street-level cap so a single center / tight cluster shows at the same
+  // scale as a Google-Maps pin drop.
+  const maxZoom = zoom ?? 16;
 
   return (
     <MapContainer
       center={center}
-      zoom={initialZoom}
+      zoom={maxZoom}
       scrollWheelZoom={false}
       style={{ height: "100%", width: "100%" }}
     >
@@ -55,7 +79,15 @@ export default function CentersMapView({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {user && <Recenter center={[user.lat, user.lng]} zoom={13} />}
+      {/* No user → fit the pins tightly. With a user (nearby search) keep them centred. */}
+      {user ? (
+        <Recenter center={[user.lat, user.lng]} zoom={13} />
+      ) : (
+        <FitToPoints
+          positions={points.map((p) => [p.lat, p.lng])}
+          maxZoom={maxZoom}
+        />
+      )}
       {user && (
         <Marker position={[user.lat, user.lng]} icon={userIcon()}>
           <Popup>Siz buradasınız</Popup>
