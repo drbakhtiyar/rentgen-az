@@ -181,7 +181,12 @@ export default async function ServiceDetailPage({
           {centers.length > 0 ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {centers.map((c) => (
-                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
+                <CenterCard
+                  key={c.id}
+                  center={c}
+                  rating={ratings[c.id]}
+                  highlightService={slug}
+                />
               ))}
             </div>
           ) : (

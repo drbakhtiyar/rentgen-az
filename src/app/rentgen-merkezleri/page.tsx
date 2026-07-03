@@ -109,7 +109,11 @@ export default async function CentersPage({
           </div>
 
           {centers.length > 0 ? (
-            <CentersExplorer centers={centers} ratings={ratings} />
+            <CentersExplorer
+              centers={centers}
+              ratings={ratings}
+              activeService={sp.service}
+            />
           ) : (
             <Card className="p-12 text-center">
               <Building2 className="mx-auto h-12 w-12 text-slate-300" />

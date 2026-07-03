@@ -1,20 +1,31 @@
 import Link from "next/link";
-import { MapPin, Clock, ArrowUpRight } from "lucide-react";
+import { MapPin, Clock, ArrowUpRight, Tag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { RatingSummary } from "@/components/reviews/stars";
+import { formatPrice } from "@/lib/utils";
 import type { CenterWithServices } from "@/lib/queries";
 
 export function CenterCard({
   center,
   rating,
+  highlightService,
 }: {
   center: CenterWithServices;
   rating?: { avg: number; count: number };
+  /** service slug the patient searched for — its price is featured */
+  highlightService?: string;
 }) {
-  const services = center.services.slice(0, 3);
-  const extra = center.services.length - services.length;
+  const matched = highlightService
+    ? center.services.find((cs) => cs.service.slug === highlightService)
+    : undefined;
+  // When a service is searched, show the other services after the matched one.
+  const rest = matched
+    ? center.services.filter((cs) => cs.id !== matched.id)
+    : center.services;
+  const services = rest.slice(0, matched ? 2 : 3);
+  const extra = rest.length - services.length;
 
   return (
     <Card className="group flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]">
@@ -68,6 +79,18 @@ export function CenterCard({
             </p>
           )}
         </div>
+
+        {matched && (
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-brand-800">
+              <Tag className="h-4 w-4 text-brand-500" />
+              {matched.service.shortName ?? matched.service.name}
+            </span>
+            <span className="text-sm font-bold text-ink-900">
+              {formatPrice(matched.price, matched.priceTo)}
+            </span>
+          </div>
+        )}
 
         {services.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">

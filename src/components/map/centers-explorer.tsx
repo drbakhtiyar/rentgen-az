@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { Navigation, Loader2, MapPin } from "lucide-react";
+import { Navigation, Loader2, MapPin, ArrowDownWideNarrow } from "lucide-react";
 import { CenterCard } from "@/components/centers/center-card";
 import type { CenterWithServices } from "@/lib/queries";
 import { distanceKm, formatDistance, hasCoords } from "@/lib/geo";
@@ -16,16 +16,32 @@ const CentersMapView = dynamic(() => import("./centers-map-view"), {
   ),
 });
 
+type SortKey = "recommended" | "price" | "rating" | "distance";
+
 export function CentersExplorer({
   centers,
   ratings,
+  activeService,
 }: {
   centers: CenterWithServices[];
   ratings: Record<string, { avg: number; count: number }>;
+  /** service slug the patient searched for (enables price sort + highlight) */
+  activeService?: string;
 }) {
   const [user, setUser] = React.useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+  const [sort, setSort] = React.useState<SortKey>("recommended");
+
+  // Price of the searched service for a given center (null = "ask for price").
+  const priceOf = React.useCallback(
+    (c: CenterWithServices): number | null => {
+      if (!activeService) return null;
+      const cs = c.services.find((s) => s.service.slug === activeService);
+      return cs?.price ?? null;
+    },
+    [activeService],
+  );
 
   const points = React.useMemo(
     () =>
@@ -47,15 +63,33 @@ export function CentersExplorer({
       c,
       dist: user && hasCoords(c) ? distanceKm(user, { lat: c.lat, lng: c.lng }) : null,
     }));
-    if (user) {
+    const byDist = (a: (typeof list)[number], b: (typeof list)[number]) => {
+      if (a.dist == null) return 1;
+      if (b.dist == null) return -1;
+      return a.dist - b.dist;
+    };
+    if (sort === "distance") {
+      list.sort(byDist);
+    } else if (sort === "price") {
       list.sort((a, b) => {
-        if (a.dist == null) return 1;
-        if (b.dist == null) return -1;
-        return a.dist - b.dist;
+        // Centers without a set price go last.
+        const pa = priceOf(a.c) ?? Infinity;
+        const pb = priceOf(b.c) ?? Infinity;
+        return pa - pb;
       });
+    } else if (sort === "rating") {
+      list.sort((a, b) => {
+        const ra = ratings[a.c.id]?.avg ?? 0;
+        const rb = ratings[b.c.id]?.avg ?? 0;
+        if (rb !== ra) return rb - ra;
+        return (ratings[b.c.id]?.count ?? 0) - (ratings[a.c.id]?.count ?? 0);
+      });
+    } else if (user) {
+      // "recommended" but location known → nearest first is the useful default.
+      list.sort(byDist);
     }
     return list;
-  }, [centers, user]);
+  }, [centers, user, sort, priceOf, ratings]);
 
   function findNearby() {
     setErr(null);
@@ -67,6 +101,7 @@ export function CentersExplorer({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUser({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setSort("distance");
         setLoading(false);
       },
       () => {
@@ -93,12 +128,28 @@ export function CentersExplorer({
           )}
           Yaxınımdakı mərkəzləri tap
         </button>
-        {user && (
-          <span className="text-sm font-medium text-emerald-600">
-            Məsafəyə görə sıralandı ✓
-          </span>
-        )}
-        {err && <span className="text-sm text-red-600">{err}</span>}
+
+        <label className="ml-auto flex items-center gap-2 text-sm text-slate-500">
+          <ArrowDownWideNarrow className="h-4 w-4" />
+          <span className="hidden sm:inline">Sırala:</span>
+          <select
+            value={sort}
+            onChange={(e) => {
+              const next = e.target.value as SortKey;
+              setSort(next);
+              // Picking "nearest" without a known location → ask for it.
+              if (next === "distance" && !user) findNearby();
+            }}
+            className="h-10 rounded-full border border-slate-200 bg-white px-3 text-sm font-medium text-ink-800 focus:border-brand-400 focus:outline-none"
+          >
+            <option value="recommended">Tövsiyə</option>
+            {activeService && <option value="price">Ən ucuz</option>}
+            <option value="rating">Yüksək reytinq</option>
+            <option value="distance">Ən yaxın</option>
+          </select>
+        </label>
+
+        {err && <span className="w-full text-sm text-red-600">{err}</span>}
       </div>
 
       {points.length > 0 ? (
@@ -121,7 +172,11 @@ export function CentersExplorer({
                 {formatDistance(dist)}
               </span>
             )}
-            <CenterCard center={c} rating={ratings[c.id]} />
+            <CenterCard
+              center={c}
+              rating={ratings[c.id]}
+              highlightService={activeService}
+            />
           </div>
         ))}
       </div>
