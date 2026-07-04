@@ -41,17 +41,25 @@ export function CenterCard({
             loading="lazy"
           />
         ) : center.logoUrl ? (
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <span className="flex h-20 max-w-[70%] items-center justify-center rounded-2xl bg-white/95 px-4 py-3 shadow-sm">
+          <>
+            {/* blurred logo fills the whole banner as a branded backdrop */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={center.logoUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full scale-125 object-cover opacity-55 blur-2xl"
+            />
+            <div className="absolute inset-0 flex items-center justify-center p-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={center.logoUrl}
                 alt={`${center.name} loqosu`}
-                className="max-h-full w-full object-contain"
+                className="max-h-[82%] max-w-[82%] object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.25)]"
                 loading="lazy"
               />
-            </span>
-          </div>
+            </div>
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="font-display text-2xl font-bold text-white/90">
