@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Panel, EmptyState } from "@/components/dashboard/widgets";
 import { ActiveToggle, SeoSettingForm } from "@/components/admin/settings-controls";
-import { ServiceManager } from "@/components/admin/service-manager";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { buildMetadata } from "@/lib/seo";
@@ -18,12 +17,10 @@ export const metadata: Metadata = buildMetadata({
 export default async function AdminSettingsPage() {
   const admin = await requireRole("ADMIN", "/admin/parametrler");
 
-  let services: Awaited<ReturnType<typeof prisma.service.findMany>> = [];
   let cities: Awaited<ReturnType<typeof prisma.city.findMany>> = [];
   let seo: Awaited<ReturnType<typeof prisma.seoSetting.findMany>> = [];
   try {
-    [services, cities, seo] = await Promise.all([
-      prisma.service.findMany({ orderBy: { order: "asc" } }),
+    [cities, seo] = await Promise.all([
       prisma.city.findMany({ orderBy: { order: "asc" } }),
       prisma.seoSetting.findMany({ orderBy: { path: "asc" } }),
     ]);
@@ -34,10 +31,6 @@ export default async function AdminSettingsPage() {
   return (
     <AdminShell title="Parametrlər" userName={admin.phone}>
       <div className="grid gap-5 lg:grid-cols-2">
-        <Panel title={`Xidmətlər (${services.length})`}>
-          <ServiceManager services={services} />
-        </Panel>
-
         <Panel title={`Şəhərlər / rayonlar (${cities.length})`}>
           {cities.length > 0 ? (
             <div className="max-h-[480px] space-y-2 overflow-y-auto pr-1">
