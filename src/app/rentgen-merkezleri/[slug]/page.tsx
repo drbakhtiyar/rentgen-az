@@ -26,9 +26,11 @@ import {
   getRatingsForCenters,
 } from "@/lib/queries";
 import { CenterMiniMap } from "@/components/map/center-mini-map";
+import { OpenStatus } from "@/components/centers/open-status";
+import { parseHours, hoursRows, nowInBaku } from "@/lib/hours";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
-import { formatPrice, formatDateAz } from "@/lib/utils";
+import { formatPrice, formatDateAz, cn } from "@/lib/utils";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -68,6 +70,8 @@ export default async function CenterDetailPage({
 
   const doctors = await getApprovedDoctors();
   const svcNames = center.services.map((s) => s.service.name);
+  const week = parseHours(center.hours);
+  const todayKey = nowInBaku().day;
 
   const [reviews, ratingsMap] = await Promise.all([
     getCenterReviews(center.id),
@@ -156,6 +160,7 @@ export default async function CenterDetailPage({
               <Clock className="h-4 w-4 text-cyan-400" /> {center.workingHours}
             </span>
           )}
+          {center.hours ? <OpenStatus hours={center.hours} /> : null}
           <RatingSummary
             avg={rating.avg}
             count={rating.count}
@@ -248,7 +253,7 @@ export default async function CenterDetailPage({
                   {center.address && (
                     <Detail icon={<MapPin />} label="Ünvan" value={center.address} />
                   )}
-                  {center.workingHours && (
+                  {!week && center.workingHours && (
                     <Detail icon={<Clock />} label="İş saatları" value={center.workingHours} />
                   )}
                   {center.equipment && (
@@ -280,6 +285,42 @@ export default async function CenterDetailPage({
                   </div>
                 )}
               </Card>
+
+              {/* Working hours */}
+              {week && (
+                <Card className="p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h2 className="font-display flex items-center gap-2 text-xl font-bold text-ink-900">
+                      <Clock className="h-5 w-5 text-brand-600" /> İş saatları
+                    </h2>
+                    {center.hours ? <OpenStatus hours={center.hours} /> : null}
+                  </div>
+                  <ul className="mt-4 divide-y divide-slate-100">
+                    {hoursRows(week).map((row) => (
+                      <li
+                        key={row.key}
+                        className={cn(
+                          "flex items-center justify-between py-2.5 text-sm",
+                          row.key === todayKey && "font-semibold text-brand-700",
+                        )}
+                      >
+                        <span className={cn(row.key !== todayKey && "text-slate-600")}>
+                          {row.label}
+                          {row.key === todayKey && " · bu gün"}
+                        </span>
+                        <span
+                          className={cn(
+                            row.text === "Bağlı" ? "text-slate-400" : "text-ink-900",
+                            row.key === todayKey && row.text !== "Bağlı" && "text-brand-700",
+                          )}
+                        >
+                          {row.text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
 
               {/* Reviews */}
               <Card className="p-6">

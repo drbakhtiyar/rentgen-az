@@ -6,6 +6,8 @@ import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/rbac";
 import { centerProfileSchema } from "@/lib/validation";
+import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
+import { Prisma } from "@/generated/prisma/client";
 import type { RequestStatus } from "@/generated/prisma/enums";
 
 export type CenterActionResult = { ok: boolean; error?: string; message?: string };
@@ -31,7 +33,7 @@ export async function saveCenterProfileAction(input: {
   city: string;
   district?: string;
   mapsUrl?: string;
-  workingHours?: string;
+  hours?: WeeklyHours | null;
   equipment?: string;
   responsiblePerson?: string;
   description?: string;
@@ -45,6 +47,7 @@ export async function saveCenterProfileAction(input: {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
   }
   const d = parsed.data;
+  const week = (d.hours ?? null) as WeeklyHours | null;
 
   try {
     const existing = await prisma.centerProfile.findUnique({
@@ -59,7 +62,8 @@ export async function saveCenterProfileAction(input: {
       city: d.city,
       district: d.district || null,
       mapsUrl: d.mapsUrl || null,
-      workingHours: d.workingHours || null,
+      hours: week ? (week as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
+      workingHours: formatHoursSummary(week) || null,
       equipment: d.equipment || null,
       responsiblePerson: d.responsiblePerson || null,
       description: d.description || null,

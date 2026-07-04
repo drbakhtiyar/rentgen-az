@@ -12,7 +12,8 @@ import {
   serviceFormSchema,
 } from "@/lib/validation";
 import { withAutoFill } from "@/lib/services";
-import type { Prisma } from "@/generated/prisma/client";
+import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
+import { Prisma } from "@/generated/prisma/client";
 import type {
   CenterStatus,
   ReferralStatus,
@@ -81,7 +82,7 @@ export async function adminUpdateCenterAction(
     city: string;
     district?: string;
     mapsUrl?: string;
-    workingHours?: string;
+    hours?: WeeklyHours | null;
     equipment?: string;
     responsiblePerson?: string;
     description?: string;
@@ -96,6 +97,7 @@ export async function adminUpdateCenterAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
   }
   const d = parsed.data;
+  const week = (d.hours ?? null) as WeeklyHours | null;
   try {
     // slug is intentionally left unchanged to preserve existing links/SEO.
     const center = await prisma.centerProfile.update({
@@ -108,7 +110,8 @@ export async function adminUpdateCenterAction(
         city: d.city,
         district: d.district || null,
         mapsUrl: d.mapsUrl || null,
-        workingHours: d.workingHours || null,
+        hours: week ? (week as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
+        workingHours: formatHoursSummary(week) || null,
         equipment: d.equipment || null,
         responsiblePerson: d.responsiblePerson || null,
         description: d.description || null,

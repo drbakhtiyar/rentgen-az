@@ -6,6 +6,8 @@ import { Loader2, CheckCircle2, Building2, Phone, MapPin, Upload, X } from "luci
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { LocationPicker } from "@/components/map/location-picker";
+import { WeeklyHoursPicker } from "@/components/forms/weekly-hours-picker";
+import type { WeeklyHours } from "@/lib/hours";
 import { saveCenterProfileAction } from "@/app/merkez/actions";
 
 type Option = { value: string; label: string };
@@ -19,6 +21,7 @@ export type CenterFormDefaults = {
   district?: string;
   mapsUrl?: string;
   workingHours?: string;
+  hours?: WeeklyHours | null;
   equipment?: string;
   responsiblePerson?: string;
   description?: string;
@@ -35,7 +38,7 @@ type SaveInput = {
   city: string;
   district: string;
   mapsUrl: string;
-  workingHours: string;
+  hours: WeeklyHours | null;
   equipment: string;
   responsiblePerson: string;
   description: string;
@@ -67,6 +70,7 @@ export function CenterProfileForm({
   const [logoUrl, setLogoUrl] = React.useState(defaults?.logoUrl ?? "");
   const [uploadingLogo, setUploadingLogo] = React.useState(false);
   const logoRef = React.useRef<HTMLInputElement>(null);
+  const [hours, setHours] = React.useState<WeeklyHours | null>(defaults?.hours ?? null);
 
   async function onPickLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -103,7 +107,7 @@ export function CenterProfileForm({
         city: get("city"),
         district: get("district"),
         mapsUrl: get("mapsUrl"),
-        workingHours: get("workingHours"),
+        hours,
         equipment: get("equipment"),
         responsiblePerson: get("responsiblePerson"),
         description: get("description"),
@@ -229,14 +233,10 @@ export function CenterProfileForm({
         <Field label="Ünvan" htmlFor="address">
           <Input id="address" name="address" defaultValue={defaults?.address} placeholder="Küçə, bina" />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Google Maps linki" htmlFor="mapsUrl">
-            <Input id="mapsUrl" name="mapsUrl" type="url" defaultValue={defaults?.mapsUrl} placeholder="https://maps.google.com/..." />
-          </Field>
-          <Field label="İş saatları" htmlFor="workingHours">
-            <Input id="workingHours" name="workingHours" defaultValue={defaults?.workingHours} placeholder="B.e–Şənbə 09:00–18:00" />
-          </Field>
-        </div>
+        <Field label="Google Maps linki" htmlFor="mapsUrl">
+          <Input id="mapsUrl" name="mapsUrl" type="url" defaultValue={defaults?.mapsUrl} placeholder="https://maps.google.com/..." />
+        </Field>
+        <WeeklyHoursPicker value={hours} onChange={setHours} />
         <Field label="Avadanlıq məlumatı" htmlFor="equipment">
           <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder="Məs: CBCT aparatı, panoramik aparat və s." />
         </Field>

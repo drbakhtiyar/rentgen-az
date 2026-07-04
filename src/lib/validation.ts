@@ -22,6 +22,21 @@ const contactPhoneField = z
   .min(1, "Telefon nömrəsi tələb olunur")
   .refine((v) => normalizePhone(v) !== null, "Telefon nömrəsi düzgün deyil");
 
+const timeStr = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Saat formatı yanlışdır");
+const dayHoursSchema = z.object({ open: timeStr, close: timeStr }).nullable();
+const weeklyHoursSchema = z
+  .object({
+    mon: dayHoursSchema,
+    tue: dayHoursSchema,
+    wed: dayHoursSchema,
+    thu: dayHoursSchema,
+    fri: dayHoursSchema,
+    sat: dayHoursSchema,
+    sun: dayHoursSchema,
+  })
+  .nullable()
+  .optional();
+
 export const requestOtpSchema = z.object({
   phone: phoneField,
   role: z.enum(["PATIENT", "CENTER", "DOCTOR"]).optional(),
@@ -58,6 +73,7 @@ export const centerProfileSchema = z.object({
   district: z.string().trim().max(80).optional().or(z.literal("")),
   mapsUrl: z.string().trim().url("Düzgün link daxil edin").optional().or(z.literal("")),
   workingHours: z.string().trim().max(240).optional().or(z.literal("")),
+  hours: weeklyHoursSchema,
   equipment: z.string().trim().max(1000).optional().or(z.literal("")),
   responsiblePerson: z.string().trim().max(120).optional().or(z.literal("")),
   description: z.string().trim().max(2000).optional().or(z.literal("")),

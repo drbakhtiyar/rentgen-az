@@ -88,7 +88,8 @@ model CenterProfile {
   mapsUrl           String?
   lat               Float?
   lng               Float?
-  workingHours      String?
+  workingHours      String? // insan-oxunaqlı xülasə (strukturdan avtomatik yaranır)
+  hours             Json? // strukturlaşdırılmış həftəlik iş saatları {mon:{open,close}|null,...}
   equipment         String? // avadanlıq məlumatı (mətn)
   responsiblePerson String?
   description       String?

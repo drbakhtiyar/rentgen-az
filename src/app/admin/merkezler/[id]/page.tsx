@@ -8,6 +8,7 @@ import { CenterProfileForm } from "@/components/forms/center-profile-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { adminUpdateCenterAction } from "@/app/admin/actions";
+import { parseHours } from "@/lib/hours";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 
@@ -61,6 +62,7 @@ export default async function AdminEditCenterPage({
             responsiblePerson: center.responsiblePerson ?? "",
             description: center.description ?? "",
             logoUrl: center.logoUrl,
+            hours: parseHours(center.hours),
             lat: center.lat,
             lng: center.lng,
           }}

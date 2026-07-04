@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { RatingSummary } from "@/components/reviews/stars";
+import { OpenStatus } from "@/components/centers/open-status";
 import { formatPrice } from "@/lib/utils";
 import type { CenterWithServices } from "@/lib/queries";
 
@@ -102,6 +103,12 @@ export function CenterCard({
             </p>
           )}
         </div>
+
+        {center.hours ? (
+          <div className="mt-2.5">
+            <OpenStatus hours={center.hours} />
+          </div>
+        ) : null}
 
         {matched && (
           <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
