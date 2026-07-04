@@ -42,22 +42,25 @@ export function CenterCard({
           />
         ) : center.logoUrl ? (
           <>
-            {/* blurred logo fills the whole banner as a branded backdrop */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={center.logoUrl}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full scale-125 object-cover opacity-55 blur-2xl"
-            />
-            <div className="absolute inset-0 flex items-center justify-center p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={center.logoUrl}
-                alt={`${center.name} loqosu`}
-                className="max-h-[82%] max-w-[82%] object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.25)]"
-                loading="lazy"
-              />
+            {/* Light, directory-style surface: any logo reads as a clean brand
+                mark instead of a patch floating on the dark gradient. */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white to-surface" />
+            <div className="absolute inset-0 bg-grid opacity-70" />
+            <div className="glow absolute -right-12 -top-12 h-44 w-44 opacity-25" />
+            <div className="absolute inset-x-0 bottom-0 h-px bg-slate-200/70" />
+            <div className="absolute inset-0 flex items-center justify-center p-5">
+              {/* Tight-hugging, corner-clipped tile: a solid square logo becomes a
+                  rounded app-icon; a transparent PNG or wordmark becomes a clean
+                  rounded logo card — consistent framing for ANY uploaded image. */}
+              <span className="inline-flex max-w-[78%] overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 shadow-[0_10px_30px_-12px_rgba(16,31,70,0.28)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={center.logoUrl}
+                  alt={`${center.name} loqosu`}
+                  className="block h-auto max-h-24 w-auto max-w-full object-contain"
+                  loading="lazy"
+                />
+              </span>
             </div>
           </>
         ) : (
@@ -68,7 +71,7 @@ export function CenterCard({
           </div>
         )}
         <div className="absolute left-3 top-3">
-          <VerifiedBadge />
+          <VerifiedBadge className="bg-white/95 text-brand-700 shadow-sm ring-slate-200/80 backdrop-blur" />
         </div>
       </div>
 

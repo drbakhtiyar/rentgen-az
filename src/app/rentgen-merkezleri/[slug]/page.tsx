@@ -136,7 +136,7 @@ export default async function CenterDetailPage({
       >
         <div className="flex flex-wrap items-center gap-3">
           {center.logoUrl && (
-            <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white/95 p-1.5 ring-1 ring-white/20">
+            <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-white/20 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={center.logoUrl}
