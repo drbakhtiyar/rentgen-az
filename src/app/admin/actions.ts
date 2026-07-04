@@ -85,6 +85,7 @@ export async function adminUpdateCenterAction(
     equipment?: string;
     responsiblePerson?: string;
     description?: string;
+    logoUrl?: string;
     lat?: number | null;
     lng?: number | null;
   },
@@ -111,6 +112,7 @@ export async function adminUpdateCenterAction(
         equipment: d.equipment || null,
         responsiblePerson: d.responsiblePerson || null,
         description: d.description || null,
+        logoUrl: d.logoUrl || null,
         lat: d.lat ?? null,
         lng: d.lng ?? null,
       },

@@ -35,6 +35,7 @@ export async function saveCenterProfileAction(input: {
   equipment?: string;
   responsiblePerson?: string;
   description?: string;
+  logoUrl?: string;
   lat?: number | null;
   lng?: number | null;
 }): Promise<CenterActionResult> {
@@ -62,6 +63,7 @@ export async function saveCenterProfileAction(input: {
       equipment: d.equipment || null,
       responsiblePerson: d.responsiblePerson || null,
       description: d.description || null,
+      logoUrl: d.logoUrl || null,
       lat: d.lat ?? null,
       lng: d.lng ?? null,
     };

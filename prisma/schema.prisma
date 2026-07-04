@@ -92,6 +92,7 @@ model CenterProfile {
   equipment         String? // avadanlıq məlumatı (mətn)
   responsiblePerson String?
   description       String?
+  logoUrl           String? // mərkəzin loqosu (yüklənmiş şəkil)
   images            String[]     @default([])
   status            CenterStatus @default(PENDING)
   createdAt         DateTime     @default(now())

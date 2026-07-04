@@ -135,6 +135,16 @@ export default async function CenterDetailPage({
         ]}
       >
         <div className="flex flex-wrap items-center gap-3">
+          {center.logoUrl && (
+            <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white/95 p-1.5 ring-1 ring-white/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={center.logoUrl}
+                alt={`${center.name} loqosu`}
+                className="h-full w-full object-contain"
+              />
+            </span>
+          )}
           <VerifiedBadge />
           {center.city && (
             <span className="flex items-center gap-1.5 text-sm text-slate-300">

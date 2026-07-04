@@ -42,6 +42,7 @@ export default async function CenterProfilePage() {
           equipment: center.equipment ?? "",
           responsiblePerson: center.responsiblePerson ?? "",
           description: center.description ?? "",
+          logoUrl: center.logoUrl,
           lat: center.lat,
           lng: center.lng,
         }}

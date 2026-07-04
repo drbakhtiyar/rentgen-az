@@ -40,6 +40,18 @@ export function CenterCard({
             className="absolute inset-0 h-full w-full object-cover"
             loading="lazy"
           />
+        ) : center.logoUrl ? (
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            <span className="flex h-20 max-w-[70%] items-center justify-center rounded-2xl bg-white/95 px-4 py-3 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={center.logoUrl}
+                alt={`${center.name} loqosu`}
+                className="max-h-full w-full object-contain"
+                loading="lazy"
+              />
+            </span>
+          </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="font-display text-2xl font-bold text-white/90">

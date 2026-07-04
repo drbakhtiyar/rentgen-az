@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth/rbac";
 // Client-side upload endpoint.
 // - Doctors: diploma / certificate documents.
 // - Admins: custom service icons.
+// - Centers: logo.
 // Auth is enforced in onBeforeGenerateToken.
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -16,7 +17,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       request,
       onBeforeGenerateToken: async () => {
         const user = await getCurrentUser();
-        if (!user || (user.role !== "DOCTOR" && user.role !== "ADMIN")) {
+        const allowed = ["DOCTOR", "ADMIN", "CENTER"];
+        if (!user || !allowed.includes(user.role)) {
           throw new Error("İcazə yoxdur");
         }
         return {

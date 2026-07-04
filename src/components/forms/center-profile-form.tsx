@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, CheckCircle2, Building2, Phone, MapPin } from "lucide-react";
+import { upload } from "@vercel/blob/client";
+import { Loader2, CheckCircle2, Building2, Phone, MapPin, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { LocationPicker } from "@/components/map/location-picker";
@@ -21,6 +22,7 @@ export type CenterFormDefaults = {
   equipment?: string;
   responsiblePerson?: string;
   description?: string;
+  logoUrl?: string | null;
   lat?: number | null;
   lng?: number | null;
 };
@@ -37,6 +39,7 @@ type SaveInput = {
   equipment: string;
   responsiblePerson: string;
   description: string;
+  logoUrl: string;
   lat: number | null;
   lng: number | null;
 };
@@ -61,6 +64,28 @@ export function CenterProfileForm({
   );
   const [done, setDone] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = React.useState(defaults?.logoUrl ?? "");
+  const [uploadingLogo, setUploadingLogo] = React.useState(false);
+  const logoRef = React.useRef<HTMLInputElement>(null);
+
+  async function onPickLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploadingLogo(true);
+    try {
+      const blob = await upload(`center-logos/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+      setLogoUrl(blob.url);
+    } catch {
+      setError("Loqo yüklənmədi. Yenidən cəhd edin.");
+    } finally {
+      setUploadingLogo(false);
+      if (logoRef.current) logoRef.current.value = "";
+    }
+  }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,6 +107,7 @@ export function CenterProfileForm({
         equipment: get("equipment"),
         responsiblePerson: get("responsiblePerson"),
         description: get("description"),
+        logoUrl,
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
       });
@@ -109,6 +135,55 @@ export function CenterProfileForm({
       )}
 
       <FormSection icon={<Building2 />} title="Əsas məlumat" step={1}>
+        {/* Logo */}
+        <div className="mb-5 flex items-center gap-4">
+          <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="Loqo" className="h-full w-full object-contain" />
+            ) : (
+              <Building2 className="h-8 w-8 text-slate-300" />
+            )}
+          </span>
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-ink-800">Mərkəzin loqosu</p>
+            <input
+              ref={logoRef}
+              type="file"
+              accept="image/png,image/webp,image/svg+xml,image/jpeg"
+              onChange={onPickLogo}
+              className="hidden"
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => logoRef.current?.click()}
+                disabled={uploadingLogo}
+                className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+              >
+                {uploadingLogo ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Upload className="h-3.5 w-3.5" />
+                )}
+                Loqo yüklə
+              </button>
+              {logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setLogoUrl("")}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-600"
+                >
+                  <X className="h-3.5 w-3.5" /> Sil
+                </button>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-slate-400">
+              Kvadrat loqo tövsiyə olunur. PNG/SVG/WebP.
+            </p>
+          </div>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Mərkəzin adı" htmlFor="name" required>
             <Input id="name" name="name" defaultValue={defaults?.name} required placeholder="Məs: Dental Imaging Center" />
