@@ -16,6 +16,7 @@ import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard
 import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { getCenterEventStats } from "@/lib/queries";
 import { formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "./request-status-control";
@@ -44,6 +45,7 @@ export default async function CenterDashboardPage() {
   const newCount = await prisma.appointmentRequest.count({
     where: { centerId: center.id, status: "NEW" },
   });
+  const stats = await getCenterEventStats(center.id, 30);
 
   const name =
     center.name ||
@@ -75,6 +77,17 @@ export default async function CenterDashboardPage() {
         <StatCard label="Yeni müraciətlər" value={newCount} icon={<Inbox />} tone="amber" />
         <StatCard label="Ümumi müraciətlər" value={center._count.appointmentRequests} icon={<Inbox />} tone="cyan" />
         <StatCard label="Xidmətlər" value={center._count.services} icon={<ListChecks />} tone="green" />
+      </div>
+
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Son 30 gün
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard label="Profil baxışları" value={stats.views} icon={<Eye />} />
+          <StatCard label="Zəng klikləri" value={stats.calls} icon={<Inbox />} tone="cyan" />
+          <StatCard label="WhatsApp klikləri" value={stats.whatsapp} icon={<Inbox />} tone="green" />
+        </div>
       </div>
 
       {center._count.services === 0 && (

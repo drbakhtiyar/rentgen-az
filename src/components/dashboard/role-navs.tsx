@@ -18,6 +18,7 @@ export const centerNav: NavItem[] = [
   { label: "İcmal", href: "/merkez", icon: <LayoutDashboard /> },
   { label: "Profil", href: "/merkez/profil", icon: <Building2 /> },
   { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks /> },
+  { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
 ];
 
 export const doctorNav: NavItem[] = [

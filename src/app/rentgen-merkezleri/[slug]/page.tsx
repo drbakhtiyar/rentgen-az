@@ -27,6 +27,7 @@ import {
 } from "@/lib/queries";
 import { CenterMiniMap } from "@/components/map/center-mini-map";
 import { OpenStatus } from "@/components/centers/open-status";
+import { TrackView } from "@/components/centers/track-view";
 import { parseHours, hoursRows, nowInBaku } from "@/lib/hours";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
@@ -168,10 +169,11 @@ export default async function CenterDetailPage({
           />
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
-          <CallButton phone={center.phone} />
-          {center.whatsapp && <WhatsAppButton phone={center.whatsapp} />}
+          <CallButton phone={center.phone} centerId={center.id} />
+          {center.whatsapp && <WhatsAppButton phone={center.whatsapp} centerId={center.id} />}
         </div>
       </PageHeader>
+      <TrackView centerId={center.id} />
 
       <Section className="py-12">
         <Container>
@@ -360,6 +362,16 @@ export default async function CenterDetailPage({
                           <p className="mt-2 text-xs text-slate-400">
                             {formatDateAz(r.createdAt)}
                           </p>
+                          {r.reply && (
+                            <div className="mt-3 rounded-xl border-l-2 border-brand-200 bg-brand-50/50 px-4 py-3">
+                              <p className="text-xs font-semibold text-brand-700">
+                                {center.name} cavabı
+                              </p>
+                              <p className="mt-1 whitespace-pre-line text-sm text-slate-600">
+                                {r.reply}
+                              </p>
+                            </div>
+                          )}
                         </li>
                       );
                     })}

@@ -143,6 +143,46 @@ export async function saveCenterServicesAction(
   }
 }
 
+/** Center replies to a review left on its own profile. */
+export async function replyToReviewAction(
+  reviewId: string,
+  reply: string,
+): Promise<CenterActionResult> {
+  const user = await requireRole("CENTER");
+  const text = reply.trim();
+  if (text.length > 1000) {
+    return { ok: false, error: "Cavab çox uzundur (maks. 1000 simvol)." };
+  }
+  try {
+    const center = await prisma.centerProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true, slug: true },
+    });
+    if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+    const review = await prisma.review.findUnique({
+      where: { id: reviewId },
+      select: { centerId: true },
+    });
+    if (!review || review.centerId !== center.id) {
+      return { ok: false, error: "Rəy tapılmadı." };
+    }
+
+    await prisma.review.update({
+      where: { id: reviewId },
+      data: {
+        reply: text || null,
+        repliedAt: text ? new Date() : null,
+      },
+    });
+    revalidatePath("/merkez/reyler");
+    revalidatePath(`/rentgen-merkezleri/${center.slug}`);
+    return { ok: true, message: text ? "Cavab yadda saxlanıldı." : "Cavab silindi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 export async function updateRequestStatusAction(
   requestId: string,
   status: RequestStatus,

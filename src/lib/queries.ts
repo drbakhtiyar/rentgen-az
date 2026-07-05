@@ -107,6 +107,24 @@ export async function getServiceBySlug(slug: string) {
   );
 }
 
+/** Center analytics counts (views / calls / whatsapp) over the last N days. */
+export async function getCenterEventStats(centerId: string, days = 30) {
+  return safe(
+    async () => {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      const rows = await prisma.centerEvent.groupBy({
+        by: ["type"],
+        where: { centerId, createdAt: { gte: since } },
+        _count: { type: true },
+      });
+      const by: Record<string, number> = {};
+      for (const r of rows) by[r.type] = r._count.type;
+      return { views: by.view ?? 0, calls: by.call ?? 0, whatsapp: by.whatsapp ?? 0 };
+    },
+    { views: 0, calls: 0, whatsapp: 0 },
+  );
+}
+
 export type CenterRating = { avg: number; count: number };
 
 /** Average rating + count per center (visible reviews only). */

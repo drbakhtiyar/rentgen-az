@@ -134,10 +134,11 @@ export function CenterCard({
         )}
 
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
-          <CallButton phone={center.phone} className="h-10 flex-1 px-3 text-xs" />
+          <CallButton phone={center.phone} centerId={center.id} className="h-10 flex-1 px-3 text-xs" />
           {center.whatsapp && (
             <WhatsAppButton
               phone={center.whatsapp}
+              centerId={center.id}
               className="h-10 flex-1 px-3 text-xs"
             />
           )}

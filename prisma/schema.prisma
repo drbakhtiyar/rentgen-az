@@ -104,6 +104,7 @@ model CenterProfile {
   referrals           Referral[]
   favoritedBy         PatientProfile[]     @relation("PatientFavorites")
   reviews             Review[]
+  events              CenterEvent[]
 
   @@index([status])
   @@index([city])
@@ -204,11 +205,23 @@ model Review {
   comment   String?
   verified  Boolean        @default(false) // mərkəz təsdiqləyib (self-declared deyil)
   hidden    Boolean        @default(false) // admin moderasiyası
+  reply     String? // mərkəzin cavabı
+  repliedAt DateTime?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
   @@unique([centerId, patientId])
   @@index([centerId, hidden])
+}
+
+model CenterEvent {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  type      String // "view" | "call" | "whatsapp"
+  createdAt DateTime      @default(now())
+
+  @@index([centerId, type, createdAt])
 }
 
 model DoctorProfile {
