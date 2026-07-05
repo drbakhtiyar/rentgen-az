@@ -12,7 +12,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getReviewableCentersForPatient } from "@/lib/queries";
 import { formatPhoneDisplay } from "@/lib/phone";
-import { formatDateAz } from "@/lib/utils";
+import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -93,6 +93,11 @@ export default async function PatientDashboardPage() {
                         {r.serviceSlug ? `${r.serviceSlug} · ` : ""}
                         {formatDateAz(r.createdAt)}
                       </p>
+                      {r.preferredDate && (
+                        <p className="mt-1 text-xs font-semibold text-brand-700">
+                          Seçilmiş vaxt: {formatDateTimeAz(r.preferredDate)}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {r.status !== "COMPLETED" && r.status !== "CANCELLED" && (

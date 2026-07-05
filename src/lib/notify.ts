@@ -8,10 +8,21 @@ import type { RequestStatus } from "@/generated/prisma/enums";
 /** SMS the center's own phone when a patient sends them a request. */
 export async function smsCenterNewRequest(
   centerPhone: string,
-  opts: { patientName: string; serviceName?: string | null },
+  opts: { patientName: string; serviceName?: string | null; preferredDate?: Date | null },
 ): Promise<void> {
   const svc = opts.serviceName ? ` (${opts.serviceName})` : "";
-  const msg = `Rentgen.az: Yeni müraciət — ${opts.patientName}${svc}. Panelinizdə baxın: ${SITE_URL}/merkez`;
+  let when = "";
+  if (opts.preferredDate) {
+    when = ` — ${new Intl.DateTimeFormat("az", {
+      timeZone: "Asia/Baku",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }).format(opts.preferredDate)}`;
+  }
+  const msg = `Rentgen.az: Yeni müraciət — ${opts.patientName}${svc}${when}. Panelinizdə baxın: ${SITE_URL}/merkez`;
   await sendSms(centerPhone, msg).catch(() => {});
 }
 

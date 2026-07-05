@@ -90,6 +90,7 @@ export const appointmentRequestSchema = z.object({
   doctorId: z.string().trim().min(1).optional().or(z.literal("")),
   serviceSlug: z.string().trim().max(80).optional().or(z.literal("")),
   note: z.string().trim().max(1000).optional().or(z.literal("")),
+  preferredDate: z.string().trim().max(40).optional().or(z.literal("")),
 });
 
 const optionalUrl = z

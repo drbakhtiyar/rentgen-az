@@ -17,7 +17,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getCenterEventStats } from "@/lib/queries";
-import { formatDateAz } from "@/lib/utils";
+import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "./request-status-control";
 
@@ -134,6 +134,11 @@ export default async function CenterDashboardPage() {
                         </a>
                         {r.serviceSlug ? ` · ${r.serviceSlug}` : ""}
                       </p>
+                      {r.preferredDate && (
+                        <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
+                          <Clock className="h-3 w-3" /> {formatDateTimeAz(r.preferredDate)}
+                        </p>
+                      )}
                       {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}
                       <p className="mt-1 text-xs text-slate-400">{formatDateAz(r.createdAt)}</p>
                     </div>

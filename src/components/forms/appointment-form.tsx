@@ -5,6 +5,7 @@ import { Loader2, CheckCircle2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { submitAppointmentAction } from "@/app/actions/public";
+import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
 
 type Option = { value: string; label: string };
 
@@ -14,6 +15,7 @@ export function AppointmentForm({
   services,
   doctors,
   defaultService,
+  hours,
   compact,
 }: {
   centerId?: string;
@@ -21,16 +23,27 @@ export function AppointmentForm({
   services: Option[];
   doctors?: Option[];
   defaultService?: string;
+  /** center's structured hours — enables date + time slot picking */
+  hours?: WeeklyHours | null;
   compact?: boolean;
 }) {
   const [pending, startTransition] = React.useTransition();
   const [done, setDone] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [date, setDate] = React.useState("");
+  const [time, setTime] = React.useState("");
+  const today = React.useMemo(() => bakuTodayYmd(), []);
+  const slots = React.useMemo(
+    () => (hours && date ? slotsForDate(hours, date) : []),
+    [hours, date],
+  );
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     const fd = new FormData(e.currentTarget);
+    const preferredDate =
+      date && time ? `${date}T${time}:00+04:00` : undefined;
     startTransition(async () => {
       const res = await submitAppointmentAction({
         name: String(fd.get("name") ?? ""),
@@ -39,6 +52,7 @@ export function AppointmentForm({
         doctorId: String(fd.get("doctorId") ?? ""),
         serviceSlug: String(fd.get("serviceSlug") ?? ""),
         note: String(fd.get("note") ?? ""),
+        preferredDate,
       });
       if (!res.ok) {
         setError(res.error ?? "Xəta baş verdi");
@@ -105,6 +119,46 @@ export function AppointmentForm({
           </Select>
         </Field>
       )}
+      {hours && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Tarix" htmlFor="date" hint="İstədiyiniz gün (istəyə bağlı)">
+            <Input
+              id="date"
+              name="date"
+              type="date"
+              min={today}
+              value={date}
+              onChange={(e) => {
+                setDate(e.target.value);
+                setTime("");
+              }}
+            />
+          </Field>
+          <Field label="Saat" htmlFor="time">
+            <Select
+              id="time"
+              name="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              disabled={!date || slots.length === 0}
+            >
+              <option value="">
+                {!date
+                  ? "Əvvəlcə tarix seçin"
+                  : slots.length === 0
+                    ? "Bu gün üçün vaxt yoxdur"
+                    : "Saat seçin"}
+              </option>
+              {slots.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+      )}
+
       <Field label="Qeyd" htmlFor="note">
         <Textarea id="note" name="note" placeholder="Əlavə məlumat (istəyə bağlı)" />
       </Field>

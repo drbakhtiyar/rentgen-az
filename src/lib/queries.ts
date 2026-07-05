@@ -229,6 +229,17 @@ export async function getApprovedDoctors() {
   );
 }
 
+/** A single approved doctor by id (null if missing or not approved). */
+export async function getApprovedDoctorById(id: string) {
+  return safe(
+    () =>
+      prisma.doctorProfile.findFirst({
+        where: { id, status: "APPROVED" },
+      }),
+    null,
+  );
+}
+
 export async function getActiveCities() {
   return safe(
     () =>

@@ -427,6 +427,7 @@ export default async function CenterDetailPage({
                           d.clinic ? " — " + d.clinic : ""
                         }` || "Həkim",
                     }))}
+                    hours={week}
                     compact
                   />
                 </div>

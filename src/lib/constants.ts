@@ -277,9 +277,9 @@ export const DENTAL_SPECIALIZATIONS: string[] = [
 export const MAIN_NAV: { label: string; href: string }[] = [
   { label: "Rentgen mərkəzləri", href: "/rentgen-merkezleri" },
   { label: "Xidmətlər", href: "/xidmetler" },
+  { label: "Həkimlər", href: "/hekimler" },
   { label: "Həkimlər üçün", href: "/hekimler-ucun" },
   { label: "Mərkəzlər üçün", href: "/merkezler-ucun" },
   { label: "Blog", href: "/blog" },
-  { label: "FAQ", href: "/faq" },
   { label: "Əlaqə", href: "/elaqe" },
 ];

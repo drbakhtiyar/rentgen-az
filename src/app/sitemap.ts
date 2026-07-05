@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/rentgen-merkezleri",
     "/xidmetler",
+    "/hekimler",
     "/hekimler-ucun",
     "/merkezler-ucun",
     "/blog",
@@ -57,6 +58,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: c.updatedAt,
         changeFrequency: "weekly",
         priority: 0.7,
+      });
+    }
+  } catch {
+    /* DB unavailable — skip dynamic entries */
+  }
+
+  // Approved doctors
+  try {
+    const doctors = await prisma.doctorProfile.findMany({
+      where: { status: "APPROVED" },
+      select: { id: true, updatedAt: true },
+    });
+    for (const d of doctors) {
+      entries.push({
+        url: `${SITE_URL}/hekimler/${d.id}`,
+        lastModified: d.updatedAt,
+        changeFrequency: "monthly",
+        priority: 0.6,
       });
     }
   } catch {

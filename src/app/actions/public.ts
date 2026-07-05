@@ -23,6 +23,7 @@ export async function submitAppointmentAction(input: {
   doctorId?: string;
   serviceSlug?: string;
   note?: string;
+  preferredDate?: string;
 }): Promise<FormResult> {
   const parsed = appointmentRequestSchema.safeParse(input);
   if (!parsed.success) {
@@ -48,6 +49,14 @@ export async function submitAppointmentAction(input: {
       };
     }
 
+    let preferredDate: Date | null = null;
+    if (data.preferredDate) {
+      const dt = new Date(data.preferredDate);
+      if (!Number.isNaN(dt.getTime()) && dt.getTime() > Date.now() - 60 * 60 * 1000) {
+        preferredDate = dt;
+      }
+    }
+
     await prisma.appointmentRequest.create({
       data: {
         name: data.name,
@@ -56,6 +65,7 @@ export async function submitAppointmentAction(input: {
         doctorId: data.doctorId || null,
         serviceSlug: data.serviceSlug || null,
         note: data.note || null,
+        preferredDate,
         patientId,
       },
     });
@@ -87,6 +97,7 @@ export async function submitAppointmentAction(input: {
       await smsCenterNewRequest(center.phone, {
         patientName: data.name,
         serviceName,
+        preferredDate,
       }).catch(() => {});
     }
 

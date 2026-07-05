@@ -136,6 +136,56 @@ export function nowInBaku(now: Date = new Date()): { day: DayKey; minutes: numbe
   return { day: WEEKDAY_TO_KEY[wd] ?? "mon", minutes: hh * 60 + mm };
 }
 
+/** Today's date in Azerbaijan as "YYYY-MM-DD". */
+export function bakuTodayYmd(now: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Baku",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const d = parts.find((p) => p.type === "day")?.value;
+  return `${y}-${m}-${d}`;
+}
+
+const WD_INDEX_TO_KEY: DayKey[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
+/** Weekday key for a "YYYY-MM-DD" date (timezone-safe). */
+export function ymdToDayKey(ymd: string): DayKey {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return WD_INDEX_TO_KEY[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+}
+
+/**
+ * Bookable time slots for a given date, from the center's hours.
+ * Past slots for "today" (Baku) are excluded.
+ */
+export function slotsForDate(
+  week: WeeklyHours | null,
+  ymd: string,
+  stepMin = 30,
+  now: Date = new Date(),
+): string[] {
+  if (!week || !ymd) return [];
+  const day = week[ymdToDayKey(ymd)];
+  if (!day) return [];
+  const open = toMinutes(day.open);
+  const close = toMinutes(day.close);
+  if (close <= open) return [];
+  const isToday = ymd === bakuTodayYmd(now);
+  const nowMin = isToday ? nowInBaku(now).minutes + 30 : -1; // 30-min booking buffer
+  const out: string[] = [];
+  for (let t = open; t + stepMin <= close; t += stepMin) {
+    if (t < nowMin) continue;
+    const h = String(Math.floor(t / 60)).padStart(2, "0");
+    const m = String(t % 60).padStart(2, "0");
+    out.push(`${h}:${m}`);
+  }
+  return out;
+}
+
 export type OpenStatus =
   | { state: "open"; closesAt: string }
   | { state: "closing"; minutesToClose: number; closesAt: string }
