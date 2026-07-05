@@ -8,7 +8,11 @@ import {
   referralSchema,
   waitlistSignupSchema,
 } from "@/lib/validation";
-import { notifyNewAppointment, notifyNewReferral } from "@/lib/notify";
+import {
+  notifyNewAppointment,
+  notifyNewReferral,
+  smsCenterNewRequest,
+} from "@/lib/notify";
 
 export type FormResult = { ok: boolean; error?: string; message?: string };
 
@@ -59,8 +63,16 @@ export async function submitAppointmentAction(input: {
     // Notify (best-effort — never block the patient's submission)
     const center = data.centerId
       ? await prisma.centerProfile
-          .findUnique({ where: { id: data.centerId }, select: { name: true, slug: true } })
+          .findUnique({
+            where: { id: data.centerId },
+            select: { name: true, slug: true, phone: true },
+          })
           .catch(() => null)
+      : null;
+    const serviceName = data.serviceSlug
+      ? (await prisma.service
+          .findUnique({ where: { slug: data.serviceSlug }, select: { name: true } })
+          .catch(() => null))?.name ?? null
       : null;
     await notifyNewAppointment({
       name: data.name,
@@ -70,6 +82,13 @@ export async function submitAppointmentAction(input: {
       serviceSlug: data.serviceSlug || null,
       note: data.note || null,
     }).catch(() => {});
+    // Direct SMS to the center's own phone.
+    if (center?.phone) {
+      await smsCenterNewRequest(center.phone, {
+        patientName: data.name,
+        serviceName,
+      }).catch(() => {});
+    }
 
     return {
       ok: true,

@@ -13,6 +13,7 @@ import {
 } from "@/lib/validation";
 import { withAutoFill } from "@/lib/services";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
+import { smsPatientStatusChange } from "@/lib/notify";
 import { Prisma } from "@/generated/prisma/client";
 import type {
   CenterStatus,
@@ -87,6 +88,7 @@ export async function adminUpdateCenterAction(
     responsiblePerson?: string;
     description?: string;
     logoUrl?: string;
+    images?: string[];
     lat?: number | null;
     lng?: number | null;
   },
@@ -116,6 +118,7 @@ export async function adminUpdateCenterAction(
         responsiblePerson: d.responsiblePerson || null,
         description: d.description || null,
         logoUrl: d.logoUrl || null,
+        images: d.images ?? [],
         lat: d.lat ?? null,
         lng: d.lng ?? null,
       },
@@ -232,8 +235,16 @@ export async function setRequestStatusAdminAction(
 ): Promise<AdminResult> {
   const admin = await requireRole("ADMIN");
   try {
-    await prisma.appointmentRequest.update({ where: { id: requestId }, data: { status } });
+    const req = await prisma.appointmentRequest.update({
+      where: { id: requestId },
+      data: { status },
+      select: { phone: true, center: { select: { name: true } } },
+    });
     await logAction(admin.id, `request:${status}`, "AppointmentRequest", requestId);
+    await smsPatientStatusChange(req.phone, {
+      status,
+      centerName: req.center?.name ?? null,
+    }).catch(() => {});
     revalidatePath("/admin/muracietler");
     return { ok: true };
   } catch {

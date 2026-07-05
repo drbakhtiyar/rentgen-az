@@ -19,24 +19,34 @@ export type CenterListFilters = {
   city?: string;
   service?: string; // service slug
   take?: number;
+  skip?: number;
 };
 
+function centerWhere(filters: CenterListFilters): Prisma.CenterProfileWhereInput {
+  const { q, city, service } = filters;
+  const where: Prisma.CenterProfileWhereInput = { status: "APPROVED" };
+  if (q) where.name = { contains: q, mode: "insensitive" };
+  if (city) where.city = city;
+  if (service) where.services = { some: { service: { slug: service } } };
+  return where;
+}
+
 export async function getApprovedCenters(filters: CenterListFilters = {}) {
-  const { q, city, service, take } = filters;
-  return safe(async () => {
-    const where: Prisma.CenterProfileWhereInput = { status: "APPROVED" };
-    if (q) where.name = { contains: q, mode: "insensitive" };
-    if (city) where.city = city;
-    if (service) {
-      where.services = { some: { service: { slug: service } } };
-    }
-    return prisma.centerProfile.findMany({
-      where,
-      include: { services: { include: { service: true } } },
-      orderBy: [{ createdAt: "desc" }],
-      take: take ?? 60,
-    });
-  }, []);
+  return safe(
+    () =>
+      prisma.centerProfile.findMany({
+        where: centerWhere(filters),
+        include: { services: { include: { service: true } } },
+        orderBy: [{ createdAt: "desc" }],
+        take: filters.take ?? 60,
+        skip: filters.skip ?? 0,
+      }),
+    [],
+  );
+}
+
+export async function countApprovedCenters(filters: CenterListFilters = {}) {
+  return safe(() => prisma.centerProfile.count({ where: centerWhere(filters) }), 0);
 }
 
 export async function getFeaturedCenters(take = 6) {

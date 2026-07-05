@@ -26,6 +26,7 @@ export type CenterFormDefaults = {
   responsiblePerson?: string;
   description?: string;
   logoUrl?: string | null;
+  images?: string[];
   lat?: number | null;
   lng?: number | null;
 };
@@ -43,6 +44,7 @@ type SaveInput = {
   responsiblePerson: string;
   description: string;
   logoUrl: string;
+  images: string[];
   lat: number | null;
   lng: number | null;
 };
@@ -71,6 +73,32 @@ export function CenterProfileForm({
   const [uploadingLogo, setUploadingLogo] = React.useState(false);
   const logoRef = React.useRef<HTMLInputElement>(null);
   const [hours, setHours] = React.useState<WeeklyHours | null>(defaults?.hours ?? null);
+  const [images, setImages] = React.useState<string[]>(defaults?.images ?? []);
+  const [uploadingImg, setUploadingImg] = React.useState(false);
+  const imgRef = React.useRef<HTMLInputElement>(null);
+
+  async function onPickImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    setError(null);
+    setUploadingImg(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files.slice(0, 12 - images.length)) {
+        const blob = await upload(`center-images/${file.name}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        uploaded.push(blob.url);
+      }
+      setImages((prev) => [...prev, ...uploaded].slice(0, 12));
+    } catch {
+      setError("Şəkil yüklənmədi. Yenidən cəhd edin.");
+    } finally {
+      setUploadingImg(false);
+      if (imgRef.current) imgRef.current.value = "";
+    }
+  }
 
   async function onPickLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -112,6 +140,7 @@ export function CenterProfileForm({
         responsiblePerson: get("responsiblePerson"),
         description: get("description"),
         logoUrl,
+        images,
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
       });
@@ -240,6 +269,59 @@ export function CenterProfileForm({
         <Field label="Avadanlıq məlumatı" htmlFor="equipment">
           <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder="Məs: CBCT aparatı, panoramik aparat və s." />
         </Field>
+
+        {/* Gallery */}
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <p className="text-sm font-medium text-ink-800">
+              Şəkillər{" "}
+              <span className="font-normal text-slate-400">({images.length}/12)</span>
+            </p>
+            <input
+              ref={imgRef}
+              type="file"
+              accept="image/png,image/webp,image/jpeg"
+              multiple
+              onChange={onPickImages}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => imgRef.current?.click()}
+              disabled={uploadingImg || images.length >= 12}
+              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              {uploadingImg ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              Şəkil əlavə et
+            </button>
+          </div>
+          {images.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {images.map((img, i) => (
+                <div key={img} className="group relative aspect-video overflow-hidden rounded-lg ring-1 ring-slate-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`Şəkil ${i + 1}`} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImages((prev) => prev.filter((x) => x !== img))}
+                    className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label="Sil"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">
+              Mərkəzin fotolarını əlavə edin — kartda və mərkəz səhifəsində görünəcək.
+            </p>
+          )}
+        </div>
         <div>
           <p className="mb-1.5 text-sm font-medium text-ink-800">
             Xəritədə yeriniz{" "}

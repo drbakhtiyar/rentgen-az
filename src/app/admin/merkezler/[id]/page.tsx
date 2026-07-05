@@ -62,6 +62,7 @@ export default async function AdminEditCenterPage({
             responsiblePerson: center.responsiblePerson ?? "",
             description: center.description ?? "",
             logoUrl: center.logoUrl,
+            images: center.images,
             hours: parseHours(center.hours),
             lat: center.lat,
             lng: center.lng,

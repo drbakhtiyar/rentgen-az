@@ -7,6 +7,7 @@ import { slugify } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/rbac";
 import { centerProfileSchema } from "@/lib/validation";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
+import { smsPatientStatusChange } from "@/lib/notify";
 import { Prisma } from "@/generated/prisma/client";
 import type { RequestStatus } from "@/generated/prisma/enums";
 
@@ -38,6 +39,7 @@ export async function saveCenterProfileAction(input: {
   responsiblePerson?: string;
   description?: string;
   logoUrl?: string;
+  images?: string[];
   lat?: number | null;
   lng?: number | null;
 }): Promise<CenterActionResult> {
@@ -68,6 +70,7 @@ export async function saveCenterProfileAction(input: {
       responsiblePerson: d.responsiblePerson || null,
       description: d.description || null,
       logoUrl: d.logoUrl || null,
+      images: d.images ?? [],
       lat: d.lat ?? null,
       lng: d.lng ?? null,
     };
@@ -166,6 +169,10 @@ export async function updateRequestStatusAction(
         ...(status === "COMPLETED" ? { completedBy: "CENTER" } : {}),
       },
     });
+    // Notify the patient of the status change (best-effort).
+    await smsPatientStatusChange(req.phone, { status, centerName: center.name }).catch(
+      () => {},
+    );
     revalidatePath("/merkez");
     return { ok: true };
   } catch {

@@ -9,6 +9,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import {
   getApprovedCenters,
+  countApprovedCenters,
   getRatingsForCenters,
   getCitiesWithCenters,
   getActiveServices,
@@ -42,17 +43,22 @@ export async function generateMetadata({
   });
 }
 
+const PAGE_SIZE = 12;
+
 export default async function CentersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; city?: string; service?: string }>;
+  searchParams: Promise<{ q?: string; city?: string; service?: string; page?: string }>;
 }) {
   const sp = await searchParams;
-  const centers = await getApprovedCenters({
-    q: sp.q,
-    city: sp.city,
-    service: sp.service,
-  });
+  const filters = { q: sp.q, city: sp.city, service: sp.service };
+  const page = Math.max(1, Number(sp.page) || 1);
+
+  const [total, centers] = await Promise.all([
+    countApprovedCenters(filters),
+    getApprovedCenters({ ...filters, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const cityOptions = (await getCitiesWithCenters()).map((c) => ({
     value: c,
@@ -100,8 +106,11 @@ export default async function CentersPage({
         <Container>
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600">
-              <span className="font-semibold text-ink-900">{centers.length}</span>{" "}
+              <span className="font-semibold text-ink-900">{total}</span>{" "}
               mərkəz tapıldı
+              {totalPages > 1 && (
+                <span className="text-slate-400"> · səhifə {page}/{totalPages}</span>
+              )}
               {activeFilters.length > 0 && (
                 <span className="text-slate-400"> · {activeFilters.join(", ")}</span>
               )}
@@ -109,11 +118,38 @@ export default async function CentersPage({
           </div>
 
           {centers.length > 0 ? (
-            <CentersExplorer
-              centers={centers}
-              ratings={ratings}
-              activeService={sp.service}
-            />
+            <>
+              <CentersExplorer
+                centers={centers}
+                ratings={ratings}
+                activeService={sp.service}
+              />
+              {totalPages > 1 && (
+                <nav className="mt-10 flex items-center justify-center gap-1.5">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                    const params = new URLSearchParams();
+                    if (sp.q) params.set("q", sp.q);
+                    if (sp.city) params.set("city", sp.city);
+                    if (sp.service) params.set("service", sp.service);
+                    if (p > 1) params.set("page", String(p));
+                    const href = `/rentgen-merkezleri${params.toString() ? `?${params}` : ""}`;
+                    return (
+                      <a
+                        key={p}
+                        href={href}
+                        className={
+                          p === page
+                            ? "inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-brand-600 px-3 text-sm font-semibold text-white"
+                            : "inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-white px-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+                        }
+                      >
+                        {p}
+                      </a>
+                    );
+                  })}
+                </nav>
+              )}
+            </>
           ) : (
             <Card className="p-12 text-center">
               <Building2 className="mx-auto h-12 w-12 text-slate-300" />
