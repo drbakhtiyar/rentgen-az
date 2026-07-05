@@ -2,32 +2,35 @@ import Link from "next/link";
 import { ScanLine, Phone, Mail, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { getActiveServices } from "@/lib/queries";
-
-const cols = [
-  {
-    title: "Platforma",
-    links: [
-      { label: "Rentgen mərkəzləri", href: "/rentgen-merkezleri" },
-      { label: "Xidmətlər", href: "/xidmetler" },
-      { label: "Həkimlər üçün", href: "/hekimler-ucun" },
-      { label: "Mərkəzlər üçün", href: "/merkezler-ucun" },
-      { label: "Blog", href: "/blog" },
-    ],
-  },
-  {
-    title: "Şirkət",
-    links: [
-      { label: "Haqqımızda", href: "/#nece-ishleyir" },
-      { label: "FAQ", href: "/faq" },
-      { label: "Əlaqə", href: "/elaqe" },
-      { label: "Gizlilik siyasəti", href: "/gizlilik-siyaseti" },
-      { label: "İstifadə şərtləri", href: "/istifade-shertleri" },
-    ],
-  },
-];
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 export async function SiteFooter() {
   const year = 2026;
+  const locale = await getLocale();
+  const d = getDict(locale);
+  const cols = [
+    {
+      title: d.footer.platform,
+      links: [
+        { label: d.nav.centers, href: "/rentgen-merkezleri" },
+        { label: d.nav.services, href: "/xidmetler" },
+        { label: d.nav.doctors, href: "/hekimler" },
+        { label: d.nav.forCenters, href: "/merkezler-ucun" },
+        { label: d.nav.blog, href: "/blog" },
+      ],
+    },
+    {
+      title: d.footer.company,
+      links: [
+        { label: d.footer.about, href: "/#nece-ishleyir" },
+        { label: d.footer.faq, href: "/faq" },
+        { label: d.nav.contact, href: "/elaqe" },
+        { label: d.footer.privacy, href: "/gizlilik-siyaseti" },
+        { label: d.footer.terms, href: "/istifade-shertleri" },
+      ],
+    },
+  ];
   const footerServices = (await getActiveServices())
     .filter((s) => s.featured)
     .slice(0, 6);
@@ -46,8 +49,7 @@ export async function SiteFooter() {
               </span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
-              Azərbaycanda dental rentgen, panoramik rentgen, sefalometrik rentgen
-              və 3D dental tomoqrafiya (CBCT) mərkəzlərini bir platformada tapın.
+              {d.footer.tagline}
             </p>
             <div className="mt-5 space-y-2 text-sm text-slate-400">
               <p className="flex items-center gap-2">
@@ -81,7 +83,7 @@ export async function SiteFooter() {
           ))}
 
           <div>
-            <h3 className="text-sm font-semibold text-white">Xidmətlər</h3>
+            <h3 className="text-sm font-semibold text-white">{d.nav.services}</h3>
             <ul className="mt-4 space-y-2.5">
               {footerServices.map((s) => (
                 <li key={s.slug}>
@@ -98,10 +100,9 @@ export async function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row">
-          <p>© {year} Rentgen.az — Bütün hüquqlar qorunur.</p>
+          <p>© {year} Rentgen.az — {d.footer.rights}</p>
           <p className="max-w-md text-center sm:text-right">
-            Platformadakı məlumat ümumi xarakter daşıyır və həkim məsləhətini əvəz
-            etmir.
+            {d.footer.disclaimer}
           </p>
         </div>
       </Container>

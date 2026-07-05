@@ -1,9 +1,21 @@
 import { getCurrentUser, dashboardPathForRole } from "@/lib/auth/rbac";
-import { MAIN_NAV } from "@/lib/constants";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { HeaderClient } from "./header-client";
 
 export async function SiteHeader() {
-  const user = await getCurrentUser();
+  const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
+  const d = getDict(locale);
+
+  const nav = [
+    { label: d.nav.centers, href: "/rentgen-merkezleri" },
+    { label: d.nav.services, href: "/xidmetler" },
+    { label: d.nav.doctors, href: "/hekimler" },
+    { label: d.nav.forDoctors, href: "/hekimler-ucun" },
+    { label: d.nav.forCenters, href: "/merkezler-ucun" },
+    { label: d.nav.blog, href: "/blog" },
+    { label: d.nav.contact, href: "/elaqe" },
+  ];
 
   const sessionInfo = user
     ? {
@@ -18,5 +30,5 @@ export async function SiteHeader() {
       }
     : null;
 
-  return <HeaderClient nav={MAIN_NAV} session={sessionInfo} />;
+  return <HeaderClient nav={nav} session={sessionInfo} locale={locale} cta={d.cta} />;
 }

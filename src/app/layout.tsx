@@ -8,6 +8,7 @@ import { SITE, buildMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/se
 import { SITE_URL } from "@/lib/env";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { getLocale } from "@/lib/i18n-server";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -37,12 +38,13 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
     <html
-      lang="az"
+      lang={locale}
       className={`${inter.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-ink-900">

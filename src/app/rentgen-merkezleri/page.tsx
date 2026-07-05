@@ -16,6 +16,8 @@ import {
   getServiceBySlug,
 } from "@/lib/queries";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 export const revalidate = 120;
 
@@ -68,6 +70,8 @@ export default async function CentersPage({
     value: s.slug,
     label: s.name,
   }));
+  const d = getDict(await getLocale());
+  const searchLabels = { ...d.search, search: d.cta.search };
 
   const svc = sp.service ? await getServiceBySlug(sp.service) : null;
   const activeFilters = [
@@ -98,6 +102,7 @@ export default async function CentersPage({
             cities={cityOptions}
             defaults={{ q: sp.q, city: sp.city, service: sp.service }}
             variant="compact"
+            labels={searchLabels}
           />
         </Container>
       </div>

@@ -36,6 +36,8 @@ import {
 import { faqJsonLd } from "@/lib/seo";
 import { HOME_FAQ } from "@/content/faq";
 import { formatDateAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 export const revalidate = 300;
 
@@ -50,6 +52,10 @@ export default async function HomePage() {
   ]);
   const cityOptions = searchCities.map((c) => ({ value: c, label: c }));
   const serviceOptions = allServices.map((s) => ({ value: s.slug, label: s.name }));
+
+  const locale = await getLocale();
+  const d = getDict(locale);
+  const searchLabels = { ...d.search, search: d.cta.search };
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
@@ -69,17 +75,15 @@ export default async function HomePage() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-cyan-300 backdrop-blur-sm">
                 <Sparkles className="h-3.5 w-3.5" />
-                Azərbaycanın dental görüntüləmə platforması
+                {d.hero.badge}
               </span>
               <h1 className="font-display mt-5 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-                Bakıda{" "}
-                <span className="text-gradient">dental rentgen</span> və 3D
-                tomoqrafiya mərkəzini tapın
+                {d.hero.titleA}
+                <span className="text-gradient">{d.hero.titleHighlight}</span>
+                {d.hero.titleB}
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-300">
-                Panoramik, sefalometrik rentgen, CBCT və implant öncəsi
-                tomoqrafiya xidmətləri göstərən təsdiqlənmiş mərkəzləri xidmət və
-                rayona görə axtarın — birbaşa zəng və WhatsApp ilə əlaqə saxlayın.
+                {d.hero.subtitle}
               </p>
 
               <div className="mt-7">
@@ -87,18 +91,19 @@ export default async function HomePage() {
                   services={serviceOptions}
                   cities={cityOptions}
                   variant="hero"
+                  labels={searchLabels}
                 />
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> Təsdiqlənmiş mərkəzlər
+                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> {d.hero.f1}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> 3 klikdən az axtarış
+                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> {d.hero.f2}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> Parolsuz, sürətli giriş
+                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> {d.hero.f3}
                 </span>
               </div>
             </div>
