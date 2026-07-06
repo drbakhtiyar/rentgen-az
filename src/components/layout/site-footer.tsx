@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ScanLine, Phone, Mail, MapPin } from "lucide-react";
+import Image from "next/image";
+import { Phone, Mail, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { SERVICES } from "@/lib/constants";
 
@@ -36,12 +37,16 @@ export function SiteFooter() {
       <Container className="relative py-14">
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10">
-                <ScanLine className="h-5 w-5 text-cyan-400" />
-              </span>
+            <Link href="/" className="flex items-center gap-2.5" aria-label="rentgen.az">
+              <Image
+                src="/mark-square.png"
+                alt="rentgen.az"
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-xl"
+              />
               <span className="font-display text-lg font-bold text-white">
-                Rentgen<span className="text-brand-400">.az</span>
+                rentgen<span className="text-[#0bb1f0]">.az</span>
               </span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">

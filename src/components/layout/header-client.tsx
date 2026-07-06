@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, LayoutDashboard, ScanLine } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -38,12 +39,17 @@ export function HeaderClient({
       )}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-ink-900 text-white shadow-[var(--shadow-glow)]">
-            <ScanLine className="h-5 w-5 text-cyan-400" />
-          </span>
+        <Link href="/" className="group flex items-center gap-2.5" aria-label="rentgen.az">
+          <Image
+            src="/mark.png"
+            alt="rentgen.az"
+            width={36}
+            height={36}
+            priority
+            className="h-9 w-9"
+          />
           <span className="font-display text-lg font-bold tracking-tight text-ink-900">
-            Rentgen<span className="text-brand-600">.az</span>
+            rentgen<span className="text-[#0bb1f0]">.az</span>
           </span>
         </Link>
 

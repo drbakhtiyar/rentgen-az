@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { ScanLine, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { CenterProfileForm } from "@/components/forms/center-profile-form";
 import { prisma } from "@/lib/db";
@@ -36,9 +37,7 @@ export default async function CenterOnboardingPage() {
           <ArrowLeft className="h-4 w-4" /> Ana səhifə
         </Link>
         <div className="mt-5 flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink-900">
-            <ScanLine className="h-6 w-6 text-cyan-400" />
-          </span>
+          <Image src="/mark-square.png" alt="rentgen.az" width={44} height={44} className="h-11 w-11 rounded-xl" />
           <div>
             <h1 className="font-display text-2xl font-bold text-ink-900">
               Mərkəz profilini yaradın

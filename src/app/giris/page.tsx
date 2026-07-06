@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { ScanLine, ShieldCheck, Zap, Lock } from "lucide-react";
+import Image from "next/image";
+import { ShieldCheck, Zap, Lock } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getCurrentUser, dashboardPathForRole } from "@/lib/auth/rbac";
@@ -43,7 +44,8 @@ export default async function LoginPage({
       <Container className="relative grid min-h-[calc(100vh-4rem)] items-center gap-12 py-16 lg:grid-cols-2">
         <div className="hidden text-white lg:block">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-cyan-300">
-            <ScanLine className="h-3.5 w-3.5" /> Rentgen.az
+            <Image src="/mark-square.png" alt="" width={16} height={16} className="h-4 w-4 rounded" />
+            rentgen.az
           </span>
           <h1 className="font-display mt-5 text-4xl font-bold leading-tight">
             Parolsuz, sürətli və təhlükəsiz giriş
