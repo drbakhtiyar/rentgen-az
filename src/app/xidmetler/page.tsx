@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { JsonLd } from "@/components/ui/json-ld";
 import { countApprovedCentersByService, getActiveServices } from "@/lib/queries";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
@@ -31,6 +33,7 @@ export default async function ServicesPage() {
     countApprovedCentersByService(),
     getActiveServices(),
   ]);
+  const d = getDict(await getLocale()).services;
 
   const categories = Array.from(
     new Set(services.map((s) => s.category).filter((c): c is string => Boolean(c))),
@@ -45,10 +48,10 @@ export default async function ServicesPage() {
         ])}
       />
       <PageHeader
-        eyebrow="Görüntüləmə xidmətləri"
-        title="Dental rentgen və tomoqrafiya xidmətləri"
-        description="Diaqnostika və müalicə planlaması üçün lazım olan bütün görüntüləmə növləri — hər biri üçün təsdiqlənmiş mərkəzləri tapın."
-        breadcrumbs={[{ name: "Xidmətlər" }]}
+        eyebrow={d.eyebrow}
+        title={d.title}
+        description={d.description}
+        breadcrumbs={[{ name: d.title }]}
       />
 
       {categories.map((cat) => (

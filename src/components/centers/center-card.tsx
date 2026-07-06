@@ -6,17 +6,20 @@ import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { RatingSummary } from "@/components/reviews/stars";
 import { OpenStatus } from "@/components/centers/open-status";
 import { formatPrice } from "@/lib/utils";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import type { CenterWithServices } from "@/lib/queries";
 
 export function CenterCard({
   center,
   rating,
   highlightService,
+  locale = DEFAULT_LOCALE,
 }: {
   center: CenterWithServices;
   rating?: { avg: number; count: number };
   /** service slug the patient searched for — its price is featured */
   highlightService?: string;
+  locale?: Locale;
 }) {
   const matched = highlightService
     ? center.services.find((cs) => cs.service.slug === highlightService)
@@ -106,7 +109,7 @@ export function CenterCard({
 
         {center.hours ? (
           <div className="mt-2.5">
-            <OpenStatus hours={center.hours} />
+            <OpenStatus hours={center.hours} locale={locale} />
           </div>
         ) : null}
 

@@ -6,6 +6,7 @@ import { Navigation, Loader2, MapPin, ArrowDownWideNarrow } from "lucide-react";
 import { CenterCard } from "@/components/centers/center-card";
 import type { CenterWithServices } from "@/lib/queries";
 import { distanceKm, formatDistance, hasCoords } from "@/lib/geo";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 const CentersMapView = dynamic(() => import("./centers-map-view"), {
   ssr: false,
@@ -22,12 +23,15 @@ export function CentersExplorer({
   centers,
   ratings,
   activeService,
+  locale = DEFAULT_LOCALE,
 }: {
   centers: CenterWithServices[];
   ratings: Record<string, { avg: number; count: number }>;
   /** service slug the patient searched for (enables price sort + highlight) */
   activeService?: string;
+  locale?: Locale;
 }) {
+  const t = getDict(locale).centers;
   const [user, setUser] = React.useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
@@ -126,12 +130,12 @@ export function CentersExplorer({
           ) : (
             <Navigation className="h-4 w-4" />
           )}
-          Yaxınımdakı mərkəzləri tap
+          {t.nearby}
         </button>
 
         <label className="ml-auto flex items-center gap-2 text-sm text-slate-500">
           <ArrowDownWideNarrow className="h-4 w-4" />
-          <span className="hidden sm:inline">Sırala:</span>
+          <span className="hidden sm:inline">{t.sortBy}:</span>
           <select
             value={sort}
             onChange={(e) => {
@@ -142,10 +146,10 @@ export function CentersExplorer({
             }}
             className="h-10 rounded-full border border-slate-200 bg-white px-3 text-sm font-medium text-ink-800 focus:border-brand-400 focus:outline-none"
           >
-            <option value="recommended">Tövsiyə</option>
-            {activeService && <option value="price">Ən ucuz</option>}
-            <option value="rating">Yüksək reytinq</option>
-            <option value="distance">Ən yaxın</option>
+            <option value="recommended">{t.sortRecommended}</option>
+            {activeService && <option value="price">{t.sortCheapest}</option>}
+            <option value="rating">{t.sortRating}</option>
+            <option value="distance">{t.sortNearest}</option>
           </select>
         </label>
 
@@ -176,6 +180,7 @@ export function CentersExplorer({
               center={c}
               rating={ratings[c.id]}
               highlightService={activeService}
+              locale={locale}
             />
           </div>
         ))}

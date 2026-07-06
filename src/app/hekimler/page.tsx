@@ -7,6 +7,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { DoctorCard } from "@/components/doctors/doctor-card";
 import { getApprovedDoctors } from "@/lib/queries";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
@@ -20,42 +22,43 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function DoctorsPage() {
-  const doctors = await getApprovedDoctors();
+  const [doctors, locale] = await Promise.all([getApprovedDoctors(), getLocale()]);
+  const t = getDict(locale).doctors;
 
   return (
     <>
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Ana səhifə", path: "/" },
-          { name: "Həkimlər", path: "/hekimler" },
+          { name: t.title, path: "/hekimler" },
         ])}
       />
       <PageHeader
-        eyebrow="Həkim kataloqu"
-        title="Dental həkimlər"
-        description="Təsdiqlənmiş dental həkimləri ixtisas və şəhərə görə tapın."
-        breadcrumbs={[{ name: "Həkimlər" }]}
+        eyebrow={t.eyebrow}
+        title={t.title}
+        description={t.description}
+        breadcrumbs={[{ name: t.title }]}
       />
 
       <Section className="py-12">
         <Container>
           {doctors.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {doctors.map((d) => (
-                <DoctorCard key={d.id} doctor={d} />
+              {doctors.map((doc) => (
+                <DoctorCard key={doc.id} doctor={doc} locale={locale} />
               ))}
             </div>
           ) : (
             <Card className="p-12 text-center">
               <Stethoscope className="mx-auto h-12 w-12 text-slate-300" />
               <h2 className="font-display mt-4 text-xl font-bold text-ink-900">
-                Hələ həkim yoxdur
+                {t.empty}
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-                Təsdiqlənmiş həkimlər tezliklə burada görünəcək.
+                {t.emptyDesc}
               </p>
               <ButtonLink href="/hekimler-ucun" className="mt-6">
-                Həkim kimi qoşulun
+                {t.joinCta}
               </ButtonLink>
             </Card>
           )}

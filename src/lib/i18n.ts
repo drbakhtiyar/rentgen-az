@@ -62,6 +62,85 @@ type Dict = {
     disclaimer: string;
     rights: string;
   };
+  centers: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    found: string; // "... mərkəz tapıldı"
+    page: string; // "səhifə"
+    noResults: string;
+    noResultsDesc: string;
+    allCenters: string;
+    nearby: string;
+    sortBy: string;
+    sortRecommended: string;
+    sortCheapest: string;
+    sortRating: string;
+    sortNearest: string;
+  };
+  centerDetail: {
+    contactInfo: string;
+    servicesPrices: string;
+    reviews: string;
+    workingHours: string;
+    aboutCenter: string;
+    noReviews: string;
+    requestTitle: string;
+    requestDesc: string;
+    replyBy: string; // "{center} cavabı" → suffix
+    openMap: string;
+    today: string;
+    closed: string;
+    phone: string;
+    address: string;
+    equipment: string;
+    responsible: string;
+  };
+  services: {
+    eyebrow: string;
+    title: string;
+    description: string;
+  };
+  doctors: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    empty: string;
+    emptyDesc: string;
+    joinCta: string;
+    viewProfile: string;
+    specializations: string;
+    verified: string;
+    needXray: string;
+    needXrayDesc: string;
+  };
+  appt: {
+    name: string;
+    namePh: string;
+    phone: string;
+    service: string;
+    serviceOpt: string;
+    doctor: string;
+    doctorHint: string;
+    doctorOpt: string;
+    note: string;
+    notePh: string;
+    date: string;
+    dateHint: string;
+    time: string;
+    pickDate: string;
+    noSlots: string;
+    pickTime: string;
+    submit: string;
+    disclaimer: string;
+    centerLabel: string;
+  };
+  status: {
+    openTpl: string; // {t} = closing time
+    closingTpl: string; // {m} = minutes
+    opensTpl: string; // {t} = opening time
+    closed: string;
+  };
 };
 
 const az: Dict = {
@@ -115,6 +194,89 @@ const az: Dict = {
       "Platformadakı məlumat ümumi xarakter daşıyır və həkim məsləhətini əvəz etmir.",
     rights: "Bütün hüquqlar qorunur.",
   },
+  centers: {
+    eyebrow: "Mərkəzlər kataloqu",
+    title: "Rentgen mərkəzləri",
+    description:
+      "Təsdiqlənmiş dental rentgen və 3D tomoqrafiya mərkəzlərini xidmət və rayona görə tapın.",
+    found: "mərkəz tapıldı",
+    page: "səhifə",
+    noResults: "Nəticə tapılmadı",
+    noResultsDesc:
+      "Seçilmiş filtrə uyğun təsdiqlənmiş mərkəz yoxdur. Filtri dəyişin və ya bütün mərkəzlərə baxın.",
+    allCenters: "Bütün mərkəzlər",
+    nearby: "Yaxınımdakı mərkəzləri tap",
+    sortBy: "Sırala",
+    sortRecommended: "Tövsiyə",
+    sortCheapest: "Ən ucuz",
+    sortRating: "Yüksək reytinq",
+    sortNearest: "Ən yaxın",
+  },
+  centerDetail: {
+    contactInfo: "Əlaqə və məlumat",
+    servicesPrices: "Xidmətlər və qiymətlər",
+    reviews: "Rəylər",
+    workingHours: "İş saatları",
+    aboutCenter: "Mərkəz haqqında",
+    noReviews: "Hələ rəy yoxdur. İlk rəyi siz yazın.",
+    requestTitle: "Müraciət göndərin",
+    requestDesc: "Mərkəz sizinlə əlaqə saxlasın.",
+    replyBy: "cavabı",
+    openMap: "Xəritədə bax",
+    today: "bu gün",
+    closed: "Bağlı",
+    phone: "Telefon",
+    address: "Ünvan",
+    equipment: "Avadanlıq",
+    responsible: "Məsul şəxs",
+  },
+  services: {
+    eyebrow: "Görüntüləmə xidmətləri",
+    title: "Dental rentgen və tomoqrafiya xidmətləri",
+    description:
+      "Diaqnostika və müalicə planlaması üçün lazım olan bütün görüntüləmə növləri — hər biri üçün təsdiqlənmiş mərkəzləri tapın.",
+  },
+  doctors: {
+    eyebrow: "Həkim kataloqu",
+    title: "Dental həkimlər",
+    description: "Təsdiqlənmiş dental həkimləri ixtisas və şəhərə görə tapın.",
+    empty: "Hələ həkim yoxdur",
+    emptyDesc: "Təsdiqlənmiş həkimlər tezliklə burada görünəcək.",
+    joinCta: "Həkim kimi qoşulun",
+    viewProfile: "Profilə bax",
+    specializations: "İxtisaslar",
+    verified: "Sənədləri təsdiqlənib",
+    needXray: "Rentgen müayinəsi lazımdır?",
+    needXrayDesc:
+      "Təsdiqlənmiş rentgen mərkəzlərini tapın və birbaşa əlaqə saxlayın.",
+  },
+  appt: {
+    name: "Ad, Soyad",
+    namePh: "Adınız",
+    phone: "Telefon nömrəsi",
+    service: "Müayinə növü",
+    serviceOpt: "Seçin (istəyə bağlı)",
+    doctor: "Sizi yönləndirən həkim",
+    doctorHint: "Həkiminiz varsa seçin — o, müraciətinizi izləyə biləcək.",
+    doctorOpt: "Həkim seçin (istəyə bağlı)",
+    note: "Qeyd",
+    notePh: "Əlavə məlumat (istəyə bağlı)",
+    date: "Tarix",
+    dateHint: "İstədiyiniz gün (istəyə bağlı)",
+    time: "Saat",
+    pickDate: "Əvvəlcə tarix seçin",
+    noSlots: "Bu gün üçün vaxt yoxdur",
+    pickTime: "Saat seçin",
+    submit: "Müraciət göndər",
+    disclaimer: "Müraciətiniz seçilmiş mərkəzə çatdırılır. Ödəniş platformada alınmır.",
+    centerLabel: "Mərkəz",
+  },
+  status: {
+    openTpl: "Açıqdır · {t}-dək",
+    closingTpl: "{m} dəq sonra bağlanır",
+    opensTpl: "Bağlıdır · {t}-də açılır",
+    closed: "Bağlıdır",
+  },
 };
 
 const ru: Dict = {
@@ -167,6 +329,88 @@ const ru: Dict = {
     disclaimer:
       "Информация на платформе носит общий характер и не заменяет консультацию врача.",
     rights: "Все права защищены.",
+  },
+  centers: {
+    eyebrow: "Каталог центров",
+    title: "Рентген-центры",
+    description:
+      "Найдите проверенные центры стоматологического рентгена и 3D-томографии по услуге и району.",
+    found: "центров найдено",
+    page: "страница",
+    noResults: "Ничего не найдено",
+    noResultsDesc:
+      "Нет проверенных центров по выбранному фильтру. Измените фильтр или посмотрите все центры.",
+    allCenters: "Все центры",
+    nearby: "Найти центры рядом",
+    sortBy: "Сортировка",
+    sortRecommended: "Рекомендуемые",
+    sortCheapest: "Дешевле",
+    sortRating: "По рейтингу",
+    sortNearest: "Ближайшие",
+  },
+  centerDetail: {
+    contactInfo: "Контакты и информация",
+    servicesPrices: "Услуги и цены",
+    reviews: "Отзывы",
+    workingHours: "Часы работы",
+    aboutCenter: "О центре",
+    noReviews: "Отзывов пока нет. Оставьте первый отзыв.",
+    requestTitle: "Отправить заявку",
+    requestDesc: "Центр свяжется с вами.",
+    replyBy: "ответ",
+    openMap: "На карте",
+    today: "сегодня",
+    closed: "Закрыто",
+    phone: "Телефон",
+    address: "Адрес",
+    equipment: "Оборудование",
+    responsible: "Ответственное лицо",
+  },
+  services: {
+    eyebrow: "Диагностические услуги",
+    title: "Услуги стоматологического рентгена и томографии",
+    description:
+      "Все виды визуализации для диагностики и планирования лечения — найдите проверенные центры для каждой.",
+  },
+  doctors: {
+    eyebrow: "Каталог врачей",
+    title: "Стоматологи",
+    description: "Найдите проверенных стоматологов по специализации и городу.",
+    empty: "Врачей пока нет",
+    emptyDesc: "Проверенные врачи скоро появятся здесь.",
+    joinCta: "Присоединиться как врач",
+    viewProfile: "Профиль",
+    specializations: "Специализации",
+    verified: "Документы подтверждены",
+    needXray: "Нужно рентген-обследование?",
+    needXrayDesc: "Найдите проверенные рентген-центры и свяжитесь напрямую.",
+  },
+  appt: {
+    name: "Имя, Фамилия",
+    namePh: "Ваше имя",
+    phone: "Номер телефона",
+    service: "Вид обследования",
+    serviceOpt: "Выберите (необязательно)",
+    doctor: "Направивший врач",
+    doctorHint: "Если у вас есть врач — выберите его, он сможет отслеживать заявку.",
+    doctorOpt: "Выберите врача (необязательно)",
+    note: "Примечание",
+    notePh: "Дополнительная информация (необязательно)",
+    date: "Дата",
+    dateHint: "Желаемый день (необязательно)",
+    time: "Время",
+    pickDate: "Сначала выберите дату",
+    noSlots: "На этот день нет времени",
+    pickTime: "Выберите время",
+    submit: "Отправить заявку",
+    disclaimer: "Ваша заявка передаётся выбранному центру. Оплата на платформе не взимается.",
+    centerLabel: "Центр",
+  },
+  status: {
+    openTpl: "Открыто · до {t}",
+    closingTpl: "{m} мин до закрытия",
+    opensTpl: "Закрыто · открытие в {t}",
+    closed: "Закрыто",
   },
 };
 

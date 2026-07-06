@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { submitAppointmentAction } from "@/app/actions/public";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 type Option = { value: string; label: string };
 
@@ -16,6 +17,7 @@ export function AppointmentForm({
   doctors,
   defaultService,
   hours,
+  locale = DEFAULT_LOCALE,
   compact,
 }: {
   centerId?: string;
@@ -25,8 +27,10 @@ export function AppointmentForm({
   defaultService?: string;
   /** center's structured hours — enables date + time slot picking */
   hours?: WeeklyHours | null;
+  locale?: Locale;
   compact?: boolean;
 }) {
+  const t = getDict(locale).appt;
   const [pending, startTransition] = React.useTransition();
   const [done, setDone] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -75,14 +79,14 @@ export function AppointmentForm({
     <form onSubmit={onSubmit} className="space-y-4">
       {centerName && (
         <p className="text-sm text-slate-500">
-          Mərkəz: <span className="font-semibold text-ink-800">{centerName}</span>
+          {t.centerLabel}: <span className="font-semibold text-ink-800">{centerName}</span>
         </p>
       )}
       <div className={compact ? "space-y-4" : "grid gap-4 sm:grid-cols-2"}>
-        <Field label="Ad, Soyad" htmlFor="name" required>
-          <Input id="name" name="name" placeholder="Adınız" required />
+        <Field label={t.name} htmlFor="name" required>
+          <Input id="name" name="name" placeholder={t.namePh} required />
         </Field>
-        <Field label="Telefon nömrəsi" htmlFor="phone" required>
+        <Field label={t.phone} htmlFor="phone" required>
           <Input
             id="phone"
             name="phone"
@@ -93,9 +97,9 @@ export function AppointmentForm({
           />
         </Field>
       </div>
-      <Field label="Müayinə növü" htmlFor="serviceSlug">
+      <Field label={t.service} htmlFor="serviceSlug">
         <Select id="serviceSlug" name="serviceSlug" defaultValue={defaultService ?? ""}>
-          <option value="">Seçin (istəyə bağlı)</option>
+          <option value="">{t.serviceOpt}</option>
           {services.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
@@ -104,13 +108,9 @@ export function AppointmentForm({
         </Select>
       </Field>
       {doctors && doctors.length > 0 && (
-        <Field
-          label="Sizi yönləndirən həkim"
-          htmlFor="doctorId"
-          hint="Həkiminiz varsa seçin — o, müraciətinizi izləyə biləcək."
-        >
+        <Field label={t.doctor} htmlFor="doctorId" hint={t.doctorHint}>
           <Select id="doctorId" name="doctorId" defaultValue="">
-            <option value="">Həkim seçin (istəyə bağlı)</option>
+            <option value="">{t.doctorOpt}</option>
             {doctors.map((d) => (
               <option key={d.value} value={d.value}>
                 {d.label}
@@ -121,7 +121,7 @@ export function AppointmentForm({
       )}
       {hours && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Tarix" htmlFor="date" hint="İstədiyiniz gün (istəyə bağlı)">
+          <Field label={t.date} htmlFor="date" hint={t.dateHint}>
             <Input
               id="date"
               name="date"
@@ -134,7 +134,7 @@ export function AppointmentForm({
               }}
             />
           </Field>
-          <Field label="Saat" htmlFor="time">
+          <Field label={t.time} htmlFor="time">
             <Select
               id="time"
               name="time"
@@ -143,11 +143,7 @@ export function AppointmentForm({
               disabled={!date || slots.length === 0}
             >
               <option value="">
-                {!date
-                  ? "Əvvəlcə tarix seçin"
-                  : slots.length === 0
-                    ? "Bu gün üçün vaxt yoxdur"
-                    : "Saat seçin"}
+                {!date ? t.pickDate : slots.length === 0 ? t.noSlots : t.pickTime}
               </option>
               {slots.map((s) => (
                 <option key={s} value={s}>
@@ -159,8 +155,8 @@ export function AppointmentForm({
         </div>
       )}
 
-      <Field label="Qeyd" htmlFor="note">
-        <Textarea id="note" name="note" placeholder="Əlavə məlumat (istəyə bağlı)" />
+      <Field label={t.note} htmlFor="note">
+        <Textarea id="note" name="note" placeholder={t.notePh} />
       </Field>
 
       {error && (
@@ -171,11 +167,9 @@ export function AppointmentForm({
 
       <Button type="submit" size="lg" className="w-full" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        Müraciət göndər
+        {t.submit}
       </Button>
-      <p className="text-center text-xs text-slate-400">
-        Müraciətiniz seçilmiş mərkəzə çatdırılır. Ödəniş platformada alınmır.
-      </p>
+      <p className="text-center text-xs text-slate-400">{t.disclaimer}</p>
     </form>
   );
 }

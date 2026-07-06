@@ -12,6 +12,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { AppointmentForm } from "@/components/forms/appointment-form";
 import { getApprovedDoctors, getActiveServices } from "@/lib/queries";
+import { getLocale } from "@/lib/i18n-server";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -53,6 +54,7 @@ export default async function ContactPage() {
     value: s.slug,
     label: s.name,
   }));
+  const locale = await getLocale();
   return (
     <>
       <JsonLd
@@ -141,6 +143,7 @@ export default async function ContactPage() {
                 saxlayacağıq.
               </p>
               <AppointmentForm
+                locale={locale}
                 services={serviceOptions}
                 doctors={doctors.map((d) => ({
                   value: d.id,

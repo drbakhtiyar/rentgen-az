@@ -70,7 +70,8 @@ export default async function CentersPage({
     value: s.slug,
     label: s.name,
   }));
-  const d = getDict(await getLocale());
+  const locale = await getLocale();
+  const d = getDict(locale);
   const searchLabels = { ...d.search, search: d.cta.search };
 
   const svc = sp.service ? await getServiceBySlug(sp.service) : null;
@@ -89,10 +90,10 @@ export default async function CentersPage({
         ])}
       />
       <PageHeader
-        eyebrow="Mərkəzlər kataloqu"
-        title="Rentgen mərkəzləri"
-        description="Təsdiqlənmiş dental rentgen və 3D tomoqrafiya mərkəzlərini xidmət və rayona görə tapın."
-        breadcrumbs={[{ name: "Rentgen mərkəzləri" }]}
+        eyebrow={d.centers.eyebrow}
+        title={d.centers.title}
+        description={d.centers.description}
+        breadcrumbs={[{ name: d.centers.title }]}
       />
 
       <div className="border-b border-slate-200 bg-white">
@@ -112,9 +113,9 @@ export default async function CentersPage({
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600">
               <span className="font-semibold text-ink-900">{total}</span>{" "}
-              mərkəz tapıldı
+              {d.centers.found}
               {totalPages > 1 && (
-                <span className="text-slate-400"> · səhifə {page}/{totalPages}</span>
+                <span className="text-slate-400"> · {d.centers.page} {page}/{totalPages}</span>
               )}
               {activeFilters.length > 0 && (
                 <span className="text-slate-400"> · {activeFilters.join(", ")}</span>
@@ -128,6 +129,7 @@ export default async function CentersPage({
                 centers={centers}
                 ratings={ratings}
                 activeService={sp.service}
+                locale={locale}
               />
               {totalPages > 1 && (
                 <nav className="mt-10 flex items-center justify-center gap-1.5">
@@ -159,14 +161,13 @@ export default async function CentersPage({
             <Card className="p-12 text-center">
               <Building2 className="mx-auto h-12 w-12 text-slate-300" />
               <h2 className="font-display mt-4 text-xl font-bold text-ink-900">
-                Nəticə tapılmadı
+                {d.centers.noResults}
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-                Seçilmiş filtrə uyğun təsdiqlənmiş mərkəz yoxdur. Filtri dəyişin və
-                ya bütün mərkəzlərə baxın.
+                {d.centers.noResultsDesc}
               </p>
               <ButtonLink href="/rentgen-merkezleri" className="mt-6">
-                Bütün mərkəzlər
+                {d.centers.allCenters}
               </ButtonLink>
             </Card>
           )}

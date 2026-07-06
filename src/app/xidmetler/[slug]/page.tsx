@@ -17,6 +17,7 @@ import {
   getRatingsForCenters,
 } from "@/lib/queries";
 import { getServiceContent } from "@/content/services";
+import { getLocale } from "@/lib/i18n-server";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -62,6 +63,7 @@ export default async function ServiceDetailPage({
   const centers = await getCentersForService(slug, 9);
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const allServices = await getActiveServices();
+  const locale = await getLocale();
   const related = allServices
     .filter((s) => s.slug !== slug && s.category === service.category)
     .slice(0, 4);
@@ -186,6 +188,7 @@ export default async function ServiceDetailPage({
                   center={c}
                   rating={ratings[c.id]}
                   highlightService={slug}
+                  locale={locale}
                 />
               ))}
             </div>

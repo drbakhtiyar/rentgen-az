@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Stethoscope, MapPin, BadgeCheck, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 export type DoctorCardData = {
   id: string;
@@ -14,7 +15,13 @@ export type DoctorCardData = {
   certificateUrl: string | null;
 };
 
-export function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
+export function DoctorCard({
+  doctor,
+  locale = DEFAULT_LOCALE,
+}: {
+  doctor: DoctorCardData;
+  locale?: Locale;
+}) {
   const name = [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
   const verified = Boolean(doctor.diplomaUrl || doctor.certificateUrl);
   const specs = doctor.specializations.slice(0, 3);
@@ -59,7 +66,7 @@ export function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
         href={`/hekimler/${doctor.id}`}
         className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-brand-600 hover:text-brand-700"
       >
-        Profilə bax <ArrowUpRight className="h-4 w-4" />
+        {getDict(locale).doctors.viewProfile} <ArrowUpRight className="h-4 w-4" />
       </Link>
     </Card>
   );
