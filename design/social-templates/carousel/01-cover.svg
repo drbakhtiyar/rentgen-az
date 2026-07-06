@@ -1,0 +1,64 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="gridDark" width="48" height="48" patternUnits="userSpaceOnUse">
+    <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(122,170,255,0.08)" stroke-width="1"/>
+  </pattern>
+    <radialGradient id="glowCyan" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#2ad4e6" stop-opacity="0.45"/>
+    <stop offset="100%" stop-color="#2ad4e6" stop-opacity="0"/>
+  </radialGradient>
+    <radialGradient id="glowBrand" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#1f7aff" stop-opacity="0.45"/>
+    <stop offset="100%" stop-color="#1f7aff" stop-opacity="0"/>
+  </radialGradient>
+    <linearGradient id="scanBand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2ad4e6" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#2ad4e6" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#2ad4e6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="headlineGradient" x1="0%" y1="0%" x2="100%" y2="30%">
+      <stop offset="0%" stop-color="#0a5ff0"/>
+      <stop offset="100%" stop-color="#11bdd4"/>
+    </linearGradient></defs>
+  <rect width="1080" height="1080" fill="#0a1124"/>
+  <rect width="1080" height="1080" fill="url(#gridDark)"/>
+  <circle cx="1020" cy="60" r="360" fill="url(#glowCyan)"/>
+  <circle cx="40" cy="1040" r="320" fill="url(#glowBrand)"/>
+  <rect x="0" y="300" width="1080" height="190" fill="url(#scanBand)" opacity="0.35"/>
+
+  <g>
+    <rect x="80" y="80" width="51.839999999999996" height="51.839999999999996" rx="14.399999999999999" fill="rgba(255,255,255,0.1)"/>
+    <g transform="translate(91.52 91.52) scale(1.2)" fill="none" stroke="#2ad4e6" stroke-width="1.224" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+    <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+    <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+    <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+    <path d="M7 12h10"/>
+  </g>
+    <text x="146.24" y="115.712" font-family="Plus Jakarta Sans, Inter, sans-serif" font-weight="700" font-size="28.799999999999997" letter-spacing="-0.5">
+      <tspan fill="#ffffff">Rentgen</tspan><tspan fill="#4a9dff">.az</tspan>
+    </text>
+  </g>
+
+  <g>
+    <rect x="80" y="250" width="340" height="56" rx="28" fill="rgba(42,212,230,0.12)" stroke="rgba(42,212,230,0.35)" stroke-width="2"/>
+    <text x="250" y="285.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="22" letter-spacing="2" fill="#2ad4e6">MAARİFLƏNDİRİCİ</text>
+  </g>
+
+  <text x="80" y="470" font-family="Plus Jakarta Sans, Inter, sans-serif" font-weight="800" font-size="76" fill="#ffffff" letter-spacing="-1">
+    <tspan x="80" dy="0">[ Başlıq bura</tspan>
+    <tspan x="80" dy="88">yazılacaq ]</tspan>
+  </text>
+  <text x="80" y="620" font-family="Inter, sans-serif" font-size="32" fill="rgba(255,255,255,0.68)">
+    <tspan x="80" dy="0">[ Alt başlıq / bir cümləlik kontekst —</tspan>
+    <tspan x="80" dy="44">SMM tərəfindən doldurulacaq ]</tspan>
+  </text>
+
+  <text x="80" y="1004" font-family="Inter, sans-serif" font-weight="700" font-size="28" fill="rgba(255,255,255,0.5)">1/5</text>
+  <g>
+    <text x="1000" y="1004" text-anchor="end" font-family="Inter, sans-serif" font-weight="700" font-size="24" letter-spacing="2" fill="#2ad4e6">SÜRÜŞDÜR</text>
+    <g transform="translate(1036 988)" stroke="#2ad4e6" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M0 8 L10 8 M5 3 L10 8 L5 13"/>
+    </g>
+  </g>
+</svg>
