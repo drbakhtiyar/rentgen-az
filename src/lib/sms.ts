@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "crypto";
 import { env } from "./env";
 
 export type SendSmsResult = { ok: boolean; error?: string };
@@ -7,8 +8,8 @@ export type SendSmsResult = { ok: boolean; error?: string };
  * Pluggable SMS sender. Provider chosen via SMS_PROVIDER env var.
  * - "dev":     logs the message to the server console (no real SMS). Default.
  * - "twilio":  sends via Twilio REST API.
- * - "generic": POSTs JSON { to, message, sender } to any HTTP SMS gateway
- *              (e.g. an Azerbaijani provider). Configure SMS_GENERIC_URL/TOKEN.
+ * - "generic": POSTs JSON { to, message, sender } to any HTTP SMS gateway.
+ * - "lsim":    Lsim.az / sendsms.az QuickSMS HTTP API (Azerbaijan).
  */
 export async function sendSms(to: string, message: string): Promise<SendSmsResult> {
   switch (env.smsProvider) {
@@ -16,12 +17,88 @@ export async function sendSms(to: string, message: string): Promise<SendSmsResul
       return sendViaTwilio(to, message);
     case "generic":
       return sendViaGeneric(to, message);
+    case "lsim":
+      return sendViaLsim(to, message);
     case "dev":
     default:
       console.log(
         `\n[SMS:dev] → ${to}\n[SMS:dev] ${message}\n(Set SMS_PROVIDER to a real provider in production.)\n`,
       );
       return { ok: true };
+  }
+}
+
+function md5(input: string): string {
+  return createHash("md5").update(input, "utf8").digest("hex");
+}
+
+// Lsim QuickSMS error codes → readable messages.
+const LSIM_ERRORS: Record<number, string> = {
+  [-100]: "Yanlış açar (key)",
+  [-101]: "Mətn icazə verilən uzunluqdan çoxdur",
+  [-102]: "Nömrə formatı yanlışdır",
+  [-103]: "Yanlış göndərən adı (sender)",
+  [-104]: "Balans kifayət etmir",
+  [-105]: "Nömrə qara siyahıdadır",
+  [-106]: "Yanlış tranzaksiya ID",
+  [-107]: "IP ünvanına icazə yoxdur",
+  [-108]: "Yanlış hash",
+  [-109]: "Host yoxdur",
+  [-110]: "Hesabat limiti aşıldı",
+  [-500]: "Daxili xəta",
+};
+
+/**
+ * Lsim.az QuickSMS single-message send.
+ * key = md5( md5(password) + LOGIN + TEXT + MSISDN + SENDER )
+ * msisdn format: 994XXXXXXXXX (no '+'). unicode=true for non-ASCII (AZ/RU) text.
+ */
+async function sendViaLsim(to: string, message: string): Promise<SendSmsResult> {
+  const { login, password, sender } = env.lsim;
+  if (!login || !password || !sender) {
+    return { ok: false, error: "Lsim konfiqurasiyası natamamdır (login/password/sender)." };
+  }
+  const msisdn = to.replace(/\D/g, ""); // 994XXXXXXXXX
+  // Azerbaijani/Cyrillic letters need Unicode SMS; ASCII-only can use GSM-7.
+  const unicode = message.split("").some((ch) => ch.charCodeAt(0) > 127);
+  const key = md5(md5(password) + login + message + msisdn + sender);
+
+  try {
+    const res = await fetch("https://apps.lsim.az/quicksms/v1/smssender", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        login,
+        key,
+        msisdn,
+        text: message,
+        sender,
+        scheduled: "NOW",
+        unicode,
+      }),
+    });
+    const data = (await res.json().catch(() => null)) as {
+      successMessage?: string | null;
+      errorMessage?: string | null;
+      obj?: number | null;
+      errorCode?: number | null;
+    } | null;
+
+    if (!res.ok || !data) {
+      return { ok: false, error: `Lsim xətası: HTTP ${res.status}` };
+    }
+    // Success: a transaction id in `obj`, no error message/code.
+    if (data.errorMessage || (typeof data.errorCode === "number" && data.errorCode < 0)) {
+      const code = typeof data.errorCode === "number" ? data.errorCode : 0;
+      return {
+        ok: false,
+        error: data.errorMessage || LSIM_ERRORS[code] || `Lsim xəta kodu ${code}`,
+      };
+    }
+    if (data.obj) return { ok: true };
+    return { ok: false, error: "Lsim: naməlum cavab." };
+  } catch (e) {
+    return { ok: false, error: `Lsim sorğusu uğursuz oldu: ${String(e)}` };
   }
 }
 

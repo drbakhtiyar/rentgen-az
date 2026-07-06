@@ -8,7 +8,8 @@ export const env = {
   smsProvider: (process.env.SMS_PROVIDER ?? "dev") as
     | "dev"
     | "twilio"
-    | "generic",
+    | "generic"
+    | "lsim",
   adminPhone: process.env.ADMIN_PHONE ?? "",
   // Secret admin access link: /admin-giris/<ADMIN_ACCESS_KEY>
   adminAccessKey: process.env.ADMIN_ACCESS_KEY ?? "",
@@ -33,6 +34,12 @@ export const env = {
     url: process.env.SMS_GENERIC_URL ?? "",
     token: process.env.SMS_GENERIC_TOKEN ?? "",
     sender: process.env.SMS_GENERIC_SENDER ?? "",
+  },
+  // Lsim.az (sendsms.az) QuickSMS HTTP API
+  lsim: {
+    login: process.env.LSIM_LOGIN ?? "",
+    password: process.env.LSIM_PASSWORD ?? "",
+    sender: process.env.LSIM_SENDER ?? "",
   },
   isProd: process.env.NODE_ENV === "production",
 };
