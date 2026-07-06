@@ -1,10 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, CheckCircle2, Building2, Phone, MapPin } from "lucide-react";
+import { upload } from "@vercel/blob/client";
+import { Loader2, CheckCircle2, Building2, Phone, MapPin, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { LocationPicker } from "@/components/map/location-picker";
+import { WeeklyHoursPicker } from "@/components/forms/weekly-hours-picker";
+import type { WeeklyHours } from "@/lib/hours";
 import { saveCenterProfileAction } from "@/app/merkez/actions";
 
 type Option = { value: string; label: string };
@@ -18,21 +21,45 @@ export type CenterFormDefaults = {
   district?: string;
   mapsUrl?: string;
   workingHours?: string;
+  hours?: WeeklyHours | null;
   equipment?: string;
   responsiblePerson?: string;
   description?: string;
+  logoUrl?: string | null;
+  images?: string[];
   lat?: number | null;
   lng?: number | null;
+};
+
+type SaveInput = {
+  name: string;
+  phone: string;
+  whatsapp: string;
+  address: string;
+  city: string;
+  district: string;
+  mapsUrl: string;
+  hours: WeeklyHours | null;
+  equipment: string;
+  responsiblePerson: string;
+  description: string;
+  logoUrl: string;
+  images: string[];
+  lat: number | null;
+  lng: number | null;
 };
 
 export function CenterProfileForm({
   cities,
   defaults,
   mode,
+  onSave,
 }: {
   cities: Option[];
   defaults?: CenterFormDefaults;
   mode: "create" | "edit";
+  /** Overrides the default self-serve save (e.g. admin editing any center). */
+  onSave?: (input: SaveInput) => Promise<{ ok: boolean; error?: string; message?: string }>;
 }) {
   const [pending, startTransition] = React.useTransition();
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(
@@ -42,6 +69,55 @@ export function CenterProfileForm({
   );
   const [done, setDone] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = React.useState(defaults?.logoUrl ?? "");
+  const [uploadingLogo, setUploadingLogo] = React.useState(false);
+  const logoRef = React.useRef<HTMLInputElement>(null);
+  const [hours, setHours] = React.useState<WeeklyHours | null>(defaults?.hours ?? null);
+  const [images, setImages] = React.useState<string[]>(defaults?.images ?? []);
+  const [uploadingImg, setUploadingImg] = React.useState(false);
+  const imgRef = React.useRef<HTMLInputElement>(null);
+
+  async function onPickImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    setError(null);
+    setUploadingImg(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files.slice(0, 12 - images.length)) {
+        const blob = await upload(`center-images/${file.name}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        uploaded.push(blob.url);
+      }
+      setImages((prev) => [...prev, ...uploaded].slice(0, 12));
+    } catch {
+      setError("Şəkil yüklənmədi. Yenidən cəhd edin.");
+    } finally {
+      setUploadingImg(false);
+      if (imgRef.current) imgRef.current.value = "";
+    }
+  }
+
+  async function onPickLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploadingLogo(true);
+    try {
+      const blob = await upload(`center-logos/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+      setLogoUrl(blob.url);
+    } catch {
+      setError("Loqo yüklənmədi. Yenidən cəhd edin.");
+    } finally {
+      setUploadingLogo(false);
+      if (logoRef.current) logoRef.current.value = "";
+    }
+  }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,7 +126,8 @@ export function CenterProfileForm({
     const fd = new FormData(e.currentTarget);
     const get = (k: string) => String(fd.get(k) ?? "").trim();
     startTransition(async () => {
-      const res = await saveCenterProfileAction({
+      const save = onSave ?? saveCenterProfileAction;
+      const res = await save({
         name: get("name"),
         phone: get("phone"),
         whatsapp: get("whatsapp"),
@@ -58,10 +135,12 @@ export function CenterProfileForm({
         city: get("city"),
         district: get("district"),
         mapsUrl: get("mapsUrl"),
-        workingHours: get("workingHours"),
+        hours,
         equipment: get("equipment"),
         responsiblePerson: get("responsiblePerson"),
         description: get("description"),
+        logoUrl,
+        images,
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
       });
@@ -89,6 +168,55 @@ export function CenterProfileForm({
       )}
 
       <FormSection icon={<Building2 />} title="Əsas məlumat" step={1}>
+        {/* Logo */}
+        <div className="mb-5 flex items-center gap-4">
+          <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="Loqo" className="h-full w-full object-contain" />
+            ) : (
+              <Building2 className="h-8 w-8 text-slate-300" />
+            )}
+          </span>
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-ink-800">Mərkəzin loqosu</p>
+            <input
+              ref={logoRef}
+              type="file"
+              accept="image/png,image/webp,image/svg+xml,image/jpeg"
+              onChange={onPickLogo}
+              className="hidden"
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => logoRef.current?.click()}
+                disabled={uploadingLogo}
+                className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+              >
+                {uploadingLogo ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Upload className="h-3.5 w-3.5" />
+                )}
+                Loqo yüklə
+              </button>
+              {logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setLogoUrl("")}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-600"
+                >
+                  <X className="h-3.5 w-3.5" /> Sil
+                </button>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-slate-400">
+              Kvadrat loqo tövsiyə olunur. PNG/SVG/WebP.
+            </p>
+          </div>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Mərkəzin adı" htmlFor="name" required>
             <Input id="name" name="name" defaultValue={defaults?.name} required placeholder="Məs: Dental Imaging Center" />
@@ -134,17 +262,66 @@ export function CenterProfileForm({
         <Field label="Ünvan" htmlFor="address">
           <Input id="address" name="address" defaultValue={defaults?.address} placeholder="Küçə, bina" />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Google Maps linki" htmlFor="mapsUrl">
-            <Input id="mapsUrl" name="mapsUrl" type="url" defaultValue={defaults?.mapsUrl} placeholder="https://maps.google.com/..." />
-          </Field>
-          <Field label="İş saatları" htmlFor="workingHours">
-            <Input id="workingHours" name="workingHours" defaultValue={defaults?.workingHours} placeholder="B.e–Şənbə 09:00–18:00" />
-          </Field>
-        </div>
+        <Field label="Google Maps linki" htmlFor="mapsUrl">
+          <Input id="mapsUrl" name="mapsUrl" type="url" defaultValue={defaults?.mapsUrl} placeholder="https://maps.google.com/..." />
+        </Field>
+        <WeeklyHoursPicker value={hours} onChange={setHours} />
         <Field label="Avadanlıq məlumatı" htmlFor="equipment">
           <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder="Məs: CBCT aparatı, panoramik aparat və s." />
         </Field>
+
+        {/* Gallery */}
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <p className="text-sm font-medium text-ink-800">
+              Şəkillər{" "}
+              <span className="font-normal text-slate-400">({images.length}/12)</span>
+            </p>
+            <input
+              ref={imgRef}
+              type="file"
+              accept="image/png,image/webp,image/jpeg"
+              multiple
+              onChange={onPickImages}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => imgRef.current?.click()}
+              disabled={uploadingImg || images.length >= 12}
+              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              {uploadingImg ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              Şəkil əlavə et
+            </button>
+          </div>
+          {images.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {images.map((img, i) => (
+                <div key={img} className="group relative aspect-video overflow-hidden rounded-lg ring-1 ring-slate-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`Şəkil ${i + 1}`} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImages((prev) => prev.filter((x) => x !== img))}
+                    className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label="Sil"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">
+              Mərkəzin fotolarını əlavə edin — kartda və mərkəz səhifəsində görünəcək.
+            </p>
+          )}
+        </div>
         <div>
           <p className="mb-1.5 text-sm font-medium text-ink-800">
             Xəritədə yeriniz{" "}

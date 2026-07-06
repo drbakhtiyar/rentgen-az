@@ -13,6 +13,7 @@ export type ServiceRow = {
   slug: string;
   name: string;
   icon?: string | null;
+  iconUrl?: string | null;
   enabled: boolean;
   price?: number | null;
   priceTo?: number | null;
@@ -70,7 +71,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
                   className="h-5 w-5 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
                 />
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-brand-600 ring-1 ring-slate-200">
-                  <ServiceIcon name={r.icon} className="h-5 w-5" />
+                  <ServiceIcon name={r.icon} url={r.iconUrl} className="h-5 w-5" />
                 </span>
                 <span className="font-medium text-ink-900">{r.name}</span>
               </label>

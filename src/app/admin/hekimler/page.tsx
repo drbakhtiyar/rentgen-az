@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Stethoscope } from "lucide-react";
+import { Stethoscope, Pencil } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { DoctorStatusControls, BlockToggle } from "@/components/admin/controls";
@@ -144,6 +144,12 @@ export default async function AdminDoctorsPage({
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`/admin/hekimler/${d.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Redaktə
+                    </Link>
                     <DoctorStatusControls doctorId={d.id} status={d.status} />
                     <BlockToggle
                       userId={d.user.id}

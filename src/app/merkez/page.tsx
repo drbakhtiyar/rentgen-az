@@ -16,7 +16,8 @@ import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard
 import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz } from "@/lib/utils";
+import { getCenterEventStats } from "@/lib/queries";
+import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "./request-status-control";
 
@@ -44,6 +45,7 @@ export default async function CenterDashboardPage() {
   const newCount = await prisma.appointmentRequest.count({
     where: { centerId: center.id, status: "NEW" },
   });
+  const stats = await getCenterEventStats(center.id, 30);
 
   const name =
     center.name ||
@@ -75,6 +77,17 @@ export default async function CenterDashboardPage() {
         <StatCard label="Yeni müraciətlər" value={newCount} icon={<Inbox />} tone="amber" />
         <StatCard label="Ümumi müraciətlər" value={center._count.appointmentRequests} icon={<Inbox />} tone="cyan" />
         <StatCard label="Xidmətlər" value={center._count.services} icon={<ListChecks />} tone="green" />
+      </div>
+
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Son 30 gün
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard label="Profil baxışları" value={stats.views} icon={<Eye />} />
+          <StatCard label="Zəng klikləri" value={stats.calls} icon={<Inbox />} tone="cyan" />
+          <StatCard label="WhatsApp klikləri" value={stats.whatsapp} icon={<Inbox />} tone="green" />
+        </div>
       </div>
 
       {center._count.services === 0 && (
@@ -121,6 +134,11 @@ export default async function CenterDashboardPage() {
                         </a>
                         {r.serviceSlug ? ` · ${r.serviceSlug}` : ""}
                       </p>
+                      {r.preferredDate && (
+                        <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
+                          <Clock className="h-3 w-3" /> {formatDateTimeAz(r.preferredDate)}
+                        </p>
+                      )}
                       {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}
                       <p className="mt-1 text-xs text-slate-400">{formatDateAz(r.createdAt)}</p>
                     </div>

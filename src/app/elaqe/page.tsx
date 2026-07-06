@@ -11,8 +11,8 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { AppointmentForm } from "@/components/forms/appointment-form";
-import { getApprovedDoctors } from "@/lib/queries";
-import { SERVICES } from "@/lib/constants";
+import { getApprovedDoctors, getActiveServices } from "@/lib/queries";
+import { getLocale } from "@/lib/i18n-server";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -22,8 +22,6 @@ export const metadata = buildMetadata({
   path: "/elaqe",
   keywords: ["Rentgen.az əlaqə", "dental rentgen əlaqə", "WhatsApp", "Bakı"],
 });
-
-const serviceOptions = SERVICES.map((s) => ({ value: s.slug, label: s.name }));
 
 const contactItems = [
   {
@@ -52,6 +50,11 @@ const contactItems = [
 
 export default async function ContactPage() {
   const doctors = await getApprovedDoctors();
+  const serviceOptions = (await getActiveServices()).map((s) => ({
+    value: s.slug,
+    label: s.name,
+  }));
+  const locale = await getLocale();
   return (
     <>
       <JsonLd
@@ -140,6 +143,7 @@ export default async function ContactPage() {
                 saxlayacağıq.
               </p>
               <AppointmentForm
+                locale={locale}
                 services={serviceOptions}
                 doctors={doctors.map((d) => ({
                   value: d.id,

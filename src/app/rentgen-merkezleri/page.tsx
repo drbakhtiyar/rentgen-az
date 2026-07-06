@@ -7,17 +7,19 @@ import { CentersExplorer } from "@/components/map/centers-explorer";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES, getService } from "@/lib/constants";
 import {
   getApprovedCenters,
+  countApprovedCenters,
   getRatingsForCenters,
   getCitiesWithCenters,
+  getActiveServices,
+  getServiceBySlug,
 } from "@/lib/queries";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 export const revalidate = 120;
-
-const serviceOptions = SERVICES.map((s) => ({ value: s.slug, label: s.name }));
 
 export async function generateMetadata({
   searchParams,
@@ -25,7 +27,7 @@ export async function generateMetadata({
   searchParams: Promise<{ q?: string; city?: string; service?: string }>;
 }): Promise<Metadata> {
   const sp = await searchParams;
-  const svc = sp.service ? getService(sp.service) : null;
+  const svc = sp.service ? await getServiceBySlug(sp.service) : null;
   const titleParts = ["Rentgen mərkəzləri"];
   if (svc) titleParts.unshift(svc.name);
   if (sp.city) titleParts.push(sp.city);
@@ -43,24 +45,36 @@ export async function generateMetadata({
   });
 }
 
+const PAGE_SIZE = 12;
+
 export default async function CentersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; city?: string; service?: string }>;
+  searchParams: Promise<{ q?: string; city?: string; service?: string; page?: string }>;
 }) {
   const sp = await searchParams;
-  const centers = await getApprovedCenters({
-    q: sp.q,
-    city: sp.city,
-    service: sp.service,
-  });
+  const filters = { q: sp.q, city: sp.city, service: sp.service };
+  const page = Math.max(1, Number(sp.page) || 1);
+
+  const [total, centers] = await Promise.all([
+    countApprovedCenters(filters),
+    getApprovedCenters({ ...filters, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const cityOptions = (await getCitiesWithCenters()).map((c) => ({
     value: c,
     label: c,
   }));
+  const serviceOptions = (await getActiveServices()).map((s) => ({
+    value: s.slug,
+    label: s.name,
+  }));
+  const locale = await getLocale();
+  const d = getDict(locale);
+  const searchLabels = { ...d.search, search: d.cta.search };
 
-  const svc = sp.service ? getService(sp.service) : null;
+  const svc = sp.service ? await getServiceBySlug(sp.service) : null;
   const activeFilters = [
     svc?.name,
     sp.city,
@@ -76,10 +90,10 @@ export default async function CentersPage({
         ])}
       />
       <PageHeader
-        eyebrow="Mərkəzlər kataloqu"
-        title="Rentgen mərkəzləri"
-        description="Təsdiqlənmiş dental rentgen və 3D tomoqrafiya mərkəzlərini xidmət və rayona görə tapın."
-        breadcrumbs={[{ name: "Rentgen mərkəzləri" }]}
+        eyebrow={d.centers.eyebrow}
+        title={d.centers.title}
+        description={d.centers.description}
+        breadcrumbs={[{ name: d.centers.title }]}
       />
 
       <div className="border-b border-slate-200 bg-white">
@@ -89,6 +103,7 @@ export default async function CentersPage({
             cities={cityOptions}
             defaults={{ q: sp.q, city: sp.city, service: sp.service }}
             variant="compact"
+            labels={searchLabels}
           />
         </Container>
       </div>
@@ -97,8 +112,11 @@ export default async function CentersPage({
         <Container>
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600">
-              <span className="font-semibold text-ink-900">{centers.length}</span>{" "}
-              mərkəz tapıldı
+              <span className="font-semibold text-ink-900">{total}</span>{" "}
+              {d.centers.found}
+              {totalPages > 1 && (
+                <span className="text-slate-400"> · {d.centers.page} {page}/{totalPages}</span>
+              )}
               {activeFilters.length > 0 && (
                 <span className="text-slate-400"> · {activeFilters.join(", ")}</span>
               )}
@@ -106,19 +124,50 @@ export default async function CentersPage({
           </div>
 
           {centers.length > 0 ? (
-            <CentersExplorer centers={centers} ratings={ratings} />
+            <>
+              <CentersExplorer
+                centers={centers}
+                ratings={ratings}
+                activeService={sp.service}
+                locale={locale}
+              />
+              {totalPages > 1 && (
+                <nav className="mt-10 flex items-center justify-center gap-1.5">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                    const params = new URLSearchParams();
+                    if (sp.q) params.set("q", sp.q);
+                    if (sp.city) params.set("city", sp.city);
+                    if (sp.service) params.set("service", sp.service);
+                    if (p > 1) params.set("page", String(p));
+                    const href = `/rentgen-merkezleri${params.toString() ? `?${params}` : ""}`;
+                    return (
+                      <a
+                        key={p}
+                        href={href}
+                        className={
+                          p === page
+                            ? "inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-brand-600 px-3 text-sm font-semibold text-white"
+                            : "inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-white px-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+                        }
+                      >
+                        {p}
+                      </a>
+                    );
+                  })}
+                </nav>
+              )}
+            </>
           ) : (
             <Card className="p-12 text-center">
               <Building2 className="mx-auto h-12 w-12 text-slate-300" />
               <h2 className="font-display mt-4 text-xl font-bold text-ink-900">
-                Nəticə tapılmadı
+                {d.centers.noResults}
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-                Seçilmiş filtrə uyğun təsdiqlənmiş mərkəz yoxdur. Filtri dəyişin və
-                ya bütün mərkəzlərə baxın.
+                {d.centers.noResultsDesc}
               </p>
               <ButtonLink href="/rentgen-merkezleri" className="mt-6">
-                Bütün mərkəzlər
+                {d.centers.allCenters}
               </ButtonLink>
             </Card>
           )}

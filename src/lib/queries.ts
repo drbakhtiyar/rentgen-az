@@ -19,24 +19,34 @@ export type CenterListFilters = {
   city?: string;
   service?: string; // service slug
   take?: number;
+  skip?: number;
 };
 
+function centerWhere(filters: CenterListFilters): Prisma.CenterProfileWhereInput {
+  const { q, city, service } = filters;
+  const where: Prisma.CenterProfileWhereInput = { status: "APPROVED" };
+  if (q) where.name = { contains: q, mode: "insensitive" };
+  if (city) where.city = city;
+  if (service) where.services = { some: { service: { slug: service } } };
+  return where;
+}
+
 export async function getApprovedCenters(filters: CenterListFilters = {}) {
-  const { q, city, service, take } = filters;
-  return safe(async () => {
-    const where: Prisma.CenterProfileWhereInput = { status: "APPROVED" };
-    if (q) where.name = { contains: q, mode: "insensitive" };
-    if (city) where.city = city;
-    if (service) {
-      where.services = { some: { service: { slug: service } } };
-    }
-    return prisma.centerProfile.findMany({
-      where,
-      include: { services: { include: { service: true } } },
-      orderBy: [{ createdAt: "desc" }],
-      take: take ?? 60,
-    });
-  }, []);
+  return safe(
+    () =>
+      prisma.centerProfile.findMany({
+        where: centerWhere(filters),
+        include: { services: { include: { service: true } } },
+        orderBy: [{ createdAt: "desc" }],
+        take: filters.take ?? 60,
+        skip: filters.skip ?? 0,
+      }),
+    [],
+  );
+}
+
+export async function countApprovedCenters(filters: CenterListFilters = {}) {
+  return safe(() => prisma.centerProfile.count({ where: centerWhere(filters) }), 0);
 }
 
 export async function getFeaturedCenters(take = 6) {
@@ -73,6 +83,46 @@ export async function countApprovedCentersByService() {
     }
     return bySlug;
   }, {} as Record<string, number>);
+}
+
+export type CatalogService = Prisma.ServiceGetPayload<object>;
+
+/** All active services, ordered — the single source of truth for the catalog. */
+export async function getActiveServices() {
+  return safe(
+    () =>
+      prisma.service.findMany({
+        where: { isActive: true },
+        orderBy: { order: "asc" },
+      }),
+    [] as CatalogService[],
+  );
+}
+
+/** A single active service by slug (null if missing or deactivated). */
+export async function getServiceBySlug(slug: string) {
+  return safe(
+    () => prisma.service.findFirst({ where: { slug, isActive: true } }),
+    null,
+  );
+}
+
+/** Center analytics counts (views / calls / whatsapp) over the last N days. */
+export async function getCenterEventStats(centerId: string, days = 30) {
+  return safe(
+    async () => {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      const rows = await prisma.centerEvent.groupBy({
+        by: ["type"],
+        where: { centerId, createdAt: { gte: since } },
+        _count: { type: true },
+      });
+      const by: Record<string, number> = {};
+      for (const r of rows) by[r.type] = r._count.type;
+      return { views: by.view ?? 0, calls: by.call ?? 0, whatsapp: by.whatsapp ?? 0 };
+    },
+    { views: 0, calls: 0, whatsapp: 0 },
+  );
 }
 
 export type CenterRating = { avg: number; count: number };
@@ -176,6 +226,17 @@ export async function getApprovedDoctors() {
         orderBy: [{ firstName: "asc" }],
       }),
     [],
+  );
+}
+
+/** A single approved doctor by id (null if missing or not approved). */
+export async function getApprovedDoctorById(id: string) {
+  return safe(
+    () =>
+      prisma.doctorProfile.findFirst({
+        where: { id, status: "APPROVED" },
+      }),
+    null,
   );
 }
 

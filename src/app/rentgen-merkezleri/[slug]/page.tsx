@@ -26,9 +26,14 @@ import {
   getRatingsForCenters,
 } from "@/lib/queries";
 import { CenterMiniMap } from "@/components/map/center-mini-map";
+import { OpenStatus } from "@/components/centers/open-status";
+import { TrackView } from "@/components/centers/track-view";
+import { parseHours, hoursRows, nowInBaku } from "@/lib/hours";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
-import { formatPrice, formatDateAz } from "@/lib/utils";
+import { formatPrice, formatDateAz, cn } from "@/lib/utils";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -68,6 +73,10 @@ export default async function CenterDetailPage({
 
   const doctors = await getApprovedDoctors();
   const svcNames = center.services.map((s) => s.service.name);
+  const week = parseHours(center.hours);
+  const todayKey = nowInBaku().day;
+  const locale = await getLocale();
+  const dd = getDict(locale).centerDetail;
 
   const [reviews, ratingsMap] = await Promise.all([
     getCenterReviews(center.id),
@@ -135,6 +144,16 @@ export default async function CenterDetailPage({
         ]}
       >
         <div className="flex flex-wrap items-center gap-3">
+          {center.logoUrl && (
+            <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-white/20 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={center.logoUrl}
+                alt={`${center.name} loqosu`}
+                className="h-full w-full object-contain"
+              />
+            </span>
+          )}
           <VerifiedBadge />
           {center.city && (
             <span className="flex items-center gap-1.5 text-sm text-slate-300">
@@ -146,6 +165,7 @@ export default async function CenterDetailPage({
               <Clock className="h-4 w-4 text-cyan-400" /> {center.workingHours}
             </span>
           )}
+          {center.hours ? <OpenStatus hours={center.hours} locale={locale} /> : null}
           <RatingSummary
             avg={rating.avg}
             count={rating.count}
@@ -153,10 +173,11 @@ export default async function CenterDetailPage({
           />
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
-          <CallButton phone={center.phone} />
-          {center.whatsapp && <WhatsAppButton phone={center.whatsapp} />}
+          <CallButton phone={center.phone} centerId={center.id} />
+          {center.whatsapp && <WhatsAppButton phone={center.whatsapp} centerId={center.id} />}
         </div>
       </PageHeader>
+      <TrackView centerId={center.id} />
 
       <Section className="py-12">
         <Container>
@@ -181,7 +202,7 @@ export default async function CenterDetailPage({
               {center.description && (
                 <Card className="p-6">
                   <h2 className="font-display text-xl font-bold text-ink-900">
-                    Mərkəz haqqında
+                    {dd.aboutCenter}
                   </h2>
                   <p className="mt-3 whitespace-pre-line leading-relaxed text-slate-600">
                     {center.description}
@@ -192,7 +213,7 @@ export default async function CenterDetailPage({
               {/* Services & prices */}
               <Card className="p-6">
                 <h2 className="font-display text-xl font-bold text-ink-900">
-                  Xidmətlər və qiymətlər
+                  {dd.servicesPrices}
                 </h2>
                 {center.services.length > 0 ? (
                   <ul className="mt-4 divide-y divide-slate-100">
@@ -231,21 +252,21 @@ export default async function CenterDetailPage({
               {/* Details */}
               <Card className="p-6">
                 <h2 className="font-display text-xl font-bold text-ink-900">
-                  Əlaqə və məlumat
+                  {dd.contactInfo}
                 </h2>
                 <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <Detail icon={<Phone />} label="Telefon" value={center.phone} />
+                  <Detail icon={<Phone />} label={dd.phone} value={center.phone} />
                   {center.address && (
-                    <Detail icon={<MapPin />} label="Ünvan" value={center.address} />
+                    <Detail icon={<MapPin />} label={dd.address} value={center.address} />
                   )}
-                  {center.workingHours && (
-                    <Detail icon={<Clock />} label="İş saatları" value={center.workingHours} />
+                  {!week && center.workingHours && (
+                    <Detail icon={<Clock />} label={dd.workingHours} value={center.workingHours} />
                   )}
                   {center.equipment && (
-                    <Detail icon={<Cpu />} label="Avadanlıq" value={center.equipment} />
+                    <Detail icon={<Cpu />} label={dd.equipment} value={center.equipment} />
                   )}
                   {center.responsiblePerson && (
-                    <Detail icon={<User />} label="Məsul şəxs" value={center.responsiblePerson} />
+                    <Detail icon={<User />} label={dd.responsible} value={center.responsiblePerson} />
                   )}
                 </dl>
                 {center.mapsUrl && (
@@ -255,7 +276,7 @@ export default async function CenterDetailPage({
                     rel="noopener noreferrer"
                     className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
                   >
-                    <MapPin className="h-4 w-4" /> Xəritədə bax
+                    <MapPin className="h-4 w-4" /> {dd.openMap}
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 )}
@@ -270,6 +291,42 @@ export default async function CenterDetailPage({
                   </div>
                 )}
               </Card>
+
+              {/* Working hours */}
+              {week && (
+                <Card className="p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h2 className="font-display flex items-center gap-2 text-xl font-bold text-ink-900">
+                      <Clock className="h-5 w-5 text-brand-600" /> {dd.workingHours}
+                    </h2>
+                    {center.hours ? <OpenStatus hours={center.hours} locale={locale} /> : null}
+                  </div>
+                  <ul className="mt-4 divide-y divide-slate-100">
+                    {hoursRows(week).map((row) => (
+                      <li
+                        key={row.key}
+                        className={cn(
+                          "flex items-center justify-between py-2.5 text-sm",
+                          row.key === todayKey && "font-semibold text-brand-700",
+                        )}
+                      >
+                        <span className={cn(row.key !== todayKey && "text-slate-600")}>
+                          {row.label}
+                          {row.key === todayKey ? ` · ${dd.today}` : ""}
+                        </span>
+                        <span
+                          className={cn(
+                            row.text === "Bağlı" ? "text-slate-400" : "text-ink-900",
+                            row.key === todayKey && row.text !== "Bağlı" && "text-brand-700",
+                          )}
+                        >
+                          {row.text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
 
               {/* Reviews */}
               <Card className="p-6">
@@ -309,13 +366,23 @@ export default async function CenterDetailPage({
                           <p className="mt-2 text-xs text-slate-400">
                             {formatDateAz(r.createdAt)}
                           </p>
+                          {r.reply && (
+                            <div className="mt-3 rounded-xl border-l-2 border-brand-200 bg-brand-50/50 px-4 py-3">
+                              <p className="text-xs font-semibold text-brand-700">
+                                {center.name} {dd.replyBy}
+                              </p>
+                              <p className="mt-1 whitespace-pre-line text-sm text-slate-600">
+                                {r.reply}
+                              </p>
+                            </div>
+                          )}
                         </li>
                       );
                     })}
                   </ul>
                 ) : (
                   <p className="mt-4 text-sm text-slate-500">
-                    Hələ rəy yoxdur. İlk rəyi siz yazın.
+                    {dd.noReviews}
                   </p>
                 )}
 
@@ -348,11 +415,12 @@ export default async function CenterDetailPage({
                   Müraciət göndər
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Mərkəz sizinlə əlaqə saxlasın.
+                  {dd.requestDesc}
                 </p>
                 <div className="mt-4">
                   <AppointmentForm
                     centerId={center.id}
+                    locale={locale}
                     services={center.services.map((cs) => ({
                       value: cs.service.slug,
                       label: cs.service.name,
@@ -364,6 +432,7 @@ export default async function CenterDetailPage({
                           d.clinic ? " — " + d.clinic : ""
                         }` || "Həkim",
                     }))}
+                    hours={week}
                     compact
                   />
                 </div>

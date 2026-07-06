@@ -7,8 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES } from "@/lib/constants";
-import { countApprovedCentersByService } from "@/lib/queries";
+import { countApprovedCentersByService, getActiveServices } from "@/lib/queries";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
@@ -28,9 +29,15 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function ServicesPage() {
-  const counts = await countApprovedCentersByService();
+  const [counts, services] = await Promise.all([
+    countApprovedCentersByService(),
+    getActiveServices(),
+  ]);
+  const d = getDict(await getLocale()).services;
 
-  const categories = Array.from(new Set(SERVICES.map((s) => s.category)));
+  const categories = Array.from(
+    new Set(services.map((s) => s.category).filter((c): c is string => Boolean(c))),
+  );
 
   return (
     <>
@@ -41,10 +48,10 @@ export default async function ServicesPage() {
         ])}
       />
       <PageHeader
-        eyebrow="Görüntüləmə xidmətləri"
-        title="Dental rentgen və tomoqrafiya xidmətləri"
-        description="Diaqnostika və müalicə planlaması üçün lazım olan bütün görüntüləmə növləri — hər biri üçün təsdiqlənmiş mərkəzləri tapın."
-        breadcrumbs={[{ name: "Xidmətlər" }]}
+        eyebrow={d.eyebrow}
+        title={d.title}
+        description={d.description}
+        breadcrumbs={[{ name: d.title }]}
       />
 
       {categories.map((cat) => (
@@ -52,12 +59,12 @@ export default async function ServicesPage() {
           <Container>
             <SectionHeading align="left" eyebrow={cat ?? undefined} title={`${cat} xidmətləri`} />
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {SERVICES.filter((s) => s.category === cat).map((s) => (
+              {services.filter((s) => s.category === cat).map((s) => (
                 <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
                   <Card className="group h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-glow)]">
                     <div className="flex items-start justify-between">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                        <ServiceIcon name={s.icon} className="h-6 w-6" />
+                        <ServiceIcon name={s.icon} url={s.iconUrl} className="h-6 w-6" />
                       </div>
                       {counts[s.slug] ? (
                         <Badge tone="cyan">{counts[s.slug]} mərkəz</Badge>

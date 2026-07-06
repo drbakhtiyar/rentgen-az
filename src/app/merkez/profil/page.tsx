@@ -6,6 +6,7 @@ import { CenterProfileForm } from "@/components/forms/center-profile-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { CITIES } from "@/lib/constants";
+import { parseHours } from "@/lib/hours";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,9 @@ export default async function CenterProfilePage() {
           equipment: center.equipment ?? "",
           responsiblePerson: center.responsiblePerson ?? "",
           description: center.description ?? "",
+          logoUrl: center.logoUrl,
+          images: center.images,
+          hours: parseHours(center.hours),
           lat: center.lat,
           lng: center.lng,
         }}

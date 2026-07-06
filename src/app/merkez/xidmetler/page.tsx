@@ -38,6 +38,7 @@ export default async function CenterServicesPage() {
       slug: s.slug,
       name: s.name,
       icon: s.icon,
+      iconUrl: s.iconUrl,
       enabled: Boolean(cs),
       price: cs?.price ?? null,
       priceTo: cs?.priceTo ?? null,

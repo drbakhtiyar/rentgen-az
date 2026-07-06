@@ -7,15 +7,22 @@ import { usePathname } from "next/navigation";
 import { Menu, X, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
+import { LocaleToggle } from "./locale-toggle";
+import type { Locale } from "@/lib/i18n";
 
 type Session = { role: string; dashboard: string; name: string } | null;
+type Cta = { login: string; loginRegister: string; addCenter: string };
 
 export function HeaderClient({
   nav,
   session,
+  locale,
+  cta,
 }: {
   nav: { label: string; href: string }[];
   session: Session;
+  locale: Locale;
+  cta: Cta;
 }) {
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
@@ -74,6 +81,7 @@ export function HeaderClient({
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
+          <LocaleToggle locale={locale} />
           {session ? (
             <ButtonLink href={session.dashboard} size="sm" variant="primary">
               <LayoutDashboard className="h-4 w-4" />
@@ -82,10 +90,10 @@ export function HeaderClient({
           ) : (
             <>
               <ButtonLink href="/giris" size="sm" variant="ghost">
-                Giriş
+                {cta.login}
               </ButtonLink>
               <ButtonLink href="/merkezler-ucun" size="sm" variant="primary">
-                Mərkəz əlavə et
+                {cta.addCenter}
               </ButtonLink>
             </>
           )}
@@ -116,6 +124,9 @@ export function HeaderClient({
               </Link>
             ))}
             <div className="mt-2 flex flex-col gap-2">
+              <div className="px-1 pb-1">
+                <LocaleToggle locale={locale} />
+              </div>
               {session ? (
                 <ButtonLink href={session.dashboard} variant="primary" onClick={close}>
                   <LayoutDashboard className="h-4 w-4" />
@@ -124,10 +135,10 @@ export function HeaderClient({
               ) : (
                 <>
                   <ButtonLink href="/giris" variant="outline" onClick={close}>
-                    Giriş / Qeydiyyat
+                    {cta.loginRegister}
                   </ButtonLink>
                   <ButtonLink href="/merkezler-ucun" variant="primary" onClick={close}>
-                    Mərkəz əlavə et
+                    {cta.addCenter}
                   </ButtonLink>
                 </>
               )}

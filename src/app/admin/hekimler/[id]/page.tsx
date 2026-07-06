@@ -1,0 +1,72 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { AdminShell } from "@/components/dashboard/admin-shell";
+import { Panel } from "@/components/dashboard/widgets";
+import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
+import { prisma } from "@/lib/db";
+import { requireRole } from "@/lib/auth/rbac";
+import { adminUpdateDoctorAction } from "@/app/admin/actions";
+import { CITIES } from "@/lib/constants";
+import { buildMetadata } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Həkimi redaktə et",
+  path: "/admin/hekimler",
+  noIndex: true,
+});
+
+const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
+
+export default async function AdminEditDoctorPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const admin = await requireRole("ADMIN", "/admin/hekimler");
+  const { id } = await params;
+
+  const doctor = await prisma.doctorProfile.findUnique({
+    where: { id },
+    include: { user: { select: { phone: true } } },
+  });
+  if (!doctor) notFound();
+
+  const fullName =
+    [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+  const save = adminUpdateDoctorAction.bind(null, doctor.id);
+
+  return (
+    <AdminShell title="Həkimi redaktə et" userName={admin.phone}>
+      <Link
+        href="/admin/hekimler"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-brand-600"
+      >
+        <ArrowLeft className="h-4 w-4" /> Həkimlərə qayıt
+      </Link>
+
+      <Panel title={fullName}>
+        <DoctorProfileForm
+          cities={cityOptions}
+          phone={doctor.user.phone}
+          mode="edit"
+          onSave={save}
+          defaults={{
+            firstName: doctor.firstName ?? "",
+            lastName: doctor.lastName ?? "",
+            clinic: doctor.clinic ?? "",
+            specializations: doctor.specializations ?? [],
+            city: doctor.city ?? "",
+            instagram: doctor.instagram ?? "",
+            website: doctor.website ?? "",
+            diplomaUrl: doctor.diplomaUrl ?? "",
+            certificateUrl: doctor.certificateUrl ?? "",
+          }}
+        />
+      </Panel>
+    </AdminShell>
+  );
+}

@@ -88,10 +88,12 @@ model CenterProfile {
   mapsUrl           String?
   lat               Float?
   lng               Float?
-  workingHours      String?
+  workingHours      String? // insan-oxunaqlı xülasə (strukturdan avtomatik yaranır)
+  hours             Json? // strukturlaşdırılmış həftəlik iş saatları {mon:{open,close}|null,...}
   equipment         String? // avadanlıq məlumatı (mətn)
   responsiblePerson String?
   description       String?
+  logoUrl           String? // mərkəzin loqosu (yüklənmiş şəkil)
   images            String[]     @default([])
   status            CenterStatus @default(PENDING)
   createdAt         DateTime     @default(now())
@@ -102,6 +104,7 @@ model CenterProfile {
   referrals           Referral[]
   favoritedBy         PatientProfile[]     @relation("PatientFavorites")
   reviews             Review[]
+  events              CenterEvent[]
 
   @@index([status])
   @@index([city])
@@ -113,9 +116,11 @@ model Service {
   name        String
   shortName   String?
   description String?
-  icon        String? // lucide icon adı
+  icon        String? // lucide icon adı (yüklənmiş ikon yoxdursa ehtiyat)
+  iconUrl     String? // admin tərəfindən yüklənmiş xüsusi ikon (şəkil URL)
   category    String?
   order       Int     @default(0)
+  featured    Boolean @default(false) // ana səhifə/footer-də vurğulanır
   isActive    Boolean @default(true)
 
   centerServices CenterService[]
@@ -200,11 +205,37 @@ model Review {
   comment   String?
   verified  Boolean        @default(false) // mərkəz təsdiqləyib (self-declared deyil)
   hidden    Boolean        @default(false) // admin moderasiyası
+  reply     String? // mərkəzin cavabı
+  repliedAt DateTime?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
   @@unique([centerId, patientId])
   @@index([centerId, hidden])
+}
+
+model SmsLog {
+  id        String   @id @default(cuid())
+  phone     String
+  kind      String // "otp" | "center_request" | "patient_status" | "other"
+  text      String // göndərilən mətn (OTP kodu maskalanır)
+  ok        Boolean
+  error     String?
+  provider  String // "lsim" | "dev" | ...
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([kind])
+}
+
+model CenterEvent {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  type      String // "view" | "call" | "whatsapp"
+  createdAt DateTime      @default(now())
+
+  @@index([centerId, type, createdAt])
 }
 
 model DoctorProfile {

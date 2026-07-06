@@ -10,9 +10,14 @@ import { ServiceIcon } from "@/components/ui/service-icon";
 import { CenterCard } from "@/components/centers/center-card";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES, getService } from "@/lib/constants";
-import { getCentersForService, getRatingsForCenters } from "@/lib/queries";
+import {
+  getActiveServices,
+  getServiceBySlug,
+  getCentersForService,
+  getRatingsForCenters,
+} from "@/lib/queries";
 import { getServiceContent } from "@/content/services";
+import { getLocale } from "@/lib/i18n-server";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -22,8 +27,9 @@ import {
 
 export const revalidate = 300;
 
-export function generateStaticParams() {
-  return SERVICES.map((s) => ({ slug: s.slug }));
+export async function generateStaticParams() {
+  const services = await getActiveServices();
+  return services.map((s) => ({ slug: s.slug }));
 }
 
 export async function generateMetadata({
@@ -32,7 +38,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const service = getService(slug);
+  const service = await getServiceBySlug(slug);
   if (!service) return buildMetadata({ title: "Xidmət tapılmadı", noIndex: true });
   const content = getServiceContent(slug, service.name);
   return buildMetadata({
@@ -49,13 +55,18 @@ export default async function ServiceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const service = getService(slug);
+  const service = await getServiceBySlug(slug);
   if (!service) notFound();
 
+  const shortName = service.shortName ?? service.name;
   const content = getServiceContent(slug, service.name);
   const centers = await getCentersForService(slug, 9);
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
-  const related = SERVICES.filter((s) => s.slug !== slug && s.category === service.category).slice(0, 4);
+  const allServices = await getActiveServices();
+  const locale = await getLocale();
+  const related = allServices
+    .filter((s) => s.slug !== slug && s.category === service.category)
+    .slice(0, 4);
 
   return (
     <>
@@ -72,12 +83,12 @@ export default async function ServiceDetailPage({
       />
 
       <PageHeader
-        eyebrow={service.category}
+        eyebrow={service.category ?? undefined}
         title={service.name}
         description={content.intro}
         breadcrumbs={[
           { name: "Xidmətlər", href: "/xidmetler" },
-          { name: service.shortName },
+          { name: shortName },
         ]}
       >
         <ButtonLink href={`/rentgen-merkezleri?service=${slug}`} variant="primary">
@@ -116,7 +127,7 @@ export default async function ServiceDetailPage({
             <aside className="space-y-6">
               <Card className="p-6">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
-                  <ServiceIcon name={service.icon} className="h-6 w-6" />
+                  <ServiceIcon name={service.icon} url={service.iconUrl} className="h-6 w-6" />
                 </div>
                 <h3 className="font-display mt-4 text-base font-bold text-ink-900">
                   Hansı hallarda lazımdır?
@@ -143,7 +154,7 @@ export default async function ServiceDetailPage({
                           href={`/xidmetler/${r.slug}`}
                           className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
                         >
-                          {r.shortName}
+                          {r.shortName ?? r.name}
                           <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
                       </li>
@@ -163,7 +174,7 @@ export default async function ServiceDetailPage({
             <SectionHeading
               align="left"
               eyebrow="Mərkəzlər"
-              title={`${service.shortName} xidməti göstərən mərkəzlər`}
+              title={`${shortName} xidməti göstərən mərkəzlər`}
             />
             <ButtonLink href={`/rentgen-merkezleri?service=${slug}`} variant="outline" className="shrink-0">
               Hamısına bax <ArrowRight className="h-4 w-4" />
@@ -172,7 +183,13 @@ export default async function ServiceDetailPage({
           {centers.length > 0 ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {centers.map((c) => (
-                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
+                <CenterCard
+                  key={c.id}
+                  center={c}
+                  rating={ratings[c.id]}
+                  highlightService={slug}
+                  locale={locale}
+                />
               ))}
             </div>
           ) : (
@@ -194,7 +211,7 @@ export default async function ServiceDetailPage({
           <Container>
             <SectionHeading
               eyebrow="FAQ"
-              title={`${service.shortName} haqqında suallar`}
+              title={`${shortName} haqqında suallar`}
             />
             <div className="mt-8">
               <FaqAccordion items={content.faq} />
@@ -211,7 +228,7 @@ export default async function ServiceDetailPage({
             <div className="relative mx-auto max-w-xl">
               <HelpCircle className="mx-auto h-8 w-8 text-cyan-400" />
               <h2 className="font-display mt-4 text-2xl font-bold">
-                {service.shortName} üçün mərkəz axtarırsınız?
+                {shortName} üçün mərkəz axtarırsınız?
               </h2>
               <p className="mt-3 text-slate-300">
                 Təsdiqlənmiş mərkəzləri rayona görə tapın və birbaşa əlaqə saxlayın.

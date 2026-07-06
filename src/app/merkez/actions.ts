@@ -6,6 +6,9 @@ import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/rbac";
 import { centerProfileSchema } from "@/lib/validation";
+import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
+import { smsPatientStatusChange } from "@/lib/notify";
+import { Prisma } from "@/generated/prisma/client";
 import type { RequestStatus } from "@/generated/prisma/enums";
 
 export type CenterActionResult = { ok: boolean; error?: string; message?: string };
@@ -31,10 +34,12 @@ export async function saveCenterProfileAction(input: {
   city: string;
   district?: string;
   mapsUrl?: string;
-  workingHours?: string;
+  hours?: WeeklyHours | null;
   equipment?: string;
   responsiblePerson?: string;
   description?: string;
+  logoUrl?: string;
+  images?: string[];
   lat?: number | null;
   lng?: number | null;
 }): Promise<CenterActionResult> {
@@ -44,6 +49,7 @@ export async function saveCenterProfileAction(input: {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
   }
   const d = parsed.data;
+  const week = (d.hours ?? null) as WeeklyHours | null;
 
   try {
     const existing = await prisma.centerProfile.findUnique({
@@ -58,10 +64,13 @@ export async function saveCenterProfileAction(input: {
       city: d.city,
       district: d.district || null,
       mapsUrl: d.mapsUrl || null,
-      workingHours: d.workingHours || null,
+      hours: week ? (week as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
+      workingHours: formatHoursSummary(week) || null,
       equipment: d.equipment || null,
       responsiblePerson: d.responsiblePerson || null,
       description: d.description || null,
+      logoUrl: d.logoUrl || null,
+      images: d.images ?? [],
       lat: d.lat ?? null,
       lng: d.lng ?? null,
     };
@@ -134,6 +143,46 @@ export async function saveCenterServicesAction(
   }
 }
 
+/** Center replies to a review left on its own profile. */
+export async function replyToReviewAction(
+  reviewId: string,
+  reply: string,
+): Promise<CenterActionResult> {
+  const user = await requireRole("CENTER");
+  const text = reply.trim();
+  if (text.length > 1000) {
+    return { ok: false, error: "Cavab çox uzundur (maks. 1000 simvol)." };
+  }
+  try {
+    const center = await prisma.centerProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true, slug: true },
+    });
+    if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+    const review = await prisma.review.findUnique({
+      where: { id: reviewId },
+      select: { centerId: true },
+    });
+    if (!review || review.centerId !== center.id) {
+      return { ok: false, error: "Rəy tapılmadı." };
+    }
+
+    await prisma.review.update({
+      where: { id: reviewId },
+      data: {
+        reply: text || null,
+        repliedAt: text ? new Date() : null,
+      },
+    });
+    revalidatePath("/merkez/reyler");
+    revalidatePath(`/rentgen-merkezleri/${center.slug}`);
+    return { ok: true, message: text ? "Cavab yadda saxlanıldı." : "Cavab silindi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 export async function updateRequestStatusAction(
   requestId: string,
   status: RequestStatus,
@@ -160,6 +209,10 @@ export async function updateRequestStatusAction(
         ...(status === "COMPLETED" ? { completedBy: "CENTER" } : {}),
       },
     });
+    // Notify the patient of the status change (best-effort).
+    await smsPatientStatusChange(req.phone, { status, centerName: center.name }).catch(
+      () => {},
+    );
     revalidatePath("/merkez");
     return { ok: true };
   } catch {

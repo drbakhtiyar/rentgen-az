@@ -8,16 +8,38 @@ import { Button } from "@/components/ui/button";
 
 type Option = { value: string; label: string };
 
+export type SearchLabels = {
+  service: string;
+  allServices: string;
+  city: string;
+  allCities: string;
+  centerName: string;
+  centerNamePlaceholder: string;
+  search: string;
+};
+
+const AZ_LABELS: SearchLabels = {
+  service: "Xidmət",
+  allServices: "Bütün xidmətlər",
+  city: "Rayon / şəhər",
+  allCities: "Bütün rayonlar",
+  centerName: "Mərkəz adı",
+  centerNamePlaceholder: "Mərkəzin adı",
+  search: "Axtar",
+};
+
 export function SearchPanel({
   services,
   cities,
   defaults,
   variant = "hero",
+  labels = AZ_LABELS,
 }: {
   services: Option[];
   cities: Option[];
   defaults?: { q?: string; city?: string; service?: string };
   variant?: "hero" | "compact";
+  labels?: SearchLabels;
 }) {
   const router = useRouter();
   const [q, setQ] = React.useState(defaults?.q ?? "");
@@ -43,9 +65,9 @@ export function SearchPanel({
       }
     >
       <div className="grid gap-3 md:grid-cols-[1.1fr_1fr_1fr_auto]">
-        <Labeled icon={<Stethoscope className="h-4 w-4" />} label="Xidmət">
-          <Select value={service} onChange={(e) => setService(e.target.value)} aria-label="Xidmət növü">
-            <option value="">Bütün xidmətlər</option>
+        <Labeled icon={<Stethoscope className="h-4 w-4" />} label={labels.service}>
+          <Select value={service} onChange={(e) => setService(e.target.value)} aria-label={labels.service}>
+            <option value="">{labels.allServices}</option>
             {services.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
@@ -54,9 +76,9 @@ export function SearchPanel({
           </Select>
         </Labeled>
 
-        <Labeled icon={<MapPin className="h-4 w-4" />} label="Rayon / şəhər">
-          <Select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Şəhər və ya rayon">
-            <option value="">Bütün rayonlar</option>
+        <Labeled icon={<MapPin className="h-4 w-4" />} label={labels.city}>
+          <Select value={city} onChange={(e) => setCity(e.target.value)} aria-label={labels.city}>
+            <option value="">{labels.allCities}</option>
             {cities.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
@@ -65,19 +87,19 @@ export function SearchPanel({
           </Select>
         </Labeled>
 
-        <Labeled icon={<Search className="h-4 w-4" />} label="Mərkəz adı">
+        <Labeled icon={<Search className="h-4 w-4" />} label={labels.centerName}>
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Mərkəzin adı"
-            aria-label="Mərkəz adı"
+            placeholder={labels.centerNamePlaceholder}
+            aria-label={labels.centerName}
           />
         </Labeled>
 
         <div className="flex items-end">
           <Button type="submit" size="lg" className="h-11 w-full md:w-auto">
             <Search className="h-4 w-4" />
-            Axtar
+            {labels.search}
           </Button>
         </div>
       </div>

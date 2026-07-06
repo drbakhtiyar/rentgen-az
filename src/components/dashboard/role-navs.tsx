@@ -11,6 +11,7 @@ import {
   Heart,
   History,
   Star,
+  MessageSquare,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -18,6 +19,7 @@ export const centerNav: NavItem[] = [
   { label: "İcmal", href: "/merkez", icon: <LayoutDashboard /> },
   { label: "Profil", href: "/merkez/profil", icon: <Building2 /> },
   { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks /> },
+  { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
 ];
 
 export const doctorNav: NavItem[] = [
@@ -40,6 +42,8 @@ export const adminNav: NavItem[] = [
   { label: "Həkim göndərişləri", href: "/admin/gonderisler", icon: <Stethoscope /> },
   { label: "Blog", href: "/admin/blog", icon: <FileText /> },
   { label: "Rəylər", href: "/admin/reyler", icon: <Star /> },
+  { label: "Xidmətlər", href: "/admin/xidmetler", icon: <ListChecks /> },
+  { label: "SMS", href: "/admin/sms", icon: <MessageSquare /> },
   { label: "Parametrlər", href: "/admin/parametrler", icon: <Settings /> },
   { label: "Jurnal", href: "/admin/jurnal", icon: <History /> },
 ];

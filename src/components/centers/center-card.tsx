@@ -1,20 +1,35 @@
 import Link from "next/link";
-import { MapPin, Clock, ArrowUpRight } from "lucide-react";
+import { MapPin, Clock, ArrowUpRight, Tag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { RatingSummary } from "@/components/reviews/stars";
+import { OpenStatus } from "@/components/centers/open-status";
+import { formatPrice } from "@/lib/utils";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import type { CenterWithServices } from "@/lib/queries";
 
 export function CenterCard({
   center,
   rating,
+  highlightService,
+  locale = DEFAULT_LOCALE,
 }: {
   center: CenterWithServices;
   rating?: { avg: number; count: number };
+  /** service slug the patient searched for — its price is featured */
+  highlightService?: string;
+  locale?: Locale;
 }) {
-  const services = center.services.slice(0, 3);
-  const extra = center.services.length - services.length;
+  const matched = highlightService
+    ? center.services.find((cs) => cs.service.slug === highlightService)
+    : undefined;
+  // When a service is searched, show the other services after the matched one.
+  const rest = matched
+    ? center.services.filter((cs) => cs.id !== matched.id)
+    : center.services;
+  const services = rest.slice(0, matched ? 2 : 3);
+  const extra = rest.length - services.length;
 
   return (
     <Card className="group flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]">
@@ -29,6 +44,29 @@ export function CenterCard({
             className="absolute inset-0 h-full w-full object-cover"
             loading="lazy"
           />
+        ) : center.logoUrl ? (
+          <>
+            {/* Light, directory-style surface: any logo reads as a clean brand
+                mark instead of a patch floating on the dark gradient. */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white to-surface" />
+            <div className="absolute inset-0 bg-grid opacity-70" />
+            <div className="glow absolute -right-12 -top-12 h-44 w-44 opacity-25" />
+            <div className="absolute inset-x-0 bottom-0 h-px bg-slate-200/70" />
+            <div className="absolute inset-0 flex items-center justify-center p-5">
+              {/* Tight-hugging, corner-clipped tile: a solid square logo becomes a
+                  rounded app-icon; a transparent PNG or wordmark becomes a clean
+                  rounded logo card — consistent framing for ANY uploaded image. */}
+              <span className="inline-flex max-w-[78%] overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 shadow-[0_10px_30px_-12px_rgba(16,31,70,0.28)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={center.logoUrl}
+                  alt={`${center.name} loqosu`}
+                  className="block h-auto max-h-24 w-auto max-w-full object-contain"
+                  loading="lazy"
+                />
+              </span>
+            </div>
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="font-display text-2xl font-bold text-white/90">
@@ -37,7 +75,7 @@ export function CenterCard({
           </div>
         )}
         <div className="absolute left-3 top-3">
-          <VerifiedBadge />
+          <VerifiedBadge className="bg-white/95 text-brand-700 shadow-sm ring-slate-200/80 backdrop-blur" />
         </div>
       </div>
 
@@ -69,6 +107,24 @@ export function CenterCard({
           )}
         </div>
 
+        {center.hours ? (
+          <div className="mt-2.5">
+            <OpenStatus hours={center.hours} locale={locale} />
+          </div>
+        ) : null}
+
+        {matched && (
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-brand-800">
+              <Tag className="h-4 w-4 text-brand-500" />
+              {matched.service.shortName ?? matched.service.name}
+            </span>
+            <span className="text-sm font-bold text-ink-900">
+              {formatPrice(matched.price, matched.priceTo)}
+            </span>
+          </div>
+        )}
+
         {services.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {services.map((cs) => (
@@ -81,10 +137,11 @@ export function CenterCard({
         )}
 
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
-          <CallButton phone={center.phone} className="h-10 flex-1 px-3 text-xs" />
+          <CallButton phone={center.phone} centerId={center.id} className="h-10 flex-1 px-3 text-xs" />
           {center.whatsapp && (
             <WhatsAppButton
               phone={center.whatsapp}
+              centerId={center.id}
               className="h-10 flex-1 px-3 text-xs"
             />
           )}

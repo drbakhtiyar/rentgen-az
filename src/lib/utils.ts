@@ -33,6 +33,20 @@ export function formatDateAz(date: Date | string | null | undefined) {
   return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+/** Date + time in Azerbaijan timezone, e.g. "6 iyul 2026, 14:30". */
+export function formatDateTimeAz(date: Date | string | null | undefined) {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return "";
+  const t = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Baku",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(d);
+  return `${formatDateAz(d)}, ${t}`;
+}
+
 export function slugify(input: string): string {
   const map: Record<string, string> = {
     ə: "e",

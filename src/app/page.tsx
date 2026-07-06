@@ -24,8 +24,8 @@ import { HeroVisual } from "@/components/hero-visual";
 import { CenterCard } from "@/components/centers/center-card";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { JsonLd } from "@/components/ui/json-ld";
-import { SERVICES } from "@/lib/constants";
 import {
+  getActiveServices,
   getFeaturedCenters,
   getPublishedPosts,
   getPlatformStats,
@@ -36,24 +36,30 @@ import {
 import { faqJsonLd } from "@/lib/seo";
 import { HOME_FAQ } from "@/content/faq";
 import { formatDateAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 export const revalidate = 300;
 
-const serviceOptions = SERVICES.map((s) => ({ value: s.slug, label: s.name }));
-
 export default async function HomePage() {
-  const [centers, posts, stats, counts, searchCities] = await Promise.all([
+  const [centers, posts, stats, counts, searchCities, allServices] = await Promise.all([
     getFeaturedCenters(6),
     getPublishedPosts(3),
     getPlatformStats(),
     countApprovedCentersByService(),
     getCitiesWithCenters(),
+    getActiveServices(),
   ]);
   const cityOptions = searchCities.map((c) => ({ value: c, label: c }));
+  const serviceOptions = allServices.map((s) => ({ value: s.slug, label: s.name }));
+
+  const locale = await getLocale();
+  const d = getDict(locale);
+  const searchLabels = { ...d.search, search: d.cta.search };
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
-  const featuredServices = SERVICES.filter((s) => s.featured).slice(0, 8);
+  const featuredServices = allServices.filter((s) => s.featured).slice(0, 8);
 
   return (
     <>
@@ -69,17 +75,15 @@ export default async function HomePage() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-cyan-300 backdrop-blur-sm">
                 <Sparkles className="h-3.5 w-3.5" />
-                Azərbaycanın dental görüntüləmə platforması
+                {d.hero.badge}
               </span>
               <h1 className="font-display mt-5 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-                Bakıda{" "}
-                <span className="text-gradient">dental rentgen</span> və 3D
-                tomoqrafiya mərkəzini tapın
+                {d.hero.titleA}
+                <span className="text-gradient">{d.hero.titleHighlight}</span>
+                {d.hero.titleB}
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-300">
-                Panoramik, sefalometrik rentgen, CBCT və implant öncəsi
-                tomoqrafiya xidmətləri göstərən təsdiqlənmiş mərkəzləri xidmət və
-                rayona görə axtarın — birbaşa zəng və WhatsApp ilə əlaqə saxlayın.
+                {d.hero.subtitle}
               </p>
 
               <div className="mt-7">
@@ -87,18 +91,19 @@ export default async function HomePage() {
                   services={serviceOptions}
                   cities={cityOptions}
                   variant="hero"
+                  labels={searchLabels}
                 />
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> Təsdiqlənmiş mərkəzlər
+                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> {d.hero.f1}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> 3 klikdən az axtarış
+                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> {d.hero.f2}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> Parolsuz, sürətli giriş
+                  <CheckCircle2 className="h-4 w-4 text-cyan-400" /> {d.hero.f3}
                 </span>
               </div>
             </div>
@@ -117,7 +122,7 @@ export default async function HomePage() {
             <Stat value={`${stats.approvedCenters}`} label="Təsdiqlənmiş mərkəz" icon={<Building2 className="h-5 w-5" />} />
             <Stat value={`${stats.doctors}`} label="Qeydiyyatlı həkim" icon={<Stethoscope className="h-5 w-5" />} />
             <Stat value={`${stats.patients}`} label="Qeydiyyatlı pasiyent" icon={<Users className="h-5 w-5" />} />
-            <Stat value={`${SERVICES.length}`} label="Xidmət növü" icon={<ScanLine className="h-5 w-5" />} />
+            <Stat value={`${allServices.length}`} label="Xidmət növü" icon={<ScanLine className="h-5 w-5" />} />
             <Stat value={`${stats.cities}`} label="Əhatə olunan rayon" icon={<MapPin className="h-5 w-5" />} />
           </div>
         </Container>
@@ -136,7 +141,7 @@ export default async function HomePage() {
               <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
                 <Card className="group h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-glow)]">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                    <ServiceIcon name={s.icon} className="h-6 w-6" />
+                    <ServiceIcon name={s.icon} url={s.iconUrl} className="h-6 w-6" />
                   </div>
                   <h3 className="font-display mt-4 text-base font-bold text-ink-900">
                     {s.name}

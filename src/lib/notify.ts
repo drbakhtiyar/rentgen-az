@@ -1,7 +1,49 @@
 import "server-only";
 import { sendNotificationEmail } from "./email";
+import { sendSms } from "./sms";
 import { formatPhoneDisplay } from "./phone";
 import { SITE_URL } from "./env";
+import type { RequestStatus } from "@/generated/prisma/enums";
+
+/** SMS the center's own phone when a patient sends them a request. */
+export async function smsCenterNewRequest(
+  centerPhone: string,
+  opts: { patientName: string; serviceName?: string | null; preferredDate?: Date | null },
+): Promise<void> {
+  // Cap dynamic parts + short link so the whole message stays 1 SMS segment.
+  const name = opts.patientName.slice(0, 30);
+  const svc = opts.serviceName ? ` (${opts.serviceName.slice(0, 24)})` : "";
+  let when = "";
+  if (opts.preferredDate) {
+    when = ` - ${new Intl.DateTimeFormat("az", {
+      timeZone: "Asia/Baku",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }).format(opts.preferredDate)}`;
+  }
+  const msg = `Rentgen.az: yeni muraciet - ${name}${svc}${when}. Panel: rentgen.az/merkez`;
+  await sendSms(centerPhone, msg, "center_request").catch(() => {});
+}
+
+const STATUS_LABEL_AZ: Record<RequestStatus, string> = {
+  NEW: "yeni",
+  CONTACTED: "əlaqə saxlanıldı",
+  COMPLETED: "tamamlandı",
+  CANCELLED: "ləğv edildi",
+};
+
+/** SMS the patient when the status of their request changes. */
+export async function smsPatientStatusChange(
+  patientPhone: string,
+  opts: { status: RequestStatus; centerName?: string | null },
+): Promise<void> {
+  const where = opts.centerName ? ` — ${opts.centerName}` : "";
+  const msg = `Rentgen.az: müraciətinizin statusu yeniləndi: «${STATUS_LABEL_AZ[opts.status]}»${where}.`;
+  await sendSms(patientPhone, msg, "patient_status").catch(() => {});
+}
 
 /** Fired when a patient submits an appointment request. */
 export async function notifyNewAppointment(data: {

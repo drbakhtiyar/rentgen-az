@@ -40,6 +40,37 @@ export async function markServiceReceivedAction(
   }
 }
 
+/** Patient cancels their own pending request. */
+export async function cancelRequestAction(
+  requestId: string,
+): Promise<PatientActionResult> {
+  const user = await requireRole("PATIENT");
+  try {
+    const profile = await prisma.patientProfile.findUnique({
+      where: { userId: user.id },
+    });
+    if (!profile) return { ok: false, error: "Profil tapılmadı." };
+
+    const req = await prisma.appointmentRequest.findUnique({
+      where: { id: requestId },
+    });
+    if (!req || req.patientId !== profile.id) {
+      return { ok: false, error: "Müraciət tapılmadı." };
+    }
+    if (req.status === "COMPLETED" || req.status === "CANCELLED") {
+      return { ok: false, error: "Bu müraciəti ləğv etmək olmur." };
+    }
+    await prisma.appointmentRequest.update({
+      where: { id: requestId },
+      data: { status: "CANCELLED" },
+    });
+    revalidatePath("/kabinet");
+    return { ok: true, message: "Müraciət ləğv edildi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 export async function submitReviewAction(input: {
   centerId: string;
   rating: number;
