@@ -201,17 +201,30 @@ model Review {
   center    CenterProfile  @relation(fields: [centerId], references: [id], onDelete: Cascade)
   patientId String
   patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  rating    Int // 1..5
+  rating    Int // 1..5 (5 alt-balın ortası)
   comment   String?
-  verified  Boolean        @default(false) // mərkəz təsdiqləyib (self-declared deyil)
-  hidden    Boolean        @default(false) // admin moderasiyası
+  verified  Boolean        @default(false) // təsdiqlənmiş müştəri
+  hidden    Boolean        @default(false) // admin moderasiyası (gizlədilib)
+  flagged   Boolean        @default(false) // avtomatik moderasiya — admin təsdiqini gözləyir
   reply     String? // mərkəzin cavabı
   repliedAt DateTime?
+
+  // Walk-in (QR) rəyləri
+  source       String  @default("appointment") // "appointment" | "qr"
+  scoreService Int? // xidmətin ümumi keyfiyyəti
+  scoreStaff   Int? // personalın münasibəti
+  scoreClean   Int? // təmizlik / rahatlıq
+  scoreWait    Int? // gözləmə vaxtı
+  scorePrice   Int? // qiymət / dəyər nisbəti
+  doctorId     String? // göndərən həkim (sistemdən) — göstərilmir
+  doctorName   String? // göndərən həkim (əl ilə) — göstərilmir
+
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
   @@unique([centerId, patientId])
   @@index([centerId, hidden])
+  @@index([flagged])
 }
 
 model SmsLog {

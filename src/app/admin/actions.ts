@@ -179,6 +179,40 @@ export async function adminUpdateDoctorAction(
   }
 }
 
+/** Approve a flagged review → clears the flag and makes it public. */
+export async function approveReviewAction(reviewId: string): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    const r = await prisma.review.update({
+      where: { id: reviewId },
+      data: { flagged: false, hidden: false },
+      select: { center: { select: { slug: true } } },
+    });
+    await logAction(admin.id, "review:approve", "Review", reviewId);
+    revalidatePath("/admin/reyler");
+    if (r.center?.slug) revalidatePath(`/rentgen-merkezleri/${r.center.slug}`);
+    return { ok: true, message: "Rəy təsdiqləndi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+/** Reject a flagged review → keeps it hidden and removes it from the queue. */
+export async function rejectReviewAction(reviewId: string): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    await prisma.review.update({
+      where: { id: reviewId },
+      data: { flagged: false, hidden: true },
+    });
+    await logAction(admin.id, "review:reject", "Review", reviewId);
+    revalidatePath("/admin/reyler");
+    return { ok: true, message: "Rəy gizli saxlanıldı." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 export async function setReviewHiddenAction(
   reviewId: string,
   hidden: boolean,

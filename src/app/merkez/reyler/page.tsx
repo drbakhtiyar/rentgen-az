@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { Star } from "lucide-react";
+import QRCode from "qrcode";
+import { Star, Download, QrCode } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { Stars } from "@/components/reviews/stars";
+import { ScoreBreakdown } from "@/components/reviews/score-breakdown";
 import { ReviewReplyForm } from "@/components/reviews/review-reply-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz } from "@/lib/utils";
+import { SITE_URL } from "@/lib/env";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +26,7 @@ export default async function CenterReviewsPage() {
   const user = await requireRole("CENTER", "/merkez/reyler");
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
   });
   if (!center) redirect("/merkez/qeydiyyat");
 
@@ -33,8 +36,43 @@ export default async function CenterReviewsPage() {
     include: { patient: { select: { firstName: true, lastName: true } } },
   });
 
+  const reviewUrl = `${SITE_URL}/rey/${center.slug}`;
+  const qrDataUrl = await QRCode.toDataURL(reviewUrl, { width: 320, margin: 2 });
+
   return (
     <DashboardShell title="Rəylər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+      <div className="mb-5">
+        <Panel title="Rəy toplamaq üçün QR kod">
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrDataUrl}
+              alt="Rəy QR kodu"
+              className="h-40 w-40 shrink-0 rounded-xl ring-1 ring-slate-200"
+            />
+            <div className="min-w-0 flex-1 text-sm text-slate-600">
+              <p className="flex items-center gap-1.5 font-semibold text-ink-900">
+                <QrCode className="h-4 w-4 text-brand-600" /> Necə işləyir?
+              </p>
+              <p className="mt-2">
+                Bu QR kodu çap edib registraturada yerləşdirin. Mərkəzinizdə
+                rentgen çəkdirən pasiyent kodu skan edəndə mərkəziniz artıq
+                seçilmiş halda rəy forması açılır — telefon təsdiqi (OTP) ilə rəy
+                yazır.
+              </p>
+              <p className="mt-2 break-all text-xs text-slate-400">{reviewUrl}</p>
+              <a
+                href={qrDataUrl}
+                download={`rentgen-qr-${center.slug}.png`}
+                className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+              >
+                <Download className="h-4 w-4" /> QR kodu yüklə
+              </a>
+            </div>
+          </div>
+        </Panel>
+      </div>
+
       <Panel title={`Pasiyent rəyləri (${reviews.length})`}>
         {reviews.length > 0 ? (
           <div className="space-y-4">
@@ -51,6 +89,7 @@ export default async function CenterReviewsPage() {
                       <span className="text-xs text-slate-400">{formatDateAz(r.createdAt)}</span>
                     </div>
                   </div>
+                  <ScoreBreakdown review={r} />
                   {r.comment && (
                     <p className="mt-2 text-sm text-slate-600">{r.comment}</p>
                   )}
