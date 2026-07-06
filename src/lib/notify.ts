@@ -10,10 +10,12 @@ export async function smsCenterNewRequest(
   centerPhone: string,
   opts: { patientName: string; serviceName?: string | null; preferredDate?: Date | null },
 ): Promise<void> {
-  const svc = opts.serviceName ? ` (${opts.serviceName})` : "";
+  // Cap dynamic parts + short link so the whole message stays 1 SMS segment.
+  const name = opts.patientName.slice(0, 30);
+  const svc = opts.serviceName ? ` (${opts.serviceName.slice(0, 24)})` : "";
   let when = "";
   if (opts.preferredDate) {
-    when = ` — ${new Intl.DateTimeFormat("az", {
+    when = ` - ${new Intl.DateTimeFormat("az", {
       timeZone: "Asia/Baku",
       day: "2-digit",
       month: "2-digit",
@@ -22,7 +24,7 @@ export async function smsCenterNewRequest(
       hourCycle: "h23",
     }).format(opts.preferredDate)}`;
   }
-  const msg = `Rentgen.az: Yeni müraciət — ${opts.patientName}${svc}${when}. Panelinizdə baxın: ${SITE_URL}/merkez`;
+  const msg = `Rentgen.az: yeni muraciet - ${name}${svc}${when}. Panel: rentgen.az/merkez`;
   await sendSms(centerPhone, msg).catch(() => {});
 }
 

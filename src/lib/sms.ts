@@ -32,6 +32,22 @@ function md5(input: string): string {
   return createHash("md5").update(input, "utf8").digest("hex");
 }
 
+// Azerbaijani (and a few punctuation) → ASCII, so SMS ship as GSM-7 (160
+// chars/segment = 1 credit) instead of Unicode (70 chars/segment = 2 credits).
+const ASCII_MAP: Record<string, string> = {
+  ə: "e", Ə: "E", ç: "c", Ç: "C", ğ: "g", Ğ: "G", ı: "i", İ: "I",
+  ö: "o", Ö: "O", ş: "s", Ş: "S", ü: "u", Ü: "U",
+  "—": "-", "–": "-", "«": '"', "»": '"', "“": '"', "”": '"', "‘": "'", "’": "'", "…": "...",
+};
+
+/** Fold text to GSM-7-safe ASCII (drops any remaining non-ASCII). */
+export function toGsmAscii(text: string): string {
+  return text
+    .split("")
+    .map((ch) => ASCII_MAP[ch] ?? (ch.charCodeAt(0) > 127 ? "" : ch))
+    .join("");
+}
+
 // Lsim QuickSMS error codes → readable messages.
 const LSIM_ERRORS: Record<number, string> = {
   [-100]: "Yanlış açar (key)",
@@ -59,9 +75,10 @@ async function sendViaLsim(to: string, message: string): Promise<SendSmsResult> 
     return { ok: false, error: "Lsim konfiqurasiyası natamamdır (login/password/sender)." };
   }
   const msisdn = to.replace(/\D/g, ""); // 994XXXXXXXXX
-  // Azerbaijani/Cyrillic letters need Unicode SMS; ASCII-only can use GSM-7.
-  const unicode = message.split("").some((ch) => ch.charCodeAt(0) > 127);
-  const key = md5(md5(password) + login + message + msisdn + sender);
+  // Fold to ASCII so each SMS is 1 credit (GSM-7) instead of 2 (Unicode).
+  const text = toGsmAscii(message);
+  const unicode = text.split("").some((ch) => ch.charCodeAt(0) > 127);
+  const key = md5(md5(password) + login + text + msisdn + sender);
 
   try {
     const res = await fetch("https://apps.lsim.az/quicksms/v1/smssender", {
@@ -71,7 +88,7 @@ async function sendViaLsim(to: string, message: string): Promise<SendSmsResult> 
         login,
         key,
         msisdn,
-        text: message,
+        text,
         sender,
         scheduled: "NOW",
         unicode,
