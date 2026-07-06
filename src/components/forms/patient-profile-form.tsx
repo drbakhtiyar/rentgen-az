@@ -4,6 +4,7 @@ import * as React from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Field } from "@/components/ui/field";
+import { BirthDatePicker } from "@/components/forms/birth-date-picker";
 import { savePatientProfileAction } from "@/app/kabinet/actions";
 
 type Option = { value: string; label: string };
@@ -74,7 +75,7 @@ export function PatientProfileForm({
           </Select>
         </Field>
         <Field label="Doğum tarixi (istəyə bağlı)" htmlFor="birthDate">
-          <Input id="birthDate" name="birthDate" type="date" defaultValue={defaults?.birthDate} />
+          <BirthDatePicker name="birthDate" defaultValue={defaults?.birthDate} />
         </Field>
       </div>
 
