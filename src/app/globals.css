@@ -140,6 +140,39 @@ body {
 }
 .animate-floaty { animation: floaty 6s ease-in-out infinite; }
 
+/* ---- CBCT reconstruction console ---- */
+@keyframes ct-rotate { to { transform: rotate(360deg); } }
+
+/* rotating conic "reconstruction" sweep, faded to a soft circle */
+.ct-sweep {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--color-cyan-400) 40%, transparent) 26deg,
+    color-mix(in srgb, var(--color-cyan-400) 6%, transparent) 60deg,
+    transparent 92deg,
+    transparent 360deg
+  );
+  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  animation: ct-rotate 5.5s linear infinite;
+}
+
+/* slow-turning reticle + tick ring */
+.ct-reticle { transform-origin: center; animation: ct-rotate 26s linear infinite; }
+.ct-reticle-rev { transform-origin: center; animation: ct-rotate 34s linear infinite reverse; }
+
+/* teeth ring reveal — enamel outlines pulse as the sweep passes */
+@keyframes ct-glimmer {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.ct-glimmer { animation: ct-glimmer 4s ease-in-out infinite; }
+
+/* crosshair readout blink */
+@keyframes ct-blink { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.ct-blink { animation: ct-blink 2.4s ease-in-out infinite; }
+
 .text-gradient {
   background: linear-gradient(100deg, var(--color-brand-600), var(--color-cyan-500));
   -webkit-background-clip: text;
@@ -149,7 +182,12 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .scanline::after,
-  .animate-floaty { animation: none; }
+  .animate-floaty,
+  .ct-sweep,
+  .ct-reticle,
+  .ct-reticle-rev,
+  .ct-glimmer,
+  .ct-blink { animation: none; }
   html { scroll-behavior: auto; }
 }
 
