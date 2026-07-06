@@ -214,6 +214,20 @@ model Review {
   @@index([centerId, hidden])
 }
 
+model SmsLog {
+  id        String   @id @default(cuid())
+  phone     String
+  kind      String // "otp" | "center_request" | "patient_status" | "other"
+  text      String // göndərilən mətn (OTP kodu maskalanır)
+  ok        Boolean
+  error     String?
+  provider  String // "lsim" | "dev" | ...
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([kind])
+}
+
 model CenterEvent {
   id        String        @id @default(cuid())
   centerId  String

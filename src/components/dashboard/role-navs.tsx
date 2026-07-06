@@ -11,6 +11,7 @@ import {
   Heart,
   History,
   Star,
+  MessageSquare,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -42,6 +43,7 @@ export const adminNav: NavItem[] = [
   { label: "Blog", href: "/admin/blog", icon: <FileText /> },
   { label: "Rəylər", href: "/admin/reyler", icon: <Star /> },
   { label: "Xidmətlər", href: "/admin/xidmetler", icon: <ListChecks /> },
+  { label: "SMS", href: "/admin/sms", icon: <MessageSquare /> },
   { label: "Parametrlər", href: "/admin/parametrler", icon: <Settings /> },
   { label: "Jurnal", href: "/admin/jurnal", icon: <History /> },
 ];

@@ -25,7 +25,7 @@ export async function smsCenterNewRequest(
     }).format(opts.preferredDate)}`;
   }
   const msg = `Rentgen.az: yeni muraciet - ${name}${svc}${when}. Panel: rentgen.az/merkez`;
-  await sendSms(centerPhone, msg).catch(() => {});
+  await sendSms(centerPhone, msg, "center_request").catch(() => {});
 }
 
 const STATUS_LABEL_AZ: Record<RequestStatus, string> = {
@@ -42,7 +42,7 @@ export async function smsPatientStatusChange(
 ): Promise<void> {
   const where = opts.centerName ? ` — ${opts.centerName}` : "";
   const msg = `Rentgen.az: müraciətinizin statusu yeniləndi: «${STATUS_LABEL_AZ[opts.status]}»${where}.`;
-  await sendSms(patientPhone, msg).catch(() => {});
+  await sendSms(patientPhone, msg, "patient_status").catch(() => {});
 }
 
 /** Fired when a patient submits an appointment request. */
