@@ -1,5 +1,16 @@
 import type { Metadata } from "next";
-import { MessageSquare, Wallet, CheckCircle2, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
+import {
+  MessageSquare,
+  Wallet,
+  CheckCircle2,
+  XCircle,
+  User,
+  Building2,
+  Stethoscope,
+  Shield,
+  HelpCircle,
+} from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { StatCard, EmptyState, Panel } from "@/components/dashboard/widgets";
 import { prisma } from "@/lib/db";
@@ -24,6 +35,52 @@ const KIND_LABEL: Record<string, string> = {
   other: "Digər",
 };
 
+type Role = "PATIENT" | "CENTER" | "DOCTOR" | "ADMIN";
+
+const ROLE_META: Record<
+  Role,
+  { label: string; icon: ReactNode; className: string }
+> = {
+  PATIENT: {
+    label: "Pasiyent",
+    icon: <User className="h-3.5 w-3.5" />,
+    className: "bg-cyan-50 text-cyan-700",
+  },
+  CENTER: {
+    label: "Mərkəz",
+    icon: <Building2 className="h-3.5 w-3.5" />,
+    className: "bg-brand-50 text-brand-700",
+  },
+  DOCTOR: {
+    label: "Həkim",
+    icon: <Stethoscope className="h-3.5 w-3.5" />,
+    className: "bg-emerald-50 text-emerald-700",
+  },
+  ADMIN: {
+    label: "Admin",
+    icon: <Shield className="h-3.5 w-3.5" />,
+    className: "bg-amber-50 text-amber-700",
+  },
+};
+
+function RoleTag({ role }: { role: Role | null }) {
+  if (!role) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+        <HelpCircle className="h-3.5 w-3.5" /> Naməlum
+      </span>
+    );
+  }
+  const m = ROLE_META[role];
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${m.className}`}
+    >
+      {m.icon} {m.label}
+    </span>
+  );
+}
+
 export default async function AdminSmsPage() {
   const admin = await requireRole("ADMIN", "/admin/sms");
 
@@ -39,6 +96,31 @@ export default async function AdminSmsPage() {
   } catch {
     /* keep empty */
   }
+
+  // Resolve recipient role: kind tells us for center/patient; OTP/other by phone lookup.
+  const lookupPhones = [
+    ...new Set(
+      logs.filter((l) => l.kind === "otp" || l.kind === "other").map((l) => l.phone),
+    ),
+  ];
+  let roleByPhone = new Map<string, Role>();
+  if (lookupPhones.length) {
+    try {
+      const users = await prisma.user.findMany({
+        where: { phone: { in: lookupPhones } },
+        select: { phone: true, role: true },
+      });
+      roleByPhone = new Map(users.map((u) => [u.phone, u.role as Role]));
+    } catch {
+      /* ignore */
+    }
+  }
+  const roleFor = (kind: string, phone: string): Role | null => {
+    if (kind === "center_request") return "CENTER";
+    if (kind === "patient_status") return "PATIENT";
+    return roleByPhone.get(phone) ?? null;
+  };
+
   const balance = await getSmsBalance();
 
   return (
@@ -86,6 +168,7 @@ export default async function AdminSmsPage() {
                         )}
                         {s.ok ? "Göndərildi" : "Uğursuz"}
                       </span>
+                      <RoleTag role={roleFor(s.kind, s.phone)} />
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                         {KIND_LABEL[s.kind] ?? s.kind}
                       </span>
