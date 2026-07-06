@@ -17,6 +17,7 @@ export function AppointmentForm({
   doctors,
   defaultService,
   hours,
+  patient,
   locale = DEFAULT_LOCALE,
   compact,
 }: {
@@ -27,6 +28,8 @@ export function AppointmentForm({
   defaultService?: string;
   /** center's structured hours — enables date + time slot picking */
   hours?: WeeklyHours | null;
+  /** logged-in patient → name/phone are prefilled, phone is locked */
+  patient?: { name: string; phone: string } | null;
   locale?: Locale;
   compact?: boolean;
 }) {
@@ -84,15 +87,29 @@ export function AppointmentForm({
       )}
       <div className={compact ? "space-y-4" : "grid gap-4 sm:grid-cols-2"}>
         <Field label={t.name} htmlFor="name" required>
-          <Input id="name" name="name" placeholder={t.namePh} required />
+          <Input
+            id="name"
+            name="name"
+            placeholder={t.namePh}
+            defaultValue={patient?.name ?? ""}
+            required
+          />
         </Field>
-        <Field label={t.phone} htmlFor="phone" required>
+        <Field
+          label={t.phone}
+          htmlFor="phone"
+          required
+          hint={patient ? t.phoneLocked : undefined}
+        >
           <Input
             id="phone"
             name="phone"
             type="tel"
             inputMode="tel"
             placeholder="050 123 45 67"
+            defaultValue={patient?.phone ?? ""}
+            readOnly={!!patient}
+            className={patient ? "bg-slate-50 text-slate-500" : undefined}
             required
           />
         </Field>

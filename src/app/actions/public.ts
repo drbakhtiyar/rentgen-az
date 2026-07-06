@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { getCurrentUser } from "@/lib/auth/rbac";
@@ -69,6 +70,27 @@ export async function submitAppointmentAction(input: {
         patientId,
       },
     });
+
+    // Backfill the patient's profile name if it was incomplete — the form
+    // required a name, so use it to complete the missing profile fields.
+    if (user?.role === "PATIENT" && user.patientProfile) {
+      const p = user.patientProfile;
+      if (!p.firstName || !p.lastName) {
+        const parts = data.name.trim().split(/\s+/);
+        const first = parts[0] ?? "";
+        const last = parts.slice(1).join(" ");
+        await prisma.patientProfile
+          .update({
+            where: { id: p.id },
+            data: {
+              firstName: p.firstName || first || null,
+              lastName: p.lastName || last || null,
+            },
+          })
+          .then(() => revalidatePath("/kabinet"))
+          .catch(() => {});
+      }
+    }
 
     // Notify (best-effort — never block the patient's submission)
     const center = data.centerId

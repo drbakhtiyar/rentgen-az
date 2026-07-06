@@ -118,6 +118,7 @@ type Dict = {
     name: string;
     namePh: string;
     phone: string;
+    phoneLocked: string;
     service: string;
     serviceOpt: string;
     doctor: string;
@@ -254,6 +255,7 @@ const az: Dict = {
     name: "Ad, Soyad",
     namePh: "Adınız",
     phone: "Telefon nömrəsi",
+    phoneLocked: "Hesab nömrəniz — dəyişdirilə bilməz",
     service: "Müayinə növü",
     serviceOpt: "Seçin (istəyə bağlı)",
     doctor: "Sizi yönləndirən həkim",
@@ -389,6 +391,7 @@ const ru: Dict = {
     name: "Имя, Фамилия",
     namePh: "Ваше имя",
     phone: "Номер телефона",
+    phoneLocked: "Номер вашего аккаунта — нельзя изменить",
     service: "Вид обследования",
     serviceOpt: "Выберите (необязательно)",
     doctor: "Направивший врач",

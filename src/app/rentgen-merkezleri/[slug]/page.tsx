@@ -85,6 +85,15 @@ export default async function CenterDetailPage({
   const rating = ratingsMap[center.id] ?? { avg: 0, count: 0 };
 
   const me = await getCurrentUser();
+  const patientInfo =
+    me?.role === "PATIENT" && me.patientProfile
+      ? {
+          name: [me.patientProfile.firstName, me.patientProfile.lastName]
+            .filter(Boolean)
+            .join(" "),
+          phone: me.phone,
+        }
+      : null;
   let canReview = false;
   let existingReview: { rating: number; comment: string | null } | null = null;
   const isPatient = me?.role === "PATIENT" && !!me.patientProfile;
@@ -421,6 +430,7 @@ export default async function CenterDetailPage({
                   <AppointmentForm
                     centerId={center.id}
                     locale={locale}
+                    patient={patientInfo}
                     services={center.services.map((cs) => ({
                       value: cs.service.slug,
                       label: cs.service.name,
