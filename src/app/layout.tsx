@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -16,8 +16,8 @@ const inter = Inter({
   display: "swap",
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
@@ -27,13 +27,11 @@ export const metadata: Metadata = {
   ...buildMetadata(),
   applicationName: SITE.name,
   authors: [{ name: SITE.name }],
-  icons: {
-    icon: "/favicon.ico",
-  },
+  // Icons (favicon.ico, icon.png, apple-icon.png) are auto-detected from app/ file conventions.
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a1124",
+  themeColor: "#08142b",
   width: "device-width",
   initialScale: 1,
 };
@@ -45,7 +43,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${plusJakartaSans.variable} h-full antialiased`}
+      className={`${inter.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-ink-900">
         <Script

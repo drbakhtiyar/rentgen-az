@@ -1,8 +1,14 @@
 import { ImageResponse } from "next/og";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 export const alt = "Rentgen.az — Bakıda dental rentgen və 3D tomoqrafiya mərkəzləri";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const markDataUri = `data:image/png;base64,${readFileSync(
+  join(process.cwd(), "public", "mark-square.png"),
+).toString("base64")}`;
 
 export default function OgImage() {
   return new ImageResponse(
@@ -22,23 +28,10 @@ export default function OgImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              background: "rgba(255,255,255,0.08)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 36,
-            }}
-          >
-            🦷
-          </div>
+          <img src={markDataUri} width={72} height={72} style={{ borderRadius: 18 }} alt="" />
           <div style={{ display: "flex", fontSize: 36, fontWeight: 800 }}>
-            <span>Rentgen</span>
-            <span style={{ color: "#4a9dff" }}>.az</span>
+            <span>rentgen</span>
+            <span style={{ color: "#0bb1f0" }}>.az</span>
           </div>
         </div>
 
