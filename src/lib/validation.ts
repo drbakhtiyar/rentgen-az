@@ -112,6 +112,9 @@ export const doctorProfileSchema = z.object({
   website: optionalUrl,
   diplomaUrl: optionalUrl,
   certificateUrl: optionalUrl,
+  residencyUrl: optionalUrl,
+  internshipUrl: optionalUrl,
+  specialtyUrl: optionalUrl,
 });
 
 export const referralSchema = z.object({

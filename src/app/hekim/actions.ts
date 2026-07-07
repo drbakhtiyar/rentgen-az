@@ -18,6 +18,9 @@ export async function saveDoctorProfileAction(input: {
   website?: string;
   diplomaUrl?: string;
   certificateUrl?: string;
+  residencyUrl?: string;
+  internshipUrl?: string;
+  specialtyUrl?: string;
 }): Promise<DoctorActionResult> {
   const user = await requireRole("DOCTOR");
   const parsed = doctorProfileSchema.safeParse(input);
@@ -42,6 +45,9 @@ export async function saveDoctorProfileAction(input: {
       website: d.website || null,
       diplomaUrl: d.diplomaUrl || null,
       certificateUrl: d.certificateUrl || null,
+      residencyUrl: d.residencyUrl || null,
+      internshipUrl: d.internshipUrl || null,
+      specialtyUrl: d.specialtyUrl || null,
     };
 
     if (existing) {

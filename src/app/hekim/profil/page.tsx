@@ -61,6 +61,9 @@ export default async function DoctorProfilePage() {
             website: profile.website ?? "",
             diplomaUrl: profile.diplomaUrl ?? "",
             certificateUrl: profile.certificateUrl ?? "",
+            residencyUrl: profile.residencyUrl ?? "",
+            internshipUrl: profile.internshipUrl ?? "",
+            specialtyUrl: profile.specialtyUrl ?? "",
           }}
         />
       </Card>

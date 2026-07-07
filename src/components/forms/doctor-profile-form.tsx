@@ -31,6 +31,9 @@ export type DoctorFormDefaults = {
   website?: string;
   diplomaUrl?: string;
   certificateUrl?: string;
+  residencyUrl?: string;
+  internshipUrl?: string;
+  specialtyUrl?: string;
 };
 
 type SaveInput = {
@@ -44,6 +47,9 @@ type SaveInput = {
   website: string;
   diplomaUrl: string;
   certificateUrl: string;
+  residencyUrl: string;
+  internshipUrl: string;
+  specialtyUrl: string;
 };
 
 export function DoctorProfileForm({
@@ -75,6 +81,9 @@ export function DoctorProfileForm({
   const [certificateUrl, setCertificateUrl] = React.useState(
     defaults?.certificateUrl ?? "",
   );
+  const [residencyUrl, setResidencyUrl] = React.useState(defaults?.residencyUrl ?? "");
+  const [internshipUrl, setInternshipUrl] = React.useState(defaults?.internshipUrl ?? "");
+  const [specialtyUrl, setSpecialtyUrl] = React.useState(defaults?.specialtyUrl ?? "");
 
   async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -124,6 +133,9 @@ export function DoctorProfileForm({
         website: get("website"),
         diplomaUrl,
         certificateUrl,
+        residencyUrl,
+        internshipUrl,
+        specialtyUrl,
       });
       if (!res.ok) {
         setError(res.error ?? t.genericError);
@@ -262,6 +274,9 @@ export function DoctorProfileForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <FileUpload label={t.diploma} value={diplomaUrl} onChange={setDiplomaUrl} onError={setError} t={t} />
         <FileUpload label={t.certificate} value={certificateUrl} onChange={setCertificateUrl} onError={setError} t={t} />
+        <FileUpload label={t.residency} value={residencyUrl} onChange={setResidencyUrl} onError={setError} t={t} />
+        <FileUpload label={t.internship} value={internshipUrl} onChange={setInternshipUrl} onError={setError} t={t} />
+        <FileUpload label={t.specialty} value={specialtyUrl} onChange={setSpecialtyUrl} onError={setError} t={t} />
       </div>
 
       <p className="text-xs text-slate-400">{t.docsNote}</p>

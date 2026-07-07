@@ -65,6 +65,9 @@ export default async function AdminEditDoctorPage({
             website: doctor.website ?? "",
             diplomaUrl: doctor.diplomaUrl ?? "",
             certificateUrl: doctor.certificateUrl ?? "",
+            residencyUrl: doctor.residencyUrl ?? "",
+            internshipUrl: doctor.internshipUrl ?? "",
+            specialtyUrl: doctor.specialtyUrl ?? "",
           }}
         />
       </Panel>

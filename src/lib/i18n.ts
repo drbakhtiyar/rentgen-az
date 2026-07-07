@@ -165,6 +165,9 @@ type Dict = {
     website: string;
     diploma: string;
     certificate: string;
+    residency: string;
+    internship: string;
+    specialty: string;
     docsNote: string;
     create: string;
     save: string;
@@ -337,8 +340,11 @@ const az: Dict = {
     website: "Sayt",
     diploma: "Diplom",
     certificate: "Təkmilləşmə sertifikatı",
+    residency: "Rezidentura sənədi",
+    internship: "İnternatura sənədi",
+    specialty: "Uzmanlıq sənədi",
     docsNote:
-      "Bütün əlavə məlumatlar istəyə bağlıdır. Diplom və sertifikat profilinizin etibarlılığını artırır (JPG, PNG və ya PDF — maks. 8 MB).",
+      "Bütün sənədlər istəyə bağlıdır. Diplom, sertifikat və digər sənədlər profilinizin etibarlılığını artırır (JPG, PNG və ya PDF — maks. 8 MB).",
     create: "Profili yarat",
     save: "Yadda saxla",
     uploaded: "Yükləndi — bax",
@@ -509,8 +515,11 @@ const ru: Dict = {
     website: "Сайт",
     diploma: "Диплом",
     certificate: "Сертификат о повышении квалификации",
+    residency: "Документ о резидентуре",
+    internship: "Документ об интернатуре",
+    specialty: "Документ о специализации",
     docsNote:
-      "Все дополнительные данные необязательны. Диплом и сертификат повышают доверие к профилю (JPG, PNG или PDF — макс. 8 МБ).",
+      "Все документы необязательны. Диплом, сертификат и другие документы повышают доверие к профилю (JPG, PNG или PDF — макс. 8 МБ).",
     create: "Создать профиль",
     save: "Сохранить",
     uploaded: "Загружено — открыть",

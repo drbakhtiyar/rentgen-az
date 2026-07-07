@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getApprovedDoctorById } from "@/lib/queries";
+import { DoctorDocuments } from "@/components/doctors/doctor-documents";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -130,6 +131,16 @@ export default async function DoctorProfilePage({
                     </div>
                   </div>
                 )}
+
+                <DoctorDocuments
+                  docs={[
+                    { label: "Diplom", url: doctor.diplomaUrl },
+                    { label: "Sertifikat", url: doctor.certificateUrl },
+                    { label: "Rezidentura", url: doctor.residencyUrl },
+                    { label: "İnternatura", url: doctor.internshipUrl },
+                    { label: "Uzmanlıq", url: doctor.specialtyUrl },
+                  ].filter((d): d is { label: string; url: string } => !!d.url)}
+                />
 
                 {(instagramUrl || doctor.website) && (
                   <div className="mt-5 flex flex-wrap gap-3">

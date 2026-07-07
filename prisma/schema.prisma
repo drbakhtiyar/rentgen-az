@@ -270,6 +270,9 @@ model DoctorProfile {
   website         String?
   diplomaUrl      String?
   certificateUrl  String?
+  residencyUrl    String? // rezidentura sənədi
+  internshipUrl   String? // internatura sənədi
+  specialtyUrl    String? // uzmanlıq sənədi
   status          CenterStatus @default(PENDING)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt

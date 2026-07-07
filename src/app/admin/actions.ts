@@ -148,6 +148,9 @@ export async function adminUpdateDoctorAction(
     website?: string;
     diplomaUrl?: string;
     certificateUrl?: string;
+    residencyUrl?: string;
+    internshipUrl?: string;
+    specialtyUrl?: string;
   },
 ): Promise<AdminResult> {
   const admin = await requireRole("ADMIN");
@@ -170,6 +173,9 @@ export async function adminUpdateDoctorAction(
         website: d.website || null,
         diplomaUrl: d.diplomaUrl || null,
         certificateUrl: d.certificateUrl || null,
+        residencyUrl: d.residencyUrl || null,
+        internshipUrl: d.internshipUrl || null,
+        specialtyUrl: d.specialtyUrl || null,
       },
     });
     await logAction(admin.id, "doctor:edit", "DoctorProfile", doctorId);
