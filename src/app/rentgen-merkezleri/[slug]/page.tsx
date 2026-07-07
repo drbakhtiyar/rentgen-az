@@ -95,7 +95,14 @@ export default async function CenterDetailPage({
         }
       : null;
   let canReview = false;
-  let existingReview: { rating: number; comment: string | null } | null = null;
+  let existingReview: {
+    comment: string | null;
+    scoreService: number | null;
+    scoreStaff: number | null;
+    scoreClean: number | null;
+    scoreWait: number | null;
+    scorePrice: number | null;
+  } | null = null;
   const isPatient = me?.role === "PATIENT" && !!me.patientProfile;
   if (isPatient && me?.patientProfile) {
     try {
@@ -114,7 +121,14 @@ export default async function CenterDetailPage({
             patientId: me.patientProfile.id,
           },
         },
-        select: { rating: true, comment: true },
+        select: {
+          comment: true,
+          scoreService: true,
+          scoreStaff: true,
+          scoreClean: true,
+          scoreWait: true,
+          scorePrice: true,
+        },
       });
     } catch {
       canReview = false;
@@ -404,7 +418,17 @@ export default async function CenterDetailPage({
                       <ReviewForm
                         centerId={center.id}
                         centerName={center.name}
-                        defaultRating={existingReview?.rating}
+                        defaultScores={
+                          existingReview
+                            ? {
+                                service: existingReview.scoreService ?? 0,
+                                staff: existingReview.scoreStaff ?? 0,
+                                clean: existingReview.scoreClean ?? 0,
+                                wait: existingReview.scoreWait ?? 0,
+                                price: existingReview.scorePrice ?? 0,
+                              }
+                            : undefined
+                        }
                         defaultComment={existingReview?.comment ?? undefined}
                       />
                     </div>

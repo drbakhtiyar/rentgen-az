@@ -150,7 +150,17 @@ export default async function PatientDashboardPage() {
                       <ReviewForm
                         centerId={c.id}
                         centerName={c.name}
-                        defaultRating={c.review?.rating}
+                        defaultScores={
+                          c.review
+                            ? {
+                                service: c.review.scoreService ?? 0,
+                                staff: c.review.scoreStaff ?? 0,
+                                clean: c.review.scoreClean ?? 0,
+                                wait: c.review.scoreWait ?? 0,
+                                price: c.review.scorePrice ?? 0,
+                              }
+                            : undefined
+                        }
                         defaultComment={c.review?.comment ?? undefined}
                         compact
                       />

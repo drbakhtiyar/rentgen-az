@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { patientProfileSchema, reviewSchema } from "@/lib/validation";
+import { isFlagged } from "@/lib/moderation";
 
 export type PatientActionResult = { ok: boolean; error?: string; message?: string };
 
@@ -73,7 +74,11 @@ export async function cancelRequestAction(
 
 export async function submitReviewAction(input: {
   centerId: string;
-  rating: number;
+  service: number;
+  staff: number;
+  clean: number;
+  wait: number;
+  price: number;
   comment?: string;
 }): Promise<PatientActionResult> {
   const user = await requireRole("PATIENT");
@@ -82,6 +87,10 @@ export async function submitReviewAction(input: {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
   }
   const d = parsed.data;
+  const comment = (d.comment || "").trim();
+  const vals = [d.service, d.staff, d.clean, d.wait, d.price];
+  const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+  const flagged = isFlagged(comment);
   try {
     const profile = await prisma.patientProfile.findUnique({
       where: { userId: user.id },
@@ -101,21 +110,34 @@ export async function submitReviewAction(input: {
     }
     const verified = completed.completedBy === "CENTER";
 
+    const data = {
+      rating: avg,
+      comment: comment || null,
+      verified,
+      flagged,
+      hidden: flagged,
+      scoreService: d.service,
+      scoreStaff: d.staff,
+      scoreClean: d.clean,
+      scoreWait: d.wait,
+      scorePrice: d.price,
+    };
+
     await prisma.review.upsert({
       where: { centerId_patientId: { centerId: d.centerId, patientId: profile.id } },
-      create: {
-        centerId: d.centerId,
-        patientId: profile.id,
-        rating: d.rating,
-        comment: d.comment || null,
-        verified,
-      },
-      update: { rating: d.rating, comment: d.comment || null, verified },
+      create: { centerId: d.centerId, patientId: profile.id, ...data },
+      update: data,
     });
 
     revalidatePath("/kabinet");
     revalidatePath("/rentgen-merkezleri");
-    return { ok: true, message: "Rəyiniz üçün təşəkkürlər!" };
+    revalidatePath("/admin/reyler");
+    return {
+      ok: true,
+      message: flagged
+        ? "Rəyiniz göndərildi. Moderasiyadan keçdikdən sonra saytda görünəcək."
+        : "Rəyiniz üçün təşəkkürlər!",
+    };
   } catch {
     return { ok: false, error: "Texniki xəta." };
   }

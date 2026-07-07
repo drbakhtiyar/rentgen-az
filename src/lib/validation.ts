@@ -123,9 +123,15 @@ export const referralSchema = z.object({
   centerId: z.string().trim().min(1).optional().or(z.literal("")),
 });
 
+const scoreField = z.coerce.number().int().min(1, "Bütün suallara ulduz verin").max(5);
+
 export const reviewSchema = z.object({
   centerId: z.string().trim().min(1, "Mərkəz seçilməyib"),
-  rating: z.coerce.number().int().min(1, "Qiymət seçin").max(5),
+  service: scoreField,
+  staff: scoreField,
+  clean: scoreField,
+  wait: scoreField,
+  price: scoreField,
   comment: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 

@@ -2,42 +2,54 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Star, Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/field";
-import { cn } from "@/lib/utils";
+import {
+  RatingQuestions,
+  EMPTY_SCORES,
+  type Scores,
+} from "@/components/reviews/rating-questions";
 import { submitReviewAction } from "@/app/kabinet/actions";
 
 export function ReviewForm({
   centerId,
   centerName,
-  defaultRating,
+  defaultScores,
   defaultComment,
   compact,
 }: {
   centerId: string;
   centerName?: string;
-  defaultRating?: number;
+  defaultScores?: Partial<Scores>;
   defaultComment?: string;
   compact?: boolean;
 }) {
   const router = useRouter();
-  const [rating, setRating] = React.useState(defaultRating ?? 0);
-  const [hover, setHover] = React.useState(0);
+  const [scores, setScores] = React.useState<Scores>({
+    ...EMPTY_SCORES,
+    ...defaultScores,
+  });
   const [comment, setComment] = React.useState(defaultComment ?? "");
   const [pending, startTransition] = React.useTransition();
   const [done, setDone] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  const hasExisting = Object.values(defaultScores ?? {}).some((v) => (v ?? 0) > 0);
+
+  function setScore(key: keyof Scores, v: number) {
+    setScores((s) => ({ ...s, [key]: v }));
+  }
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (rating < 1) {
-      setError("Zəhmət olmasa ulduz seçin.");
+    if (Object.values(scores).some((v) => v < 1)) {
+      setError("Zəhmət olmasa bütün suallara ulduz verin.");
       return;
     }
     startTransition(async () => {
-      const res = await submitReviewAction({ centerId, rating, comment });
+      const res = await submitReviewAction({ centerId, ...scores, comment });
       if (!res.ok) {
         setError(res.error ?? "Xəta");
         return;
@@ -62,28 +74,7 @@ export function ReviewForm({
           Mərkəz: <span className="font-semibold text-ink-800">{centerName}</span>
         </p>
       )}
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setRating(i)}
-            onMouseEnter={() => setHover(i)}
-            onMouseLeave={() => setHover(0)}
-            aria-label={`${i} ulduz`}
-            className="p-0.5"
-          >
-            <Star
-              className={cn(
-                "h-7 w-7 transition-colors",
-                i <= (hover || rating)
-                  ? "fill-amber-400 text-amber-400"
-                  : "fill-slate-200 text-slate-200 hover:text-amber-200",
-              )}
-            />
-          </button>
-        ))}
-      </div>
+      <RatingQuestions scores={scores} onChange={setScore} />
       <Textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
@@ -95,7 +86,7 @@ export function ReviewForm({
       )}
       <Button type="submit" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        {defaultRating ? "Rəyi yenilə" : "Rəy göndər"}
+        {hasExisting ? "Rəyi yenilə" : "Rəy göndər"}
       </Button>
     </form>
   );

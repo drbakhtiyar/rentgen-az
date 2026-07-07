@@ -181,7 +181,15 @@ export async function getReviewableCentersForPatient(patientId: string) {
       const reviews = ids.length
         ? await prisma.review.findMany({
             where: { patientId, centerId: { in: ids } },
-            select: { centerId: true, rating: true, comment: true },
+            select: {
+              centerId: true,
+              comment: true,
+              scoreService: true,
+              scoreStaff: true,
+              scoreClean: true,
+              scoreWait: true,
+              scorePrice: true,
+            },
           })
         : [];
       const reviewedBy = new Map(reviews.map((r) => [r.centerId, r]));
@@ -194,7 +202,14 @@ export async function getReviewableCentersForPatient(patientId: string) {
       id: string;
       name: string;
       slug: string;
-      review: { rating: number; comment: string | null } | null;
+      review: {
+        comment: string | null;
+        scoreService: number | null;
+        scoreStaff: number | null;
+        scoreClean: number | null;
+        scoreWait: number | null;
+        scorePrice: number | null;
+      } | null;
     }[],
   );
 }
