@@ -13,6 +13,7 @@ export async function saveDoctorProfileAction(input: {
   clinic?: string;
   specializations?: string[];
   city?: string;
+  photoUrl?: string;
   instagram?: string;
   website?: string;
   diplomaUrl?: string;
@@ -36,6 +37,7 @@ export async function saveDoctorProfileAction(input: {
       clinic: d.clinic || null,
       specializations: d.specializations ?? [],
       city: d.city || null,
+      photoUrl: d.photoUrl || null,
       instagram: d.instagram || null,
       website: d.website || null,
       diplomaUrl: d.diplomaUrl || null,

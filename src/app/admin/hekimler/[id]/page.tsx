@@ -60,6 +60,7 @@ export default async function AdminEditDoctorPage({
             clinic: doctor.clinic ?? "",
             specializations: doctor.specializations ?? [],
             city: doctor.city ?? "",
+            photoUrl: doctor.photoUrl ?? "",
             instagram: doctor.instagram ?? "",
             website: doctor.website ?? "",
             diplomaUrl: doctor.diplomaUrl ?? "",

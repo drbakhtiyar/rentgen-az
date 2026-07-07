@@ -9,6 +9,7 @@ import {
   FileText,
   X,
   ExternalLink,
+  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Field } from "@/components/ui/field";
@@ -25,6 +26,7 @@ export type DoctorFormDefaults = {
   clinic?: string;
   specializations?: string[];
   city?: string;
+  photoUrl?: string;
   instagram?: string;
   website?: string;
   diplomaUrl?: string;
@@ -37,6 +39,7 @@ type SaveInput = {
   clinic: string;
   specializations: string[];
   city: string;
+  photoUrl: string;
   instagram: string;
   website: string;
   diplomaUrl: string;
@@ -65,10 +68,36 @@ export function DoctorProfileForm({
   const [error, setError] = React.useState<string | null>(null);
 
   const [specs, setSpecs] = React.useState<string[]>(defaults?.specializations ?? []);
+  const [photoUrl, setPhotoUrl] = React.useState(defaults?.photoUrl ?? "");
+  const [uploadingPhoto, setUploadingPhoto] = React.useState(false);
+  const photoRef = React.useRef<HTMLInputElement>(null);
   const [diplomaUrl, setDiplomaUrl] = React.useState(defaults?.diplomaUrl ?? "");
   const [certificateUrl, setCertificateUrl] = React.useState(
     defaults?.certificateUrl ?? "",
   );
+
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      setError(t.tooBig);
+      return;
+    }
+    setUploadingPhoto(true);
+    setError(null);
+    try {
+      const blob = await upload(`doctor-photos/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+      setPhotoUrl(blob.url);
+    } catch (err) {
+      setError(`${t.uploadFailed}: ${(err as Error).message}`);
+    } finally {
+      setUploadingPhoto(false);
+      if (photoRef.current) photoRef.current.value = "";
+    }
+  }
 
   function toggleSpec(s: string) {
     setSpecs((prev) =>
@@ -90,6 +119,7 @@ export function DoctorProfileForm({
         clinic: get("clinic"),
         specializations: specs,
         city: get("city"),
+        photoUrl,
         instagram: get("instagram"),
         website: get("website"),
         diplomaUrl,
@@ -115,6 +145,52 @@ export function DoctorProfileForm({
           <CheckCircle2 className="h-4 w-4" /> {message}
         </p>
       )}
+
+      {/* Profile photo */}
+      <div className="flex items-center gap-4">
+        <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
+          {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <UserRound className="h-9 w-9 text-slate-300" />
+          )}
+        </span>
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-ink-800">{t.photo}</p>
+          <input
+            ref={photoRef}
+            type="file"
+            accept="image/png,image/webp,image/jpeg"
+            onChange={onPickPhoto}
+            className="hidden"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => photoRef.current?.click()}
+              disabled={uploadingPhoto}
+              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              {uploadingPhoto ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              {t.photoUpload}
+            </button>
+            {photoUrl && (
+              <button
+                type="button"
+                onClick={() => setPhotoUrl("")}
+                className="text-xs font-medium text-slate-400 hover:text-red-600"
+              >
+                {t.remove}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t.firstName} htmlFor="firstName" required>

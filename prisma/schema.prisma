@@ -264,6 +264,7 @@ model DoctorProfile {
   specialization  String? // (köhnə — sərbəst mətn, istifadə olunmur)
   specializations String[]     @default([]) // seçilmiş ixtisaslar
   city            String?
+  photoUrl        String? // profil şəkli
   instagram       String?
   website         String?
   diplomaUrl      String?

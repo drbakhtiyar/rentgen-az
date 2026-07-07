@@ -56,6 +56,7 @@ export default async function DoctorProfilePage() {
             clinic: profile.clinic ?? "",
             specializations: profile.specializations ?? [],
             city: profile.city ?? "",
+            photoUrl: profile.photoUrl ?? "",
             instagram: profile.instagram ?? "",
             website: profile.website ?? "",
             diplomaUrl: profile.diplomaUrl ?? "",

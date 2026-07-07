@@ -11,6 +11,7 @@ export type DoctorCardData = {
   clinic: string | null;
   city: string | null;
   specializations: string[];
+  photoUrl: string | null;
   diplomaUrl: string | null;
   certificateUrl: string | null;
 };
@@ -30,8 +31,13 @@ export function DoctorCard({
   return (
     <Card className="group flex h-full flex-col p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-glow)]">
       <div className="flex items-start gap-3">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
-          <Stethoscope className="h-6 w-6" />
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+          {doctor.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={doctor.photoUrl} alt={name} className="h-full w-full object-cover" />
+          ) : (
+            <Stethoscope className="h-6 w-6" />
+          )}
         </span>
         <div className="min-w-0">
           <Link href={`/hekimler/${doctor.id}`} className="group/link">

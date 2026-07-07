@@ -146,6 +146,8 @@ type Dict = {
   docForm: {
     onboardTitle: string;
     onboardDesc: string;
+    photo: string;
+    photoUpload: string;
     firstName: string;
     firstNamePh: string;
     lastName: string;
@@ -316,6 +318,8 @@ const az: Dict = {
   docForm: {
     onboardTitle: "Həkim profilini yaradın",
     onboardDesc: "Admin təsdiqindən sonra pasiyentlərin siyahısında görünəcəksiniz.",
+    photo: "Profil şəkli",
+    photoUpload: "Şəkil yüklə",
     firstName: "Ad",
     firstNamePh: "Adınız",
     lastName: "Soyad",
@@ -486,6 +490,8 @@ const ru: Dict = {
   docForm: {
     onboardTitle: "Создайте профиль врача",
     onboardDesc: "После подтверждения администратором вы появитесь в списке для пациентов.",
+    photo: "Фото профиля",
+    photoUpload: "Загрузить фото",
     firstName: "Имя",
     firstNamePh: "Ваше имя",
     lastName: "Фамилия",

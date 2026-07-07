@@ -94,8 +94,13 @@ export default async function DoctorProfilePage({
             <div className="space-y-6">
               <Card className="p-6">
                 <div className="flex items-start gap-4">
-                  <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
-                    <Stethoscope className="h-8 w-8" />
+                  <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+                    {doctor.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={doctor.photoUrl} alt={name} className="h-full w-full object-cover" />
+                    ) : (
+                      <Stethoscope className="h-8 w-8" />
+                    )}
                   </span>
                   <div>
                     <h1 className="font-display text-2xl font-bold text-ink-900">{name}</h1>
