@@ -6,7 +6,11 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { ReferralForm } from "@/components/forms/referral-form";
+import { DoctorReferralForm } from "@/components/forms/doctor-referral-form";
 import { getApprovedCenters } from "@/lib/queries";
+import { getCurrentUser } from "@/lib/auth/rbac";
+import { prisma } from "@/lib/db";
+import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 120;
@@ -25,6 +29,45 @@ export default async function DoctorsPage() {
     value: c.id,
     label: `${c.name}${c.city ? ` — ${c.city}` : ""}`,
   }));
+
+  // If a doctor is logged in, prepare their partner centers + services for the
+  // smart referral form.
+  const me = await getCurrentUser();
+  let doctorCtx: {
+    name: string;
+    clinic: string | null;
+    centers: { id: string; name: string; city: string | null }[];
+    servicesByCenter: Record<string, { slug: string; name: string }[]>;
+  } | null = null;
+  if (me?.role === "DOCTOR" && me.doctorProfile?.status === "APPROVED") {
+    const partners = await prisma.centerDoctor.findMany({
+      where: { doctorId: me.doctorProfile.id, status: "ACCEPTED" },
+      select: {
+        center: {
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            services: { include: { service: { select: { slug: true, name: true } } } },
+          },
+        },
+      },
+      orderBy: { center: { name: "asc" } },
+    });
+    const servicesByCenter: Record<string, { slug: string; name: string }[]> = {};
+    for (const p of partners) {
+      servicesByCenter[p.center.id] = p.center.services.map((cs) => ({
+        slug: cs.service.slug,
+        name: cs.service.name,
+      }));
+    }
+    doctorCtx = {
+      name: doctorName(me.doctorProfile.firstName, me.doctorProfile.lastName),
+      clinic: me.doctorProfile.clinic,
+      centers: partners.map((p) => ({ id: p.center.id, name: p.center.name, city: p.center.city })),
+      servicesByCenter,
+    };
+  }
 
   return (
     <>
@@ -86,12 +129,42 @@ export default async function DoctorsPage() {
               <h2 className="font-display flex items-center gap-2 text-2xl font-bold text-ink-900">
                 <Send className="h-6 w-6 text-brand-600" /> Pasiyent göndərişi forması
               </h2>
-              <p className="mt-1.5 text-sm text-slate-500">
-                Bütün məcburi sahələri doldurun.
-              </p>
-              <div className="mt-6">
-                <ReferralForm centers={centerOptions} />
-              </div>
+              {doctorCtx ? (
+                doctorCtx.centers.length > 0 ? (
+                  <>
+                    <p className="mt-1.5 text-sm text-slate-500">
+                      Partnyor mərkəzinizə pasiyent göndərin — pasiyentə OTP təsdiqi göndəriləcək.
+                    </p>
+                    <div className="mt-6">
+                      <DoctorReferralForm
+                        doctorName={doctorCtx.name}
+                        clinic={doctorCtx.clinic}
+                        centers={doctorCtx.centers}
+                        servicesByCenter={doctorCtx.servicesByCenter}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+                    Hələ partnyor mərkəziniz yoxdur. Pasiyent göndərmək üçün əvvəlcə
+                    mərkəzlərlə əməkdaşlıq qurun.
+                    <div className="mt-3">
+                      <ButtonLink href="/hekim/merkezler" size="sm">
+                        Partnyor mərkəzlər
+                      </ButtonLink>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <>
+                  <p className="mt-1.5 text-sm text-slate-500">
+                    Bütün məcburi sahələri doldurun.
+                  </p>
+                  <div className="mt-6">
+                    <ReferralForm centers={centerOptions} />
+                  </div>
+                </>
+              )}
             </Card>
           </div>
         </Container>
