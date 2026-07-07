@@ -133,6 +133,7 @@ type Dict = {
     noSlots: string;
     pickTime: string;
     submit: string;
+    submitOtp: string;
     disclaimer: string;
     centerLabel: string;
   };
@@ -270,6 +271,7 @@ const az: Dict = {
     noSlots: "Bu gün üçün vaxt yoxdur",
     pickTime: "Saat seçin",
     submit: "Müraciət göndər",
+    submitOtp: "Davam et — təsdiq kodu al",
     disclaimer: "Müraciətiniz seçilmiş mərkəzə çatdırılır. Ödəniş platformada alınmır.",
     centerLabel: "Mərkəz",
   },
@@ -406,6 +408,7 @@ const ru: Dict = {
     noSlots: "На этот день нет времени",
     pickTime: "Выберите время",
     submit: "Отправить заявку",
+    submitOtp: "Продолжить — получить код",
     disclaimer: "Ваша заявка передаётся выбранному центру. Оплата на платформе не взимается.",
     centerLabel: "Центр",
   },

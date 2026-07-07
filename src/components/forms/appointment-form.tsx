@@ -1,10 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, CheckCircle2, Send } from "lucide-react";
+import { Loader2, CheckCircle2, Send, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
-import { submitAppointmentAction } from "@/app/actions/public";
+import {
+  submitAppointmentAction,
+  requestAppointmentOtpAction,
+} from "@/app/actions/public";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
@@ -39,32 +42,68 @@ export function AppointmentForm({
   const [error, setError] = React.useState<string | null>(null);
   const [date, setDate] = React.useState("");
   const [time, setTime] = React.useState("");
+  const [step, setStep] = React.useState<"form" | "otp">("form");
+  const [code, setCode] = React.useState("");
+  const [devCode, setDevCode] = React.useState<string | null>(null);
+  const [otpPhone, setOtpPhone] = React.useState("");
+  // Snapshot of the form values captured when moving to the OTP step.
+  const pendingRef = React.useRef<Record<string, string>>({});
   const today = React.useMemo(() => bakuTodayYmd(), []);
   const slots = React.useMemo(
     () => (hours && date ? slotsForDate(hours, date) : []),
     [hours, date],
   );
+  // Logged-in patients skip OTP (phone already verified at login).
+  const skipOtp = !!patient;
+
+  function payload(extra?: { code?: string }) {
+    const p = pendingRef.current;
+    const preferredDate = date && time ? `${date}T${time}:00+04:00` : undefined;
+    return {
+      name: p.name,
+      phone: p.phone,
+      centerId,
+      doctorId: p.doctorId || "",
+      serviceSlug: p.serviceSlug || "",
+      note: p.note || "",
+      preferredDate,
+      code: extra?.code,
+    };
+  }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     const fd = new FormData(e.currentTarget);
-    const preferredDate =
-      date && time ? `${date}T${time}:00+04:00` : undefined;
+    pendingRef.current = {
+      name: String(fd.get("name") ?? ""),
+      phone: patient?.phone ?? String(fd.get("phone") ?? ""),
+      doctorId: String(fd.get("doctorId") ?? ""),
+      serviceSlug: String(fd.get("serviceSlug") ?? ""),
+      note: String(fd.get("note") ?? ""),
+    };
     startTransition(async () => {
-      const res = await submitAppointmentAction({
-        name: String(fd.get("name") ?? ""),
-        phone: String(fd.get("phone") ?? ""),
-        centerId,
-        doctorId: String(fd.get("doctorId") ?? ""),
-        serviceSlug: String(fd.get("serviceSlug") ?? ""),
-        note: String(fd.get("note") ?? ""),
-        preferredDate,
-      });
-      if (!res.ok) {
-        setError(res.error ?? "Xəta baş verdi");
+      if (skipOtp) {
+        const res = await submitAppointmentAction(payload());
+        if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+        setDone(res.message ?? "Müraciətiniz göndərildi.");
         return;
       }
+      // Not logged in → verify the phone with an OTP first.
+      const res = await requestAppointmentOtpAction({ phone: pendingRef.current.phone });
+      if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+      setDevCode(res.devCode ?? null);
+      setOtpPhone(pendingRef.current.phone);
+      setStep("otp");
+    });
+  }
+
+  function verifyAndSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const res = await submitAppointmentAction(payload({ code: code.trim() }));
+      if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
       setDone(res.message ?? "Müraciətiniz göndərildi.");
     });
   }
@@ -75,6 +114,54 @@ export function AppointmentForm({
         <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
         <p className="mt-3 font-semibold text-emerald-800">{done}</p>
       </div>
+    );
+  }
+
+  if (step === "otp") {
+    return (
+      <form onSubmit={verifyAndSubmit} className="space-y-4">
+        <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-sm text-brand-800">
+          <ShieldCheck className="mb-1 h-5 w-5 text-brand-600" />
+          <span className="font-semibold">{otpPhone}</span> nömrəsinə təsdiq kodu
+          göndərdik. Müraciətin qeydə alınması üçün kodu daxil edin.
+        </div>
+        {devCode && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Test rejimi — kod: <span className="font-bold">{devCode}</span>
+          </p>
+        )}
+        <Field label="Təsdiq kodu" htmlFor="apt-code" required>
+          <Input
+            id="apt-code"
+            inputMode="numeric"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="6 rəqəmli kod"
+            autoFocus
+          />
+        </Field>
+        {error && (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
+            {error}
+          </p>
+        )}
+        <div className="flex items-center gap-3">
+          <Button type="submit" size="lg" disabled={pending || code.trim().length < 4}>
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            Təsdiqlə və göndər
+          </Button>
+          <button
+            type="button"
+            onClick={() => {
+              setStep("form");
+              setError(null);
+            }}
+            className="text-sm font-medium text-slate-500 hover:text-slate-700"
+          >
+            Geri
+          </button>
+        </div>
+      </form>
     );
   }
 
@@ -184,7 +271,7 @@ export function AppointmentForm({
 
       <Button type="submit" size="lg" className="w-full" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        {t.submit}
+        {skipOtp ? t.submit : t.submitOtp}
       </Button>
       <p className="text-center text-xs text-slate-400">{t.disclaimer}</p>
     </form>
