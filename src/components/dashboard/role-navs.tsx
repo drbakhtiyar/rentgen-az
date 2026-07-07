@@ -19,12 +19,14 @@ export const centerNav: NavItem[] = [
   { label: "İcmal", href: "/merkez", icon: <LayoutDashboard /> },
   { label: "Profil", href: "/merkez/profil", icon: <Building2 /> },
   { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks /> },
+  { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope /> },
   { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
 ];
 
 export const doctorNav: NavItem[] = [
   { label: "İcmal", href: "/hekim", icon: <LayoutDashboard /> },
   { label: "Profil", href: "/hekim/profil", icon: <User /> },
+  { label: "Partnyor mərkəzlər", href: "/hekim/merkezler", icon: <Building2 /> },
 ];
 
 export const patientNav: NavItem[] = [

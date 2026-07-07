@@ -105,6 +105,7 @@ model CenterProfile {
   favoritedBy         PatientProfile[]     @relation("PatientFavorites")
   reviews             Review[]
   events              CenterEvent[]
+  doctorPartners      CenterDoctor[]
 
   @@index([status])
   @@index([city])
@@ -270,8 +271,31 @@ model DoctorProfile {
   updatedAt       DateTime     @updatedAt
 
   appointmentRequests AppointmentRequest[]
+  centerPartners      CenterDoctor[]
 
   @@index([status])
+}
+
+enum PartnerStatus {
+  PENDING // həkim sorğu göndərib, mərkəz gözləyir
+  ACCEPTED // mərkəz qəbul edib
+  REJECTED // mərkəz rədd edib
+}
+
+// Mərkəz ↔ həkim əməkdaşlığı. Həkim sorğu göndərir, mərkəz qəbul/rədd edir.
+model CenterDoctor {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  doctorId  String
+  doctor    DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  status    PartnerStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([centerId, doctorId])
+  @@index([centerId, status])
+  @@index([doctorId, status])
 }
 
 model BlogPost {

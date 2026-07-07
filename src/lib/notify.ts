@@ -1,9 +1,20 @@
 import "server-only";
 import { sendNotificationEmail } from "./email";
 import { sendSms } from "./sms";
+import { toGsmAscii } from "./sms";
 import { formatPhoneDisplay } from "./phone";
 import { SITE_URL } from "./env";
 import type { RequestStatus } from "@/generated/prisma/enums";
+
+/** SMS the center when a doctor requests a collaboration/partnership. */
+export async function smsCenterPartnerRequest(
+  centerPhone: string,
+  doctorName: string,
+): Promise<void> {
+  const name = toGsmAscii(doctorName).slice(0, 40);
+  const msg = `Rentgen.az: ${name} sizinle emekdasliq sorgusu gonderdi. Panel: rentgen.az/merkez/hekimler`;
+  await sendSms(centerPhone, msg, "other").catch(() => {});
+}
 
 /** SMS the center's own phone when a patient sends them a request. */
 export async function smsCenterNewRequest(
