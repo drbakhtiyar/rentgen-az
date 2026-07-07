@@ -9,6 +9,7 @@ import {
   Clock,
   AlertCircle,
   ArrowRight,
+  Users,
 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
@@ -124,14 +125,12 @@ export default async function CenterDashboardPage() {
           <Panel
             title="Son müraciətlər"
             action={
-              center.status === "APPROVED" && (
-                <Link
-                  href={`/rentgen-merkezleri/${center.slug}`}
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700"
-                >
-                  <Eye className="h-4 w-4" /> Profilə bax
-                </Link>
-              )
+              <Link
+                href="/merkez/pasiyentler"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700"
+              >
+                <Users className="h-4 w-4" /> Bütün pasiyentlər
+              </Link>
             }
           >
             {requests.length > 0 ? (

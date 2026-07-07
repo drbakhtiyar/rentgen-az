@@ -18,6 +18,7 @@ import type { NavItem } from "./nav";
 export const centerNav: NavItem[] = [
   { label: "İcmal", href: "/merkez", icon: <LayoutDashboard /> },
   { label: "Profil", href: "/merkez/profil", icon: <Building2 /> },
+  { label: "Pasiyentlər", href: "/merkez/pasiyentler", icon: <Users /> },
   { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks /> },
   { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope /> },
   { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
@@ -26,6 +27,7 @@ export const centerNav: NavItem[] = [
 export const doctorNav: NavItem[] = [
   { label: "İcmal", href: "/hekim", icon: <LayoutDashboard /> },
   { label: "Profil", href: "/hekim/profil", icon: <User /> },
+  { label: "Pasiyentlər", href: "/hekim/pasiyentler", icon: <Users /> },
   { label: "Partnyor mərkəzlər", href: "/hekim/merkezler", icon: <Building2 /> },
 ];
 

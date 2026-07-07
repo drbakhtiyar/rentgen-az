@@ -146,7 +146,17 @@ export default async function DoctorDashboardPage() {
       </div>
 
       <div className="mt-5">
-        <Panel title="Pasiyentlərim">
+        <Panel
+          title="Pasiyentlərim"
+          action={
+            <Link
+              href="/hekim/pasiyentler"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700"
+            >
+              <Users className="h-4 w-4" /> Hamısı
+            </Link>
+          }
+        >
           {groups.length > 0 ? (
             <div className="space-y-4">
               {groups.map((g) => (
