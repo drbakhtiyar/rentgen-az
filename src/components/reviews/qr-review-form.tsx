@@ -203,6 +203,7 @@ export function QrReviewForm({
 
       <div className="space-y-3 rounded-2xl border border-slate-200 p-4">
         <p className="text-sm font-semibold text-ink-900">Qiymətləndirmə</p>
+        <div className="space-y-3">
         {QUESTIONS.map((q) => (
           <StarRow
             key={q.key}
@@ -211,6 +212,7 @@ export function QrReviewForm({
             onChange={(v) => setScore(q.key, v)}
           />
         ))}
+        </div>
       </div>
 
       <Field label="Rəyiniz (istəyə bağlı)" htmlFor="comment">
@@ -248,9 +250,9 @@ function StarRow({
 }) {
   const [hover, setHover] = React.useState(0);
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <span className="text-sm text-slate-700">{label}</span>
-      <div className="flex items-center gap-0.5">
+    <div className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <div className="mt-1.5 flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((i) => (
           <button
             key={i}
@@ -263,7 +265,7 @@ function StarRow({
           >
             <Star
               className={cn(
-                "h-6 w-6 transition-colors",
+                "h-7 w-7 transition-colors",
                 i <= (hover || value)
                   ? "fill-amber-400 text-amber-400"
                   : "fill-slate-200 text-slate-200 hover:text-amber-200",
