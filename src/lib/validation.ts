@@ -78,6 +78,7 @@ export const centerProfileSchema = z.object({
   responsiblePerson: z.string().trim().max(120).optional().or(z.literal("")),
   description: z.string().trim().max(2000).optional().or(z.literal("")),
   logoUrl: z.string().trim().max(500).optional().or(z.literal("")),
+  licenseUrl: z.string().trim().max(500).optional().or(z.literal("")),
   images: z.array(z.string().trim().url()).max(12).optional(),
   lat: z.number().min(-90).max(90).nullable().optional(),
   lng: z.number().min(-180).max(180).nullable().optional(),

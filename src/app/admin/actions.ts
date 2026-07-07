@@ -88,6 +88,7 @@ export async function adminUpdateCenterAction(
     responsiblePerson?: string;
     description?: string;
     logoUrl?: string;
+    licenseUrl?: string;
     images?: string[];
     lat?: number | null;
     lng?: number | null;
@@ -118,6 +119,7 @@ export async function adminUpdateCenterAction(
         responsiblePerson: d.responsiblePerson || null,
         description: d.description || null,
         logoUrl: d.logoUrl || null,
+        licenseUrl: d.licenseUrl || null,
         images: d.images ?? [],
         lat: d.lat ?? null,
         lng: d.lng ?? null,

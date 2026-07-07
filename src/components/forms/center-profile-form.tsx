@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { upload } from "@vercel/blob/client";
-import { Loader2, CheckCircle2, Building2, Phone, MapPin, Upload, X } from "lucide-react";
+import { Loader2, CheckCircle2, Building2, Phone, MapPin, Upload, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { LocationPicker } from "@/components/map/location-picker";
@@ -26,6 +26,7 @@ export type CenterFormDefaults = {
   responsiblePerson?: string;
   description?: string;
   logoUrl?: string | null;
+  licenseUrl?: string | null;
   images?: string[];
   lat?: number | null;
   lng?: number | null;
@@ -44,6 +45,7 @@ type SaveInput = {
   responsiblePerson: string;
   description: string;
   logoUrl: string;
+  licenseUrl: string;
   images: string[];
   lat: number | null;
   lng: number | null;
@@ -72,6 +74,28 @@ export function CenterProfileForm({
   const [logoUrl, setLogoUrl] = React.useState(defaults?.logoUrl ?? "");
   const [uploadingLogo, setUploadingLogo] = React.useState(false);
   const logoRef = React.useRef<HTMLInputElement>(null);
+  const [licenseUrl, setLicenseUrl] = React.useState(defaults?.licenseUrl ?? "");
+  const [uploadingLicense, setUploadingLicense] = React.useState(false);
+  const licenseRef = React.useRef<HTMLInputElement>(null);
+
+  async function onPickLicense(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploadingLicense(true);
+    try {
+      const blob = await upload(`center-licenses/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+      setLicenseUrl(blob.url);
+    } catch {
+      setError("Lisenziya yüklənmədi. Yenidən cəhd edin.");
+    } finally {
+      setUploadingLicense(false);
+      if (licenseRef.current) licenseRef.current.value = "";
+    }
+  }
   const [hours, setHours] = React.useState<WeeklyHours | null>(defaults?.hours ?? null);
   const [images, setImages] = React.useState<string[]>(defaults?.images ?? []);
   const [uploadingImg, setUploadingImg] = React.useState(false);
@@ -123,6 +147,12 @@ export function CenterProfileForm({
     e.preventDefault();
     setError(null);
     setDone(null);
+    // Radiology license is mandatory — registration/profile can't be saved without it.
+    if (!licenseUrl) {
+      setError("Rentgenologiya üzrə lisenziyanı yükləmək məcburidir.");
+      if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     const fd = new FormData(e.currentTarget);
     const get = (k: string) => String(fd.get(k) ?? "").trim();
     startTransition(async () => {
@@ -140,6 +170,7 @@ export function CenterProfileForm({
         responsiblePerson: get("responsiblePerson"),
         description: get("description"),
         logoUrl,
+        licenseUrl,
         images,
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
@@ -214,6 +245,62 @@ export function CenterProfileForm({
             <p className="mt-1 text-xs text-slate-400">
               Kvadrat loqo tövsiyə olunur. PNG/SVG/WebP.
             </p>
+          </div>
+        </div>
+
+        {/* Radiology license — mandatory */}
+        <div
+          className={
+            "mb-5 rounded-2xl border p-4 " +
+            (licenseUrl ? "border-emerald-200 bg-emerald-50/40" : "border-red-200 bg-red-50/40")
+          }
+        >
+          <p className="text-sm font-semibold text-ink-900">
+            Rentgenologiya üzrə lisenziya <span className="text-red-500">*</span>
+          </p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Mərkəzin qeydiyyatının tamamlanması üçün lisenziya sənədi mütləq yüklənməlidir (şəkil və ya PDF).
+          </p>
+          <input
+            ref={licenseRef}
+            type="file"
+            accept="image/png,image/webp,image/jpeg,application/pdf"
+            onChange={onPickLicense}
+            className="hidden"
+          />
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => licenseRef.current?.click()}
+              disabled={uploadingLicense}
+              className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+            >
+              {uploadingLicense ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              {licenseUrl ? "Lisenziyanı dəyiş" : "Lisenziya yüklə"}
+            </button>
+            {licenseUrl && (
+              <>
+                <a
+                  href={licenseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <FileText className="h-3.5 w-3.5" /> Yüklənib — bax
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setLicenseUrl("")}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-600"
+                >
+                  <X className="h-3.5 w-3.5" /> Sil
+                </button>
+              </>
+            )}
           </div>
         </div>
 

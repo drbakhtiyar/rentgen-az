@@ -70,6 +70,25 @@ export default async function CenterDashboardPage() {
 
   return (
     <DashboardShell title="İcmal" roleLabel="Rentgen mərkəzi" userName={name} nav={centerNav}>
+      {!center.licenseUrl && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+            <div>
+              <p className="font-semibold text-red-900">
+                Rentgenologiya lisenziyası yüklənməyib
+              </p>
+              <p className="text-sm text-red-800">
+                Profilinizin tam qeydiyyatı üçün rentgenologiya üzrə lisenziya sənədini yükləyin.
+              </p>
+            </div>
+          </div>
+          <ButtonLink href="/merkez/profil" size="sm" className="shrink-0">
+            Lisenziya yüklə
+          </ButtonLink>
+        </div>
+      )}
+
       {center.status !== "APPROVED" && (
         <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
           <Clock className="mt-0.5 h-5 w-5 text-amber-600" />

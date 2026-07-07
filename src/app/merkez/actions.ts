@@ -43,6 +43,7 @@ export async function saveCenterProfileAction(input: {
   responsiblePerson?: string;
   description?: string;
   logoUrl?: string;
+  licenseUrl?: string;
   images?: string[];
   lat?: number | null;
   lng?: number | null;
@@ -53,6 +54,10 @@ export async function saveCenterProfileAction(input: {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
   }
   const d = parsed.data;
+  // Radiology license is mandatory for centers.
+  if (!d.licenseUrl) {
+    return { ok: false, error: "Rentgenologiya üzrə lisenziyanı yükləmək məcburidir." };
+  }
   const week = (d.hours ?? null) as WeeklyHours | null;
 
   try {
@@ -74,6 +79,7 @@ export async function saveCenterProfileAction(input: {
       responsiblePerson: d.responsiblePerson || null,
       description: d.description || null,
       logoUrl: d.logoUrl || null,
+      licenseUrl: d.licenseUrl || null,
       images: d.images ?? [],
       lat: d.lat ?? null,
       lng: d.lng ?? null,

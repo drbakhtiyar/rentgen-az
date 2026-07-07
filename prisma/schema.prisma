@@ -94,6 +94,7 @@ model CenterProfile {
   responsiblePerson String?
   description       String?
   logoUrl           String? // mərkəzin loqosu (yüklənmiş şəkil)
+  licenseUrl        String? // rentgenologiya üzrə lisenziya (məcburi)
   images            String[]     @default([])
   status            CenterStatus @default(PENDING)
   createdAt         DateTime     @default(now())

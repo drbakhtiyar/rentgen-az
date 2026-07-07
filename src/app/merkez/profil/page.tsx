@@ -44,6 +44,7 @@ export default async function CenterProfilePage() {
           responsiblePerson: center.responsiblePerson ?? "",
           description: center.description ?? "",
           logoUrl: center.logoUrl,
+          licenseUrl: center.licenseUrl,
           images: center.images,
           hours: parseHours(center.hours),
           lat: center.lat,
