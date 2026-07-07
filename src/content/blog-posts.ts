@@ -575,4 +575,59 @@ Xeyr, 3D tomoqrafiya ağrısız və təmassız bir prosedurdur.
 
 Sinus lift əməliyyatından əvvəl 3D tomoqrafiya dəqiq diaqnostikaya kömək edən mühüm vasitədir. Sinus boşluğunun və sümük həcminin ətraflı qiymətləndirilməsi cərrahi planlamanı asanlaşdıraraq həkimin daha təhlükəsiz və etibarlı qərar verməsinə dəstək olur.`,
   },
+  {
+    slug: "dis-rentgeni-nedir",
+    title: "Diş rentgeni nədir və nə zaman çəkilir?",
+    excerpt:
+      "Periapikal diş rentgeni tək dişin kökünü və ətraf sümüyü detallı göstərərək dəqiq diaqnostikaya imkan verir.",
+    metaTitle: "Diş rentgeni (periapikal) nədir və nə üçün lazımdır?",
+    metaDescription:
+      "Periapikal diş rentgeni tək dişin kökünü, ətraf sümüyü və iltihab ocaqlarını detallı göstərir. Nə zaman çəkilir və nəyə görə vacibdir?",
+    tags: ["diş rentgeni", "periapikal rentgen", "diş diaqnostikası"],
+    content: `Diş rentgeni (periapikal rentgen) diş təbabətində ən çox istifadə olunan görüntüləmə üsullarından biridir. Bu müayinə bir və ya bir neçə dişi, onların köklərini və ətraf sümük toxumasını detallı göstərərək həkimə dəqiq diaqnoz qoymağa kömək edir.
+
+## Diş rentgeni nəyi göstərir?
+
+Periapikal rentgen dişin tacından kökün ucuna qədər bütün strukturu bir kadrda əks etdirir. Panoramik rentgendən fərqli olaraq, o geniş sahəni deyil, seçilmiş nahiyəni yüksək detalla göstərir. Bu üsulla həkim aşağıdakıları qiymətləndirə bilir:
+
+- Diş kökünün forması və uzunluğu
+- Kök ətrafındakı iltihab və ya kista ocaqları
+- Dərin kariesin sinirə yaxınlığı
+- Kök kanalı müalicəsinin keyfiyyəti
+- Dişi əhatə edən sümüyün vəziyyəti
+
+## Hansı hallarda təyin olunur?
+
+Diş rentgeni müxtəlif klinik vəziyyətlərdə faydalıdır:
+
+- Diş ağrısının səbəbinin dəqiqləşdirilməsi
+- Kök kanalı (endodontik) müalicəsinin planlanması və izlənməsi
+- Kariesin gözlə görünməyən sahələrdə aşkarlanması
+- Diş ətrafı sümük itkisinin qiymətləndirilməsi
+- Süd dişləri altında daimi dişlərin inkişafının yoxlanması
+
+## Prosedur necə keçir?
+
+Çəkiliş qısa müddət çəkir və ağrısızdır. Kiçik sensor və ya film ağız boşluğuna, yoxlanılacaq dişin arxasına yerləşdirilir, cihaz isə xaricdən qısamüddətli şüa verir. Rəqəmsal sistemlərdə görüntü dərhal ekranda əks olunur.
+
+## Diş rentgeni təhlükəlidirmi?
+
+Periapikal rentgen zamanı şüa dozası çox aşağıdır və yalnız kiçik bir nahiyəyə yönəlir. Rəqəmsal cihazlar ənənəvi filmlə müqayisədə daha az şüalanma tələb edir. Qoruyucu tədbirlərə əməl olunduqda müayinə təhlükəsiz sayılır.
+
+## Tez-tez verilən suallar
+
+**Diş rentgeni ilə panoramik rentgen arasında fərq nədir?**
+Diş rentgeni bir və ya bir neçə dişi detallı göstərir, panoramik rentgen isə bütün diş cərgəsinin və çənələrin ümumi mənzərəsini verir.
+
+**Diş rentgenini nə qədər tez-tez çəkmək olar?**
+Tezlik klinik ehtiyacdan asılıdır. Həkim yalnız zərurət olduqda müayinəni təyin edir və şüalanmanı minimumda saxlayır.
+
+**Hamiləlik dövründə çəkmək olarmı?**
+Hamiləlikdə rentgen yalnız ciddi zərurət olduqda və qoruyucu vasitələrlə aparılır. Həkimə hamiləlik barədə mütləq məlumat verilməlidir.
+
+**Nəticə nə vaxt hazır olur?**
+Rəqəmsal sistemlərdə görüntü dərhal əldə olunur və həkim tərəfindən qiymətləndirilir.
+
+Diş rentgeni sadə, sürətli və dəqiq diaqnostika üsuludur. O, diş ağrısının səbəbini müəyyən etməkdən kök kanalı müalicəsinin izlənməsinə qədər bir çox mərhələdə həkimə etibarlı məlumat təmin edir.`,
+  },
 ];
