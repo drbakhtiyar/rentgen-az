@@ -76,13 +76,16 @@ export function RequestResultForm({
       {/* Result link */}
       <div>
         <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-          <Link2 className="h-3.5 w-3.5" /> Rentgen nəticəsi (Google Drive / Dropbox linki)
+          <Link2 className="h-3.5 w-3.5" /> Rentgen nəticəsinin linki
+        </p>
+        <p className="mb-1.5 text-xs text-slate-400">
+          Rentgen faylını yüklədiyiniz serverin (bulud yaddaş) linkini bura əlavə edin.
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://drive.google.com/..."
+            placeholder="https://..."
             className="h-9 min-w-0 flex-1 text-sm"
           />
           <Button type="button" size="sm" onClick={saveUrl} disabled={pending}>
