@@ -1,0 +1,28 @@
+name: Seed blog posts
+
+# REN-31: bloq yazılarını produksiya bazasına seed edir (yalnız BlogPost).
+# Yeni yazı əlavə edildikdən sonra işə salın → sonra "Generate blog cover
+# images" workflow-u cover yaradır. Mövcud yazıların cover-i və tarixinə
+# toxunulmur (upsert slug üzrə).
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Seed blog posts
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: npx tsx prisma/seed-blog.ts
