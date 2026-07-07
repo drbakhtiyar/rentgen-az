@@ -7,6 +7,7 @@ import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import type { PartnerStatus } from "@/generated/prisma/enums";
 
@@ -42,7 +43,7 @@ export default async function DoctorCentersPage() {
   );
 
   const fullName =
-    [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+    doctorName(doctor.firstName, doctor.lastName);
 
   return (
     <DashboardShell title="Partnyor mərkəzlər" roleLabel="Həkim" userName={fullName} nav={doctorNav}>

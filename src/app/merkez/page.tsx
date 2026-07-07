@@ -18,7 +18,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getCenterEventStats } from "@/lib/queries";
-import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
+import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "./request-status-control";
 import { RequestResultForm } from "./request-result-form";
@@ -59,7 +59,7 @@ export default async function CenterDashboardPage() {
   ).map((d) => ({
     value: d.id,
     label:
-      [d.firstName, d.lastName].filter(Boolean).join(" ") +
+      doctorName(d.firstName, d.lastName) +
       (d.clinic ? ` — ${d.clinic}` : ""),
   }));
 

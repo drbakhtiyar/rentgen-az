@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { QrReviewForm } from "@/components/reviews/qr-review-form";
 import { prisma } from "@/lib/db";
 import { getApprovedDoctors } from "@/lib/queries";
+import { doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ export default async function QrReviewPage({
   const doctorOptions = doctors.map((d) => ({
     value: d.id,
     label:
-      [d.firstName, d.lastName].filter(Boolean).join(" ") +
+      doctorName(d.firstName, d.lastName) +
       (d.clinic ? ` — ${d.clinic}` : ""),
   }));
 

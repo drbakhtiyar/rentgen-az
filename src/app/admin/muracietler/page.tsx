@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { RequestStatusSelectAdmin } from "@/components/admin/controls";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz } from "@/lib/utils";
+import { formatDateAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay, phoneToInternational } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 
@@ -59,8 +59,8 @@ export default async function AdminRequestsPage() {
               const serviceName = r.serviceSlug
                 ? serviceNames.get(r.serviceSlug) ?? null
                 : null;
-              const doctorName = r.doctor
-                ? [r.doctor.firstName, r.doctor.lastName].filter(Boolean).join(" ")
+              const refDoctor = r.doctor
+                ? doctorName(r.doctor.firstName, r.doctor.lastName)
                 : null;
               return (
                 <div
@@ -112,7 +112,7 @@ export default async function AdminRequestsPage() {
                       {serviceName ?? r.serviceSlug ?? <span className="text-slate-400">—</span>}
                     </Row>
                     <Row icon={<Stethoscope />} label="Yönləndirən həkim">
-                      {doctorName || <span className="text-slate-400">—</span>}
+                      {refDoctor || <span className="text-slate-400">—</span>}
                     </Row>
                   </dl>
 

@@ -9,7 +9,7 @@ import { ScoreBreakdown } from "@/components/reviews/score-breakdown";
 import { ReviewHideToggle, ReviewModerationButtons } from "@/components/admin/review-controls";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz } from "@/lib/utils";
+import { formatDateAz, doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ export default async function AdminReviewsPage() {
         .catch(() => [])
     : [];
   const docName = new Map(
-    docs.map((d) => [d.id, [d.firstName, d.lastName].filter(Boolean).join(" ")]),
+    docs.map((d) => [d.id, doctorName(d.firstName, d.lastName)]),
   );
   const referrer = (r: { doctorName: string | null; doctorId: string | null }) =>
     r.doctorName || (r.doctorId ? docName.get(r.doctorId) ?? null : null);

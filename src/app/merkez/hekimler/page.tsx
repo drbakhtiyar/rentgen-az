@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { RespondPartnerButtons } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ const doctorInclude = {
 } as const;
 
 function docName(d: { firstName: string | null; lastName: string | null }) {
-  return [d.firstName, d.lastName].filter(Boolean).join(" ") || "Həkim";
+  return doctorName(d.firstName, d.lastName);
 }
 
 export default async function CenterDoctorsPage() {

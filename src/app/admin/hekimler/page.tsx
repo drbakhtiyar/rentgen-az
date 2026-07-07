@@ -6,7 +6,7 @@ import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { DoctorStatusControls, BlockToggle } from "@/components/admin/controls";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz, cn } from "@/lib/utils";
+import { formatDateAz, cn, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 import type { CenterStatus } from "@/generated/prisma/enums";
@@ -89,7 +89,7 @@ export default async function AdminDoctorsPage({
           <div className="space-y-3">
             {doctors.map((d) => {
               const fullName =
-                [d.firstName, d.lastName].filter(Boolean).join(" ") || "Həkim";
+                doctorName(d.firstName, d.lastName);
               const meta = [
                 d.clinic,
                 d.specializations.length > 0 ? d.specializations.join(", ") : null,

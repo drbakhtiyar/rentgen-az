@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { doctorName } from "@/lib/utils";
 import { CITIES } from "@/lib/constants";
 import { getLocale } from "@/lib/i18n-server";
 import { buildMetadata } from "@/lib/seo";
@@ -35,7 +36,7 @@ export default async function DoctorProfilePage() {
   if (!profile) redirect("/hekim/qeydiyyat");
 
   const fullName =
-    [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Həkim";
+    doctorName(profile.firstName, profile.lastName);
 
   return (
     <DashboardShell

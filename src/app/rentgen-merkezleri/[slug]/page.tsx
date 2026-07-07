@@ -33,7 +33,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
-import { formatPrice, formatDateAz, cn } from "@/lib/utils";
+import { formatPrice, formatDateAz, cn, doctorName } from "@/lib/utils";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -461,10 +461,9 @@ export default async function CenterDetailPage({
                     }))}
                     doctors={doctors.map((d) => ({
                       value: d.id,
-                      label:
-                        `${[d.firstName, d.lastName].filter(Boolean).join(" ")}${
-                          d.clinic ? " — " + d.clinic : ""
-                        }` || "Həkim",
+                      label: `${doctorName(d.firstName, d.lastName)}${
+                        d.clinic ? " — " + d.clinic : ""
+                      }`,
                     }))}
                     hours={week}
                     compact

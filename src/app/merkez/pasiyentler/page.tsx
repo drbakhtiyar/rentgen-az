@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
+import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "../request-status-control";
@@ -63,7 +63,7 @@ export default async function CenterPatientsPage({
   ).map((d) => ({
     value: d.id,
     label:
-      [d.firstName, d.lastName].filter(Boolean).join(" ") +
+      doctorName(d.firstName, d.lastName) +
       (d.clinic ? ` — ${d.clinic}` : ""),
   }));
 
@@ -111,8 +111,8 @@ export default async function CenterPatientsPage({
 
                 <div className="mt-3 space-y-3">
                   {g.items.map((r) => {
-                    const doctorName = r.doctor
-                      ? [r.doctor.firstName, r.doctor.lastName].filter(Boolean).join(" ")
+                    const refDoctor = r.doctor
+                      ? doctorName(r.doctor.firstName, r.doctor.lastName)
                       : null;
                     return (
                       <div key={r.id} className="rounded-lg border border-slate-100 p-3">
@@ -129,9 +129,9 @@ export default async function CenterPatientsPage({
                             <span className="ml-2 text-xs text-slate-400">
                               {formatDateAz(r.createdAt)}
                             </span>
-                            {doctorName && (
+                            {refDoctor && (
                               <span className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">
-                                <Stethoscope className="h-3.5 w-3.5" /> Göndərən: {doctorName}
+                                <Stethoscope className="h-3.5 w-3.5" /> Göndərən: {refDoctor}
                               </span>
                             )}
                             {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}

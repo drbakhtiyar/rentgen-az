@@ -13,7 +13,7 @@ import {
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz } from "@/lib/utils";
+import { formatDateAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 
@@ -53,7 +53,7 @@ export default async function DoctorDashboardPage() {
   if (!doctor) redirect("/hekim/qeydiyyat");
 
   const fullName =
-    [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+    doctorName(doctor.firstName, doctor.lastName);
 
   let requests: Referral[] = [];
   const partnerByCenter = new Map<string, PartnerStatus>();

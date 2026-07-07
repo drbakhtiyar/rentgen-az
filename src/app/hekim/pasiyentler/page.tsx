@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz } from "@/lib/utils";
+import { formatDateAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 import type { Prisma } from "@/generated/prisma/client";
@@ -86,7 +86,7 @@ export default async function DoctorPatientsPage({
   }
 
   const fullName =
-    [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+    doctorName(doctor.firstName, doctor.lastName);
 
   return (
     <DashboardShell title="Pasiyentlər" roleLabel="Həkim" userName={fullName} nav={doctorNav}>

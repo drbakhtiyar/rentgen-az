@@ -7,6 +7,7 @@ import { Panel } from "@/components/dashboard/widgets";
 import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { doctorName } from "@/lib/utils";
 import { adminUpdateDoctorAction } from "@/app/admin/actions";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
@@ -36,7 +37,7 @@ export default async function AdminEditDoctorPage({
   if (!doctor) notFound();
 
   const fullName =
-    [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+    doctorName(doctor.firstName, doctor.lastName);
   const save = adminUpdateDoctorAction.bind(null, doctor.id);
 
   return (
