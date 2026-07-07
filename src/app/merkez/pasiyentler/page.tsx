@@ -136,7 +136,7 @@ export default async function CenterPatientsPage({
                             )}
                             {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}
                           </div>
-                          <RequestStatusControl id={r.id} status={r.status} />
+                          <RequestStatusControl id={r.id} status={r.status} patientUpdated={r.patientUpdated} />
                         </div>
                         {r.status === "COMPLETED" && (
                           <RequestResultForm

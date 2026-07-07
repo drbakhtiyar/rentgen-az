@@ -187,10 +187,11 @@ model AppointmentRequest {
   serviceSlug   String?
   note          String?
   preferredDate DateTime?
-  status        RequestStatus   @default(NEW)
-  completedBy   String? // "CENTER" | "PATIENT" — kim "xidmət alındı" işarələyib
-  resultUrl     String? // rentgen faylının linki (Google Drive/Dropbox və s.)
-  resultAddedAt DateTime?
+  status         RequestStatus  @default(NEW)
+  completedBy    String? // "CENTER" | "PATIENT" — kim "xidmət alındı" işarələyib
+  patientUpdated Boolean        @default(false) // pasiyent vaxtı dəyişib — mərkəz yenidən əlaqə saxlamalı
+  resultUrl      String? // rentgen faylının linki
+  resultAddedAt  DateTime?
   createdAt     DateTime        @default(now())
 
   @@index([centerId])

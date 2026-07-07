@@ -187,6 +187,16 @@ export async function replyToReviewAction(
   }
 }
 
+// One-way progression: which target statuses are allowed from a given status.
+// COMPLETED/CANCELLED are terminal (no changes). This prevents back-and-forth
+// status flipping (and the repeat SMS it caused).
+const ALLOWED_NEXT: Record<RequestStatus, RequestStatus[]> = {
+  NEW: ["CONTACTED", "COMPLETED", "CANCELLED"],
+  CONTACTED: ["COMPLETED", "CANCELLED"],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
 export async function updateRequestStatusAction(
   requestId: string,
   status: RequestStatus,
@@ -195,29 +205,45 @@ export async function updateRequestStatusAction(
   try {
     const center = await prisma.centerProfile.findUnique({
       where: { userId: user.id },
+      select: { id: true, name: true },
     });
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
     const req = await prisma.appointmentRequest.findUnique({
       where: { id: requestId },
+      select: { id: true, centerId: true, status: true, phone: true },
     });
     if (!req || req.centerId !== center.id) {
       return { ok: false, error: "Müraciət tapılmadı." };
+    }
+    // Enforce one-way transitions; terminal states are locked.
+    if (!ALLOWED_NEXT[req.status].includes(status)) {
+      return { ok: false, error: "Bu status dəyişikliyi mümkün deyil." };
     }
 
     await prisma.appointmentRequest.update({
       where: { id: requestId },
       data: {
         status,
+        // Re-contact clears the "patient updated" flag.
+        ...(status === "CONTACTED" ? { patientUpdated: false } : {}),
         // Center confirming completion → verified review eligibility.
         ...(status === "COMPLETED" ? { completedBy: "CENTER" } : {}),
       },
     });
-    // Notify the patient of the status change (best-effort).
-    await smsPatientStatusChange(req.phone, { status, centerName: center.name }).catch(
-      () => {},
-    );
+
+    // SMS only where it's genuinely useful (avoid annoying the patient):
+    // - CONTACTED: no SMS (the center just called them).
+    // - COMPLETED: no generic SMS (the result-ready SMS covers it when the link is added).
+    // - CANCELLED: notify the patient.
+    if (status === "CANCELLED") {
+      await smsPatientStatusChange(req.phone, {
+        status,
+        centerName: center.name,
+      }).catch(() => {});
+    }
     revalidatePath("/merkez");
+    revalidatePath("/merkez/pasiyentler");
     return { ok: true };
   } catch {
     return { ok: false, error: "Texniki xəta." };

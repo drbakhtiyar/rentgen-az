@@ -157,7 +157,7 @@ export default async function CenterDashboardPage() {
                         {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}
                         <p className="mt-1 text-xs text-slate-400">{formatDateAz(r.createdAt)}</p>
                       </div>
-                      <RequestStatusControl id={r.id} status={r.status} />
+                      <RequestStatusControl id={r.id} status={r.status} patientUpdated={r.patientUpdated} />
                     </div>
                     {r.status === "COMPLETED" && (
                       <RequestResultForm

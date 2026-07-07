@@ -41,6 +41,57 @@ export async function markServiceReceivedAction(
   }
 }
 
+/**
+ * Patient edits the arrival time of their own request. Marks it "updated" so
+ * the center re-contacts (its contact button re-activates). Not allowed once
+ * the request is completed or cancelled.
+ */
+export async function editRequestTimeAction(
+  requestId: string,
+  preferredDate: string,
+): Promise<PatientActionResult> {
+  const user = await requireRole("PATIENT");
+  try {
+    const profile = await prisma.patientProfile.findUnique({
+      where: { userId: user.id },
+    });
+    if (!profile) return { ok: false, error: "Profil tapılmadı." };
+
+    const req = await prisma.appointmentRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true, patientId: true, status: true },
+    });
+    if (!req || req.patientId !== profile.id) {
+      return { ok: false, error: "Müraciət tapılmadı." };
+    }
+    if (req.status === "COMPLETED" || req.status === "CANCELLED") {
+      return { ok: false, error: "Bu müraciətdə dəyişiklik mümkün deyil." };
+    }
+
+    const dt = new Date(preferredDate);
+    if (Number.isNaN(dt.getTime()) || dt.getTime() < Date.now() - 60 * 60 * 1000) {
+      return { ok: false, error: "Düzgün tarix/saat seçin." };
+    }
+
+    await prisma.appointmentRequest.update({
+      where: { id: requestId },
+      data: {
+        preferredDate: dt,
+        patientUpdated: true,
+        // If the center had already contacted, revert so the contact button
+        // re-activates and the center knows to re-confirm the new time.
+        ...(req.status === "CONTACTED" ? { status: "NEW" } : {}),
+      },
+    });
+    revalidatePath("/kabinet");
+    revalidatePath("/merkez");
+    revalidatePath("/merkez/pasiyentler");
+    return { ok: true, message: "Vaxt yeniləndi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 /** Patient cancels their own pending request. */
 export async function cancelRequestAction(
   requestId: string,

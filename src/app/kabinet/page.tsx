@@ -5,12 +5,13 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { patientNav } from "@/components/dashboard/role-navs";
 import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { ButtonLink } from "@/components/ui/button";
-import { MarkReceivedButton } from "@/components/reviews/mark-received-button";
 import { CancelRequestButton } from "@/components/reviews/cancel-request-button";
+import { EditTimeButton } from "@/components/reviews/edit-time-button";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getReviewableCentersForPatient } from "@/lib/queries";
+import { parseHours } from "@/lib/hours";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
@@ -36,7 +37,7 @@ export default async function PatientDashboardPage() {
     where: { patientId: profile?.id },
     orderBy: { createdAt: "desc" },
     take: 10,
-    include: { center: { select: { name: true, slug: true } } },
+    include: { center: { select: { name: true, slug: true, hours: true } } },
   });
 
   const reviewable = profile
@@ -100,15 +101,16 @@ export default async function PatientDashboardPage() {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {r.status !== "COMPLETED" && r.status !== "CANCELLED" && (
+                          <EditTimeButton
+                            requestId={r.id}
+                            hours={parseHours(r.center?.hours)}
+                          />
+                        )}
                         {r.status !== "COMPLETED" && r.status !== "CANCELLED" && (
                           <CancelRequestButton requestId={r.id} />
                         )}
-                        {r.center &&
-                          r.status !== "COMPLETED" &&
-                          r.status !== "CANCELLED" && (
-                            <MarkReceivedButton requestId={r.id} />
-                          )}
                         <StatusBadge status={r.status} />
                       </div>
                     </div>
