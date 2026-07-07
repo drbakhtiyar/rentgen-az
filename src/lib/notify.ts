@@ -36,26 +36,30 @@ export async function smsDoctorResultReady(
   await sendSms(doctorPhone, msg, "other").catch(() => {});
 }
 
-/** SMS the center's own phone when a patient sends them a request. */
+/**
+ * SMS the center when a patient books/requests an appointment.
+ * Kept lean (1 SMS segment): first name + time only — no surname, no phone,
+ * no service. Full details are in the center panel.
+ */
 export async function smsCenterNewRequest(
   centerPhone: string,
-  opts: { patientName: string; serviceName?: string | null; preferredDate?: Date | null },
+  opts: { patientName: string; preferredDate?: Date | null },
 ): Promise<void> {
-  // Cap dynamic parts + short link so the whole message stays 1 SMS segment.
-  const name = opts.patientName.slice(0, 30);
-  const svc = opts.serviceName ? ` (${opts.serviceName.slice(0, 24)})` : "";
-  let when = "";
+  const first = (opts.patientName.trim().split(/\s+/)[0] || "Pasiyent").slice(0, 20);
+  let msg: string;
   if (opts.preferredDate) {
-    when = ` - ${new Intl.DateTimeFormat("az", {
+    const when = new Intl.DateTimeFormat("az", {
       timeZone: "Asia/Baku",
       day: "2-digit",
       month: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hourCycle: "h23",
-    }).format(opts.preferredDate)}`;
+    }).format(opts.preferredDate);
+    msg = `Rentgen.az: ${first} - ${when} qebula yazildi. Panel: rentgen.az/merkez`;
+  } else {
+    msg = `Rentgen.az: ${first} yeni qebul sorgusu gonderdi. Panel: rentgen.az/merkez`;
   }
-  const msg = `Rentgen.az: yeni muraciet - ${name}${svc}${when}. Panel: rentgen.az/merkez`;
   await sendSms(centerPhone, msg, "center_request").catch(() => {});
 }
 

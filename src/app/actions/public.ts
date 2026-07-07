@@ -186,11 +186,6 @@ export async function submitAppointmentAction(input: {
           })
           .catch(() => null)
       : null;
-    const serviceName = data.serviceSlug
-      ? (await prisma.service
-          .findUnique({ where: { slug: data.serviceSlug }, select: { name: true } })
-          .catch(() => null))?.name ?? null
-      : null;
     await notifyNewAppointment({
       name: data.name,
       phone,
@@ -199,11 +194,10 @@ export async function submitAppointmentAction(input: {
       serviceSlug: data.serviceSlug || null,
       note: data.note || null,
     }).catch(() => {});
-    // Direct SMS to the center's own phone.
+    // Direct SMS to the center's own phone (lean: first name + time).
     if (center?.phone) {
       await smsCenterNewRequest(center.phone, {
         patientName: data.name,
-        serviceName,
         preferredDate,
       }).catch(() => {});
     }
