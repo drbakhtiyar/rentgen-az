@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select, Field } from "@/components/ui/field";
 import { DENTAL_SPECIALIZATIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { saveDoctorProfileAction } from "@/app/hekim/actions";
 
 type Option = { value: string; label: string };
@@ -48,6 +49,7 @@ export function DoctorProfileForm({
   defaults,
   mode,
   onSave,
+  locale = DEFAULT_LOCALE,
 }: {
   cities: Option[];
   phone: string;
@@ -55,7 +57,9 @@ export function DoctorProfileForm({
   mode: "create" | "edit";
   /** Overrides the default self-serve save (e.g. admin editing any doctor). */
   onSave?: (input: SaveInput) => Promise<{ ok: boolean; error?: string; message?: string }>;
+  locale?: Locale;
 }) {
+  const t = getDict(locale).docForm;
   const [pending, startTransition] = React.useTransition();
   const [message, setMessage] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -92,11 +96,11 @@ export function DoctorProfileForm({
         certificateUrl,
       });
       if (!res.ok) {
-        setError(res.error ?? "Xəta");
+        setError(res.error ?? t.genericError);
         if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
-      setMessage(res.message ?? "Yadda saxlanıldı.");
+      setMessage(res.message ?? t.savedOk);
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
@@ -113,23 +117,23 @@ export function DoctorProfileForm({
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Ad" htmlFor="firstName" required>
-          <Input id="firstName" name="firstName" defaultValue={defaults?.firstName} required placeholder="Adınız" />
+        <Field label={t.firstName} htmlFor="firstName" required>
+          <Input id="firstName" name="firstName" defaultValue={defaults?.firstName} required placeholder={t.firstNamePh} />
         </Field>
-        <Field label="Soyad" htmlFor="lastName" required>
-          <Input id="lastName" name="lastName" defaultValue={defaults?.lastName} required placeholder="Soyadınız" />
+        <Field label={t.lastName} htmlFor="lastName" required>
+          <Input id="lastName" name="lastName" defaultValue={defaults?.lastName} required placeholder={t.lastNamePh} />
         </Field>
       </div>
 
-      <Field label="Telefon nömrəsi" htmlFor="phone" hint="Hesab identifikatoru — dəyişdirilə bilməz.">
+      <Field label={t.phone} htmlFor="phone" hint={t.phoneHint}>
         <Input id="phone" value={phone} disabled />
       </Field>
 
       {/* Specializations (multi-select) */}
       <div>
         <p className="mb-1.5 text-sm font-medium text-ink-800">
-          İxtisas(lar){" "}
-          <span className="font-normal text-slate-400">— bir və ya bir neçəsini seçin (istəyə bağlı)</span>
+          {t.specs}{" "}
+          <span className="font-normal text-slate-400">{t.specsHint}</span>
         </p>
         <div className="flex flex-wrap gap-2">
           {DENTAL_SPECIALIZATIONS.map((s) => {
@@ -154,12 +158,12 @@ export function DoctorProfileForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="İş yeri / Klinika" htmlFor="clinic">
-          <Input id="clinic" name="clinic" defaultValue={defaults?.clinic} placeholder="Klinikanın adı" />
+        <Field label={t.clinic} htmlFor="clinic">
+          <Input id="clinic" name="clinic" defaultValue={defaults?.clinic} placeholder={t.clinicPh} />
         </Field>
-        <Field label="Şəhər" htmlFor="city">
+        <Field label={t.city} htmlFor="city">
           <Select id="city" name="city" defaultValue={defaults?.city ?? ""}>
-            <option value="">Seçin</option>
+            <option value="">{t.choose}</option>
             {cities.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
@@ -170,45 +174,46 @@ export function DoctorProfileForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Instagram" htmlFor="instagram" hint="Məs: @drsoyad və ya tam link">
+        <Field label={t.instagram} htmlFor="instagram" hint={t.instagramHint}>
           <Input id="instagram" name="instagram" defaultValue={defaults?.instagram} placeholder="@istifadeci_adi" />
         </Field>
-        <Field label="Sayt" htmlFor="website">
+        <Field label={t.website} htmlFor="website">
           <Input id="website" name="website" type="url" defaultValue={defaults?.website} placeholder="https://..." />
         </Field>
       </div>
 
       {/* Document uploads */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <FileUpload label="Diplom" value={diplomaUrl} onChange={setDiplomaUrl} onError={setError} />
-        <FileUpload label="Təkmilləşmə sertifikatı" value={certificateUrl} onChange={setCertificateUrl} onError={setError} />
+        <FileUpload label={t.diploma} value={diplomaUrl} onChange={setDiplomaUrl} onError={setError} t={t} />
+        <FileUpload label={t.certificate} value={certificateUrl} onChange={setCertificateUrl} onError={setError} t={t} />
       </div>
 
-      <p className="text-xs text-slate-400">
-        Bütün əlavə məlumatlar istəyə bağlıdır. Diplom və sertifikat profilinizin
-        etibarlılığını artırır (JPG, PNG və ya PDF — maks. 8 MB).
-      </p>
+      <p className="text-xs text-slate-400">{t.docsNote}</p>
 
       <div className="flex items-center gap-3 pt-1">
         <Button type="submit" size="lg" disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {mode === "create" ? "Profili yarat" : "Yadda saxla"}
+          {mode === "create" ? t.create : t.save}
         </Button>
       </div>
     </form>
   );
 }
 
+type DocFormDict = ReturnType<typeof getDict>["docForm"];
+
 function FileUpload({
   label,
   value,
   onChange,
   onError,
+  t,
 }: {
   label: string;
   value: string;
   onChange: (url: string) => void;
   onError: (msg: string) => void;
+  t: DocFormDict;
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
@@ -217,7 +222,7 @@ function FileUpload({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 8 * 1024 * 1024) {
-      onError("Fayl 8 MB-dan böyük olmamalıdır.");
+      onError(t.tooBig);
       return;
     }
     setUploading(true);
@@ -229,7 +234,7 @@ function FileUpload({
       });
       onChange(blob.url);
     } catch (err) {
-      onError(`Yükləmə uğursuz oldu: ${(err as Error).message}`);
+      onError(`${t.uploadFailed}: ${(err as Error).message}`);
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -255,14 +260,14 @@ function FileUpload({
             className="flex min-w-0 items-center gap-2 text-sm font-medium text-emerald-800 hover:underline"
           >
             <FileText className="h-4 w-4 shrink-0" />
-            <span className="truncate">Yükləndi — bax</span>
+            <span className="truncate">{t.uploaded}</span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0" />
           </a>
           <button
             type="button"
             onClick={() => onChange("")}
             className="shrink-0 rounded-md p-1 text-slate-400 hover:bg-white hover:text-red-600"
-            aria-label="Sil"
+            aria-label={t.remove}
           >
             <X className="h-4 w-4" />
           </button>
@@ -276,11 +281,11 @@ function FileUpload({
         >
           {uploading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Yüklənir...
+              <Loader2 className="h-4 w-4 animate-spin" /> {t.uploading}
             </>
           ) : (
             <>
-              <Upload className="h-4 w-4" /> Fayl seç
+              <Upload className="h-4 w-4" /> {t.pickFile}
             </>
           )}
         </button>

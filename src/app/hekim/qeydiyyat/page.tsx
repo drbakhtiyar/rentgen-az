@@ -6,6 +6,8 @@ import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { CITIES } from "@/lib/constants";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +22,8 @@ const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
 
 export default async function DoctorOnboardingPage() {
   const user = await requireRole("DOCTOR", "/hekim/qeydiyyat");
+  const locale = await getLocale();
+  const t = getDict(locale).docForm;
 
   let existing = null;
   try {
@@ -35,16 +39,17 @@ export default async function DoctorOnboardingPage() {
     <div className="min-h-[calc(100vh-4rem)] bg-surface py-12">
       <Container className="max-w-2xl">
         <h1 className="font-display text-2xl font-bold text-ink-900">
-          Həkim profilini yaradın
+          {t.onboardTitle}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          Admin təsdiqindən sonra pasiyentlərin siyahısında görünəcəksiniz.
+          {t.onboardDesc}
         </p>
         <Card className="mt-6 p-6 sm:p-8">
           <DoctorProfileForm
             cities={cityOptions}
             phone={user.phone}
             mode="create"
+            locale={locale}
           />
         </Card>
       </Container>

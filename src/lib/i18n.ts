@@ -143,6 +143,38 @@ type Dict = {
     opensTpl: string; // {t} = opening time
     closed: string;
   };
+  docForm: {
+    onboardTitle: string;
+    onboardDesc: string;
+    firstName: string;
+    firstNamePh: string;
+    lastName: string;
+    lastNamePh: string;
+    phone: string;
+    phoneHint: string;
+    specs: string;
+    specsHint: string;
+    clinic: string;
+    clinicPh: string;
+    city: string;
+    choose: string;
+    instagram: string;
+    instagramHint: string;
+    website: string;
+    diploma: string;
+    certificate: string;
+    docsNote: string;
+    create: string;
+    save: string;
+    uploaded: string;
+    remove: string;
+    uploading: string;
+    pickFile: string;
+    tooBig: string;
+    uploadFailed: string;
+    savedOk: string;
+    genericError: string;
+  };
 };
 
 const az: Dict = {
@@ -281,6 +313,39 @@ const az: Dict = {
     opensTpl: "Bağlıdır · {t}-də açılır",
     closed: "Bağlıdır",
   },
+  docForm: {
+    onboardTitle: "Həkim profilini yaradın",
+    onboardDesc: "Admin təsdiqindən sonra pasiyentlərin siyahısında görünəcəksiniz.",
+    firstName: "Ad",
+    firstNamePh: "Adınız",
+    lastName: "Soyad",
+    lastNamePh: "Soyadınız",
+    phone: "Telefon nömrəsi",
+    phoneHint: "Hesab identifikatoru — dəyişdirilə bilməz.",
+    specs: "İxtisas(lar)",
+    specsHint: "— bir və ya bir neçəsini seçin (istəyə bağlı)",
+    clinic: "İş yeri / Klinika",
+    clinicPh: "Klinikanın adı",
+    city: "Şəhər",
+    choose: "Seçin",
+    instagram: "Instagram",
+    instagramHint: "Məs: @drsoyad və ya tam link",
+    website: "Sayt",
+    diploma: "Diplom",
+    certificate: "Təkmilləşmə sertifikatı",
+    docsNote:
+      "Bütün əlavə məlumatlar istəyə bağlıdır. Diplom və sertifikat profilinizin etibarlılığını artırır (JPG, PNG və ya PDF — maks. 8 MB).",
+    create: "Profili yarat",
+    save: "Yadda saxla",
+    uploaded: "Yükləndi — bax",
+    remove: "Sil",
+    uploading: "Yüklənir...",
+    pickFile: "Fayl seç",
+    tooBig: "Fayl 8 MB-dan böyük olmamalıdır.",
+    uploadFailed: "Yükləmə uğursuz oldu",
+    savedOk: "Yadda saxlanıldı.",
+    genericError: "Xəta",
+  },
 };
 
 const ru: Dict = {
@@ -417,6 +482,39 @@ const ru: Dict = {
     closingTpl: "{m} мин до закрытия",
     opensTpl: "Закрыто · открытие в {t}",
     closed: "Закрыто",
+  },
+  docForm: {
+    onboardTitle: "Создайте профиль врача",
+    onboardDesc: "После подтверждения администратором вы появитесь в списке для пациентов.",
+    firstName: "Имя",
+    firstNamePh: "Ваше имя",
+    lastName: "Фамилия",
+    lastNamePh: "Ваша фамилия",
+    phone: "Номер телефона",
+    phoneHint: "Идентификатор аккаунта — изменить нельзя.",
+    specs: "Специализация(и)",
+    specsHint: "— выберите одну или несколько (необязательно)",
+    clinic: "Место работы / Клиника",
+    clinicPh: "Название клиники",
+    city: "Город",
+    choose: "Выберите",
+    instagram: "Instagram",
+    instagramHint: "Напр.: @drfamiliya или полная ссылка",
+    website: "Сайт",
+    diploma: "Диплом",
+    certificate: "Сертификат о повышении квалификации",
+    docsNote:
+      "Все дополнительные данные необязательны. Диплом и сертификат повышают доверие к профилю (JPG, PNG или PDF — макс. 8 МБ).",
+    create: "Создать профиль",
+    save: "Сохранить",
+    uploaded: "Загружено — открыть",
+    remove: "Удалить",
+    uploading: "Загрузка...",
+    pickFile: "Выбрать файл",
+    tooBig: "Файл не должен превышать 8 МБ.",
+    uploadFailed: "Загрузка не удалась",
+    savedOk: "Сохранено.",
+    genericError: "Ошибка",
   },
 };
 

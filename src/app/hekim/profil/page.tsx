@@ -7,6 +7,7 @@ import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { CITIES } from "@/lib/constants";
+import { getLocale } from "@/lib/i18n-server";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
 
 export default async function DoctorProfilePage() {
   const user = await requireRole("DOCTOR", "/hekim/profil");
+  const locale = await getLocale();
 
   let profile = null;
   try {
@@ -45,6 +47,7 @@ export default async function DoctorProfilePage() {
       <Card className="max-w-2xl p-6 sm:p-8">
         <DoctorProfileForm
           mode="edit"
+          locale={locale}
           cities={cityOptions}
           phone={user.phone}
           defaults={{
