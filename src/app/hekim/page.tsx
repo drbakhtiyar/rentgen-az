@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Send, Users, Building2, AlertTriangle } from "lucide-react";
+import { Send, Users, Building2, AlertTriangle, Download, Lock } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { doctorNav } from "@/components/dashboard/role-navs";
 import {
@@ -10,6 +10,7 @@ import {
   EmptyState,
   StatusBadge,
 } from "@/components/dashboard/widgets";
+import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz } from "@/lib/utils";
@@ -32,8 +33,11 @@ type Referral = {
   status: string;
   createdAt: Date;
   centerId: string | null;
+  resultUrl: string | null;
   center: { name: string; slug: string } | null;
 };
+
+type PartnerStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
 export default async function DoctorDashboardPage() {
   const user = await requireRole("DOCTOR", "/hekim");
@@ -52,13 +56,29 @@ export default async function DoctorDashboardPage() {
     [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
 
   let requests: Referral[] = [];
+  const partnerByCenter = new Map<string, PartnerStatus>();
   try {
     requests = await prisma.appointmentRequest.findMany({
       where: { doctorId: doctor.id },
-      include: { center: { select: { name: true, slug: true } } },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        serviceSlug: true,
+        status: true,
+        createdAt: true,
+        centerId: true,
+        resultUrl: true,
+        center: { select: { name: true, slug: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 200,
     });
+    const partners = await prisma.centerDoctor.findMany({
+      where: { doctorId: doctor.id },
+      select: { centerId: true, status: true },
+    });
+    for (const p of partners) partnerByCenter.set(p.centerId, p.status);
   } catch {
     requests = [];
   }
@@ -144,34 +164,60 @@ export default async function DoctorDashboardPage() {
                     </span>
                   </div>
                   <ul className="mt-3 divide-y divide-slate-100">
-                    {g.items.map((r) => (
-                      <li
-                        key={r.id}
-                        className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
-                      >
-                        <div className="min-w-0">
-                          {r.center ? (
-                            <Link
-                              href={`/rentgen-merkezleri/${r.center.slug}`}
-                              className="font-medium text-ink-900 hover:text-brand-600"
+                    {g.items.map((r) => {
+                      const partner = r.centerId
+                        ? partnerByCenter.get(r.centerId) ?? null
+                        : null;
+                      const isPartner = partner === "ACCEPTED";
+                      return (
+                        <li key={r.id} className="py-2.5 text-sm">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              {r.center ? (
+                                <Link
+                                  href={`/rentgen-merkezleri/${r.center.slug}`}
+                                  className="font-medium text-ink-900 hover:text-brand-600"
+                                >
+                                  {r.center.name}
+                                </Link>
+                              ) : (
+                                <span className="font-medium text-slate-500">—</span>
+                              )}
+                              <span className="ml-2 text-slate-500">
+                                {r.serviceSlug || "—"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <StatusBadge status={r.status} />
+                              <span className="text-xs text-slate-400">
+                                {formatDateAz(r.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Result link — gated by partnership */}
+                          {r.resultUrl && isPartner && (
+                            <a
+                              href={r.resultUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100 hover:bg-brand-100"
                             >
-                              {r.center.name}
-                            </Link>
-                          ) : (
-                            <span className="font-medium text-slate-500">—</span>
+                              <Download className="h-3.5 w-3.5" /> Rentgen nəticəsini aç
+                            </a>
                           )}
-                          <span className="ml-2 text-slate-500">
-                            {r.serviceSlug || "—"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <StatusBadge status={r.status} />
-                          <span className="text-xs text-slate-400">
-                            {formatDateAz(r.createdAt)}
-                          </span>
-                        </div>
-                      </li>
-                    ))}
+                          {r.resultUrl && !isPartner && r.centerId && (
+                            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-100">
+                              <span className="flex items-center gap-1.5">
+                                <Lock className="h-3.5 w-3.5" />
+                                Nəticəni görmək üçün bu mərkəzlə əməkdaşlıq sorğusu göndərin.
+                              </span>
+                              <RequestPartnerButton centerId={r.centerId} status={partner} />
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}

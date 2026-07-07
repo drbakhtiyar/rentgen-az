@@ -20,6 +20,7 @@ import { getCenterEventStats } from "@/lib/queries";
 import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "./request-status-control";
+import { RequestResultForm } from "./request-result-form";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,20 @@ export default async function CenterDashboardPage() {
     where: { centerId: center.id, status: "NEW" },
   });
   const stats = await getCenterEventStats(center.id, 30);
+
+  // Approved doctors for manual referring-doctor assignment.
+  const doctorOptions = (
+    await prisma.doctorProfile.findMany({
+      where: { status: "APPROVED" },
+      select: { id: true, firstName: true, lastName: true, clinic: true },
+      orderBy: { firstName: "asc" },
+    })
+  ).map((d) => ({
+    value: d.id,
+    label:
+      [d.firstName, d.lastName].filter(Boolean).join(" ") +
+      (d.clinic ? ` — ${d.clinic}` : ""),
+  }));
 
   const name =
     center.name ||
@@ -124,25 +139,35 @@ export default async function CenterDashboardPage() {
                 {requests.map((r) => (
                   <div
                     key={r.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-3"
+                    className="rounded-xl border border-slate-100 p-3"
                   >
-                    <div className="min-w-0">
-                      <p className="font-semibold text-ink-900">{r.name}</p>
-                      <p className="text-sm text-slate-500">
-                        <a href={`tel:${r.phone}`} className="hover:text-brand-600">
-                          {r.phone}
-                        </a>
-                        {r.serviceSlug ? ` · ${r.serviceSlug}` : ""}
-                      </p>
-                      {r.preferredDate && (
-                        <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
-                          <Clock className="h-3 w-3" /> {formatDateTimeAz(r.preferredDate)}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-ink-900">{r.name}</p>
+                        <p className="text-sm text-slate-500">
+                          <a href={`tel:${r.phone}`} className="hover:text-brand-600">
+                            {r.phone}
+                          </a>
+                          {r.serviceSlug ? ` · ${r.serviceSlug}` : ""}
                         </p>
-                      )}
-                      {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}
-                      <p className="mt-1 text-xs text-slate-400">{formatDateAz(r.createdAt)}</p>
+                        {r.preferredDate && (
+                          <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
+                            <Clock className="h-3 w-3" /> {formatDateTimeAz(r.preferredDate)}
+                          </p>
+                        )}
+                        {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}
+                        <p className="mt-1 text-xs text-slate-400">{formatDateAz(r.createdAt)}</p>
+                      </div>
+                      <RequestStatusControl id={r.id} status={r.status} />
                     </div>
-                    <RequestStatusControl id={r.id} status={r.status} />
+                    {r.status === "COMPLETED" && (
+                      <RequestResultForm
+                        requestId={r.id}
+                        defaultUrl={r.resultUrl}
+                        doctorId={r.doctorId}
+                        doctors={doctorOptions}
+                      />
+                    )}
                   </div>
                 ))}
               </div>

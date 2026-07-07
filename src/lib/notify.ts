@@ -16,6 +16,26 @@ export async function smsCenterPartnerRequest(
   await sendSms(centerPhone, msg, "other").catch(() => {});
 }
 
+/** SMS the patient when their rentgen result link is ready. */
+export async function smsPatientResultReady(
+  patientPhone: string,
+  centerName: string,
+): Promise<void> {
+  const name = toGsmAscii(centerName).slice(0, 40);
+  const msg = `Rentgen.az: ${name} merkezinde rentgen neticeniz hazirdir. Kabinet: rentgen.az/kabinet`;
+  await sendSms(patientPhone, msg, "other").catch(() => {});
+}
+
+/** SMS the partner doctor when a referred patient's result is ready. */
+export async function smsDoctorResultReady(
+  doctorPhone: string,
+  patientName: string,
+): Promise<void> {
+  const name = toGsmAscii(patientName).slice(0, 30);
+  const msg = `Rentgen.az: pasiyentiniz ${name} rentgen cekdirdi, netice hazirdir. Panel: rentgen.az/hekim`;
+  await sendSms(doctorPhone, msg, "other").catch(() => {});
+}
+
 /** SMS the center's own phone when a patient sends them a request. */
 export async function smsCenterNewRequest(
   centerPhone: string,

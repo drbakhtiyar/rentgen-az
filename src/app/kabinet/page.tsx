@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inbox, Heart, User, ArrowRight, Search } from "lucide-react";
+import { Inbox, Heart, User, ArrowRight, Search, Download } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { patientNav } from "@/components/dashboard/role-navs";
 import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
@@ -77,39 +77,51 @@ export default async function PatientDashboardPage() {
                 {requests.map((r) => (
                   <div
                     key={r.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-3"
+                    className="rounded-xl border border-slate-100 p-3"
                   >
-                    <div className="min-w-0">
-                      <p className="font-semibold text-ink-900">
-                        {r.center ? (
-                          <Link href={`/rentgen-merkezleri/${r.center.slug}`} className="hover:text-brand-600">
-                            {r.center.name}
-                          </Link>
-                        ) : (
-                          "Ümumi müraciət"
-                        )}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        {r.serviceSlug ? `${r.serviceSlug} · ` : ""}
-                        {formatDateAz(r.createdAt)}
-                      </p>
-                      {r.preferredDate && (
-                        <p className="mt-1 text-xs font-semibold text-brand-700">
-                          Seçilmiş vaxt: {formatDateTimeAz(r.preferredDate)}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-ink-900">
+                          {r.center ? (
+                            <Link href={`/rentgen-merkezleri/${r.center.slug}`} className="hover:text-brand-600">
+                              {r.center.name}
+                            </Link>
+                          ) : (
+                            "Ümumi müraciət"
+                          )}
                         </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {r.status !== "COMPLETED" && r.status !== "CANCELLED" && (
-                        <CancelRequestButton requestId={r.id} />
-                      )}
-                      {r.center &&
-                        r.status !== "COMPLETED" &&
-                        r.status !== "CANCELLED" && (
-                          <MarkReceivedButton requestId={r.id} />
+                        <p className="text-sm text-slate-500">
+                          {r.serviceSlug ? `${r.serviceSlug} · ` : ""}
+                          {formatDateAz(r.createdAt)}
+                        </p>
+                        {r.preferredDate && (
+                          <p className="mt-1 text-xs font-semibold text-brand-700">
+                            Seçilmiş vaxt: {formatDateTimeAz(r.preferredDate)}
+                          </p>
                         )}
-                      <StatusBadge status={r.status} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {r.status !== "COMPLETED" && r.status !== "CANCELLED" && (
+                          <CancelRequestButton requestId={r.id} />
+                        )}
+                        {r.center &&
+                          r.status !== "COMPLETED" &&
+                          r.status !== "CANCELLED" && (
+                            <MarkReceivedButton requestId={r.id} />
+                          )}
+                        <StatusBadge status={r.status} />
+                      </div>
                     </div>
+                    {r.resultUrl && (
+                      <a
+                        href={r.resultUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center gap-2 rounded-xl bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 ring-1 ring-inset ring-brand-100 hover:bg-brand-100"
+                      >
+                        <Download className="h-4 w-4" /> Rentgen nəticəsini aç / yüklə
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>

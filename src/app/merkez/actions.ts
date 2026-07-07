@@ -7,7 +7,11 @@ import { slugify } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/rbac";
 import { centerProfileSchema } from "@/lib/validation";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
-import { smsPatientStatusChange } from "@/lib/notify";
+import {
+  smsPatientStatusChange,
+  smsPatientResultReady,
+  smsDoctorResultReady,
+} from "@/lib/notify";
 import { Prisma } from "@/generated/prisma/client";
 import type { RequestStatus } from "@/generated/prisma/enums";
 
@@ -215,6 +219,114 @@ export async function updateRequestStatusAction(
     );
     revalidatePath("/merkez");
     return { ok: true };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+function isValidUrl(v: string): boolean {
+  return /^https?:\/\/.+/i.test(v);
+}
+
+/** Center saves/updates the rentgen result link for a completed request. */
+export async function setRequestResultAction(
+  requestId: string,
+  resultUrl: string,
+): Promise<CenterActionResult> {
+  const user = await requireRole("CENTER");
+  const url = resultUrl.trim();
+  if (url && !isValidUrl(url)) {
+    return { ok: false, error: "Düzgün link daxil edin (https://...)." };
+  }
+  try {
+    const center = await prisma.centerProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true, name: true },
+    });
+    if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+    const req = await prisma.appointmentRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true, centerId: true, phone: true, name: true, doctorId: true, resultUrl: true },
+    });
+    if (!req || req.centerId !== center.id) {
+      return { ok: false, error: "Müraciət tapılmadı." };
+    }
+
+    const firstTime = !req.resultUrl && !!url;
+    await prisma.appointmentRequest.update({
+      where: { id: requestId },
+      data: {
+        resultUrl: url || null,
+        resultAddedAt: url ? new Date() : null,
+      },
+    });
+
+    // Notify only when a link is first added.
+    if (firstTime) {
+      await smsPatientResultReady(req.phone, center.name).catch(() => {});
+      // Notify the referring doctor only if they are a partner of this center.
+      if (req.doctorId) {
+        const partner = await prisma.centerDoctor.findUnique({
+          where: { centerId_doctorId: { centerId: center.id, doctorId: req.doctorId } },
+          select: { status: true },
+        });
+        if (partner?.status === "ACCEPTED") {
+          const doc = await prisma.doctorProfile.findUnique({
+            where: { id: req.doctorId },
+            select: { user: { select: { phone: true } } },
+          });
+          if (doc?.user.phone) {
+            await smsDoctorResultReady(doc.user.phone, req.name).catch(() => {});
+          }
+        }
+      }
+    }
+
+    revalidatePath("/merkez");
+    revalidatePath("/hekim");
+    revalidatePath("/kabinet");
+    return { ok: true, message: url ? "Nəticə linki yadda saxlanıldı." : "Link silindi." };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
+/** Center assigns/changes the referring doctor for a request. */
+export async function setRequestDoctorAction(
+  requestId: string,
+  doctorId: string,
+): Promise<CenterActionResult> {
+  const user = await requireRole("CENTER");
+  try {
+    const center = await prisma.centerProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
+    if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+    const req = await prisma.appointmentRequest.findUnique({
+      where: { id: requestId },
+      select: { centerId: true },
+    });
+    if (!req || req.centerId !== center.id) {
+      return { ok: false, error: "Müraciət tapılmadı." };
+    }
+    if (doctorId) {
+      const doc = await prisma.doctorProfile.findFirst({
+        where: { id: doctorId, status: "APPROVED" },
+        select: { id: true },
+      });
+      if (!doc) return { ok: false, error: "Həkim tapılmadı." };
+    }
+
+    await prisma.appointmentRequest.update({
+      where: { id: requestId },
+      data: { doctorId: doctorId || null },
+    });
+    revalidatePath("/merkez");
+    revalidatePath("/hekim");
+    return { ok: true, message: "Yönləndirən həkim yeniləndi." };
   } catch {
     return { ok: false, error: "Texniki xəta." };
   }
