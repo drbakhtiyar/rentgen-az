@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Stethoscope, MapPin, BadgeCheck, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { doctorName } from "@/lib/utils";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 export type DoctorCardData = {
@@ -23,7 +25,7 @@ export function DoctorCard({
   doctor: DoctorCardData;
   locale?: Locale;
 }) {
-  const name = [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+  const name = doctorName(doctor.firstName, doctor.lastName);
   const verified = Boolean(doctor.diplomaUrl || doctor.certificateUrl);
   const specs = doctor.specializations.slice(0, 3);
   const extra = doctor.specializations.length - specs.length;
@@ -33,8 +35,13 @@ export function DoctorCard({
       <div className="flex items-start gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
           {doctor.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={doctor.photoUrl} alt={name} className="h-full w-full object-cover" />
+            <Image
+              src={doctor.photoUrl}
+              alt={name}
+              width={48}
+              height={48}
+              className="h-full w-full object-cover"
+            />
           ) : (
             <Stethoscope className="h-6 w-6" />
           )}

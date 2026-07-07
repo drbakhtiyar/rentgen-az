@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Stethoscope, MapPin, BadgeCheck, AtSign, Globe, ArrowRight } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getApprovedDoctorById } from "@/lib/queries";
+import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
@@ -20,7 +22,7 @@ export async function generateMetadata({
   const { id } = await params;
   const doctor = await getApprovedDoctorById(id);
   if (!doctor) return buildMetadata({ title: "Həkim tapılmadı", noIndex: true });
-  const name = [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+  const name = doctorName(doctor.firstName, doctor.lastName);
   const specs = doctor.specializations.join(", ");
   return buildMetadata({
     title: `${name}${doctor.city ? ` — ${doctor.city}` : ""}`,
@@ -41,7 +43,7 @@ export default async function DoctorProfilePage({
   const doctor = await getApprovedDoctorById(id);
   if (!doctor) notFound();
 
-  const name = [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+  const name = doctorName(doctor.firstName, doctor.lastName);
   const verified = Boolean(doctor.diplomaUrl || doctor.certificateUrl);
   const instagramUrl = doctor.instagram
     ? doctor.instagram.startsWith("http")
@@ -96,8 +98,14 @@ export default async function DoctorProfilePage({
                 <div className="flex items-start gap-4">
                   <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
                     {doctor.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={doctor.photoUrl} alt={name} className="h-full w-full object-cover" />
+                      <Image
+                        src={doctor.photoUrl}
+                        alt={name}
+                        width={64}
+                        height={64}
+                        priority
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <Stethoscope className="h-8 w-8" />
                     )}

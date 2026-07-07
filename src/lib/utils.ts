@@ -76,6 +76,16 @@ export function slugify(input: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Doctor's display name with a "Dr." prefix (avoids doubling if already present). */
+export function doctorName(
+  firstName?: string | null,
+  lastName?: string | null,
+): string {
+  const full = [firstName, lastName].filter(Boolean).join(" ").trim();
+  if (!full) return "Həkim";
+  return /^dr\.?\s/i.test(full) ? full : `Dr. ${full}`;
+}
+
 export function truncate(str: string, n: number) {
   return str.length > n ? str.slice(0, n - 1).trimEnd() + "…" : str;
 }
