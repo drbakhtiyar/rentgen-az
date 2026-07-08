@@ -45,7 +45,7 @@ export default async function CenterDashboardPage() {
     take: 10,
     include: {
       files: {
-        select: { id: true, fileName: true, size: true },
+        select: { id: true, fileName: true, size: true, createdAt: true },
         orderBy: { createdAt: "asc" },
       },
     },

@@ -53,7 +53,7 @@ export default async function CenterPatientsPage({
     include: {
       doctor: { select: { firstName: true, lastName: true } },
       files: {
-        select: { id: true, fileName: true, size: true },
+        select: { id: true, fileName: true, size: true, createdAt: true },
         orderBy: { createdAt: "asc" },
       },
     },

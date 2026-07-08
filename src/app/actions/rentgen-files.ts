@@ -9,6 +9,10 @@ import {
   presignUpload,
   presignDownload,
   deleteObject,
+  createMultipart,
+  completeMultipart,
+  abortMultipart,
+  MULTIPART_PART_SIZE,
 } from "@/lib/b2";
 
 export type FileResult<T = unknown> =
@@ -87,6 +91,113 @@ export async function requestUploadUrlAction(input: {
   } catch {
     return { ok: false, error: "Yükləmə linki yaradıla bilmədi." };
   }
+}
+
+/**
+ * Multipart step 1 (center): begin a resumable upload for a large file.
+ * Returns presigned PUT URLs for every part.
+ */
+export async function startMultipartUploadAction(input: {
+  requestId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+}): Promise<FileResult<{ key: string; uploadId: string; partSize: number; urls: string[] }>> {
+  const user = await requireRole("CENTER");
+  if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
+  if (!ALLOWED_TYPES.has(input.contentType)) {
+    return { ok: false, error: "Bu fayl tipi qəbul edilmir (JPG, PNG, PDF, ZIP, DICOM)." };
+  }
+  if (!Number.isFinite(input.size) || input.size <= 0 || input.size > MAX_SIZE) {
+    return { ok: false, error: "Fayl ölçüsü 2 GB-dan çox olmamalıdır." };
+  }
+
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const req = await prisma.appointmentRequest.findUnique({
+    where: { id: input.requestId },
+    select: { id: true, centerId: true },
+  });
+  if (!req || req.centerId !== center.id) return { ok: false, error: "Müraciət tapılmadı." };
+
+  const key = `rentgen/${req.id}/${randomUUID()}-${safeName(input.fileName)}`;
+  const partCount = Math.max(1, Math.ceil(input.size / MULTIPART_PART_SIZE));
+  try {
+    const { uploadId, urls } = await createMultipart(key, input.contentType, partCount);
+    return { ok: true, key, uploadId, partSize: MULTIPART_PART_SIZE, urls };
+  } catch {
+    return { ok: false, error: "Yükləmə başladıla bilmədi." };
+  }
+}
+
+/** Multipart step 2 (center): finish the upload and record metadata. */
+export async function completeMultipartUploadAction(input: {
+  requestId: string;
+  key: string;
+  uploadId: string;
+  parts: { PartNumber: number; ETag: string }[];
+  fileName: string;
+  size: number;
+  contentType: string;
+}): Promise<FileResult<{ fileId: string }>> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const req = await prisma.appointmentRequest.findUnique({
+    where: { id: input.requestId },
+    select: { id: true, centerId: true },
+  });
+  if (!req || req.centerId !== center.id) return { ok: false, error: "Müraciət tapılmadı." };
+  if (!input.key.startsWith(`rentgen/${req.id}/`)) {
+    return { ok: false, error: "Yanlış fayl açarı." };
+  }
+
+  try {
+    await completeMultipart(input.key, input.uploadId, input.parts);
+    const file = await prisma.rentgenFile.create({
+      data: {
+        requestId: req.id,
+        key: input.key,
+        fileName: safeName(input.fileName),
+        size: Math.min(Math.round(input.size), MAX_SIZE),
+        contentType: input.contentType,
+        uploadedById: user.id,
+      },
+      select: { id: true, fileName: true },
+    });
+    await audit("UPLOAD", {
+      fileId: file.id,
+      requestId: req.id,
+      userId: user.id,
+      role: "CENTER",
+      fileName: file.fileName,
+    });
+    revalidatePath("/merkez");
+    revalidatePath("/merkez/pasiyentler");
+    return { ok: true, fileId: file.id };
+  } catch {
+    return { ok: false, error: "Yükləmə tamamlana bilmədi." };
+  }
+}
+
+/** Cancel a stalled/failed multipart upload (best-effort cleanup). */
+export async function abortMultipartUploadAction(input: {
+  key: string;
+  uploadId: string;
+}): Promise<FileResult> {
+  await requireRole("CENTER");
+  try {
+    await abortMultipart(input.key, input.uploadId);
+  } catch {
+    /* best-effort */
+  }
+  return { ok: true };
 }
 
 /**
