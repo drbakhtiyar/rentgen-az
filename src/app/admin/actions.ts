@@ -15,6 +15,7 @@ import { withAutoFill } from "@/lib/services";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import { smsPatientStatusChange } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
+import { sendAdminWelcome } from "@/lib/admin-chat";
 import { Prisma } from "@/generated/prisma/client";
 import type {
   CenterStatus,
@@ -67,8 +68,13 @@ export async function setCenterStatusAction(
 ): Promise<AdminResult> {
   const admin = await requireRole("ADMIN");
   try {
-    await prisma.centerProfile.update({ where: { id: centerId }, data: { status } });
+    const center = await prisma.centerProfile.update({
+      where: { id: centerId },
+      data: { status },
+      select: { userId: true },
+    });
     await logAction(admin.id, `center:${status}`, "CenterProfile", centerId);
+    if (status === "APPROVED") await sendAdminWelcome(center.userId, "CENTER");
     revalidatePath("/admin/merkezler");
     revalidatePath("/admin");
     return { ok: true, message: "Status yeniləndi." };
@@ -83,8 +89,13 @@ export async function setDoctorStatusAction(
 ): Promise<AdminResult> {
   const admin = await requireRole("ADMIN");
   try {
-    await prisma.doctorProfile.update({ where: { id: doctorId }, data: { status } });
+    const doctor = await prisma.doctorProfile.update({
+      where: { id: doctorId },
+      data: { status },
+      select: { userId: true },
+    });
     await logAction(admin.id, `doctor:${status}`, "DoctorProfile", doctorId);
+    if (status === "APPROVED") await sendAdminWelcome(doctor.userId, "DOCTOR");
     revalidatePath("/admin/hekimler");
     revalidatePath("/admin");
     return { ok: true, message: "Status yeniləndi." };

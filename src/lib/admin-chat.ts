@@ -158,6 +158,51 @@ export async function searchAdminUsers(query: string): Promise<AdminSearchItem[]
   ];
 }
 
+const DOCTOR_WELCOME =
+  "Salam, hörmətli həkim! 👋 Rentgen.az ailəsinə xoş gəlmisiniz. Profiliniz təsdiqləndi və artıq aktivdir.\n\nPanelinizdən pasiyentlərinizi etibarlı mərkəzlərə yönləndirə, partnyor mərkəzlərlə əlaqə qura və göndərdiyiniz pasiyentlərin rentgen nəticələrini izləyə bilərsiniz.";
+
+const CENTER_WELCOME =
+  "Salam! 👋 Rentgen.az ailəsinə xoş gəlmisiniz. Mərkəzinizin profili təsdiqləndi və artıq axtarış nəticələrində görünür.\n\nPanelinizdən xidmət və qiymətləri idarə edə, pasiyent müraciətlərini qəbul edə və rentgen nəticələrini pasiyent və həkimlərlə paylaşa bilərsiniz.";
+
+const FEEDBACK_MESSAGE =
+  "Sistemlə bağlı hər hansı sualınız, çətinliyiniz və ya təklifiniz olarsa, çəkinmədən buradan bizə yazın. Platformanı məhz sizin istəkləriniz əsasında davamlı təkmilləşdiririk — təklifləriniz ən qısa zamanda nəzərə alınacaq. Fikirləriniz bizim üçün dəyərlidir! 🙏";
+
+/**
+ * Send the one-time welcome + feedback-invitation messages from admin to a
+ * newly approved doctor/center. Idempotent: skips if admin has already
+ * messaged this user (so re-approval doesn't resend).
+ */
+export async function sendAdminWelcome(
+  userId: string,
+  role: "DOCTOR" | "CENTER",
+): Promise<void> {
+  try {
+    const already = await prisma.adminMessage.count({
+      where: { thread: { userId }, fromAdmin: true },
+    });
+    if (already > 0) return;
+    const thread = await prisma.adminThread.upsert({
+      where: { userId },
+      create: { userId },
+      update: {},
+      select: { id: true },
+    });
+    // Sequential creates keep the welcome before the feedback message.
+    await prisma.adminMessage.create({
+      data: { threadId: thread.id, fromAdmin: true, content: role === "DOCTOR" ? DOCTOR_WELCOME : CENTER_WELCOME },
+    });
+    await prisma.adminMessage.create({
+      data: { threadId: thread.id, fromAdmin: true, content: FEEDBACK_MESSAGE },
+    });
+    await prisma.adminThread.update({
+      where: { id: thread.id },
+      data: { lastMessageAt: new Date() },
+    });
+  } catch {
+    /* best-effort */
+  }
+}
+
 /** The pinned "Admin" contact for a doctor/center user's own chat list. */
 export async function getUserAdminContact(
   userId: string,
