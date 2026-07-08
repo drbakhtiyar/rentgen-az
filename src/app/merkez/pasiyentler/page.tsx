@@ -50,7 +50,13 @@ export default async function CenterPatientsPage({
     where,
     orderBy: { createdAt: "desc" },
     take: 300,
-    include: { doctor: { select: { firstName: true, lastName: true } } },
+    include: {
+      doctor: { select: { firstName: true, lastName: true } },
+      files: {
+        select: { id: true, fileName: true, size: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
   });
 
   // Approved doctors for manual referring-doctor assignment.
@@ -144,6 +150,7 @@ export default async function CenterPatientsPage({
                             defaultUrl={r.resultUrl}
                             doctorId={r.doctorId}
                             doctors={doctorOptions}
+                            files={r.files}
                           />
                         )}
                       </div>

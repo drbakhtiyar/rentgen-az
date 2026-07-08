@@ -1,0 +1,245 @@
+"use server";
+
+import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/db";
+import { getCurrentUser, requireRole } from "@/lib/auth/rbac";
+import {
+  b2Configured,
+  presignUpload,
+  presignDownload,
+  deleteObject,
+} from "@/lib/b2";
+
+export type FileResult<T = unknown> =
+  | ({ ok: true } & T)
+  | { ok: false; error: string };
+
+// Allowed upload types + size cap (Phase 1). Rentgen files are non-executable
+// (images / PDF / ZIP-of-DICOM). CBCT series should be uploaded as a single ZIP.
+const ALLOWED_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+  "application/zip",
+  "application/x-zip-compressed",
+  "application/dicom",
+  "application/octet-stream", // .dcm / raw DICOM
+]);
+const MAX_SIZE = 2_000_000_000; // ~2 GB (fits Int)
+
+function safeName(name: string): string {
+  return (name.split(/[\\/]/).pop() ?? "fayl")
+    .replace(/[^\w.\-() ]+/g, "_")
+    .slice(0, 180);
+}
+
+async function audit(
+  action: "UPLOAD" | "DOWNLOAD" | "DELETE",
+  data: { fileId?: string; requestId?: string; userId?: string; role?: string; fileName?: string },
+) {
+  try {
+    await prisma.fileAuditLog.create({ data: { action, ...data } });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * Step 1 (center): get a presigned PUT URL to upload a rentgen file directly
+ * to B2. Only the center that owns the request may upload.
+ */
+export async function requestUploadUrlAction(input: {
+  requestId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+}): Promise<FileResult<{ url: string; key: string }>> {
+  const user = await requireRole("CENTER");
+  if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
+
+  if (!ALLOWED_TYPES.has(input.contentType)) {
+    return { ok: false, error: "Bu fayl tipi qəbul edilmir (JPG, PNG, PDF, ZIP, DICOM)." };
+  }
+  if (!Number.isFinite(input.size) || input.size <= 0 || input.size > MAX_SIZE) {
+    return { ok: false, error: "Fayl ölçüsü 2 GB-dan çox olmamalıdır." };
+  }
+
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const req = await prisma.appointmentRequest.findUnique({
+    where: { id: input.requestId },
+    select: { id: true, centerId: true },
+  });
+  if (!req || req.centerId !== center.id) {
+    return { ok: false, error: "Müraciət tapılmadı." };
+  }
+
+  const key = `rentgen/${req.id}/${randomUUID()}-${safeName(input.fileName)}`;
+  try {
+    const url = await presignUpload(key, input.contentType);
+    return { ok: true, url, key };
+  } catch {
+    return { ok: false, error: "Yükləmə linki yaradıla bilmədi." };
+  }
+}
+
+/**
+ * Step 2 (center): after the browser has PUT the file to B2, record its
+ * metadata. Verifies the key belongs to this request (prevents spoofing).
+ */
+export async function confirmUploadAction(input: {
+  requestId: string;
+  key: string;
+  fileName: string;
+  size: number;
+  contentType: string;
+}): Promise<FileResult<{ fileId: string }>> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const req = await prisma.appointmentRequest.findUnique({
+    where: { id: input.requestId },
+    select: { id: true, centerId: true },
+  });
+  if (!req || req.centerId !== center.id) {
+    return { ok: false, error: "Müraciət tapılmadı." };
+  }
+  if (!input.key.startsWith(`rentgen/${req.id}/`)) {
+    return { ok: false, error: "Yanlış fayl açarı." };
+  }
+
+  try {
+    const file = await prisma.rentgenFile.create({
+      data: {
+        requestId: req.id,
+        key: input.key,
+        fileName: safeName(input.fileName),
+        size: Math.min(Math.round(input.size), MAX_SIZE),
+        contentType: input.contentType,
+        uploadedById: user.id,
+      },
+      select: { id: true, fileName: true },
+    });
+    await audit("UPLOAD", {
+      fileId: file.id,
+      requestId: req.id,
+      userId: user.id,
+      role: "CENTER",
+      fileName: file.fileName,
+    });
+    revalidatePath("/merkez");
+    revalidatePath("/merkez/pasiyentler");
+    return { ok: true, fileId: file.id };
+  } catch {
+    return { ok: false, error: "Fayl qeydə alına bilmədi." };
+  }
+}
+
+/**
+ * Return a short-lived presigned download URL if the caller is authorized for
+ * this file: the owning center, the patient, an accepted partner referring
+ * doctor, or an admin. This is the IDOR gate — never trust the client's ID.
+ */
+export async function getDownloadUrlAction(
+  fileId: string,
+): Promise<FileResult<{ url: string }>> {
+  const me = await getCurrentUser();
+  if (!me) return { ok: false, error: "Giriş tələb olunur." };
+
+  const file = await prisma.rentgenFile.findUnique({
+    where: { id: fileId },
+    select: {
+      id: true,
+      key: true,
+      fileName: true,
+      request: { select: { id: true, centerId: true, doctorId: true, patientId: true } },
+    },
+  });
+  if (!file) return { ok: false, error: "Fayl tapılmadı." };
+  const r = file.request;
+
+  let allowed = false;
+  const role = me.role;
+  if (me.role === "ADMIN") {
+    allowed = true;
+  } else if (me.role === "CENTER" && me.centerProfile) {
+    allowed = r.centerId === me.centerProfile.id;
+  } else if (me.role === "PATIENT" && me.patientProfile) {
+    allowed = r.patientId === me.patientProfile.id;
+  } else if (me.role === "DOCTOR" && me.doctorProfile) {
+    // Referring doctor AND an accepted partnership with the center (same gate
+    // that governs the result link elsewhere).
+    if (r.doctorId === me.doctorProfile.id && r.centerId) {
+      const partner = await prisma.centerDoctor.findUnique({
+        where: {
+          centerId_doctorId: { centerId: r.centerId, doctorId: me.doctorProfile.id },
+        },
+        select: { status: true },
+      });
+      allowed = partner?.status === "ACCEPTED";
+    }
+  }
+
+  if (!allowed) return { ok: false, error: "Bu fayla girişiniz yoxdur." };
+
+  try {
+    const url = await presignDownload(file.key, file.fileName);
+    await audit("DOWNLOAD", {
+      fileId: file.id,
+      requestId: r.id,
+      userId: me.id,
+      role,
+      fileName: file.fileName,
+    });
+    return { ok: true, url };
+  } catch {
+    return { ok: false, error: "Endirmə linki yaradıla bilmədi." };
+  }
+}
+
+/** Center deletes one of its own request's files (from B2 + DB). */
+export async function deleteFileAction(
+  fileId: string,
+): Promise<FileResult> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const file = await prisma.rentgenFile.findUnique({
+    where: { id: fileId },
+    select: { id: true, key: true, fileName: true, request: { select: { id: true, centerId: true } } },
+  });
+  if (!file || file.request.centerId !== center.id) {
+    return { ok: false, error: "Fayl tapılmadı." };
+  }
+
+  try {
+    await deleteObject(file.key);
+  } catch {
+    /* if the object is already gone, still remove the row */
+  }
+  await prisma.rentgenFile.delete({ where: { id: file.id } });
+  await audit("DELETE", {
+    fileId: file.id,
+    requestId: file.request.id,
+    userId: user.id,
+    role: "CENTER",
+    fileName: file.fileName,
+  });
+  revalidatePath("/merkez");
+  revalidatePath("/merkez/pasiyentler");
+  return { ok: true };
+}

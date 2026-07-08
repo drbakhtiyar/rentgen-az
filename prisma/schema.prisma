@@ -191,13 +191,44 @@ model AppointmentRequest {
   status         RequestStatus  @default(NEW)
   completedBy    String? // "CENTER" | "PATIENT" — kim "xidmət alındı" işarələyib
   patientUpdated Boolean        @default(false) // pasiyent vaxtı dəyişib — mərkəz yenidən əlaqə saxlamalı
-  resultUrl      String? // rentgen faylının linki
+  resultUrl      String? // rentgen faylının linki (köhnə: xarici link)
   resultAddedAt  DateTime?
+  files          RentgenFile[]
   createdAt     DateTime        @default(now())
 
   @@index([centerId])
   @@index([doctorId])
   @@index([status])
+}
+
+// Rentgen faylı (Backblaze B2-də saxlanılır; bazada yalnız metadata).
+model RentgenFile {
+  id           String             @id @default(cuid())
+  requestId    String
+  request      AppointmentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  key          String             @unique // B2 obyekt açarı (private)
+  fileName     String
+  size         Int // bayt (Faza 1: ≤ 2 GB)
+  contentType  String
+  uploadedById String? // yükləyən User.id
+  createdAt    DateTime           @default(now())
+
+  @@index([requestId])
+}
+
+// Fayl əməliyyatlarının audit jurnalı (medical data — kim, nə vaxt, nə etdi).
+model FileAuditLog {
+  id        String   @id @default(cuid())
+  action    String // UPLOAD | DOWNLOAD | DELETE
+  fileId    String?
+  requestId String?
+  userId    String?
+  role      String?
+  fileName  String?
+  createdAt DateTime @default(now())
+
+  @@index([requestId])
+  @@index([userId])
 }
 
 model Review {

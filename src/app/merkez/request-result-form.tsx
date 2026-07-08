@@ -6,6 +6,7 @@ import { Loader2, Link2, CheckCircle2, ExternalLink } from "lucide-react";
 import { Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { setRequestResultAction, setRequestDoctorAction } from "./actions";
+import { RentgenFilesPanel, type RentgenFileItem } from "@/components/rentgen/rentgen-files-panel";
 
 type Option = { value: string; label: string };
 
@@ -18,11 +19,13 @@ export function RequestResultForm({
   defaultUrl,
   doctorId,
   doctors,
+  files = [],
 }: {
   requestId: string;
   defaultUrl: string | null;
   doctorId: string | null;
   doctors: Option[];
+  files?: RentgenFileItem[];
 }) {
   const router = useRouter();
   const [url, setUrl] = React.useState(defaultUrl ?? "");
@@ -73,13 +76,16 @@ export function RequestResultForm({
         </div>
       )}
 
-      {/* Result link */}
-      <div>
+      {/* Upload rentgen files directly (B2) */}
+      <RentgenFilesPanel requestId={requestId} files={files} />
+
+      {/* Result link (optional / legacy external link) */}
+      <div className="border-t border-slate-100 pt-3">
         <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-          <Link2 className="h-3.5 w-3.5" /> Rentgen nəticəsinin linki
+          <Link2 className="h-3.5 w-3.5" /> Xarici link (istəyə bağlı)
         </p>
         <p className="mb-1.5 text-xs text-slate-400">
-          Rentgen faylını yüklədiyiniz serverin (bulud yaddaş) linkini bura əlavə edin.
+          Faylı birbaşa yükləmək əvəzinə xarici bulud linki də əlavə edə bilərsiniz.
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <Input

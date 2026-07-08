@@ -43,6 +43,12 @@ export default async function CenterDashboardPage() {
     where: { centerId: center.id },
     orderBy: { createdAt: "desc" },
     take: 10,
+    include: {
+      files: {
+        select: { id: true, fileName: true, size: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
   });
   const newCount = await prisma.appointmentRequest.count({
     where: { centerId: center.id, status: "NEW" },
@@ -184,6 +190,7 @@ export default async function CenterDashboardPage() {
                         defaultUrl={r.resultUrl}
                         doctorId={r.doctorId}
                         doctors={doctorOptions}
+                        files={r.files}
                       />
                     )}
                   </div>

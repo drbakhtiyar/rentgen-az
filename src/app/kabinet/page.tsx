@@ -7,6 +7,7 @@ import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard
 import { ButtonLink } from "@/components/ui/button";
 import { CancelRequestButton } from "@/components/reviews/cancel-request-button";
 import { EditTimeButton } from "@/components/reviews/edit-time-button";
+import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
@@ -37,7 +38,13 @@ export default async function PatientDashboardPage() {
     where: { patientId: profile?.id },
     orderBy: { createdAt: "desc" },
     take: 10,
-    include: { center: { select: { name: true, slug: true, hours: true } } },
+    include: {
+      center: { select: { name: true, slug: true, hours: true } },
+      files: {
+        select: { id: true, fileName: true, size: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
   });
 
   const reviewable = profile
@@ -124,6 +131,7 @@ export default async function PatientDashboardPage() {
                         <Download className="h-4 w-4" /> Rentgen nəticəsini aç / yüklə
                       </a>
                     )}
+                    <RentgenDownloadList files={r.files} />
                   </div>
                 ))}
               </div>

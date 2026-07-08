@@ -11,6 +11,7 @@ import {
   StatusBadge,
 } from "@/components/dashboard/widgets";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
+import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, doctorName } from "@/lib/utils";
@@ -35,6 +36,7 @@ type Referral = {
   centerId: string | null;
   resultUrl: string | null;
   center: { name: string; slug: string } | null;
+  files: { id: string; fileName: string; size: number }[];
 };
 
 type PartnerStatus = "PENDING" | "ACCEPTED" | "REJECTED";
@@ -70,6 +72,10 @@ export default async function DoctorDashboardPage() {
         centerId: true,
         resultUrl: true,
         center: { select: { name: true, slug: true } },
+        files: {
+          select: { id: true, fileName: true, size: true },
+          orderBy: { createdAt: "asc" },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: 200,
@@ -216,6 +222,7 @@ export default async function DoctorDashboardPage() {
                               <Download className="h-3.5 w-3.5" /> Rentgen nəticəsini aç
                             </a>
                           )}
+                          {isPartner && <RentgenDownloadList files={r.files} />}
                           {r.resultUrl && !isPartner && r.centerId && (
                             <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-100">
                               <span className="flex items-center gap-1.5">

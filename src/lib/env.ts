@@ -41,6 +41,14 @@ export const env = {
     password: process.env.LSIM_PASSWORD ?? "",
     sender: process.env.LSIM_SENDER ?? "",
   },
+  // Backblaze B2 (S3-compatible) — private bucket for rentgen files
+  b2: {
+    keyId: process.env.B2_KEY_ID ?? "",
+    appKey: process.env.B2_APP_KEY ?? "",
+    bucket: process.env.B2_BUCKET ?? "",
+    endpoint: process.env.B2_ENDPOINT ?? "",
+    region: process.env.B2_REGION ?? "eu-central-003",
+  },
   isProd: process.env.NODE_ENV === "production",
 };
 
