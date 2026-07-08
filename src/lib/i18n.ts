@@ -180,6 +180,63 @@ type Dict = {
     savedOk: string;
     genericError: string;
   };
+  home: {
+    statCenters: string;
+    statDoctors: string;
+    statPatients: string;
+    statServices: string;
+    statDistricts: string;
+    servicesEyebrow: string;
+    servicesTitle: string;
+    servicesDesc: string;
+    centerCount: string; // "{n} mərkəz"
+    more: string;
+    allServices: string;
+    centersEyebrow: string;
+    centersTitle: string;
+    centersDesc: string;
+    viewAll: string;
+    centersEmptyTitle: string;
+    centersEmptyDesc: string;
+    addCenter: string;
+    hiwBadge: string;
+    hiwTitle: string;
+    hiwDesc: string;
+    step1t: string;
+    step1d: string;
+    step2t: string;
+    step2d: string;
+    step3t: string;
+    step3d: string;
+    findCenter: string;
+    tile1t: string;
+    tile1d: string;
+    tile2t: string;
+    tile2d: string;
+    tile3t: string;
+    tile3d: string;
+    tile4t: string;
+    tile4d: string;
+    forDoctorsBadge: string;
+    forDoctorsTitle: string;
+    forDoctorsDesc: string;
+    openReferral: string;
+    forCentersBadge: string;
+    forCentersTitle: string;
+    forCentersDesc: string;
+    safetyTitle: string;
+    safetyText: string;
+    readMore: string;
+    faqEyebrow: string;
+    faqTitle: string;
+    blogEyebrow: string;
+    blogTitle: string;
+    allPosts: string;
+    read: string;
+    finalTitle: string;
+    finalDesc: string;
+    registerLogin: string;
+  };
 };
 
 const az: Dict = {
@@ -356,6 +413,69 @@ const az: Dict = {
     savedOk: "Yadda saxlanıldı.",
     genericError: "Xəta",
   },
+  home: {
+    statCenters: "Təsdiqlənmiş mərkəz",
+    statDoctors: "Qeydiyyatlı həkim",
+    statPatients: "Qeydiyyatlı pasiyent",
+    statServices: "Xidmət növü",
+    statDistricts: "Əhatə olunan rayon",
+    servicesEyebrow: "Xidmətlər",
+    servicesTitle: "Bütün dental görüntüləmə xidmətləri",
+    servicesDesc:
+      "Diaqnostika və müalicə planlaması üçün lazım olan rentgen və tomoqrafiya növləri.",
+    centerCount: "mərkəz",
+    more: "Ətraflı",
+    allServices: "Bütün xidmətlər",
+    centersEyebrow: "Təsdiqlənmiş mərkəzlər",
+    centersTitle: "Yaxınlığınızdakı rentgen mərkəzləri",
+    centersDesc: "Admin tərəfindən yoxlanılmış və təsdiqlənmiş mərkəzlər.",
+    viewAll: "Hamısına bax",
+    centersEmptyTitle: "Tezliklə mərkəzlər əlavə olunacaq",
+    centersEmptyDesc:
+      "İlk təsdiqlənmiş mərkəzlər burada görünəcək. Mərkəzinizi indi əlavə edin.",
+    addCenter: "Mərkəz əlavə et",
+    hiwBadge: "Pasiyentlər üçün",
+    hiwTitle: "3 addımda uyğun mərkəzi tapın",
+    hiwDesc: "Axtarışdan əlaqəyə qədər sadə və sürətli proses.",
+    step1t: "Axtarın",
+    step1d: "Xidmət növü və rayona görə mərkəzləri filtirləyin.",
+    step2t: "Müqayisə edin",
+    step2d: "Xidmətlər, iş saatları və əlaqə məlumatına baxın.",
+    step3t: "Əlaqə saxlayın",
+    step3d: "Zəng və ya WhatsApp düyməsi ilə birbaşa müraciət edin.",
+    findCenter: "Mərkəz axtar",
+    tile1t: "Asan axtarış",
+    tile1d: "Xidmət + rayon + ad üzrə filtr.",
+    tile2t: "Birbaşa əlaqə",
+    tile2d: "Zəng və WhatsApp düymələri.",
+    tile3t: "Təsdiqlənmiş",
+    tile3d: "Yoxlanılmış mərkəzlər.",
+    tile4t: "Şəxsi kabinet",
+    tile4d: "Müraciət tarixçəniz bir yerdə.",
+    forDoctorsBadge: "Həkimlər üçün",
+    forDoctorsTitle: "Pasiyentinizi etibarlı mərkəzə yönləndirin",
+    forDoctorsDesc:
+      "Pasiyentinizi dental rentgen və CBCT müayinəsi üçün platformadakı təsdiqlənmiş mərkəzlərə yönləndirə bilərsiniz.",
+    openReferral: "Göndəriş formasını aç",
+    forCentersBadge: "Rentgen mərkəzləri üçün",
+    forCentersTitle: "Mərkəzinizi platformaya əlavə edin",
+    forCentersDesc:
+      "Qeydiyyatdan keçin, xidmət və qiymətlərinizi əlavə edin, admin təsdiqindən sonra minlərlə pasiyentə görünün.",
+    safetyTitle: "Şüalanma və təhlükəsizlik haqqında",
+    safetyText:
+      "Müasir rəqəmsal dental rentgen və CBCT aparatlarında şüalanma dozası nəzarət altında və aşağı səviyyədədir. Müayinələr yalnız klinik göstəriş olduqda təyin edilir və həkimin dəqiq diaqnostika verməsinə kömək edir. Hamilə qadınlar müayinədən əvvəl bu barədə həkimə məlumat verməlidir.",
+    readMore: "Ətraflı oxu",
+    faqEyebrow: "FAQ",
+    faqTitle: "Tez-tez verilən suallar",
+    blogEyebrow: "Blog",
+    blogTitle: "Faydalı məqalələr",
+    allPosts: "Bütün məqalələr",
+    read: "Oxu",
+    finalTitle: "Yaxın rentgen mərkəzini indi tapın",
+    finalDesc:
+      "Xidmət və rayona görə axtarın, təsdiqlənmiş mərkəzlərlə birbaşa əlaqə saxlayın.",
+    registerLogin: "Qeydiyyat / Giriş",
+  },
 };
 
 const ru: Dict = {
@@ -530,6 +650,69 @@ const ru: Dict = {
     uploadFailed: "Загрузка не удалась",
     savedOk: "Сохранено.",
     genericError: "Ошибка",
+  },
+  home: {
+    statCenters: "Проверенных центров",
+    statDoctors: "Зарегистрированных врачей",
+    statPatients: "Зарегистрированных пациентов",
+    statServices: "Видов услуг",
+    statDistricts: "Охваченных районов",
+    servicesEyebrow: "Услуги",
+    servicesTitle: "Все услуги стоматологической визуализации",
+    servicesDesc:
+      "Виды рентгена и томографии, необходимые для диагностики и планирования лечения.",
+    centerCount: "центр.",
+    more: "Подробнее",
+    allServices: "Все услуги",
+    centersEyebrow: "Проверенные центры",
+    centersTitle: "Рентген-центры рядом с вами",
+    centersDesc: "Центры, проверенные и подтверждённые администрацией.",
+    viewAll: "Смотреть все",
+    centersEmptyTitle: "Скоро появятся центры",
+    centersEmptyDesc:
+      "Первые проверенные центры появятся здесь. Добавьте свой центр сейчас.",
+    addCenter: "Добавить центр",
+    hiwBadge: "Для пациентов",
+    hiwTitle: "Найдите подходящий центр за 3 шага",
+    hiwDesc: "Простой и быстрый процесс — от поиска до контакта.",
+    step1t: "Ищите",
+    step1d: "Фильтруйте центры по виду услуги и району.",
+    step2t: "Сравнивайте",
+    step2d: "Смотрите услуги, часы работы и контактные данные.",
+    step3t: "Свяжитесь",
+    step3d: "Обращайтесь напрямую по кнопке звонка или WhatsApp.",
+    findCenter: "Искать центр",
+    tile1t: "Удобный поиск",
+    tile1d: "Фильтр по услуге, району и названию.",
+    tile2t: "Прямая связь",
+    tile2d: "Кнопки звонка и WhatsApp.",
+    tile3t: "Проверенные",
+    tile3d: "Проверенные центры.",
+    tile4t: "Личный кабинет",
+    tile4d: "История обращений в одном месте.",
+    forDoctorsBadge: "Для врачей",
+    forDoctorsTitle: "Направьте пациента в надёжный центр",
+    forDoctorsDesc:
+      "Вы можете направить пациента на дентальный рентген и КЛКТ в проверенные центры платформы.",
+    openReferral: "Открыть форму направления",
+    forCentersBadge: "Для рентген-центров",
+    forCentersTitle: "Добавьте свой центр на платформу",
+    forCentersDesc:
+      "Зарегистрируйтесь, добавьте услуги и цены, и после подтверждения администрацией станьте видимы тысячам пациентов.",
+    safetyTitle: "О радиации и безопасности",
+    safetyText:
+      "В современных цифровых дентальных рентген- и КЛКТ-аппаратах доза облучения контролируется и находится на низком уровне. Обследования назначаются только при клинических показаниях и помогают врачу поставить точный диагноз. Беременным женщинам следует сообщить об этом врачу до обследования.",
+    readMore: "Читать подробнее",
+    faqEyebrow: "FAQ",
+    faqTitle: "Часто задаваемые вопросы",
+    blogEyebrow: "Блог",
+    blogTitle: "Полезные статьи",
+    allPosts: "Все статьи",
+    read: "Читать",
+    finalTitle: "Найдите ближайший рентген-центр прямо сейчас",
+    finalDesc:
+      "Ищите по услуге и району, связывайтесь напрямую с проверенными центрами.",
+    registerLogin: "Регистрация / Вход",
   },
 };
 

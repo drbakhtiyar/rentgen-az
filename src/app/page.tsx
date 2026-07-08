@@ -118,11 +118,11 @@ export default async function HomePage() {
       <div className="border-b border-slate-200 bg-white">
         <Container>
           <div className="grid grid-cols-2 gap-y-6 divide-slate-200 py-8 sm:grid-cols-3 lg:grid-cols-5">
-            <Stat value={`${stats.approvedCenters}`} label="Təsdiqlənmiş mərkəz" icon={<Building2 className="h-5 w-5" />} />
-            <Stat value={`${stats.doctors}`} label="Qeydiyyatlı həkim" icon={<Stethoscope className="h-5 w-5" />} />
-            <Stat value={`${stats.patients}`} label="Qeydiyyatlı pasiyent" icon={<Users className="h-5 w-5" />} />
-            <Stat value={`${allServices.length}`} label="Xidmət növü" icon={<ScanLine className="h-5 w-5" />} />
-            <Stat value={`${stats.cities}`} label="Əhatə olunan rayon" icon={<MapPin className="h-5 w-5" />} />
+            <Stat value={`${stats.approvedCenters}`} label={d.home.statCenters} icon={<Building2 className="h-5 w-5" />} />
+            <Stat value={`${stats.doctors}`} label={d.home.statDoctors} icon={<Stethoscope className="h-5 w-5" />} />
+            <Stat value={`${stats.patients}`} label={d.home.statPatients} icon={<Users className="h-5 w-5" />} />
+            <Stat value={`${allServices.length}`} label={d.home.statServices} icon={<ScanLine className="h-5 w-5" />} />
+            <Stat value={`${stats.cities}`} label={d.home.statDistricts} icon={<MapPin className="h-5 w-5" />} />
           </div>
         </Container>
       </div>
@@ -131,9 +131,9 @@ export default async function HomePage() {
       <Section className="bg-surface">
         <Container>
           <SectionHeading
-            eyebrow="Xidmətlər"
-            title="Bütün dental görüntüləmə xidmətləri"
-            description="Diaqnostika və müalicə planlaması üçün lazım olan rentgen və tomoqrafiya növləri."
+            eyebrow={d.home.servicesEyebrow}
+            title={d.home.servicesTitle}
+            description={d.home.servicesDesc}
           />
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredServices.map((s) => (
@@ -150,12 +150,12 @@ export default async function HomePage() {
                   </p>
                   <div className="mt-4 flex items-center justify-between">
                     {counts[s.slug] ? (
-                      <Badge tone="cyan">{counts[s.slug]} mərkəz</Badge>
+                      <Badge tone="cyan">{counts[s.slug]} {d.home.centerCount}</Badge>
                     ) : (
                       <span />
                     )}
                     <span className="flex items-center gap-1 text-sm font-semibold text-brand-600">
-                      Ətraflı <ArrowRight className="h-4 w-4" />
+                      {d.home.more} <ArrowRight className="h-4 w-4" />
                     </span>
                   </div>
                 </Card>
@@ -164,7 +164,7 @@ export default async function HomePage() {
           </div>
           <div className="mt-10 text-center">
             <ButtonLink href="/xidmetler" variant="outline">
-              Bütün xidmətlər <ArrowRight className="h-4 w-4" />
+              {d.home.allServices} <ArrowRight className="h-4 w-4" />
             </ButtonLink>
           </div>
         </Container>
@@ -176,12 +176,12 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <SectionHeading
               align="left"
-              eyebrow="Təsdiqlənmiş mərkəzlər"
-              title="Yaxınlığınızdakı rentgen mərkəzləri"
-              description="Admin tərəfindən yoxlanılmış və təsdiqlənmiş mərkəzlər."
+              eyebrow={d.home.centersEyebrow}
+              title={d.home.centersTitle}
+              description={d.home.centersDesc}
             />
             <ButtonLink href="/rentgen-merkezleri" variant="outline" className="shrink-0">
-              Hamısına bax <ArrowRight className="h-4 w-4" />
+              {d.home.viewAll} <ArrowRight className="h-4 w-4" />
             </ButtonLink>
           </div>
 
@@ -195,13 +195,13 @@ export default async function HomePage() {
             <Card className="mt-12 p-10 text-center">
               <Building2 className="mx-auto h-10 w-10 text-slate-300" />
               <h3 className="font-display mt-4 text-lg font-bold text-ink-900">
-                Tezliklə mərkəzlər əlavə olunacaq
+                {d.home.centersEmptyTitle}
               </h3>
               <p className="mt-2 text-sm text-slate-600">
-                İlk təsdiqlənmiş mərkəzlər burada görünəcək. Mərkəzinizi indi əlavə edin.
+                {d.home.centersEmptyDesc}
               </p>
               <ButtonLink href="/merkezler-ucun" className="mt-5">
-                Mərkəz əlavə et
+                {d.home.addCenter}
               </ButtonLink>
             </Card>
           )}
@@ -213,18 +213,18 @@ export default async function HomePage() {
         <Container>
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <Badge tone="cyan">Pasiyentlər üçün</Badge>
+              <Badge tone="cyan">{d.home.hiwBadge}</Badge>
               <h2 className="font-display mt-4 text-3xl font-bold sm:text-4xl">
-                3 addımda uyğun mərkəzi tapın
+                {d.home.hiwTitle}
               </h2>
               <p className="mt-4 text-slate-300">
-                Axtarışdan əlaqəyə qədər sadə və sürətli proses.
+                {d.home.hiwDesc}
               </p>
               <ol className="mt-8 space-y-5">
                 {[
-                  { t: "Axtarın", d: "Xidmət növü və rayona görə mərkəzləri filtirləyin." },
-                  { t: "Müqayisə edin", d: "Xidmətlər, iş saatları və əlaqə məlumatına baxın." },
-                  { t: "Əlaqə saxlayın", d: "Zəng və ya WhatsApp düyməsi ilə birbaşa müraciət edin." },
+                  { t: d.home.step1t, d: d.home.step1d },
+                  { t: d.home.step2t, d: d.home.step2d },
+                  { t: d.home.step3t, d: d.home.step3d },
                 ].map((step, i) => (
                   <li key={i} className="flex gap-4">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
@@ -238,15 +238,15 @@ export default async function HomePage() {
                 ))}
               </ol>
               <ButtonLink href="/rentgen-merkezleri" className="mt-8">
-                Mərkəz axtar <Search className="h-4 w-4" />
+                {d.home.findCenter} <Search className="h-4 w-4" />
               </ButtonLink>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FeatureTile icon={<Search />} title="Asan axtarış" text="Xidmət + rayon + ad üzrə filtr." />
-              <FeatureTile icon={<MessageCircle />} title="Birbaşa əlaqə" text="Zəng və WhatsApp düymələri." />
-              <FeatureTile icon={<ShieldCheck />} title="Təsdiqlənmiş" text="Yoxlanılmış mərkəzlər." />
-              <FeatureTile icon={<Users />} title="Şəxsi kabinet" text="Müraciət tarixçəniz bir yerdə." />
+              <FeatureTile icon={<Search />} title={d.home.tile1t} text={d.home.tile1d} />
+              <FeatureTile icon={<MessageCircle />} title={d.home.tile2t} text={d.home.tile2d} />
+              <FeatureTile icon={<ShieldCheck />} title={d.home.tile3t} text={d.home.tile3d} />
+              <FeatureTile icon={<Users />} title={d.home.tile4t} text={d.home.tile4d} />
             </div>
           </div>
         </Container>
@@ -259,16 +259,15 @@ export default async function HomePage() {
             <Card className="relative overflow-hidden p-8">
               <Stethoscope className="absolute -right-4 -top-4 h-28 w-28 text-brand-50" />
               <div className="relative">
-                <Badge tone="brand">Həkimlər üçün</Badge>
+                <Badge tone="brand">{d.home.forDoctorsBadge}</Badge>
                 <h3 className="font-display mt-4 text-2xl font-bold text-ink-900">
-                  Pasiyentinizi etibarlı mərkəzə yönləndirin
+                  {d.home.forDoctorsTitle}
                 </h3>
                 <p className="mt-3 text-slate-600">
-                  Pasiyentinizi dental rentgen və CBCT müayinəsi üçün platformadakı
-                  təsdiqlənmiş mərkəzlərə yönləndirə bilərsiniz.
+                  {d.home.forDoctorsDesc}
                 </p>
                 <ButtonLink href="/hekimler-ucun" className="mt-6">
-                  Göndəriş formasını aç <ArrowRight className="h-4 w-4" />
+                  {d.home.openReferral} <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
               </div>
             </Card>
@@ -277,16 +276,15 @@ export default async function HomePage() {
               <div className="absolute inset-0 bg-grid-dark opacity-40" />
               <Building2 className="absolute -right-4 -top-4 h-28 w-28 text-white/5" />
               <div className="relative">
-                <Badge tone="cyan">Rentgen mərkəzləri üçün</Badge>
+                <Badge tone="cyan">{d.home.forCentersBadge}</Badge>
                 <h3 className="font-display mt-4 text-2xl font-bold">
-                  Mərkəzinizi platformaya əlavə edin
+                  {d.home.forCentersTitle}
                 </h3>
                 <p className="mt-3 text-slate-300">
-                  Qeydiyyatdan keçin, xidmət və qiymətlərinizi əlavə edin, admin
-                  təsdiqindən sonra minlərlə pasiyentə görünün.
+                  {d.home.forCentersDesc}
                 </p>
                 <ButtonLink href="/merkezler-ucun" variant="primary" className="mt-6">
-                  Mərkəz əlavə et <ArrowRight className="h-4 w-4" />
+                  {d.home.addCenter} <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
               </div>
             </Card>
@@ -304,20 +302,16 @@ export default async function HomePage() {
               </div>
               <div>
                 <h2 className="font-display text-2xl font-bold text-ink-900">
-                  Şüalanma və təhlükəsizlik haqqında
+                  {d.home.safetyTitle}
                 </h2>
                 <p className="mt-3 max-w-3xl text-slate-600">
-                  Müasir rəqəmsal dental rentgen və CBCT aparatlarında şüalanma
-                  dozası nəzarət altında və aşağı səviyyədədir. Müayinələr yalnız
-                  klinik göstəriş olduqda təyin edilir və həkimin dəqiq
-                  diaqnostika verməsinə kömək edir. Hamilə qadınlar müayinədən əvvəl
-                  bu barədə həkimə məlumat verməlidir.
+                  {d.home.safetyText}
                 </p>
                 <Link
                   href="/blog/dental-rentgen-tehlukelidirmi"
                   className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700"
                 >
-                  Ətraflı oxu <ArrowRight className="h-4 w-4" />
+                  {d.home.readMore} <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
@@ -328,7 +322,7 @@ export default async function HomePage() {
       {/* ---------------- FAQ ---------------- */}
       <Section className="bg-surface">
         <Container>
-          <SectionHeading eyebrow="FAQ" title="Tez-tez verilən suallar" />
+          <SectionHeading eyebrow={d.home.faqEyebrow} title={d.home.faqTitle} />
           <div className="mt-10">
             <FaqAccordion items={HOME_FAQ} />
           </div>
@@ -340,9 +334,9 @@ export default async function HomePage() {
         <Section>
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <SectionHeading align="left" eyebrow="Blog" title="Faydalı məqalələr" />
+              <SectionHeading align="left" eyebrow={d.home.blogEyebrow} title={d.home.blogTitle} />
               <ButtonLink href="/blog" variant="outline" className="shrink-0">
-                Bütün məqalələr <ArrowRight className="h-4 w-4" />
+                {d.home.allPosts} <ArrowRight className="h-4 w-4" />
               </ButtonLink>
             </div>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -361,7 +355,7 @@ export default async function HomePage() {
                       </p>
                     )}
                     <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-                      Oxu <ArrowRight className="h-4 w-4" />
+                      {d.home.read} <ArrowRight className="h-4 w-4" />
                     </span>
                   </Card>
                 </Link>
@@ -379,18 +373,17 @@ export default async function HomePage() {
             <div className="glow-cyan absolute -right-10 -top-10 h-64 w-64 opacity-50" />
             <div className="relative mx-auto max-w-2xl">
               <h2 className="font-display text-3xl font-bold sm:text-4xl">
-                Yaxın rentgen mərkəzini indi tapın
+                {d.home.finalTitle}
               </h2>
               <p className="mt-4 text-slate-200">
-                Xidmət və rayona görə axtarın, təsdiqlənmiş mərkəzlərlə birbaşa
-                əlaqə saxlayın.
+                {d.home.finalDesc}
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <ButtonLink href="/rentgen-merkezleri" size="lg" variant="primary">
-                  Mərkəz axtar
+                  {d.home.findCenter}
                 </ButtonLink>
                 <ButtonLink href="/giris" size="lg" variant="outline" className="border-white/30 bg-white/5 text-white hover:bg-white/10">
-                  Qeydiyyat / Giriş
+                  {d.home.registerLogin}
                 </ButtonLink>
               </div>
             </div>
