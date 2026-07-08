@@ -3,6 +3,7 @@ import Image from "next/image";
 import { LogoutButton } from "@/components/logout-button";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { unreadNotificationCount } from "@/lib/notifications";
+import { unreadMessageCount } from "@/lib/chat";
 import { DashboardNav, type NavItem } from "./nav";
 import { RoleSwitcher } from "./role-switcher";
 
@@ -35,6 +36,17 @@ export async function DashboardShell({
   if (unread > 0) {
     mergedBadges["/merkez/bildirisler"] = unread;
     mergedBadges["/hekim/bildirisler"] = unread;
+  }
+  // Unread chat messages badge.
+  let unreadChat = 0;
+  if (me?.role === "CENTER" && me.centerProfile) {
+    unreadChat = await unreadMessageCount(me.id, "CENTER", me.centerProfile.id);
+  } else if (me?.role === "DOCTOR" && me.doctorProfile) {
+    unreadChat = await unreadMessageCount(me.id, "DOCTOR", me.doctorProfile.id);
+  }
+  if (unreadChat > 0) {
+    mergedBadges["/merkez/chat"] = unreadChat;
+    mergedBadges["/hekim/chat"] = unreadChat;
   }
   const availableRoles = (
     [

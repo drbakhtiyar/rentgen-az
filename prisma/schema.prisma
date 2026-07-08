@@ -125,6 +125,7 @@ model CenterProfile {
   reviews             Review[]
   events              CenterEvent[]
   doctorPartners      CenterDoctor[]
+  conversations       Conversation[]
 
   @@index([status])
   @@index([city])
@@ -329,8 +330,38 @@ model DoctorProfile {
 
   appointmentRequests AppointmentRequest[]
   centerPartners      CenterDoctor[]
+  conversations       Conversation[]
 
   @@index([status])
+}
+
+// Həkim↔mərkəz söhbəti (həmişə 2 tərəf). Mesajlar polling ilə yenilənir.
+model Conversation {
+  id            String        @id @default(cuid())
+  centerId      String
+  center        CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  doctorId      String
+  doctor        DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+  messages      Message[]
+
+  @@unique([centerId, doctorId])
+  @@index([centerId, lastMessageAt])
+  @@index([doctorId, lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String // göndərənin User.id
+  senderRole     String // CENTER | DOCTOR
+  content        String
+  readAt         DateTime? // qarşı tərəf oxuyanda
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
 }
 
 enum PartnerStatus {
