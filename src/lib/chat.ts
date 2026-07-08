@@ -118,7 +118,7 @@ async function withAdminContact(userId: string, list: ChatContact[]): Promise<Ch
     profileId: "admin",
     name: "Rentgen.az — Dəstək",
     sub: "Admin",
-    avatarUrl: null,
+    avatarUrl: "/mark-square.png", // sayt logosu
     conversationId: a.threadId,
     lastMessageAt: null,
     preview: a.preview,
