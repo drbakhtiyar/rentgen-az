@@ -35,8 +35,11 @@ export default async function ServicesPage() {
   ]);
   const d = getDict(await getLocale()).services;
 
+  // Only show services that at least one approved center offers.
+  const visible = services.filter((s) => (counts[s.slug] ?? 0) > 0);
+
   const categories = Array.from(
-    new Set(services.map((s) => s.category).filter((c): c is string => Boolean(c))),
+    new Set(visible.map((s) => s.category).filter((c): c is string => Boolean(c))),
   );
 
   return (
@@ -59,7 +62,7 @@ export default async function ServicesPage() {
           <Container>
             <SectionHeading align="left" eyebrow={cat ?? undefined} title={`${cat} xidmətləri`} />
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {services.filter((s) => s.category === cat).map((s) => (
+              {visible.filter((s) => s.category === cat).map((s) => (
                 <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
                   <Card className="group h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-glow)]">
                     <div className="flex items-start justify-between">

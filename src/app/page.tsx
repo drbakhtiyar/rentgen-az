@@ -58,7 +58,10 @@ export default async function HomePage() {
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
-  const featuredServices = allServices.filter((s) => s.featured).slice(0, 8);
+  // Only feature services that at least one approved center offers.
+  const featuredServices = allServices
+    .filter((s) => s.featured && (counts[s.slug] ?? 0) > 0)
+    .slice(0, 8);
 
   return (
     <>
