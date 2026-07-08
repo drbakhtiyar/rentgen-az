@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { track } from "@vercel/analytics";
 import { Loader2, CheckCircle2, Send, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
@@ -56,6 +57,16 @@ export function AppointmentForm({
   // Logged-in patients skip OTP (phone already verified at login).
   const skipOtp = !!patient;
 
+  // North Star conversion (REN-25 §6 / REN-33): emitted on every successful
+  // appointment submit — both the logged-in fast path and the OTP path — so
+  // social-sourced conversions are measurable alongside UTM segmentation.
+  function trackConversion() {
+    track("appointment_request", {
+      centerId: centerId ?? "unknown",
+      serviceSlug: pendingRef.current.serviceSlug || "unspecified",
+    });
+  }
+
   function payload(extra?: { code?: string }) {
     const p = pendingRef.current;
     const preferredDate = date && time ? `${date}T${time}:00+04:00` : undefined;
@@ -86,6 +97,7 @@ export function AppointmentForm({
       if (skipOtp) {
         const res = await submitAppointmentAction(payload());
         if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+        trackConversion();
         setDone(res.message ?? "Müraciətiniz göndərildi.");
         return;
       }
@@ -104,6 +116,7 @@ export function AppointmentForm({
     startTransition(async () => {
       const res = await submitAppointmentAction(payload({ code: code.trim() }));
       if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+      trackConversion();
       setDone(res.message ?? "Müraciətiniz göndərildi.");
     });
   }
