@@ -14,6 +14,7 @@ import {
   getCitiesWithCenters,
   getActiveServices,
   getServiceBySlug,
+  countApprovedCentersByService,
 } from "@/lib/queries";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
@@ -66,10 +67,10 @@ export default async function CentersPage({
     value: c,
     label: c,
   }));
-  const serviceOptions = (await getActiveServices()).map((s) => ({
-    value: s.slug,
-    label: s.name,
-  }));
+  const serviceCounts = await countApprovedCentersByService();
+  const serviceOptions = (await getActiveServices())
+    .filter((s) => (serviceCounts[s.slug] ?? 0) > 0)
+    .map((s) => ({ value: s.slug, label: s.name }));
   const locale = await getLocale();
   const d = getDict(locale);
   const searchLabels = { ...d.search, search: d.cta.search };

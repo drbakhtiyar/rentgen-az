@@ -50,7 +50,10 @@ export default async function HomePage() {
     getActiveServices(),
   ]);
   const cityOptions = searchCities.map((c) => ({ value: c, label: c }));
-  const serviceOptions = allServices.map((s) => ({ value: s.slug, label: s.name }));
+  // Search dropdown: only services offered by at least one approved center.
+  const serviceOptions = allServices
+    .filter((s) => (counts[s.slug] ?? 0) > 0)
+    .map((s) => ({ value: s.slug, label: s.name }));
 
   const locale = await getLocale();
   const d = getDict(locale);
