@@ -6,6 +6,7 @@ import { Loader2, CalendarClock, Check, X } from "lucide-react";
 import { Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
+import { DatePicker } from "@/components/forms/date-picker";
 import { editRequestTimeAction } from "@/app/kabinet/actions";
 
 /**
@@ -64,16 +65,28 @@ export function EditTimeButton({
   return (
     <div className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3">
       <div className="grid gap-2 sm:grid-cols-2">
-        <Input
-          type="date"
-          min={today}
-          value={date}
-          onChange={(e) => {
-            setDate(e.target.value);
-            setTime("");
-          }}
-          className="h-9 text-sm"
-        />
+        {hours ? (
+          <DatePicker
+            value={date}
+            minYmd={today}
+            hours={hours}
+            onChange={(v) => {
+              setDate(v);
+              setTime("");
+            }}
+          />
+        ) : (
+          <Input
+            type="date"
+            min={today}
+            value={date}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setTime("");
+            }}
+            className="h-9 text-sm"
+          />
+        )}
         {hours ? (
           <Select
             value={time}

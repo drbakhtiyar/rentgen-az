@@ -10,6 +10,7 @@ import {
   requestAppointmentOtpAction,
 } from "@/app/actions/public";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
+import { DatePicker } from "@/components/forms/date-picker";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 type Option = { value: string; label: string };
@@ -239,14 +240,13 @@ export function AppointmentForm({
       {hours && (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t.date} htmlFor="date" hint={t.dateHint}>
-            <Input
-              id="date"
-              name="date"
-              type="date"
-              min={today}
+            <DatePicker
               value={date}
-              onChange={(e) => {
-                setDate(e.target.value);
+              minYmd={today}
+              hours={hours}
+              placeholder={t.pickDate}
+              onChange={(v) => {
+                setDate(v);
                 setTime("");
               }}
             />
