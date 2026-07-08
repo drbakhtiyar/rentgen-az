@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search } from "lucide-react";
 import {
   openConversationAction,
@@ -11,6 +12,31 @@ import {
 import type { ChatContact } from "@/lib/chat";
 
 const POLL_MS = 4000;
+
+function ChatAvatar({
+  url,
+  name,
+  size,
+  Icon,
+}: {
+  url: string | null;
+  name: string;
+  size: number;
+  Icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-50 text-brand-600"
+      style={{ width: size, height: size }}
+    >
+      {url ? (
+        <Image src={url} alt={name} width={size} height={size} className="h-full w-full object-cover" />
+      ) : (
+        <Icon className="h-1/2 w-1/2" />
+      )}
+    </span>
+  );
+}
 
 function hhmm(iso: string): string {
   try {
@@ -158,9 +184,7 @@ export function ChatInterface({
                     (active?.profileId === c.profileId ? "bg-brand-50" : "")
                   }
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                    <OtherIcon className="h-5 w-5" />
-                  </span>
+                  <ChatAvatar url={c.avatarUrl} name={c.name} size={36} Icon={OtherIcon} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
                       <span className="truncate font-semibold text-ink-900">{c.name}</span>
@@ -203,9 +227,7 @@ export function ChatInterface({
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                <OtherIcon className="h-4 w-4" />
-              </span>
+              <ChatAvatar url={active.avatarUrl} name={active.name} size={32} Icon={OtherIcon} />
               <div className="min-w-0">
                 <p className="truncate font-semibold text-ink-900">{active.name}</p>
                 {active.sub && <p className="truncate text-xs text-slate-400">{active.sub}</p>}

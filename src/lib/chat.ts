@@ -6,6 +6,7 @@ export type ChatContact = {
   profileId: string; // the OTHER party's profile id (doctorId for center, centerId for doctor)
   name: string;
   sub: string | null;
+  avatarUrl: string | null; // doctor photo (for center) / center logo (for doctor)
   conversationId: string | null;
   lastMessageAt: string | null;
   preview: string | null;
@@ -26,7 +27,9 @@ export async function getChatContacts(
     const [partners, convs] = await Promise.all([
       prisma.centerDoctor.findMany({
         where: { centerId: profileId, status: "ACCEPTED" },
-        select: { doctor: { select: { id: true, firstName: true, lastName: true, clinic: true } } },
+        select: {
+          doctor: { select: { id: true, firstName: true, lastName: true, clinic: true, photoUrl: true } },
+        },
       }),
       prisma.conversation.findMany({
         where: { centerId: profileId },
@@ -46,6 +49,7 @@ export async function getChatContacts(
         profileId: p.doctor.id,
         name: doctorName(p.doctor.firstName, p.doctor.lastName),
         sub: p.doctor.clinic,
+        avatarUrl: p.doctor.photoUrl,
         conversationId: c?.id ?? null,
         lastMessageAt: c?.lastMessageAt ? c.lastMessageAt.toISOString() : null,
         preview: c?.messages[0]?.content ?? null,
@@ -58,7 +62,7 @@ export async function getChatContacts(
   const [partners, convs] = await Promise.all([
     prisma.centerDoctor.findMany({
       where: { doctorId: profileId, status: "ACCEPTED" },
-      select: { center: { select: { id: true, name: true, city: true } } },
+      select: { center: { select: { id: true, name: true, city: true, logoUrl: true } } },
     }),
     prisma.conversation.findMany({
       where: { doctorId: profileId },
@@ -78,6 +82,7 @@ export async function getChatContacts(
       profileId: p.center.id,
       name: p.center.name,
       sub: p.center.city,
+      avatarUrl: p.center.logoUrl,
       conversationId: c?.id ?? null,
       lastMessageAt: c?.lastMessageAt ? c.lastMessageAt.toISOString() : null,
       preview: c?.messages[0]?.content ?? null,
