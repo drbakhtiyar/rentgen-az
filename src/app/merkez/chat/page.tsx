@@ -16,7 +16,11 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-export default async function CenterChatPage() {
+export default async function CenterChatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ with?: string }>;
+}) {
   const user = await requireRole("CENTER", "/merkez/chat");
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
@@ -24,11 +28,12 @@ export default async function CenterChatPage() {
   });
   if (!center) redirect("/merkez/qeydiyyat");
 
+  const { with: initialWith } = await searchParams;
   const contacts = await getChatContacts("CENTER", center.id, user.id);
 
   return (
     <DashboardShell title="Söhbətlər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
-      <ChatInterface contacts={contacts} meRole="CENTER" />
+      <ChatInterface contacts={contacts} meRole="CENTER" initialWith={initialWith} />
     </DashboardShell>
   );
 }

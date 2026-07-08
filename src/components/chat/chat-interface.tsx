@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2 } from "lucide-react";
+import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search } from "lucide-react";
 import {
   openConversationAction,
   sendMessageAction,
@@ -23,9 +23,11 @@ function hhmm(iso: string): string {
 export function ChatInterface({
   contacts,
   meRole,
+  initialWith,
 }: {
   contacts: ChatContact[];
   meRole: "CENTER" | "DOCTOR";
+  initialWith?: string;
 }) {
   const [active, setActive] = React.useState<ChatContact | null>(null);
   const [convId, setConvId] = React.useState<string | null>(null);
@@ -34,8 +36,13 @@ export function ChatInterface({
   const [sending, setSending] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [query, setQuery] = React.useState("");
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const OtherIcon = meRole === "CENTER" ? Stethoscope : Building2;
+
+  const filtered = query.trim()
+    ? contacts.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
+    : contacts;
 
   const load = React.useCallback(async (id: string) => {
     const res = await fetchMessagesAction(id);
@@ -70,6 +77,18 @@ export function ChatInterface({
     if (!res.ok) return setError(res.error);
     setConvId(res.conversationId);
   }
+
+  // Deep-link: auto-open the conversation passed via ?with=<profileId> (once).
+  const autoOpened = React.useRef(false);
+  React.useEffect(() => {
+    if (autoOpened.current || !initialWith) return;
+    const c = contacts.find((x) => x.profileId === initialWith);
+    if (c) {
+      autoOpened.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      void selectContact(c);
+    }
+  }, [initialWith, contacts]);
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -113,8 +132,23 @@ export function ChatInterface({
             Partnyorunuz yoxdur. Söhbət üçün əvvəlcə əməkdaşlıq qurun.
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
-            {contacts.map((c) => (
+          <>
+            <div className="sticky top-0 z-10 border-b border-slate-100 bg-white p-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Axtar…"
+                  className="w-full rounded-full border border-slate-200 py-1.5 pl-9 pr-3 text-sm focus:border-brand-400 focus:outline-none"
+                />
+              </div>
+            </div>
+            {filtered.length === 0 ? (
+              <p className="p-6 text-center text-sm text-slate-400">Nəticə tapılmadı.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {filtered.map((c) => (
               <li key={c.profileId}>
                 <button
                   type="button"
@@ -142,8 +176,10 @@ export function ChatInterface({
                   </span>
                 </button>
               </li>
-            ))}
-          </ul>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </aside>
 

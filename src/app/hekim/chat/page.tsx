@@ -17,7 +17,11 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-export default async function DoctorChatPage() {
+export default async function DoctorChatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ with?: string }>;
+}) {
   const user = await requireRole("DOCTOR", "/hekim/chat");
   const doctor = await prisma.doctorProfile.findUnique({
     where: { userId: user.id },
@@ -25,6 +29,7 @@ export default async function DoctorChatPage() {
   });
   if (!doctor) redirect("/hekim/qeydiyyat");
 
+  const { with: initialWith } = await searchParams;
   const contacts = await getChatContacts("DOCTOR", doctor.id, user.id);
 
   return (
@@ -34,7 +39,7 @@ export default async function DoctorChatPage() {
       userName={doctorName(doctor.firstName, doctor.lastName)}
       nav={doctorNav}
     >
-      <ChatInterface contacts={contacts} meRole="DOCTOR" />
+      <ChatInterface contacts={contacts} meRole="DOCTOR" initialWith={initialWith} />
     </DashboardShell>
   );
 }

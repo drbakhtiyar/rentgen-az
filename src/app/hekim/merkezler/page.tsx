@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import type { Metadata } from "next";
-import { Building2, MapPin } from "lucide-react";
+import { Building2, MapPin, MessageSquare } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { doctorNav } from "@/components/dashboard/role-navs";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
@@ -30,7 +31,7 @@ export default async function DoctorCentersPage() {
   const [centers, partners] = await Promise.all([
     prisma.centerProfile.findMany({
       where: { status: "APPROVED" },
-      select: { id: true, name: true, city: true, logoUrl: true },
+      select: { id: true, name: true, city: true, logoUrl: true, slug: true },
       orderBy: { name: "asc" },
     }),
     prisma.centerDoctor.findMany({
@@ -71,7 +72,12 @@ export default async function DoctorCentersPage() {
                     )}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate font-semibold text-ink-900">{c.name}</span>
+                    <Link
+                      href={`/rentgen-merkezleri/${c.slug}`}
+                      className="block truncate font-semibold text-ink-900 hover:text-brand-600"
+                    >
+                      {c.name}
+                    </Link>
                     {c.city && (
                       <span className="flex items-center gap-1 text-xs text-slate-400">
                         <MapPin className="h-3 w-3" /> {c.city}
@@ -79,10 +85,20 @@ export default async function DoctorCentersPage() {
                     )}
                   </span>
                 </span>
-                <RequestPartnerButton
-                  centerId={c.id}
-                  status={statusByCenter.get(c.id) ?? null}
-                />
+                <div className="flex items-center gap-2">
+                  {statusByCenter.get(c.id) === "ACCEPTED" && (
+                    <Link
+                      href={`/hekim/chat?with=${c.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" /> Mesaj
+                    </Link>
+                  )}
+                  <RequestPartnerButton
+                    centerId={c.id}
+                    status={statusByCenter.get(c.id) ?? null}
+                  />
+                </div>
               </div>
             ))}
           </div>
