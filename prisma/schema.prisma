@@ -53,8 +53,26 @@ model User {
   centerProfile  CenterProfile?
   doctorProfile  DoctorProfile?
   adminLogs      AdminActionLog[] @relation("AdminUser")
+  notifications  Notification[]
 
   @@index([role])
+}
+
+// Daxili bildirişlər (mərkəz/həkim/pasiyent). type: NEW_REQUEST | RESULT_READY
+// | PARTNER_REQUEST | PARTNER_ACCEPTED | PARTNER_REJECTED | ADMIN_MESSAGE | PATIENT_UPDATED
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  link      String? // klikləyəndə keçəcək daxili yol
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
 }
 
 model PatientProfile {

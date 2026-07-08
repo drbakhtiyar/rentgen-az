@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireRole } from "@/lib/auth/rbac";
+import { notifyUser } from "@/lib/notifications";
 import {
   b2Configured,
   presignUpload,
@@ -45,6 +46,54 @@ async function audit(
 ) {
   try {
     await prisma.fileAuditLog.create({ data: { action, ...data } });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * Notify the patient + referring partner doctor that a result was uploaded.
+ * Only fires on the FIRST file of a request (avoids per-file spam).
+ */
+async function notifyResultUploaded(requestId: string): Promise<void> {
+  try {
+    const count = await prisma.rentgenFile.count({ where: { requestId } });
+    if (count > 1) return; // already notified on the first file
+    const r = await prisma.appointmentRequest.findUnique({
+      where: { id: requestId },
+      select: {
+        name: true,
+        centerId: true,
+        doctorId: true,
+        patient: { select: { userId: true } },
+        doctor: { select: { userId: true } },
+      },
+    });
+    if (!r) return;
+    // Patient
+    await notifyUser(
+      r.patient?.userId,
+      "RESULT_READY",
+      "Rentgeniniz hazırdır",
+      "Mərkəz rentgen faylınızı sistemə yüklədi.",
+      "/kabinet",
+    );
+    // Referring doctor — only if an accepted partner of the center.
+    if (r.doctorId && r.centerId && r.doctor?.userId) {
+      const partner = await prisma.centerDoctor.findUnique({
+        where: { centerId_doctorId: { centerId: r.centerId, doctorId: r.doctorId } },
+        select: { status: true },
+      });
+      if (partner?.status === "ACCEPTED") {
+        await notifyUser(
+          r.doctor.userId,
+          "RESULT_READY",
+          "Pasiyentin rentgeni hazırdır",
+          `${r.name} pasiyentin rentgen faylı yükləndi.`,
+          "/hekim/pasiyentler",
+        );
+      }
+    }
   } catch {
     /* best-effort */
   }
@@ -178,6 +227,7 @@ export async function completeMultipartUploadAction(input: {
       role: "CENTER",
       fileName: file.fileName,
     });
+    await notifyResultUploaded(req.id);
     revalidatePath("/merkez");
     revalidatePath("/merkez/pasiyentler");
     return { ok: true, fileId: file.id };
@@ -248,6 +298,7 @@ export async function confirmUploadAction(input: {
       role: "CENTER",
       fileName: file.fileName,
     });
+    await notifyResultUploaded(req.id);
     revalidatePath("/merkez");
     revalidatePath("/merkez/pasiyentler");
     return { ok: true, fileId: file.id };

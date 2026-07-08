@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LogoutButton } from "@/components/logout-button";
 import { getCurrentUser } from "@/lib/auth/rbac";
+import { unreadNotificationCount } from "@/lib/notifications";
 import { DashboardNav, type NavItem } from "./nav";
 import { RoleSwitcher } from "./role-switcher";
 
@@ -28,6 +29,13 @@ export async function DashboardShell({
       : me?.role === "DOCTOR"
         ? me.doctorProfile?.photoUrl ?? null
         : null;
+  // Merge the unread-notification count into the nav badges (keyed by href).
+  const unread = me ? await unreadNotificationCount(me.id) : 0;
+  const mergedBadges: Record<string, number> = { ...navBadges };
+  if (unread > 0) {
+    mergedBadges["/merkez/bildirisler"] = unread;
+    mergedBadges["/hekim/bildirisler"] = unread;
+  }
   const availableRoles = (
     [
       me?.patientProfile ? "PATIENT" : null,
@@ -62,7 +70,7 @@ export async function DashboardShell({
             {me && availableRoles.length > 1 && (
               <RoleSwitcher roles={availableRoles} current={me.role} />
             )}
-            <DashboardNav items={nav} badges={navBadges} />
+            <DashboardNav items={nav} badges={mergedBadges} />
             <div className="mt-3 border-t border-slate-100 pt-3">
               <Link
                 href="/"
@@ -83,7 +91,7 @@ export async function DashboardShell({
 
           {/* Mobile nav */}
           <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-            <DashboardNav items={nav} mobile badges={navBadges} />
+            <DashboardNav items={nav} mobile badges={mergedBadges} />
           </div>
 
           {children}

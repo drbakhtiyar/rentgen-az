@@ -18,6 +18,7 @@ import {
   notifyNewReferral,
   smsCenterNewRequest,
 } from "@/lib/notify";
+import { notifyUser } from "@/lib/notifications";
 
 export type FormResult = {
   ok: boolean;
@@ -182,7 +183,7 @@ export async function submitAppointmentAction(input: {
       ? await prisma.centerProfile
           .findUnique({
             where: { id: data.centerId },
-            select: { name: true, slug: true, phone: true },
+            select: { name: true, slug: true, phone: true, userId: true },
           })
           .catch(() => null)
       : null;
@@ -201,6 +202,14 @@ export async function submitAppointmentAction(input: {
         preferredDate,
       }).catch(() => {});
     }
+    // In-app notification for the center.
+    await notifyUser(
+      center?.userId,
+      "NEW_REQUEST",
+      "Yeni pasiyent müraciəti",
+      `${data.name} sizə müraciət etdi.`,
+      "/merkez/pasiyentler",
+    );
 
     return {
       ok: true,

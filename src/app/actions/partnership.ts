@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { smsCenterPartnerRequest } from "@/lib/notify";
+import { notifyUser } from "@/lib/notifications";
+import { doctorName as fmtDoctorName } from "@/lib/utils";
 
 export type PartnershipResult = { ok: boolean; error?: string; message?: string };
 
@@ -23,7 +25,7 @@ export async function requestPartnershipAction(
     }
     const center = await prisma.centerProfile.findFirst({
       where: { id: centerId, status: "APPROVED" },
-      select: { id: true, phone: true },
+      select: { id: true, phone: true, userId: true },
     });
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
@@ -44,11 +46,17 @@ export async function requestPartnershipAction(
       update: { status: "PENDING" },
     });
 
-    const doctorName =
-      [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "Həkim";
+    const doctorName = fmtDoctorName(doctor.firstName, doctor.lastName);
     if (center.phone) {
       await smsCenterPartnerRequest(center.phone, doctorName).catch(() => {});
     }
+    await notifyUser(
+      center.userId,
+      "PARTNER_REQUEST",
+      "Yeni əməkdaşlıq sorğusu",
+      `${doctorName} sizinlə əməkdaşlıq etmək istəyir.`,
+      "/merkez/hekimler",
+    );
 
     revalidatePath("/hekim/merkezler");
     revalidatePath("/merkez/hekimler");
@@ -67,13 +75,13 @@ export async function respondPartnershipAction(
   try {
     const center = await prisma.centerProfile.findUnique({
       where: { userId: user.id },
-      select: { id: true },
+      select: { id: true, name: true },
     });
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
     const partner = await prisma.centerDoctor.findUnique({
       where: { id: partnerId },
-      select: { id: true, centerId: true },
+      select: { id: true, centerId: true, doctor: { select: { userId: true } } },
     });
     if (!partner || partner.centerId !== center.id) {
       return { ok: false, error: "Sorğu tapılmadı." };
@@ -83,6 +91,16 @@ export async function respondPartnershipAction(
       where: { id: partnerId },
       data: { status: accept ? "ACCEPTED" : "REJECTED" },
     });
+
+    await notifyUser(
+      partner.doctor?.userId,
+      accept ? "PARTNER_ACCEPTED" : "PARTNER_REJECTED",
+      accept ? "Əməkdaşlıq qəbul edildi" : "Əməkdaşlıq rədd edildi",
+      accept
+        ? `${center.name} sizinlə əməkdaşlığı qəbul etdi.`
+        : `${center.name} sorğunuzu rədd etdi.`,
+      "/hekim/merkezler",
+    );
 
     revalidatePath("/merkez/hekimler");
     revalidatePath("/hekim/merkezler");

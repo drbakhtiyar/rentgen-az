@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Panel } from "@/components/dashboard/widgets";
 import { CenterProfileForm } from "@/components/forms/center-profile-form";
+import { AdminMessageForm } from "@/components/admin/admin-message-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { adminUpdateCenterAction } from "@/app/admin/actions";
@@ -70,6 +71,12 @@ export default async function AdminEditCenterPage({
           }}
         />
       </Panel>
+
+      <div className="mt-5">
+        <Panel title="Mərkəzə bildiriş göndər">
+          <AdminMessageForm userId={center.userId} />
+        </Panel>
+      </div>
     </AdminShell>
   );
 }

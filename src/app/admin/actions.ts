@@ -14,6 +14,7 @@ import {
 import { withAutoFill } from "@/lib/services";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import { smsPatientStatusChange } from "@/lib/notify";
+import { notifyUser } from "@/lib/notifications";
 import { Prisma } from "@/generated/prisma/client";
 import type {
   CenterStatus,
@@ -37,6 +38,27 @@ async function logAction(
   } catch {
     /* logging is best-effort */
   }
+}
+
+/** Admin sends an in-app message (notification) to a center/doctor user. */
+export async function sendAdminMessageAction(input: {
+  userId: string;
+  title: string;
+  body: string;
+  link?: string;
+}): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  const title = input.title.trim();
+  const body = input.body.trim();
+  if (title.length < 2) return { ok: false, error: "Başlıq yazın." };
+  const target = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { id: true },
+  });
+  if (!target) return { ok: false, error: "İstifadəçi tapılmadı." };
+  await notifyUser(target.id, "ADMIN_MESSAGE", title, body || null, input.link || null);
+  await logAction(admin.id, "notification:send", "User", target.id, { title });
+  return { ok: true, message: "Mesaj göndərildi." };
 }
 
 export async function setCenterStatusAction(

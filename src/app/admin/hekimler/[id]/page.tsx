@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Panel } from "@/components/dashboard/widgets";
 import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
+import { AdminMessageForm } from "@/components/admin/admin-message-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorName } from "@/lib/utils";
@@ -72,6 +73,12 @@ export default async function AdminEditDoctorPage({
           }}
         />
       </Panel>
+
+      <div className="mt-5">
+        <Panel title="Həkimə bildiriş göndər">
+          <AdminMessageForm userId={doctor.userId} />
+        </Panel>
+      </div>
     </AdminShell>
   );
 }

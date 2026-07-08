@@ -8,6 +8,7 @@ import { sendOtpSms } from "@/lib/sms";
 import { normalizePhone } from "@/lib/phone";
 import { requireRole } from "@/lib/auth/rbac";
 import { notifyNewAppointment, smsCenterNewRequest } from "@/lib/notify";
+import { notifyUser } from "@/lib/notifications";
 
 export type ReferralResult = {
   ok: boolean;
@@ -75,7 +76,7 @@ export async function submitDoctorReferralAction(input: {
     }
     const center = await prisma.centerProfile.findUnique({
       where: { id: input.centerId },
-      select: { id: true, name: true, slug: true, phone: true },
+      select: { id: true, name: true, slug: true, phone: true, userId: true },
     });
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
@@ -143,6 +144,14 @@ export async function submitDoctorReferralAction(input: {
         patientName: `${first} ${last}`.trim(),
       }).catch(() => {});
     }
+    // In-app notification for the center.
+    await notifyUser(
+      center.userId,
+      "NEW_REQUEST",
+      "Yeni pasiyent göndərişi",
+      `Həkim ${first} ${last} pasiyentini yönləndirdi.`,
+      "/merkez/pasiyentler",
+    );
 
     revalidatePath("/hekim");
     revalidatePath("/merkez");

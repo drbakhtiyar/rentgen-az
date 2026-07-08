@@ -12,11 +12,13 @@ import {
   History,
   Star,
   MessageSquare,
+  Bell,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
 export const centerNav: NavItem[] = [
   { label: "İcmal", href: "/merkez", icon: <LayoutDashboard /> },
+  { label: "Bildirişlər", href: "/merkez/bildirisler", icon: <Bell /> },
   { label: "Profil", href: "/merkez/profil", icon: <Building2 /> },
   { label: "Pasiyentlər", href: "/merkez/pasiyentler", icon: <Users /> },
   { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks /> },
@@ -26,6 +28,7 @@ export const centerNav: NavItem[] = [
 
 export const doctorNav: NavItem[] = [
   { label: "İcmal", href: "/hekim", icon: <LayoutDashboard /> },
+  { label: "Bildirişlər", href: "/hekim/bildirisler", icon: <Bell /> },
   { label: "Profil", href: "/hekim/profil", icon: <User /> },
   { label: "Pasiyentlər", href: "/hekim/pasiyentler", icon: <Users /> },
   { label: "Partnyor mərkəzlər", href: "/hekim/merkezler", icon: <Building2 /> },
