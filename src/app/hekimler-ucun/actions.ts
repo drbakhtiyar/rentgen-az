@@ -7,8 +7,9 @@ import { createOtp, verifyOtp } from "@/lib/otp";
 import { sendOtpSms } from "@/lib/sms";
 import { normalizePhone } from "@/lib/phone";
 import { requireRole } from "@/lib/auth/rbac";
-import { notifyNewAppointment, smsCenterNewRequest } from "@/lib/notify";
+import { notifyNewAppointment, smsCenterBooking, smsPatientBooking } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
+import { doctorName } from "@/lib/utils";
 
 export type ReferralResult = {
   ok: boolean;
@@ -62,7 +63,7 @@ export async function submitDoctorReferralAction(input: {
   try {
     const doctor = await prisma.doctorProfile.findUnique({
       where: { userId: user.id },
-      select: { id: true, status: true },
+      select: { id: true, status: true, firstName: true, lastName: true },
     });
     if (!doctor) return { ok: false, error: "Həkim profili tapılmadı." };
 
@@ -139,11 +140,29 @@ export async function submitDoctorReferralAction(input: {
       serviceSlug: input.serviceSlug || null,
       note: input.note?.trim() || null,
     }).catch(() => {});
+
+    const patientFullName = `${first} ${last}`.trim();
+    const docName = doctorName(doctor.firstName, doctor.lastName);
+    const svc = input.serviceSlug
+      ? await prisma.service
+          .findUnique({ where: { slug: input.serviceSlug }, select: { name: true } })
+          .catch(() => null)
+      : null;
+    // Booking summary SMS — no date/time in the referral flow.
     if (center.phone) {
-      await smsCenterNewRequest(center.phone, {
-        patientName: `${first} ${last}`.trim(),
+      await smsCenterBooking(center.phone, {
+        patientName: patientFullName,
+        patientPhone: phone,
+        doctorName: docName,
+        serviceName: svc?.name ?? null,
       }).catch(() => {});
     }
+    await smsPatientBooking(phone, {
+      patientName: patientFullName,
+      doctorName: docName,
+      serviceName: svc?.name ?? null,
+      centerPhone: center.phone,
+    }).catch(() => {});
     // In-app notification for the center.
     await notifyUser(
       center.userId,

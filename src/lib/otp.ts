@@ -3,13 +3,13 @@ import { createHash, randomInt } from "node:crypto";
 import { prisma } from "./db";
 import { env } from "./env";
 
-export const OTP_TTL_MINUTES = 5;
+export const OTP_TTL_MINUTES = 2;
 export const OTP_LENGTH = 6;
 export const MAX_VERIFY_ATTEMPTS = 5;
 
 // Rate limits (per phone)
 const MAX_PER_10_MIN = 3;
-const RESEND_COOLDOWN_SECONDS = 60;
+const RESEND_COOLDOWN_SECONDS = 120;
 // Rate limit (per IP)
 const MAX_PER_IP_PER_HOUR = 15;
 

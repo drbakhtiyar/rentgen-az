@@ -12,7 +12,7 @@ export async function smsCenterPartnerRequest(
   doctorName: string,
 ): Promise<void> {
   const name = toGsmAscii(doctorName).slice(0, 40);
-  const msg = `Rentgen.az: ${name} sizinle emekdasliq sorgusu gonderdi. Panel: rentgen.az/merkez/hekimler`;
+  const msg = `${name} sizinle emekdasliq sorgusu gonderdi. Panel: rentgen.az/merkez/hekimler`;
   await sendSms(centerPhone, msg, "other").catch(() => {});
 }
 
@@ -22,7 +22,7 @@ export async function smsPatientResultReady(
   centerName: string,
 ): Promise<void> {
   const name = toGsmAscii(centerName).slice(0, 40);
-  const msg = `Rentgen.az: ${name} merkezinde rentgen neticeniz hazirdir. Kabinet: rentgen.az/kabinet`;
+  const msg = `${name} merkezinde rentgen neticeniz hazirdir. Kabinet: rentgen.az/kabinet`;
   await sendSms(patientPhone, msg, "other").catch(() => {});
 }
 
@@ -32,34 +32,71 @@ export async function smsDoctorResultReady(
   patientName: string,
 ): Promise<void> {
   const name = toGsmAscii(patientName).slice(0, 30);
-  const msg = `Rentgen.az: pasiyentiniz ${name} rentgen cekdirdi, netice hazirdir. Panel: rentgen.az/hekim`;
+  const msg = `pasiyentiniz ${name} rentgen cekdirdi, netice hazirdir. Panel: rentgen.az/hekim`;
   await sendSms(doctorPhone, msg, "other").catch(() => {});
 }
 
-/**
- * SMS the center when a patient books/requests an appointment.
- * Kept lean (1 SMS segment): first name + time only — no surname, no phone,
- * no service. Full details are in the center panel.
- */
-export async function smsCenterNewRequest(
-  centerPhone: string,
-  opts: { patientName: string; preferredDate?: Date | null },
+/** DD.MM.YYYY, HH:MM in Baku time. */
+function fmtBookingDateTime(d: Date): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Baku",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("day")}.${get("month")}.${get("year")}, ${get("hour")}:${get("minute")}`;
+}
+
+function bookingBody(firstLine: string, lines: (string | null | undefined)[]): string {
+  return [firstLine, ...lines]
+    .filter((l): l is string => Boolean(l && String(l).trim()))
+    .map((l) => toGsmAscii(l))
+    .join("\n");
+}
+
+/** SMS the patient after their booking is registered (with the center's phone). */
+export async function smsPatientBooking(
+  patientPhone: string,
+  opts: {
+    patientName: string;
+    doctorName?: string | null;
+    dateTime?: Date | null;
+    serviceName?: string | null;
+    centerPhone?: string | null;
+  },
 ): Promise<void> {
-  const first = (opts.patientName.trim().split(/\s+/)[0] || "Pasiyent").slice(0, 20);
-  let msg: string;
-  if (opts.preferredDate) {
-    const when = new Intl.DateTimeFormat("az", {
-      timeZone: "Asia/Baku",
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(opts.preferredDate);
-    msg = `Rentgen.az: ${first} - ${when} qebula yazildi. Panel: rentgen.az/merkez`;
-  } else {
-    msg = `Rentgen.az: ${first} yeni qebul sorgusu gonderdi. Panel: rentgen.az/merkez`;
-  }
+  const msg = bookingBody("Sizin randevunuz qeyde alindi", [
+    opts.patientName,
+    opts.doctorName,
+    opts.dateTime ? fmtBookingDateTime(opts.dateTime) : null,
+    opts.serviceName,
+    opts.centerPhone ? formatPhoneDisplay(opts.centerPhone) : null,
+  ]);
+  await sendSms(patientPhone, msg, "other").catch(() => {});
+}
+
+/** SMS the center about a new booking (with the patient's phone). */
+export async function smsCenterBooking(
+  centerPhone: string,
+  opts: {
+    patientName: string;
+    patientPhone: string;
+    doctorName?: string | null;
+    dateTime?: Date | null;
+    serviceName?: string | null;
+  },
+): Promise<void> {
+  const msg = bookingBody("Yeni qeyd var", [
+    opts.patientName,
+    formatPhoneDisplay(opts.patientPhone),
+    opts.doctorName,
+    opts.dateTime ? fmtBookingDateTime(opts.dateTime) : null,
+    opts.serviceName,
+  ]);
   await sendSms(centerPhone, msg, "center_request").catch(() => {});
 }
 
@@ -76,7 +113,7 @@ export async function smsPatientStatusChange(
   opts: { status: RequestStatus; centerName?: string | null },
 ): Promise<void> {
   const where = opts.centerName ? ` — ${opts.centerName}` : "";
-  const msg = `Rentgen.az: müraciətinizin statusu yeniləndi: «${STATUS_LABEL_AZ[opts.status]}»${where}.`;
+  const msg = `müraciətinizin statusu yeniləndi: «${STATUS_LABEL_AZ[opts.status]}»${where}.`;
   await sendSms(patientPhone, msg, "patient_status").catch(() => {});
 }
 

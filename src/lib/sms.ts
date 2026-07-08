@@ -176,7 +176,7 @@ async function sendViaLsim(to: string, message: string): Promise<SendSmsResult> 
 }
 
 export async function sendOtpSms(to: string, code: string): Promise<SendSmsResult> {
-  const message = `Rentgen.az təsdiq kodunuz: ${code}. Kod 5 dəqiqə etibarlıdır. Kodu heç kimlə paylaşmayın.`;
+  const message = `Təsdiq kodunuz: ${code}. Kod 2 dəqiqə etibarlıdır. Kodu heç kimlə paylaşmayın.`;
   return sendSms(to, message, "otp");
 }
 

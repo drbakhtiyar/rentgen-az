@@ -16,9 +16,11 @@ import {
 import {
   notifyNewAppointment,
   notifyNewReferral,
-  smsCenterNewRequest,
+  smsCenterBooking,
+  smsPatientBooking,
 } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
+import { doctorName } from "@/lib/utils";
 
 export type FormResult = {
   ok: boolean;
@@ -195,13 +197,41 @@ export async function submitAppointmentAction(input: {
       serviceSlug: data.serviceSlug || null,
       note: data.note || null,
     }).catch(() => {});
-    // Direct SMS to the center's own phone (lean: first name + time).
+
+    // Resolve doctor + service names for the booking summary SMS.
+    const [refDoctor, svc] = await Promise.all([
+      data.doctorId
+        ? prisma.doctorProfile
+            .findUnique({ where: { id: data.doctorId }, select: { firstName: true, lastName: true } })
+            .catch(() => null)
+        : Promise.resolve(null),
+      data.serviceSlug
+        ? prisma.service
+            .findUnique({ where: { slug: data.serviceSlug }, select: { name: true } })
+            .catch(() => null)
+        : Promise.resolve(null),
+    ]);
+    const docName = refDoctor ? doctorName(refDoctor.firstName, refDoctor.lastName) : null;
+    const serviceName = svc?.name ?? null;
+
+    // Booking summary SMS to the center (with the patient's phone).
     if (center?.phone) {
-      await smsCenterNewRequest(center.phone, {
+      await smsCenterBooking(center.phone, {
         patientName: data.name,
-        preferredDate,
+        patientPhone: phone,
+        doctorName: docName,
+        dateTime: preferredDate,
+        serviceName,
       }).catch(() => {});
     }
+    // Booking summary SMS to the patient (with the center's phone).
+    await smsPatientBooking(phone, {
+      patientName: data.name,
+      doctorName: docName,
+      dateTime: preferredDate,
+      serviceName,
+      centerPhone: center?.phone,
+    }).catch(() => {});
     // In-app notification for the center.
     await notifyUser(
       center?.userId,

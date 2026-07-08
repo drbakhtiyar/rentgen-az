@@ -43,7 +43,7 @@ export function LoginForm({
       }
       setDevCode(res.devCode ?? null);
       setStep("code");
-      setCooldown(60);
+      setCooldown(120);
     });
   }
 
@@ -72,7 +72,7 @@ export function LoginForm({
         return;
       }
       setDevCode(res.devCode ?? null);
-      setCooldown(60);
+      setCooldown(120);
     });
   }
 
