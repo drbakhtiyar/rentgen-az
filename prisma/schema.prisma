@@ -54,8 +54,34 @@ model User {
   doctorProfile  DoctorProfile?
   adminLogs      AdminActionLog[] @relation("AdminUser")
   notifications  Notification[]
+  adminThread    AdminThread?
 
   @@index([role])
+}
+
+// Admin ↔ istifadəçi (həkim/mərkəz) söhbəti. Hər userin bir admin-söhbəti olur.
+model AdminThread {
+  id            String         @id @default(cuid())
+  userId        String         @unique
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime       @default(now())
+  userReadAt    DateTime? // user bu ana qədər oxuyub
+  adminReadAt   DateTime? // admin bu ana qədər oxuyub
+  createdAt     DateTime       @default(now())
+  messages      AdminMessage[]
+
+  @@index([lastMessageAt])
+}
+
+model AdminMessage {
+  id        String      @id @default(cuid())
+  threadId  String
+  thread    AdminThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  fromAdmin Boolean // true = admin göndərib, false = user göndərib
+  content   String
+  createdAt DateTime    @default(now())
+
+  @@index([threadId, createdAt])
 }
 
 // Daxili bildirişlər (mərkəz/həkim/pasiyent). type: NEW_REQUEST | RESULT_READY

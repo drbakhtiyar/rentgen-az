@@ -4,6 +4,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { unreadNotificationCount } from "@/lib/notifications";
 import { unreadMessageCount } from "@/lib/chat";
+import { getUserAdminContact } from "@/lib/admin-chat";
 import { DashboardNav, type NavItem } from "./nav";
 import { RoleSwitcher } from "./role-switcher";
 
@@ -43,6 +44,10 @@ export async function DashboardShell({
     unreadChat = await unreadMessageCount(me.id, "CENTER", me.centerProfile.id);
   } else if (me?.role === "DOCTOR" && me.doctorProfile) {
     unreadChat = await unreadMessageCount(me.id, "DOCTOR", me.doctorProfile.id);
+  }
+  // Include unread messages from admin (pinned support conversation).
+  if (me && (me.role === "CENTER" || me.role === "DOCTOR")) {
+    unreadChat += (await getUserAdminContact(me.id)).unread;
   }
   if (unreadChat > 0) {
     mergedBadges["/merkez/chat"] = unreadChat;

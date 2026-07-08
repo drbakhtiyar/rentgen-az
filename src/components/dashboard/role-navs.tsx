@@ -44,6 +44,7 @@ export const patientNav: NavItem[] = [
 
 export const adminNav: NavItem[] = [
   { label: "İcmal", href: "/admin", icon: <LayoutDashboard /> },
+  { label: "Söhbətlər", href: "/admin/sohbetler", icon: <MessageSquare /> },
   { label: "Mərkəzlər", href: "/admin/merkezler", icon: <Building2 /> },
   { label: "Pasiyentlər", href: "/admin/pasiyentler", icon: <Users /> },
   { label: "Həkimlər", href: "/admin/hekimler", icon: <Stethoscope /> },

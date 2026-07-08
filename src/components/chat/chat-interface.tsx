@@ -2,13 +2,17 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search } from "lucide-react";
+import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search, Pin, LifeBuoy } from "lucide-react";
 import {
   openConversationAction,
   sendMessageAction,
   fetchMessagesAction,
   type ChatMessage,
 } from "@/app/actions/chat";
+import {
+  sendToAdminAction,
+  fetchAdminThreadMessagesAction,
+} from "@/app/actions/admin-chat";
 import type { ChatContact } from "@/lib/chat";
 
 const POLL_MS = 4000;
@@ -74,15 +78,23 @@ export function ChatInterface({
     const res = await fetchMessagesAction(id);
     if (res.ok) setMessages(res.messages);
   }, []);
+  const loadAdmin = React.useCallback(async () => {
+    const res = await fetchAdminThreadMessagesAction();
+    if (res.ok) setMessages(res.messages);
+  }, []);
 
-  // Poll the active conversation.
+  // Poll the active conversation (partner) or the admin thread.
   React.useEffect(() => {
-    if (!convId) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load(convId);
-    const t = setInterval(() => load(convId), POLL_MS);
+    if (!active) return;
+    const isAdmin = active.kind === "admin";
+    if (!isAdmin && !convId) return;
+    const run = () => {
+      void (isAdmin ? loadAdmin() : load(convId as string));
+    };
+    run();
+    const t = setInterval(run, POLL_MS);
     return () => clearInterval(t);
-  }, [convId, load]);
+  }, [active, convId, load, loadAdmin]);
 
   // Auto-scroll to the newest message.
   React.useEffect(() => {
@@ -93,6 +105,11 @@ export function ChatInterface({
     setError(null);
     setActive(c);
     setMessages([]);
+    setConvId(null);
+    if (c.kind === "admin") {
+      // Admin thread operates on the current user's single thread — no convId.
+      return;
+    }
     if (c.conversationId) {
       setConvId(c.conversationId);
       return;
@@ -119,7 +136,9 @@ export function ChatInterface({
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
-    if (!text || !convId) return;
+    if (!text || !active) return;
+    const isAdmin = active.kind === "admin";
+    if (!isAdmin && !convId) return;
     setInput("");
     setSending(true);
     // Optimistic
@@ -135,13 +154,16 @@ export function ChatInterface({
         mine: true,
       },
     ]);
-    const res = await sendMessageAction(convId, text);
+    const res = isAdmin
+      ? await sendToAdminAction(text)
+      : await sendMessageAction(convId as string, text);
     setSending(false);
     if (!res.ok) {
       setError(res.error);
       return;
     }
-    load(convId);
+    if (isAdmin) loadAdmin();
+    else load(convId as string);
   }
 
   return (
@@ -184,10 +206,13 @@ export function ChatInterface({
                     (active?.profileId === c.profileId ? "bg-brand-50" : "")
                   }
                 >
-                  <ChatAvatar url={c.avatarUrl} name={c.name} size={36} Icon={OtherIcon} />
+                  <ChatAvatar url={c.avatarUrl} name={c.name} size={36} Icon={c.kind === "admin" ? LifeBuoy : OtherIcon} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
-                      <span className="truncate font-semibold text-ink-900">{c.name}</span>
+                      <span className="flex items-center gap-1 truncate font-semibold text-ink-900">
+                        {c.kind === "admin" && <Pin className="h-3 w-3 shrink-0 text-brand-500" />}
+                        {c.name}
+                      </span>
                       {c.unread > 0 && (
                         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-bold text-white">
                           {c.unread}
@@ -227,7 +252,7 @@ export function ChatInterface({
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <ChatAvatar url={active.avatarUrl} name={active.name} size={32} Icon={OtherIcon} />
+              <ChatAvatar url={active.avatarUrl} name={active.name} size={32} Icon={active.kind === "admin" ? LifeBuoy : OtherIcon} />
               <div className="min-w-0">
                 <p className="truncate font-semibold text-ink-900">{active.name}</p>
                 {active.sub && <p className="truncate text-xs text-slate-400">{active.sub}</p>}
@@ -286,7 +311,7 @@ export function ChatInterface({
               />
               <button
                 type="submit"
-                disabled={sending || !input.trim() || !convId}
+                disabled={sending || !input.trim() || (active?.kind === "partner" && !convId)}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./db";
 import { doctorName } from "./utils";
+import { getUserAdminContact } from "./admin-chat";
 
 export type ChatContact = {
   profileId: string; // the OTHER party's profile id (doctorId for center, centerId for doctor)
@@ -11,6 +12,7 @@ export type ChatContact = {
   lastMessageAt: string | null;
   preview: string | null;
   unread: number;
+  kind: "partner" | "admin"; // "admin" = pinned support conversation
 };
 
 /**
@@ -54,9 +56,10 @@ export async function getChatContacts(
         lastMessageAt: c?.lastMessageAt ? c.lastMessageAt.toISOString() : null,
         preview: c?.messages[0]?.content ?? null,
         unread: c ? unread[c.id] ?? 0 : 0,
+        kind: "partner" as const,
       };
     });
-    return sortContacts(list);
+    return withAdminContact(userId, sortContacts(list));
   }
 
   const [partners, convs] = await Promise.all([
@@ -87,9 +90,10 @@ export async function getChatContacts(
       lastMessageAt: c?.lastMessageAt ? c.lastMessageAt.toISOString() : null,
       preview: c?.messages[0]?.content ?? null,
       unread: c ? unread[c.id] ?? 0 : 0,
+      kind: "partner" as const,
     };
   });
-  return sortContacts(list);
+  return withAdminContact(userId, sortContacts(list));
 }
 
 async function unreadByConversation(
@@ -105,6 +109,23 @@ async function unreadByConversation(
   const out: Record<string, number> = {};
   for (const g of groups) out[g.conversationId] = g._count._all;
   return out;
+}
+
+/** Prepend the pinned "Admin" support contact to a user's chat list. */
+async function withAdminContact(userId: string, list: ChatContact[]): Promise<ChatContact[]> {
+  const a = await getUserAdminContact(userId);
+  const admin: ChatContact = {
+    profileId: "admin",
+    name: "Rentgen.az — Dəstək",
+    sub: "Admin",
+    avatarUrl: null,
+    conversationId: a.threadId,
+    lastMessageAt: null,
+    preview: a.preview,
+    unread: a.unread,
+    kind: "admin",
+  };
+  return [admin, ...list];
 }
 
 function sortContacts(list: ChatContact[]): ChatContact[] {
