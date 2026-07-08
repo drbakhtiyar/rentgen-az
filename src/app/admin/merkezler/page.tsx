@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2, Download, Pencil } from "lucide-react";
+import { Building2, Download } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
-import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
-import { CenterStatusControls, BlockToggle } from "@/components/admin/controls";
+import { EmptyState, Panel } from "@/components/dashboard/widgets";
+import { AdminCenterCard } from "@/components/admin/admin-center-card";
 import { Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz, cn } from "@/lib/utils";
+import { getRatingsForCenters } from "@/lib/queries";
+import { cn } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import type { CenterStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
@@ -67,6 +68,7 @@ export default async function AdminCentersPage({
     : undefined;
 
   const centers = await getCenters(activeStatus, q);
+  const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
   return (
     <AdminShell title="Mərkəzlər" userName={admin.phone}>
@@ -123,74 +125,9 @@ export default async function AdminCentersPage({
         }
       >
         {centers.length > 0 ? (
-          <div className="space-y-3">
+          <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
             {centers.map((c) => (
-              <div
-                key={c.id}
-                className="rounded-xl border border-slate-100 p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {c.status === "APPROVED" ? (
-                        <Link
-                          href={`/rentgen-merkezleri/${c.slug}`}
-                          className="font-semibold text-ink-900 hover:text-brand-600"
-                        >
-                          {c.name}
-                        </Link>
-                      ) : (
-                        <span className="font-semibold text-ink-900">{c.name}</span>
-                      )}
-                      <StatusBadge status={c.status} />
-                    </div>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {[c.city, c.phone].filter(Boolean).join(" · ")} ·{" "}
-                      {formatDateAz(c.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/admin/merkezler/${c.id}`}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200"
-                    >
-                      <Pencil className="h-3.5 w-3.5" /> Redaktə
-                    </Link>
-                    <CenterStatusControls centerId={c.id} status={c.status} />
-                    <BlockToggle userId={c.user.id} blocked={c.user.isBlocked} />
-                  </div>
-                </div>
-
-                {/* Submitted details for review */}
-                <dl className="mt-3 grid gap-x-6 gap-y-1.5 border-t border-slate-100 pt-3 text-sm sm:grid-cols-2">
-                  {c.responsiblePerson && (
-                    <Detail label="Məsul şəxs" value={c.responsiblePerson} />
-                  )}
-                  {c.whatsapp && <Detail label="WhatsApp" value={c.whatsapp} />}
-                  {c.address && <Detail label="Ünvan" value={c.address} />}
-                  {c.workingHours && (
-                    <Detail label="İş saatları" value={c.workingHours} />
-                  )}
-                  {c.equipment && <Detail label="Avadanlıq" value={c.equipment} />}
-                  {c.mapsUrl && <Detail label="Xəritə" value={c.mapsUrl} />}
-                </dl>
-                {c.description && (
-                  <p className="mt-2 text-sm text-slate-600">{c.description}</p>
-                )}
-                {c.services.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {c.services.map((cs) => (
-                      <span
-                        key={cs.id}
-                        className="inline-flex items-center rounded-full bg-cyan-50 px-2.5 py-0.5 text-xs font-medium text-cyan-700 ring-1 ring-inset ring-cyan-100"
-                      >
-                        {cs.service.shortName ?? cs.service.name}
-                        {cs.price != null ? ` · ${cs.price}₼` : ""}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <AdminCenterCard key={c.id} center={c} rating={ratings[c.id]} />
             ))}
           </div>
         ) : (
@@ -202,14 +139,5 @@ export default async function AdminCentersPage({
         )}
       </Panel>
     </AdminShell>
-  );
-}
-
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex gap-2">
-      <dt className="shrink-0 text-slate-400">{label}:</dt>
-      <dd className="min-w-0 break-words font-medium text-ink-800">{value}</dd>
-    </div>
   );
 }
