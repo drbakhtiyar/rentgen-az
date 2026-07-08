@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Stethoscope, MapPin, BadgeCheck, AtSign, Globe, ArrowRight } from "lucide-react";
+import { Stethoscope, MapPin, BadgeCheck, AtSign, Globe, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
+import { prisma } from "@/lib/db";
 import { getApprovedDoctorById } from "@/lib/queries";
 import { DocumentGallery } from "@/components/documents/document-gallery";
 import { doctorName } from "@/lib/utils";
@@ -46,6 +48,15 @@ export default async function DoctorProfilePage({
 
   const name = doctorName(doctor.firstName, doctor.lastName);
   const verified = Boolean(doctor.diplomaUrl || doctor.certificateUrl);
+  // If the doctor's clinic is a registered (approved) center, link to it.
+  const clinicCenter = doctor.clinic
+    ? await prisma.centerProfile
+        .findFirst({
+          where: { name: { equals: doctor.clinic.trim(), mode: "insensitive" }, status: "APPROVED" },
+          select: { slug: true },
+        })
+        .catch(() => null)
+    : null;
   const instagramUrl = doctor.instagram
     ? doctor.instagram.startsWith("http")
       ? doctor.instagram
@@ -113,9 +124,18 @@ export default async function DoctorProfilePage({
                   </span>
                   <div>
                     <h1 className="font-display text-2xl font-bold text-ink-900">{name}</h1>
-                    {doctor.clinic && (
-                      <p className="mt-1 text-slate-600">{doctor.clinic}</p>
-                    )}
+                    {doctor.clinic &&
+                      (clinicCenter ? (
+                        <Link
+                          href={`/rentgen-merkezleri/${clinicCenter.slug}`}
+                          className="mt-1 inline-flex items-center gap-1 font-medium text-brand-600 hover:text-brand-700"
+                        >
+                          {doctor.clinic}
+                          <ArrowUpRight className="h-4 w-4" />
+                        </Link>
+                      ) : (
+                        <p className="mt-1 text-slate-600">{doctor.clinic}</p>
+                      ))}
                   </div>
                 </div>
 
