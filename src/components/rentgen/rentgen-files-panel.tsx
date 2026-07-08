@@ -18,6 +18,7 @@ export type RentgenFileItem = {
   fileName: string;
   size: number;
   createdAt?: string | Date;
+  downloadNote?: string; // e.g. "Həkim endirib" (center-facing receipt)
 };
 
 // Must match the server (src/lib/b2.ts).
@@ -267,7 +268,14 @@ export function RentgenFilesPanel({
           {files.map((f) => (
             <li key={f.id} className="flex items-center gap-2 px-3 py-2 text-sm">
               <FileIcon className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className="min-w-0 flex-1 truncate text-ink-800">{f.fileName}</span>
+              <span className="min-w-0 flex-1 truncate text-ink-800">
+                {f.fileName}
+                {f.downloadNote && (
+                  <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 align-middle">
+                    <FileDown className="h-3 w-3" /> {f.downloadNote}
+                  </span>
+                )}
+              </span>
               <span className="hidden shrink-0 text-xs text-slate-400 sm:inline">
                 {formatDate(f.createdAt)}
               </span>

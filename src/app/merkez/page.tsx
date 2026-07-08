@@ -10,6 +10,7 @@ import {
   AlertCircle,
   ArrowRight,
   Users,
+  Stethoscope,
 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
@@ -18,6 +19,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getCenterEventStats } from "@/lib/queries";
+import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "./request-status-control";
@@ -44,12 +46,16 @@ export default async function CenterDashboardPage() {
     orderBy: { createdAt: "desc" },
     take: 10,
     include: {
+      doctor: { select: { firstName: true, lastName: true } },
       files: {
         select: { id: true, fileName: true, size: true, createdAt: true },
         orderBy: { createdAt: "asc" },
       },
     },
   });
+  const downloadLabels = await getFileDownloadLabels(
+    requests.flatMap((r) => r.files.map((f) => f.id)),
+  );
   const newCount = await prisma.appointmentRequest.count({
     where: { centerId: center.id, status: "NEW" },
   });
@@ -179,6 +185,14 @@ export default async function CenterDashboardPage() {
                             <Clock className="h-3 w-3" /> {formatDateTimeAz(r.preferredDate)}
                           </p>
                         )}
+                        {r.doctor && (
+                          <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                            <Stethoscope className="h-3.5 w-3.5 text-slate-400" /> Göndərən həkim:{" "}
+                            <span className="font-medium text-ink-700">
+                              {doctorName(r.doctor.firstName, r.doctor.lastName)}
+                            </span>
+                          </p>
+                        )}
                         {r.note && <p className="mt-1 text-sm text-slate-600">{r.note}</p>}
                         <p className="mt-1 text-xs text-slate-400">{formatDateAz(r.createdAt)}</p>
                       </div>
@@ -190,7 +204,10 @@ export default async function CenterDashboardPage() {
                         defaultUrl={r.resultUrl}
                         doctorId={r.doctorId}
                         doctors={doctorOptions}
-                        files={r.files}
+                        files={r.files.map((f) => ({
+                          ...f,
+                          downloadNote: downloadLabels[f.id],
+                        }))}
                       />
                     )}
                   </div>

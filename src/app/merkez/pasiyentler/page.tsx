@@ -13,6 +13,7 @@ import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "../request-status-control";
 import { RequestResultForm } from "../request-result-form";
+import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import type { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,9 @@ export default async function CenterPatientsPage({
       },
     },
   });
+  const downloadLabels = await getFileDownloadLabels(
+    requests.flatMap((r) => r.files.map((f) => f.id)),
+  );
 
   // Approved doctors for manual referring-doctor assignment.
   const doctorOptions = (
@@ -150,7 +154,10 @@ export default async function CenterPatientsPage({
                             defaultUrl={r.resultUrl}
                             doctorId={r.doctorId}
                             doctors={doctorOptions}
-                            files={r.files}
+                            files={r.files.map((f) => ({
+                              ...f,
+                              downloadNote: downloadLabels[f.id],
+                            }))}
                           />
                         )}
                       </div>
