@@ -100,38 +100,45 @@ export default async function AdminReviewsPage() {
             {reviews.map((r) => (
               <div
                 key={r.id}
-                className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-100 p-4"
+                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
               >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Stars value={r.rating} size="sm" />
-                    {r.center && (
-                      <Link
-                        href={`/rentgen-merkezleri/${r.center.slug}`}
-                        className="font-semibold text-ink-900 hover:text-brand-600"
-                      >
-                        {r.center.name}
-                      </Link>
-                    )}
-                    <span className="text-sm text-slate-500">{nameOf(r.patient)}</span>
-                    {r.verified && <Badge tone="green">Təsdiqlənmiş</Badge>}
-                    {r.source === "qr" && <Badge tone="cyan">QR</Badge>}
-                    {r.hidden && <Badge tone="slate">Gizli</Badge>}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {r.center && (
+                        <Link
+                          href={`/rentgen-merkezleri/${r.center.slug}`}
+                          className="font-semibold text-ink-900 hover:text-brand-600"
+                        >
+                          {r.center.name}
+                        </Link>
+                      )}
+                      {r.verified && <Badge tone="green">Təsdiqlənmiş</Badge>}
+                      {r.source === "qr" && <Badge tone="cyan">QR</Badge>}
+                      {r.hidden && <Badge tone="slate">Gizli</Badge>}
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <Stars value={r.rating} size="sm" />
+                      <span className="text-sm text-slate-500">{nameOf(r.patient)}</span>
+                    </div>
                   </div>
-                  <ScoreBreakdown review={r} />
-                  {r.comment && (
-                    <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">
-                      {r.comment}
-                    </p>
-                  )}
-                  {referrer(r) && (
-                    <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
-                      <Stethoscope className="h-3.5 w-3.5" /> Göndərən: {referrer(r)}
-                    </p>
-                  )}
-                  <p className="mt-2 text-xs text-slate-400">{formatDateAz(r.createdAt)}</p>
+                  <ReviewHideToggle reviewId={r.id} hidden={r.hidden} />
                 </div>
-                <ReviewHideToggle reviewId={r.id} hidden={r.hidden} />
+
+                <ScoreBreakdown review={r} />
+                {r.comment && (
+                  <p className="mt-2 whitespace-pre-line rounded-lg bg-slate-50 px-3 py-2 text-sm leading-relaxed text-slate-700">
+                    {r.comment}
+                  </p>
+                )}
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+                  {referrer(r) && (
+                    <span className="flex items-center gap-1">
+                      <Stethoscope className="h-3.5 w-3.5" /> Göndərən: {referrer(r)}
+                    </span>
+                  )}
+                  <span>{formatDateAz(r.createdAt)}</span>
+                </div>
               </div>
             ))}
           </div>

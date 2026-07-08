@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inbox, User, Building2, Stethoscope, ScanLine } from "lucide-react";
+import { Inbox, User, Building2, Stethoscope, ScanLine, Clock } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, StatusBadge, Panel } from "@/components/dashboard/widgets";
 import { Badge } from "@/components/ui/badge";
-import { RequestStatusSelectAdmin } from "@/components/admin/controls";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { formatDateAz, doctorName } from "@/lib/utils";
+import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay, phoneToInternational } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 
@@ -65,35 +64,34 @@ export default async function AdminRequestsPage() {
               return (
                 <div
                   key={r.id}
-                  className="rounded-xl border border-slate-100 p-4"
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <Badge tone="brand">Müayinə müraciəti</Badge>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                        <User className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-ink-900">{r.name}</p>
+                        <a
+                          href={`tel:+${phoneToInternational(r.phone)}`}
+                          className="text-sm text-slate-500 hover:text-brand-600"
+                        >
+                          {formatPhoneDisplay(r.phone)}
+                        </a>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {r.patientId ? (
+                        <Badge tone="green">Qeydiyyatlı</Badge>
+                      ) : (
+                        <Badge tone="slate">Qonaq</Badge>
+                      )}
                       <StatusBadge status={r.status} />
                     </div>
-                    <RequestStatusSelectAdmin id={r.id} status={r.status} />
                   </div>
 
-                  <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-                    <Row icon={<User />} label="Pasiyent">
-                      <span className="font-medium text-ink-900">{r.name}</span>{" "}
-                      <a
-                        href={`tel:+${phoneToInternational(r.phone)}`}
-                        className="text-slate-500 hover:text-brand-600"
-                      >
-                        {formatPhoneDisplay(r.phone)}
-                      </a>
-                      {r.patientId ? (
-                        <Badge tone="green" className="ml-2">
-                          Qeydiyyatlı
-                        </Badge>
-                      ) : (
-                        <Badge tone="slate" className="ml-2">
-                          Qonaq
-                        </Badge>
-                      )}
-                    </Row>
+                  <dl className="mt-3 grid gap-x-6 gap-y-2 border-t border-slate-100 pt-3 text-sm sm:grid-cols-2">
                     <Row icon={<Building2 />} label="Mərkəz">
                       {r.center?.slug ? (
                         <Link
@@ -103,17 +101,20 @@ export default async function AdminRequestsPage() {
                           {r.center.name}
                         </Link>
                       ) : (
-                        <span className="text-slate-400">
-                          Seçilməyib (ümumi müraciət)
-                        </span>
+                        <span className="text-slate-400">Seçilməyib</span>
                       )}
                     </Row>
                     <Row icon={<ScanLine />} label="Xidmət">
                       {serviceName ?? r.serviceSlug ?? <span className="text-slate-400">—</span>}
                     </Row>
-                    <Row icon={<Stethoscope />} label="Yönləndirən həkim">
+                    <Row icon={<Stethoscope />} label="Göndərən həkim">
                       {refDoctor || <span className="text-slate-400">—</span>}
                     </Row>
+                    {r.preferredDate && (
+                      <Row icon={<Clock />} label="Seçilmiş vaxt">
+                        {formatDateTimeAz(r.preferredDate)}
+                      </Row>
+                    )}
                   </dl>
 
                   {r.note && (
