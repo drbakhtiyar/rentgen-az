@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getApprovedDoctorById } from "@/lib/queries";
-import { DoctorDocuments } from "@/components/doctors/doctor-documents";
+import { DocumentGallery } from "@/components/documents/document-gallery";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -132,7 +132,7 @@ export default async function DoctorProfilePage({
                   </div>
                 )}
 
-                <DoctorDocuments
+                <DocumentGallery
                   docs={[
                     { label: "Diplom", url: doctor.diplomaUrl },
                     { label: "Sertifikat", url: doctor.certificateUrl },

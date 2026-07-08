@@ -7,15 +7,22 @@ type Doc = { label: string; url: string };
 
 const isPdf = (url: string) => /\.pdf($|\?)/i.test(url);
 
-/** Doctor's credential documents as thumbnails; click to enlarge (images) or open (PDF). */
-export function DoctorDocuments({ docs }: { docs: Doc[] }) {
+/** Credential/official documents as thumbnails; click to enlarge (images) or
+ *  open (PDF). Used on doctor and center public profiles. */
+export function DocumentGallery({
+  docs,
+  title = "Sənədlər",
+}: {
+  docs: Doc[];
+  title?: string;
+}) {
   const [active, setActive] = React.useState<Doc | null>(null);
 
   if (docs.length === 0) return null;
 
   return (
     <div className="mt-5">
-      <h2 className="text-sm font-semibold text-ink-800">Sənədlər</h2>
+      <h2 className="text-sm font-semibold text-ink-800">{title}</h2>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {docs.map((d) => (
           <div key={d.url} className="group">
@@ -36,12 +43,7 @@ export function DoctorDocuments({ docs }: { docs: Doc[] }) {
                 className="relative block aspect-[4/3] w-full overflow-hidden rounded-xl border border-slate-200 ring-brand-300 hover:ring-2"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={d.url}
-                  alt={d.label}
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
+                <img src={d.url} alt={d.label} loading="lazy" className="h-full w-full object-cover" />
                 <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition-all group-hover:bg-black/30 group-hover:opacity-100">
                   <ZoomIn className="h-6 w-6" />
                 </span>

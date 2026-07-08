@@ -26,6 +26,7 @@ import {
   getRatingsForCenters,
 } from "@/lib/queries";
 import { CenterMiniMap } from "@/components/map/center-mini-map";
+import { DocumentGallery } from "@/components/documents/document-gallery";
 import { OpenStatus } from "@/components/centers/open-status";
 import { TrackView } from "@/components/centers/track-view";
 import { parseHours, hoursRows, nowInBaku } from "@/lib/hours";
@@ -313,6 +314,12 @@ export default async function CenterDetailPage({
                     />
                   </div>
                 )}
+                <DocumentGallery
+                  title="Lisenziya və sənədlər"
+                  docs={[{ label: "Rentgenologiya lisenziyası", url: center.licenseUrl }].filter(
+                    (d): d is { label: string; url: string } => !!d.url,
+                  )}
+                />
               </Card>
 
               {/* Working hours */}
