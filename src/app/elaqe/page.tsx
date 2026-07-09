@@ -14,6 +14,7 @@ import { AppointmentForm } from "@/components/forms/appointment-form";
 import { getApprovedDoctors, getActiveServices } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -25,31 +26,6 @@ export const metadata = buildMetadata({
   keywords: ["Rentgen.az əlaqə", "dental rentgen əlaqə", "WhatsApp", "Bakı"],
 });
 
-const contactItems = [
-  {
-    icon: Phone,
-    title: "Telefon",
-    value: "+994 50 000 00 00",
-    href: "tel:+994500000000",
-  },
-  {
-    icon: Mail,
-    title: "E-poçt",
-    value: "info@rentgen.az",
-    href: "mailto:info@rentgen.az",
-  },
-  {
-    icon: MapPin,
-    title: "Ünvan",
-    value: "Bakı, Azərbaycan",
-  },
-  {
-    icon: Clock,
-    title: "İş saatları",
-    value: "Hər gün 09:00 – 19:00",
-  },
-];
-
 export default async function ContactPage() {
   const doctors = await getApprovedDoctors();
   const serviceOptions = (await getActiveServices()).map((s) => ({
@@ -57,6 +33,13 @@ export default async function ContactPage() {
     label: s.name,
   }));
   const locale = await getLocale();
+  const c = getDict(locale).contact;
+  const contactItems = [
+    { icon: Phone, title: c.phone, value: "+994 50 000 00 00", href: "tel:+994500000000" },
+    { icon: Mail, title: c.email, value: "info@rentgen.az", href: "mailto:info@rentgen.az" },
+    { icon: MapPin, title: c.address, value: c.addressValue },
+    { icon: Clock, title: c.hours, value: c.hoursValue },
+  ];
   const me = await getCurrentUser();
   const patientInfo =
     me?.role === "PATIENT" && me.patientProfile
@@ -76,12 +59,12 @@ export default async function ContactPage() {
         ])}
       />
       <PageHeader
-        eyebrow="Bizimlə əlaqə"
-        title="Əlaqə"
-        description="Suallarınız var? Bizimlə əlaqə saxlayın və ya aşağıdakı formanı doldurun — komandamız sizə kömək edəcək."
+        eyebrow={c.eyebrow}
+        title={c.title}
+        description={c.description}
         breadcrumbs={[
           { name: "Ana səhifə", href: "/" },
-          { name: "Əlaqə" },
+          { name: c.title },
         ]}
       />
       <Section>
@@ -89,7 +72,7 @@ export default async function ContactPage() {
           <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
             <div className="space-y-4">
               <h2 className="font-display text-xl font-bold text-ink-900">
-                Əlaqə məlumatları
+                {c.infoTitle}
               </h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {contactItems.map((item) => {
@@ -132,14 +115,14 @@ export default async function ContactPage() {
                       WhatsApp
                     </div>
                     <div className="mb-3 font-medium text-ink-900">
-                      Mesaj yazaraq sürətli cavab alın
+                      {c.whatsappDesc}
                     </div>
                     <ButtonLink
                       href="https://wa.me/994500000000"
                       variant="whatsapp"
                       size="sm"
                     >
-                      WhatsApp-da yazın
+                      {c.whatsappCta}
                     </ButtonLink>
                   </div>
                 </div>
@@ -148,11 +131,10 @@ export default async function ContactPage() {
 
             <Card className="p-6 sm:p-8">
               <h2 className="font-display text-xl font-bold text-ink-900">
-                Bizə yazın
+                {c.writeTitle}
               </h2>
               <p className="mt-2 mb-6 text-sm leading-relaxed text-slate-600">
-                Aşağıdakı formanı doldurun — sorğunuzu qəbul edib sizinlə əlaqə
-                saxlayacağıq.
+                {c.writeDesc}
               </p>
               <AppointmentForm
                 locale={locale}

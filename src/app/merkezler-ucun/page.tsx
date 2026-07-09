@@ -13,6 +13,8 @@ import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
@@ -23,23 +25,15 @@ export const metadata: Metadata = buildMetadata({
   keywords: ["rentgen mərkəzi qeydiyyat", "dental rentgen mərkəzi", "Bakı rentgen"],
 });
 
-const steps = [
-  { icon: <Phone />, t: "Qeydiyyatdan keçin", d: "Telefon nömrəniz və OTP kod ilə parolsuz hesab yaradın." },
-  { icon: <ClipboardList />, t: "Profili doldurun", d: "Mərkəz məlumatları, xidmətlər, qiymətlər və şəkilləri əlavə edin." },
-  { icon: <BadgeCheck />, t: "Təsdiqlənin", d: "Admin profilinizi yoxlayır və təsdiqləyir." },
-  { icon: <TrendingUp />, t: "Pasiyentlərə görünün", d: "Mərkəziniz axtarış nəticələrində “təsdiqlənmiş” nişanı ilə görünür." },
-];
-
-const benefits = [
-  "Bakı və regionlar üzrə pasiyentlərə görünürlük",
-  "Xidmət və qiymət siyahısını özünüz idarə edin",
-  "Zəng və WhatsApp ilə birbaşa müraciətlər",
-  "Həkimlərdən pasiyent göndərişləri",
-  "Müraciətləri kabinetdə izləyin",
-  "SEO sayəsində Google-da tapılma",
-];
-
-export default function CentersForPage() {
+export default async function CentersForPage() {
+  const fc = getDict(await getLocale()).forCenters;
+  const steps = [
+    { icon: <Phone />, t: fc.step1t, d: fc.step1d },
+    { icon: <ClipboardList />, t: fc.step2t, d: fc.step2d },
+    { icon: <BadgeCheck />, t: fc.step3t, d: fc.step3d },
+    { icon: <TrendingUp />, t: fc.step4t, d: fc.step4d },
+  ];
+  const benefits = [fc.b1, fc.b2, fc.b3, fc.b4, fc.b5, fc.b6];
   return (
     <>
       <JsonLd
@@ -49,14 +43,14 @@ export default function CentersForPage() {
         ])}
       />
       <PageHeader
-        eyebrow="Rentgen mərkəzləri üçün"
-        title="Mərkəzinizi platformaya əlavə edin"
-        description="Qeydiyyatdan keçin, xidmət və qiymətlərinizi əlavə edin, admin təsdiqindən sonra minlərlə pasiyentə görünün."
-        breadcrumbs={[{ name: "Mərkəzlər üçün" }]}
+        eyebrow={fc.eyebrow}
+        title={fc.title}
+        description={fc.description}
+        breadcrumbs={[{ name: fc.eyebrow }]}
       >
         <div className="flex flex-wrap gap-3">
           <ButtonLink href="/giris?role=center" variant="primary" size="lg">
-            Mərkəz kimi qeydiyyat <ArrowRight className="h-4 w-4" />
+            {fc.registerCta} <ArrowRight className="h-4 w-4" />
           </ButtonLink>
           <ButtonLink
             href="/giris?role=center"
@@ -64,17 +58,14 @@ export default function CentersForPage() {
             size="lg"
             className="border-white/30 bg-white/5 text-white hover:bg-white/10"
           >
-            Mərkəz girişi
+            {fc.loginCta}
           </ButtonLink>
         </div>
       </PageHeader>
 
       <Section className="py-12">
         <Container>
-          <SectionHeading
-            eyebrow="Necə işləyir"
-            title="4 sadə addımda qoşulun"
-          />
+          <SectionHeading eyebrow={fc.howEyebrow} title={fc.howTitle} />
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((s, i) => (
               <Card key={i} className="relative p-6">
@@ -100,9 +91,9 @@ export default function CentersForPage() {
             <div>
               <SectionHeading
                 align="left"
-                eyebrow="Üstünlüklər"
-                title="Niyə Rentgen.az?"
-                description="Platforma mərkəzinizi pasiyentlərlə birləşdirir və idarəetməni asanlaşdırır."
+                eyebrow={fc.benefitsEyebrow}
+                title={fc.benefitsTitle}
+                description={fc.benefitsDesc}
               />
               <ul className="mt-8 grid gap-3 sm:grid-cols-2">
                 {benefits.map((b, i) => (
@@ -120,14 +111,13 @@ export default function CentersForPage() {
               <div className="relative">
                 <Building2 className="h-10 w-10 text-cyan-400" />
                 <h3 className="font-display mt-4 text-2xl font-bold">
-                  Qeydiyyat pulsuzdur
+                  {fc.freeTitle}
                 </h3>
                 <p className="mt-3 text-slate-300">
-                  Hesab yaratmaq və profilinizi doldurmaq üçün heç bir ödəniş tələb
-                  olunmur. Telefon nömrəniz və OTP kod ilə dərhal başlayın.
+                  {fc.freeDesc}
                 </p>
                 <ButtonLink href="/giris?role=center" variant="primary" className="mt-6">
-                  İndi qeydiyyatdan keç <ArrowRight className="h-4 w-4" />
+                  {fc.freeCta} <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
               </div>
             </Card>

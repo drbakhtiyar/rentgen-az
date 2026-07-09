@@ -237,6 +237,58 @@ type Dict = {
     finalDesc: string;
     registerLogin: string;
   };
+  contact: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    infoTitle: string;
+    phone: string;
+    email: string;
+    address: string;
+    addressValue: string;
+    hours: string;
+    hoursValue: string;
+    whatsappDesc: string;
+    whatsappCta: string;
+    writeTitle: string;
+    writeDesc: string;
+  };
+  forCenters: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    registerCta: string;
+    loginCta: string;
+    howEyebrow: string;
+    howTitle: string;
+    step1t: string; step1d: string;
+    step2t: string; step2d: string;
+    step3t: string; step3d: string;
+    step4t: string; step4d: string;
+    benefitsEyebrow: string;
+    benefitsTitle: string;
+    benefitsDesc: string;
+    b1: string; b2: string; b3: string; b4: string; b5: string; b6: string;
+    freeTitle: string;
+    freeDesc: string;
+    freeCta: string;
+  };
+  forDoctors: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    registerCta: string;
+    loginCta: string;
+    f1t: string; f1d: string;
+    f2t: string; f2d: string;
+    f3t: string; f3d: string;
+    note: string;
+    formTitle: string;
+    fillRequired: string;
+    partnerHint: string;
+    noPartner: string;
+    partnerCentersCta: string;
+  };
 };
 
 const az: Dict = {
@@ -476,6 +528,76 @@ const az: Dict = {
       "Xidmət və rayona görə axtarın, təsdiqlənmiş mərkəzlərlə birbaşa əlaqə saxlayın.",
     registerLogin: "Qeydiyyat / Giriş",
   },
+  contact: {
+    eyebrow: "Bizimlə əlaqə",
+    title: "Əlaqə",
+    description:
+      "Suallarınız var? Bizimlə əlaqə saxlayın və ya aşağıdakı formanı doldurun — komandamız sizə kömək edəcək.",
+    infoTitle: "Əlaqə məlumatları",
+    phone: "Telefon",
+    email: "E-poçt",
+    address: "Ünvan",
+    addressValue: "Bakı, Azərbaycan",
+    hours: "İş saatları",
+    hoursValue: "Hər gün 09:00 – 19:00",
+    whatsappDesc: "Mesaj yazaraq sürətli cavab alın",
+    whatsappCta: "WhatsApp-da yazın",
+    writeTitle: "Bizə yazın",
+    writeDesc:
+      "Aşağıdakı formanı doldurun — sorğunuzu qəbul edib sizinlə əlaqə saxlayacağıq.",
+  },
+  forCenters: {
+    eyebrow: "Rentgen mərkəzləri üçün",
+    title: "Mərkəzinizi platformaya əlavə edin",
+    description:
+      "Qeydiyyatdan keçin, xidmət və qiymətlərinizi əlavə edin, admin təsdiqindən sonra minlərlə pasiyentə görünün.",
+    registerCta: "Mərkəz kimi qeydiyyat",
+    loginCta: "Mərkəz girişi",
+    howEyebrow: "Necə işləyir",
+    howTitle: "4 sadə addımda qoşulun",
+    step1t: "Qeydiyyatdan keçin",
+    step1d: "Telefon nömrəniz və OTP kod ilə parolsuz hesab yaradın.",
+    step2t: "Profili doldurun",
+    step2d: "Mərkəz məlumatları, xidmətlər, qiymətlər və şəkilləri əlavə edin.",
+    step3t: "Təsdiqlənin",
+    step3d: "Admin profilinizi yoxlayır və təsdiqləyir.",
+    step4t: "Pasiyentlərə görünün",
+    step4d: "Mərkəziniz axtarış nəticələrində “təsdiqlənmiş” nişanı ilə görünür.",
+    benefitsEyebrow: "Üstünlüklər",
+    benefitsTitle: "Niyə Rentgen.az?",
+    benefitsDesc: "Platforma mərkəzinizi pasiyentlərlə birləşdirir və idarəetməni asanlaşdırır.",
+    b1: "Bakı və regionlar üzrə pasiyentlərə görünürlük",
+    b2: "Xidmət və qiymət siyahısını özünüz idarə edin",
+    b3: "Zəng və WhatsApp ilə birbaşa müraciətlər",
+    b4: "Həkimlərdən pasiyent göndərişləri",
+    b5: "Müraciətləri kabinetdə izləyin",
+    b6: "SEO sayəsində Google-da tapılma",
+    freeTitle: "Qeydiyyat pulsuzdur",
+    freeDesc:
+      "Hesab yaratmaq və profilinizi doldurmaq üçün heç bir ödəniş tələb olunmur. Telefon nömrəniz və OTP kod ilə dərhal başlayın.",
+    freeCta: "İndi qeydiyyatdan keç",
+  },
+  forDoctors: {
+    eyebrow: "Həkimlər üçün",
+    title: "Pasiyentinizi etibarlı mərkəzə yönləndirin",
+    description:
+      "Pasiyentinizi dental rentgen və CBCT müayinəsi üçün platformadakı təsdiqlənmiş mərkəzlərə yönləndirə bilərsiniz. Həkim kimi qeydiyyatdan keçsəniz, pasiyentlərinizin hansı mərkəzdə hansı müayinədən yararlandığını da izləyə bilərsiniz.",
+    registerCta: "Həkim kimi qeydiyyat",
+    loginCta: "Həkim girişi",
+    f1t: "Təsdiqlənmiş mərkəzlər",
+    f1d: "Yalnız yoxlanılmış mərkəzlər platformada görünür.",
+    f2t: "Sürətli göndəriş",
+    f2d: "Bir dəqiqədən az müddətdə göndəriş yaradın.",
+    f3t: "Pasiyent rahatlığı",
+    f3d: "Pasiyent yaxın və uyğun mərkəzə yönləndirilir.",
+    note: "Qeyd: Bu forma vasitəsilə paylaşılan pasiyent məlumatları yalnız seçilmiş mərkəzə müayinənin təşkili məqsədilə ötürülür.",
+    formTitle: "Pasiyent göndərişi forması",
+    fillRequired: "Bütün məcburi sahələri doldurun.",
+    partnerHint: "Partnyor mərkəzinizə pasiyent göndərin — pasiyentə OTP təsdiqi göndəriləcək.",
+    noPartner:
+      "Hələ partnyor mərkəziniz yoxdur. Pasiyent göndərmək üçün əvvəlcə mərkəzlərlə əməkdaşlıq qurun.",
+    partnerCentersCta: "Partnyor mərkəzlər",
+  },
 };
 
 const ru: Dict = {
@@ -713,6 +835,76 @@ const ru: Dict = {
     finalDesc:
       "Ищите по услуге и району, связывайтесь напрямую с проверенными центрами.",
     registerLogin: "Регистрация / Вход",
+  },
+  contact: {
+    eyebrow: "Свяжитесь с нами",
+    title: "Контакты",
+    description:
+      "Есть вопросы? Свяжитесь с нами или заполните форму ниже — наша команда поможет вам.",
+    infoTitle: "Контактная информация",
+    phone: "Телефон",
+    email: "Эл. почта",
+    address: "Адрес",
+    addressValue: "Баку, Азербайджан",
+    hours: "Часы работы",
+    hoursValue: "Ежедневно 09:00 – 19:00",
+    whatsappDesc: "Напишите и получите быстрый ответ",
+    whatsappCta: "Написать в WhatsApp",
+    writeTitle: "Напишите нам",
+    writeDesc:
+      "Заполните форму ниже — мы примем ваш запрос и свяжемся с вами.",
+  },
+  forCenters: {
+    eyebrow: "Для рентген-центров",
+    title: "Добавьте свой центр на платформу",
+    description:
+      "Зарегистрируйтесь, добавьте услуги и цены, и после подтверждения администрацией станьте видимы тысячам пациентов.",
+    registerCta: "Регистрация центра",
+    loginCta: "Вход для центра",
+    howEyebrow: "Как это работает",
+    howTitle: "Присоединитесь за 4 простых шага",
+    step1t: "Зарегистрируйтесь",
+    step1d: "Создайте аккаунт без пароля — по номеру телефона и OTP-коду.",
+    step2t: "Заполните профиль",
+    step2d: "Добавьте данные центра, услуги, цены и фотографии.",
+    step3t: "Пройдите проверку",
+    step3d: "Администрация проверяет и подтверждает ваш профиль.",
+    step4t: "Станьте видимы пациентам",
+    step4d: "Ваш центр появляется в результатах поиска со значком «проверено».",
+    benefitsEyebrow: "Преимущества",
+    benefitsTitle: "Почему Rentgen.az?",
+    benefitsDesc: "Платформа связывает ваш центр с пациентами и упрощает управление.",
+    b1: "Видимость для пациентов по Баку и регионам",
+    b2: "Сами управляйте списком услуг и цен",
+    b3: "Прямые обращения по звонку и WhatsApp",
+    b4: "Направления пациентов от врачей",
+    b5: "Отслеживайте обращения в кабинете",
+    b6: "Находимость в Google благодаря SEO",
+    freeTitle: "Регистрация бесплатна",
+    freeDesc:
+      "За создание аккаунта и заполнение профиля плата не взимается. Начните сразу — по номеру телефона и OTP-коду.",
+    freeCta: "Зарегистрироваться сейчас",
+  },
+  forDoctors: {
+    eyebrow: "Для врачей",
+    title: "Направьте пациента в надёжный центр",
+    description:
+      "Вы можете направить пациента на дентальный рентген и КЛКТ в проверенные центры платформы. Зарегистрировавшись как врач, вы также сможете отслеживать, в каком центре и какое обследование прошли ваши пациенты.",
+    registerCta: "Регистрация врача",
+    loginCta: "Вход для врача",
+    f1t: "Проверенные центры",
+    f1d: "На платформе видны только проверенные центры.",
+    f2t: "Быстрое направление",
+    f2d: "Создайте направление меньше чем за минуту.",
+    f3t: "Удобство для пациента",
+    f3d: "Пациент направляется в ближайший подходящий центр.",
+    note: "Примечание: данные пациента, переданные через эту форму, используются только для организации обследования в выбранном центре.",
+    formTitle: "Форма направления пациента",
+    fillRequired: "Заполните все обязательные поля.",
+    partnerHint: "Направьте пациента в ваш партнёрский центр — пациенту придёт OTP-подтверждение.",
+    noPartner:
+      "У вас пока нет партнёрских центров. Чтобы направлять пациентов, сначала установите сотрудничество с центрами.",
+    partnerCentersCta: "Партнёрские центры",
   },
 };
 

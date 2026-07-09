@@ -9,6 +9,8 @@ import { ReferralForm } from "@/components/forms/referral-form";
 import { DoctorReferralForm } from "@/components/forms/doctor-referral-form";
 import { getApprovedCenters } from "@/lib/queries";
 import { parseHours, type WeeklyHours } from "@/lib/hours";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 import { doctorName } from "@/lib/utils";
@@ -25,6 +27,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function DoctorsPage() {
+  const fd = getDict(await getLocale()).forDoctors;
   const centers = await getApprovedCenters({ take: 100 });
   const centerOptions = centers.map((c) => ({
     value: c.id,
@@ -84,21 +87,21 @@ export default async function DoctorsPage() {
         ])}
       />
       <PageHeader
-        eyebrow="Həkimlər üçün"
-        title="Pasiyentinizi etibarlı mərkəzə yönləndirin"
-        description="Pasiyentinizi dental rentgen və CBCT müayinəsi üçün platformadakı təsdiqlənmiş mərkəzlərə yönləndirə bilərsiniz. Həkim kimi qeydiyyatdan keçsəniz, pasiyentlərinizin hansı mərkəzdə hansı müayinədən yararlandığını da izləyə bilərsiniz."
-        breadcrumbs={[{ name: "Həkimlər üçün" }]}
+        eyebrow={fd.eyebrow}
+        title={fd.title}
+        description={fd.description}
+        breadcrumbs={[{ name: fd.eyebrow }]}
       >
         <div className="flex flex-wrap gap-3">
           <ButtonLink href="/giris?role=doctor" variant="primary">
-            Həkim kimi qeydiyyat
+            {fd.registerCta}
           </ButtonLink>
           <ButtonLink
             href="/giris?role=doctor"
             variant="outline"
             className="border-white/30 bg-white/5 text-white hover:bg-white/10"
           >
-            Həkim girişi
+            {fd.loginCta}
           </ButtonLink>
         </div>
       </PageHeader>
@@ -108,9 +111,9 @@ export default async function DoctorsPage() {
           <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
             <div className="space-y-4">
               {[
-                { icon: <ShieldCheck />, t: "Təsdiqlənmiş mərkəzlər", d: "Yalnız yoxlanılmış mərkəzlər platformada görünür." },
-                { icon: <Clock />, t: "Sürətli göndəriş", d: "Bir dəqiqədən az müddətdə göndəriş yaradın." },
-                { icon: <Users />, t: "Pasiyent rahatlığı", d: "Pasiyent yaxın və uyğun mərkəzə yönləndirilir." },
+                { icon: <ShieldCheck />, t: fd.f1t, d: fd.f1d },
+                { icon: <Clock />, t: fd.f2t, d: fd.f2d },
+                { icon: <Users />, t: fd.f3t, d: fd.f3d },
               ].map((f, i) => (
                 <Card key={i} className="flex items-start gap-3 p-5">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 [&>svg]:h-5 [&>svg]:w-5">
@@ -124,23 +127,18 @@ export default async function DoctorsPage() {
               ))}
               <Card className="bg-brand-50 p-5">
                 <Stethoscope className="h-6 w-6 text-brand-600" />
-                <p className="mt-2 text-sm text-brand-900">
-                  Qeyd: Bu forma vasitəsilə paylaşılan pasiyent məlumatları yalnız
-                  seçilmiş mərkəzə müayinənin təşkili məqsədilə ötürülür.
-                </p>
+                <p className="mt-2 text-sm text-brand-900">{fd.note}</p>
               </Card>
             </div>
 
             <Card className="p-6 sm:p-8">
               <h2 className="font-display flex items-center gap-2 text-2xl font-bold text-ink-900">
-                <Send className="h-6 w-6 text-brand-600" /> Pasiyent göndərişi forması
+                <Send className="h-6 w-6 text-brand-600" /> {fd.formTitle}
               </h2>
               {doctorCtx ? (
                 doctorCtx.centers.length > 0 ? (
                   <>
-                    <p className="mt-1.5 text-sm text-slate-500">
-                      Partnyor mərkəzinizə pasiyent göndərin — pasiyentə OTP təsdiqi göndəriləcək.
-                    </p>
+                    <p className="mt-1.5 text-sm text-slate-500">{fd.partnerHint}</p>
                     <div className="mt-6">
                       <DoctorReferralForm
                         doctorName={doctorCtx.name}
@@ -153,20 +151,17 @@ export default async function DoctorsPage() {
                   </>
                 ) : (
                   <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-                    Hələ partnyor mərkəziniz yoxdur. Pasiyent göndərmək üçün əvvəlcə
-                    mərkəzlərlə əməkdaşlıq qurun.
+                    {fd.noPartner}
                     <div className="mt-3">
                       <ButtonLink href="/hekim/merkezler" size="sm">
-                        Partnyor mərkəzlər
+                        {fd.partnerCentersCta}
                       </ButtonLink>
                     </div>
                   </div>
                 )
               ) : (
                 <>
-                  <p className="mt-1.5 text-sm text-slate-500">
-                    Bütün məcburi sahələri doldurun.
-                  </p>
+                  <p className="mt-1.5 text-sm text-slate-500">{fd.fillRequired}</p>
                   <div className="mt-6">
                     <ReferralForm centers={centerOptions} />
                   </div>
