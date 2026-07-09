@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { AppointmentForm } from "@/components/forms/appointment-form";
+import { DoctorReferralForm } from "@/components/forms/doctor-referral-form";
 import { Stars, RatingSummary } from "@/components/reviews/stars";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { JsonLd } from "@/components/ui/json-ld";
@@ -95,6 +96,23 @@ export default async function CenterDetailPage({
           phone: me.phone,
         }
       : null;
+
+  // A logged-in approved partner doctor gets the referral form (this center
+  // pre-selected) instead of the patient appointment form.
+  const referralDoctor =
+    me?.role === "DOCTOR" && me.doctorProfile?.status === "APPROVED"
+      ? me.doctorProfile
+      : null;
+  let isPartnerDoctor = false;
+  if (referralDoctor) {
+    const partner = await prisma.centerDoctor
+      .findUnique({
+        where: { centerId_doctorId: { centerId: center.id, doctorId: referralDoctor.id } },
+        select: { status: true },
+      })
+      .catch(() => null);
+    isPartnerDoctor = partner?.status === "ACCEPTED";
+  }
   let canReview = false;
   let existingReview: {
     comment: string | null;
@@ -452,29 +470,47 @@ export default async function CenterDetailPage({
             <aside className="lg:sticky lg:top-20 lg:self-start">
               <Card className="p-6">
                 <h2 className="font-display text-lg font-bold text-ink-900">
-                  Müraciət göndər
+                  {isPartnerDoctor ? "Pasiyent göndər" : "Müraciət göndər"}
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  {dd.requestDesc}
+                  {isPartnerDoctor
+                    ? "Pasiyentinizi bu mərkəzə yönləndirin — pasiyentə OTP təsdiqi göndəriləcək."
+                    : dd.requestDesc}
                 </p>
                 <div className="mt-4">
-                  <AppointmentForm
-                    centerId={center.id}
-                    locale={locale}
-                    patient={patientInfo}
-                    services={center.services.map((cs) => ({
-                      value: cs.service.slug,
-                      label: cs.service.name,
-                    }))}
-                    doctors={doctors.map((d) => ({
-                      value: d.id,
-                      label: `${doctorName(d.firstName, d.lastName)}${
-                        d.clinic ? " — " + d.clinic : ""
-                      }`,
-                    }))}
-                    hours={week}
-                    compact
-                  />
+                  {isPartnerDoctor && referralDoctor ? (
+                    <DoctorReferralForm
+                      doctorName={doctorName(referralDoctor.firstName, referralDoctor.lastName)}
+                      clinic={referralDoctor.clinic}
+                      centers={[{ id: center.id, name: center.name, city: center.city }]}
+                      servicesByCenter={{
+                        [center.id]: center.services.map((cs) => ({
+                          slug: cs.service.slug,
+                          name: cs.service.name,
+                        })),
+                      }}
+                      hoursByCenter={{ [center.id]: week }}
+                      lockedCenterId={center.id}
+                    />
+                  ) : (
+                    <AppointmentForm
+                      centerId={center.id}
+                      locale={locale}
+                      patient={patientInfo}
+                      services={center.services.map((cs) => ({
+                        value: cs.service.slug,
+                        label: cs.service.name,
+                      }))}
+                      doctors={doctors.map((d) => ({
+                        value: d.id,
+                        label: `${doctorName(d.firstName, d.lastName)}${
+                          d.clinic ? " — " + d.clinic : ""
+                        }`,
+                      }))}
+                      hours={week}
+                      compact
+                    />
+                  )}
                 </div>
               </Card>
             </aside>

@@ -20,12 +20,15 @@ export function DoctorReferralForm({
   centers,
   servicesByCenter,
   hoursByCenter,
+  lockedCenterId,
 }: {
   doctorName: string;
   clinic: string | null;
   centers: CenterOpt[];
   servicesByCenter: Record<string, ServiceOpt[]>;
   hoursByCenter: Record<string, WeeklyHours | null>;
+  /** When set, the center is fixed (e.g. on a center's own page). */
+  lockedCenterId?: string;
 }) {
   const [step, setStep] = React.useState<"form" | "otp">("form");
   const [pending, startTransition] = React.useTransition();
@@ -33,7 +36,7 @@ export function DoctorReferralForm({
   const [done, setDone] = React.useState<string | null>(null);
   const [devCode, setDevCode] = React.useState<string | null>(null);
 
-  const [centerId, setCenterId] = React.useState("");
+  const [centerId, setCenterId] = React.useState(lockedCenterId ?? "");
   const [serviceSlug, setServiceSlug] = React.useState("");
   const [firstName, setFirstName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
@@ -147,26 +150,32 @@ export function DoctorReferralForm({
         {clinic ? ` · ${clinic}` : ""}
       </p>
 
-      <Field label="Mərkəz" htmlFor="ref-center" required hint="Yalnız partnyor mərkəzləriniz">
-        <Select
-          id="ref-center"
-          value={centerId}
-          onChange={(e) => {
-            setCenterId(e.target.value);
-            setServiceSlug("");
-            setDate("");
-            setTime("");
-          }}
-          required
-        >
-          <option value="">Mərkəz seçin</option>
-          {centers.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-              {c.city ? ` — ${c.city}` : ""}
-            </option>
-          ))}
-        </Select>
+      <Field label="Mərkəz" htmlFor="ref-center" required hint={lockedCenterId ? undefined : "Yalnız partnyor mərkəzləriniz"}>
+        {lockedCenterId ? (
+          <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-ink-800">
+            {centers.find((c) => c.id === lockedCenterId)?.name ?? "Mərkəz"}
+          </div>
+        ) : (
+          <Select
+            id="ref-center"
+            value={centerId}
+            onChange={(e) => {
+              setCenterId(e.target.value);
+              setServiceSlug("");
+              setDate("");
+              setTime("");
+            }}
+            required
+          >
+            <option value="">Mərkəz seçin</option>
+            {centers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+                {c.city ? ` — ${c.city}` : ""}
+              </option>
+            ))}
+          </Select>
+        )}
       </Field>
 
       <Field label="Lazım olan müayinə" htmlFor="ref-service">
