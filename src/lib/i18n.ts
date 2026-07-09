@@ -301,6 +301,13 @@ type Dict = {
     title: string;
     description: string;
   };
+  smartSearch: {
+    placeholder: string;
+    hint: string;
+    searching: string;
+    empty: string;
+    allResults: string;
+  };
 };
 
 const az: Dict = {
@@ -623,6 +630,13 @@ const az: Dict = {
     description:
       "Dental rentgen, 3D tomoqrafiya, qiymət, qeydiyyat və OTP giriş haqqında ən çox verilən sualların cavabları.",
   },
+  smartSearch: {
+    placeholder: "Nə axtarırsınız? Məs: panoramik, Nərimanov, CBCT…",
+    hint: "İstədiyiniz sözü yazın — sizə ən uyğun mərkəzləri tapaq",
+    searching: "Axtarılır…",
+    empty: "Uyğun mərkəz tapılmadı. Başqa söz yoxlayın.",
+    allResults: "Bütün nəticələrə bax",
+  },
 };
 
 const ru: Dict = {
@@ -943,6 +957,13 @@ const ru: Dict = {
     title: "Часто задаваемые вопросы",
     description:
       "Ответы на частые вопросы о дентальном рентгене, 3D-томографии, ценах, регистрации и входе по OTP.",
+  },
+  smartSearch: {
+    placeholder: "Что вы ищете? Напр.: панорамный, Нариманов, КЛКТ…",
+    hint: "Напишите что ищете — подберём подходящие центры",
+    searching: "Идёт поиск…",
+    empty: "Подходящих центров не найдено. Попробуйте другое слово.",
+    allResults: "Смотреть все результаты",
   },
 };
 

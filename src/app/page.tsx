@@ -18,7 +18,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ServiceIcon } from "@/components/ui/service-icon";
-import { SearchPanel } from "@/components/search-panel";
+import { SmartSearch } from "@/components/smart-search";
 import { HeroVisual } from "@/components/hero-visual";
 import { CenterCard } from "@/components/centers/center-card";
 import { FaqAccordion } from "@/components/faq-accordion";
@@ -31,7 +31,6 @@ import {
   countApprovedCentersByService,
   getServiceRequestCounts,
   getRatingsForCenters,
-  getCitiesWithCenters,
 } from "@/lib/queries";
 import { faqJsonLd } from "@/lib/seo";
 import { getHomeFaq } from "@/content/faq";
@@ -42,24 +41,17 @@ import { getDict } from "@/lib/i18n";
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [centers, posts, stats, counts, usage, searchCities, allServices] = await Promise.all([
+  const [centers, posts, stats, counts, usage, allServices] = await Promise.all([
     getFeaturedCenters(6),
     getPublishedPosts(3),
     getPlatformStats(),
     countApprovedCentersByService(),
     getServiceRequestCounts(),
-    getCitiesWithCenters(),
     getActiveServices(),
   ]);
-  const cityOptions = searchCities.map((c) => ({ value: c, label: c }));
-  // Search dropdown: only services offered by at least one approved center.
-  const serviceOptions = allServices
-    .filter((s) => (counts[s.slug] ?? 0) > 0)
-    .map((s) => ({ value: s.slug, label: s.name }));
 
   const locale = await getLocale();
   const d = getDict(locale);
-  const searchLabels = { ...d.search, search: d.cta.search };
   const homeFaq = getHomeFaq(locale);
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
@@ -101,12 +93,7 @@ export default async function HomePage() {
               </p>
 
               <div className="mt-7">
-                <SearchPanel
-                  services={serviceOptions}
-                  cities={cityOptions}
-                  variant="hero"
-                  labels={searchLabels}
-                />
+                <SmartSearch labels={d.smartSearch} />
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
