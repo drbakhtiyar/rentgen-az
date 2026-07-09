@@ -73,6 +73,24 @@ model AdminThread {
   @@index([lastMessageAt])
 }
 
+// Ödəniş (Payriff). Məbləğ qəpiklə (Int): 2000 = 20.00 AZN.
+model Payment {
+  id             String    @id @default(cuid())
+  userId         String? // kim ödəyir (qonaq üçün null ola bilər)
+  amount         Int // qəpik
+  currency       String    @default("AZN")
+  purpose        String // "subscription" | "featured" | ... (Faza 2-də model təyin edir)
+  status         String    @default("PENDING") // PENDING | PAID | FAILED | REFUNDED
+  payriffOrderId String?   @unique
+  transactionId  String?
+  meta           Json?
+  createdAt      DateTime  @default(now())
+  paidAt         DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
 model AdminMessage {
   id        String      @id @default(cuid())
   threadId  String

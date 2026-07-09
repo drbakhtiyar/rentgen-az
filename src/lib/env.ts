@@ -41,6 +41,12 @@ export const env = {
     password: process.env.LSIM_PASSWORD ?? "",
     sender: process.env.LSIM_SENDER ?? "",
   },
+  // Payriff payment gateway (credentials added after official registration)
+  payriff: {
+    secret: process.env.PAYRIFF_SECRET ?? "",
+    merchant: process.env.PAYRIFF_MERCHANT ?? "",
+    base: process.env.PAYRIFF_BASE ?? "https://api.payriff.com",
+  },
   // Backblaze B2 (S3-compatible) — private bucket for rentgen files
   b2: {
     keyId: process.env.B2_KEY_ID ?? "",
