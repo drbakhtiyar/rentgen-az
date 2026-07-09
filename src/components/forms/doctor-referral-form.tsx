@@ -204,9 +204,9 @@ export function DoctorReferralForm({
         <Input id="ref-phone" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="050 123 45 67" required />
       </Field>
 
-      {centerHours && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Tarix" htmlFor="ref-date" hint="İstəyə bağlı">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Tarix" htmlFor="ref-date" hint="İstəyə bağlı">
+          {centerHours ? (
             <DatePicker
               value={date}
               minYmd={today}
@@ -216,26 +216,40 @@ export function DoctorReferralForm({
                 setTime("");
               }}
             />
-          </Field>
-          <Field label="Saat" htmlFor="ref-time">
-            <Select
-              id="ref-time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              disabled={!date || slots.length === 0}
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="flex h-11 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-left text-sm text-slate-400"
             >
-              <option value="">
-                {!date ? "Əvvəlcə tarix seçin" : slots.length === 0 ? "Vaxt yoxdur" : "Saat seçin"}
+              İlk öncə mərkəzi seçin
+            </button>
+          )}
+        </Field>
+        <Field label="Saat" htmlFor="ref-time">
+          <Select
+            id="ref-time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            disabled={!centerHours || !date || slots.length === 0}
+          >
+            <option value="">
+              {!centerId
+                ? "İlk öncə mərkəzi seçin"
+                : !date
+                  ? "Əvvəlcə tarix seçin"
+                  : slots.length === 0
+                    ? "Vaxt yoxdur"
+                    : "Saat seçin"}
+            </option>
+            {slots.map((s) => (
+              <option key={s} value={s}>
+                {s}
               </option>
-              {slots.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-      )}
+            ))}
+          </Select>
+        </Field>
+      </div>
 
       <Field label="Qeyd" htmlFor="ref-note">
         <Textarea id="ref-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Əlavə məlumat (istəyə bağlı)" />
