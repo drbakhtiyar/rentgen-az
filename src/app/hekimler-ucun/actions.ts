@@ -49,10 +49,19 @@ export async function submitDoctorReferralAction(input: {
   phone: string;
   code: string;
   note?: string;
+  preferredDate?: string;
 }): Promise<ReferralResult> {
   const user = await requireRole("DOCTOR");
   const phone = normalizePhone(input.phone);
   if (!phone) return { ok: false, error: "Pasiyentin nömrəsi düzgün deyil." };
+  // Optional preferred date (referral date is not required).
+  let preferredDate: Date | null = null;
+  if (input.preferredDate) {
+    const dt = new Date(input.preferredDate);
+    if (!Number.isNaN(dt.getTime()) && dt.getTime() > Date.now() - 60 * 60 * 1000) {
+      preferredDate = dt;
+    }
+  }
   const first = input.patientFirstName.trim();
   const last = input.patientLastName.trim();
   if (first.length < 2 || last.length < 2) {
@@ -127,6 +136,7 @@ export async function submitDoctorReferralAction(input: {
         doctorId: doctor.id,
         serviceSlug: input.serviceSlug || null,
         note: input.note?.trim() || null,
+        preferredDate,
         patientId,
       },
     });
@@ -148,18 +158,20 @@ export async function submitDoctorReferralAction(input: {
           .findUnique({ where: { slug: input.serviceSlug }, select: { name: true } })
           .catch(() => null)
       : null;
-    // Booking summary SMS — no date/time in the referral flow.
+    // Booking summary SMS (date/time included if the doctor picked one).
     if (center.phone) {
       await smsCenterBooking(center.phone, {
         patientName: patientFullName,
         patientPhone: phone,
         doctorName: docName,
+        dateTime: preferredDate,
         serviceName: svc?.name ?? null,
       }).catch(() => {});
     }
     await smsPatientBooking(phone, {
       patientName: patientFullName,
       doctorName: docName,
+      dateTime: preferredDate,
       serviceName: svc?.name ?? null,
       centerPhone: center.phone,
     }).catch(() => {});

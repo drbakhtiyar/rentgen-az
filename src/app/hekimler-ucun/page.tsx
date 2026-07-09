@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/ui/json-ld";
 import { ReferralForm } from "@/components/forms/referral-form";
 import { DoctorReferralForm } from "@/components/forms/doctor-referral-form";
 import { getApprovedCenters } from "@/lib/queries";
+import { parseHours, type WeeklyHours } from "@/lib/hours";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 import { doctorName } from "@/lib/utils";
@@ -38,6 +39,7 @@ export default async function DoctorsPage() {
     clinic: string | null;
     centers: { id: string; name: string; city: string | null }[];
     servicesByCenter: Record<string, { slug: string; name: string }[]>;
+    hoursByCenter: Record<string, WeeklyHours | null>;
   } | null = null;
   if (me?.role === "DOCTOR" && me.doctorProfile?.status === "APPROVED") {
     const partners = await prisma.centerDoctor.findMany({
@@ -48,6 +50,7 @@ export default async function DoctorsPage() {
             id: true,
             name: true,
             city: true,
+            hours: true,
             services: { include: { service: { select: { slug: true, name: true } } } },
           },
         },
@@ -55,17 +58,20 @@ export default async function DoctorsPage() {
       orderBy: { center: { name: "asc" } },
     });
     const servicesByCenter: Record<string, { slug: string; name: string }[]> = {};
+    const hoursByCenter: Record<string, WeeklyHours | null> = {};
     for (const p of partners) {
       servicesByCenter[p.center.id] = p.center.services.map((cs) => ({
         slug: cs.service.slug,
         name: cs.service.name,
       }));
+      hoursByCenter[p.center.id] = parseHours(p.center.hours);
     }
     doctorCtx = {
       name: doctorName(me.doctorProfile.firstName, me.doctorProfile.lastName),
       clinic: me.doctorProfile.clinic,
       centers: partners.map((p) => ({ id: p.center.id, name: p.center.name, city: p.center.city })),
       servicesByCenter,
+      hoursByCenter,
     };
   }
 
@@ -141,6 +147,7 @@ export default async function DoctorsPage() {
                         clinic={doctorCtx.clinic}
                         centers={doctorCtx.centers}
                         servicesByCenter={doctorCtx.servicesByCenter}
+                        hoursByCenter={doctorCtx.hoursByCenter}
                       />
                     </div>
                   </>

@@ -4,6 +4,8 @@ import * as React from "react";
 import { Loader2, Send, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
+import { DatePicker } from "@/components/forms/date-picker";
+import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
 import {
   requestReferralOtpAction,
   submitDoctorReferralAction,
@@ -17,11 +19,13 @@ export function DoctorReferralForm({
   clinic,
   centers,
   servicesByCenter,
+  hoursByCenter,
 }: {
   doctorName: string;
   clinic: string | null;
   centers: CenterOpt[];
   servicesByCenter: Record<string, ServiceOpt[]>;
+  hoursByCenter: Record<string, WeeklyHours | null>;
 }) {
   const [step, setStep] = React.useState<"form" | "otp">("form");
   const [pending, startTransition] = React.useTransition();
@@ -35,9 +39,17 @@ export function DoctorReferralForm({
   const [lastName, setLastName] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [note, setNote] = React.useState("");
+  const [date, setDate] = React.useState("");
+  const [time, setTime] = React.useState("");
   const [code, setCode] = React.useState("");
 
   const services = centerId ? servicesByCenter[centerId] ?? [] : [];
+  const centerHours = centerId ? hoursByCenter[centerId] ?? null : null;
+  const today = React.useMemo(() => bakuTodayYmd(), []);
+  const slots = React.useMemo(
+    () => (centerHours && date ? slotsForDate(centerHours, date) : []),
+    [centerHours, date],
+  );
 
   function requestOtp(e: React.FormEvent) {
     e.preventDefault();
@@ -66,6 +78,7 @@ export function DoctorReferralForm({
         phone: phone.trim(),
         code: code.trim(),
         note: note.trim() || undefined,
+        preferredDate: date && time ? `${date}T${time}:00+04:00` : undefined,
       });
       if (!res.ok) return setError(res.error ?? "Xəta");
       setDone(res.message ?? "Göndəriş tamamlandı.");
@@ -141,6 +154,8 @@ export function DoctorReferralForm({
           onChange={(e) => {
             setCenterId(e.target.value);
             setServiceSlug("");
+            setDate("");
+            setTime("");
           }}
           required
         >
@@ -188,6 +203,39 @@ export function DoctorReferralForm({
       <Field label="Pasiyentin telefonu" htmlFor="ref-phone" required hint="Təsdiq kodu bu nömrəyə gedəcək.">
         <Input id="ref-phone" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="050 123 45 67" required />
       </Field>
+
+      {centerHours && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Tarix" htmlFor="ref-date" hint="İstəyə bağlı">
+            <DatePicker
+              value={date}
+              minYmd={today}
+              hours={centerHours}
+              onChange={(v) => {
+                setDate(v);
+                setTime("");
+              }}
+            />
+          </Field>
+          <Field label="Saat" htmlFor="ref-time">
+            <Select
+              id="ref-time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              disabled={!date || slots.length === 0}
+            >
+              <option value="">
+                {!date ? "Əvvəlcə tarix seçin" : slots.length === 0 ? "Vaxt yoxdur" : "Saat seçin"}
+              </option>
+              {slots.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+      )}
 
       <Field label="Qeyd" htmlFor="ref-note">
         <Textarea id="ref-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Əlavə məlumat (istəyə bağlı)" />
