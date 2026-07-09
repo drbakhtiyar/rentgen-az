@@ -23,6 +23,7 @@ type Dict = {
     forCenters: string;
     blog: string;
     contact: string;
+    faq: string;
   };
   cta: {
     login: string;
@@ -319,6 +320,7 @@ const az: Dict = {
     forCenters: "Mərkəzlər üçün",
     blog: "Blog",
     contact: "Əlaqə",
+    faq: "FAQ",
   },
   cta: {
     login: "Giriş",
@@ -648,6 +650,7 @@ const ru: Dict = {
     forCenters: "Для центров",
     blog: "Блог",
     contact: "Контакты",
+    faq: "Вопросы",
   },
   cta: {
     login: "Вход",
