@@ -1,0 +1,48 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="gridLight" width="44" height="44" patternUnits="userSpaceOnUse">
+    <path d="M 44 0 L 0 0 0 44" fill="none" stroke="rgba(31,122,255,0.07)" stroke-width="1"/>
+  </pattern>
+    <radialGradient id="glowCyanLight" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#2ad4e6" stop-opacity="0.45"/>
+    <stop offset="100%" stop-color="#2ad4e6" stop-opacity="0"/>
+  </radialGradient>
+    <linearGradient id="headlineGradientLight" x1="0%" y1="0%" x2="100%" y2="30%">
+      <stop offset="0%" stop-color="#0a5ff0"/>
+      <stop offset="100%" stop-color="#11bdd4"/>
+    </linearGradient></defs>
+  <rect width="1080" height="1080" fill="#f6f9ff"/>
+  <rect width="1080" height="1080" fill="url(#gridLight)"/>
+  <circle cx="1120" cy="1100" r="340" fill="url(#glowCyanLight)" opacity="0.5"/>
+
+  <g>
+    <rect x="80" y="80" width="81.75999999999999" height="56" rx="28" fill="#0a1124" />
+    <text x="120.88" y="116.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="24" letter-spacing="2" fill="#2ad4e6">02</text>
+  </g>
+
+  <text x="80" y="224.72" font-family="Plus Jakarta Sans, Inter, sans-serif" font-weight="800" font-size="56" fill="#0a1124" letter-spacing="-0.5">
+    <tspan x="80" dy="0">Nə deməkdir?</tspan>
+  </text>
+
+  <text x="80" y="286.32" font-family="Inter, sans-serif" font-size="24" fill="#3a4a6b">
+    <tspan x="80" dy="0">Panoramik rentgen bir çəkilişdə üst və alt çənəni, dişləri və ətraf</tspan>
+<tspan x="80" dy="36">strukturları tək görüntüdə göstərir. Ümumi qiymətləndirmə, ortodontik</tspan>
+<tspan x="80" dy="36">planlama və mütəmadi müayinələr üçün geniş istifadə olunur.</tspan>
+  </text>
+
+  <g>
+    <rect x="944" y="944" width="31.68" height="31.68" rx="8.8" fill="#0a1124"/>
+    <g transform="translate(951.04 951.04) scale(0.7333333333333334)" fill="none" stroke="#2ad4e6" stroke-width="0.748" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+    <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+    <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+    <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+    <path d="M7 12h10"/>
+  </g>
+    <text x="984.4799999999999" y="965.8240000000001" font-family="Plus Jakarta Sans, Inter, sans-serif" font-weight="700" font-size="17.6" letter-spacing="-0.5">
+      <tspan fill="#0a1124">Rentgen</tspan><tspan fill="#0a5ff0">.az</tspan>
+    </text>
+  </g>
+  <circle cx="488" cy="1004" r="7" fill="rgba(10,17,36,0.16)"/><circle cx="514" cy="1004" r="9" fill="#11bdd4"/><circle cx="540" cy="1004" r="7" fill="rgba(10,17,36,0.16)"/><circle cx="566" cy="1004" r="7" fill="rgba(10,17,36,0.16)"/><circle cx="592" cy="1004" r="7" fill="rgba(10,17,36,0.16)"/>
+  <text x="80" y="1012" font-family="Inter, sans-serif" font-weight="600" font-size="24" fill="rgba(10,17,36,0.4)">02/05</text>
+</svg>
