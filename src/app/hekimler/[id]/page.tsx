@@ -11,6 +11,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getApprovedDoctorById } from "@/lib/queries";
 import { DocumentGallery } from "@/components/documents/document-gallery";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -45,6 +47,7 @@ export default async function DoctorProfilePage({
   const doctor = await getApprovedDoctorById(id);
   if (!doctor) notFound();
 
+  const t = getDict(await getLocale()).doctors;
   const name = doctorName(doctor.firstName, doctor.lastName);
   const verified = Boolean(doctor.diplomaUrl || doctor.certificateUrl);
   // Confirmed registered workplace → link to that center.
@@ -79,14 +82,14 @@ export default async function DoctorProfilePage({
       />
 
       <PageHeader
-        eyebrow="Həkim"
+        eyebrow={t.profileEyebrow}
         title={name}
         breadcrumbs={[{ name: "Həkimlər", href: "/hekimler" }, { name }]}
       >
         <div className="flex flex-wrap items-center gap-3">
           {verified && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-cyan-300">
-              <BadgeCheck className="h-4 w-4" /> Sənədləri təsdiqlənib
+              <BadgeCheck className="h-4 w-4" /> {t.verified}
             </span>
           )}
           {doctor.city && (
@@ -135,7 +138,7 @@ export default async function DoctorProfilePage({
 
                 {doctor.specializations.length > 0 && (
                   <div className="mt-5">
-                    <h2 className="text-sm font-semibold text-ink-800">İxtisaslar</h2>
+                    <h2 className="text-sm font-semibold text-ink-800">{t.specializations}</h2>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {doctor.specializations.map((s) => (
                         <Badge key={s} tone="cyan">
@@ -147,6 +150,7 @@ export default async function DoctorProfilePage({
                 )}
 
                 <DocumentGallery
+                  title={t.documents}
                   docs={[
                     { label: "Diplom", url: doctor.diplomaUrl },
                     { label: "Sertifikat", url: doctor.certificateUrl },
@@ -175,7 +179,7 @@ export default async function DoctorProfilePage({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
                       >
-                        <Globe className="h-4 w-4" /> Vebsayt
+                        <Globe className="h-4 w-4" /> {t.website}
                       </a>
                     )}
                   </div>
@@ -186,13 +190,13 @@ export default async function DoctorProfilePage({
             <aside className="space-y-6">
               <Card className="p-6">
                 <h3 className="font-display text-base font-bold text-ink-900">
-                  Rentgen müayinəsi lazımdır?
+                  {t.needXray}
                 </h3>
                 <p className="mt-2 text-sm text-slate-600">
-                  Təsdiqlənmiş rentgen mərkəzlərini tapın və birbaşa əlaqə saxlayın.
+                  {t.needXrayDesc}
                 </p>
                 <ButtonLink href="/rentgen-merkezleri" className="mt-4 w-full">
-                  Mərkəz tap <ArrowRight className="h-4 w-4" />
+                  {t.findCenter} <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
               </Card>
             </aside>

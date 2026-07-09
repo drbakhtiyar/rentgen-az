@@ -60,7 +60,7 @@ export default async function ServicesPage() {
       {categories.map((cat) => (
         <Section key={cat} className="py-12 odd:bg-surface">
           <Container>
-            <SectionHeading align="left" eyebrow={cat ?? undefined} title={`${cat} xidmətləri`} />
+            <SectionHeading align="left" eyebrow={cat ?? undefined} title={`${cat} ${d.categorySuffix}`} />
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {visible.filter((s) => s.category === cat).map((s) => (
                 <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
@@ -70,7 +70,7 @@ export default async function ServicesPage() {
                         <ServiceIcon name={s.icon} url={s.iconUrl} className="h-6 w-6" />
                       </div>
                       {counts[s.slug] ? (
-                        <Badge tone="cyan">{counts[s.slug]} mərkəz</Badge>
+                        <Badge tone="cyan">{counts[s.slug]} {d.centerWord}</Badge>
                       ) : null}
                     </div>
                     <h3 className="font-display mt-4 text-lg font-bold text-ink-900">
@@ -80,7 +80,7 @@ export default async function ServicesPage() {
                       {s.description}
                     </p>
                     <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-                      Ətraflı və mərkəzlər <ArrowRight className="h-4 w-4" />
+                      {d.more} <ArrowRight className="h-4 w-4" />
                     </span>
                   </Card>
                 </Link>

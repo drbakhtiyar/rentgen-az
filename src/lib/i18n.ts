@@ -100,6 +100,9 @@ type Dict = {
     eyebrow: string;
     title: string;
     description: string;
+    categorySuffix: string; // "{cat} xidmətləri"
+    centerWord: string; // "{n} mərkəz"
+    more: string;
   };
   doctors: {
     eyebrow: string;
@@ -113,6 +116,10 @@ type Dict = {
     verified: string;
     needXray: string;
     needXrayDesc: string;
+    profileEyebrow: string;
+    website: string;
+    findCenter: string;
+    documents: string;
   };
   appt: {
     name: string;
@@ -383,6 +390,9 @@ const az: Dict = {
     title: "Dental rentgen və tomoqrafiya xidmətləri",
     description:
       "Diaqnostika və müalicə planlaması üçün lazım olan bütün görüntüləmə növləri — hər biri üçün təsdiqlənmiş mərkəzləri tapın.",
+    categorySuffix: "xidmətləri",
+    centerWord: "mərkəz",
+    more: "Ətraflı və mərkəzlər",
   },
   doctors: {
     eyebrow: "Həkim kataloqu",
@@ -397,6 +407,10 @@ const az: Dict = {
     needXray: "Rentgen müayinəsi lazımdır?",
     needXrayDesc:
       "Təsdiqlənmiş rentgen mərkəzlərini tapın və birbaşa əlaqə saxlayın.",
+    profileEyebrow: "Həkim",
+    website: "Vebsayt",
+    findCenter: "Mərkəz tap",
+    documents: "Sənədlər",
   },
   appt: {
     name: "Ad, Soyad",
@@ -692,6 +706,9 @@ const ru: Dict = {
     title: "Услуги стоматологического рентгена и томографии",
     description:
       "Все виды визуализации для диагностики и планирования лечения — найдите проверенные центры для каждой.",
+    categorySuffix: "— услуги",
+    centerWord: "центр.",
+    more: "Подробнее и центры",
   },
   doctors: {
     eyebrow: "Каталог врачей",
@@ -705,6 +722,10 @@ const ru: Dict = {
     verified: "Документы подтверждены",
     needXray: "Нужно рентген-обследование?",
     needXrayDesc: "Найдите проверенные рентген-центры и свяжитесь напрямую.",
+    profileEyebrow: "Врач",
+    website: "Веб-сайт",
+    findCenter: "Найти центр",
+    documents: "Документы",
   },
   appt: {
     name: "Имя, Фамилия",
