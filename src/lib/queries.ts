@@ -68,6 +68,20 @@ export async function getCentersForService(serviceSlug: string, take = 12) {
   return getApprovedCenters({ service: serviceSlug, take });
 }
 
+/** How many appointment requests each service has — usage popularity. */
+export async function getServiceRequestCounts(): Promise<Record<string, number>> {
+  return safe(async () => {
+    const rows = await prisma.appointmentRequest.groupBy({
+      by: ["serviceSlug"],
+      where: { serviceSlug: { not: null } },
+      _count: { serviceSlug: true },
+    });
+    const out: Record<string, number> = {};
+    for (const r of rows) if (r.serviceSlug) out[r.serviceSlug] = r._count.serviceSlug;
+    return out;
+  }, {} as Record<string, number>);
+}
+
 export async function countApprovedCentersByService() {
   return safe(async () => {
     const rows = await prisma.centerService.groupBy({

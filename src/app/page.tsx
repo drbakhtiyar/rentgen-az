@@ -29,11 +29,12 @@ import {
   getPublishedPosts,
   getPlatformStats,
   countApprovedCentersByService,
+  getServiceRequestCounts,
   getRatingsForCenters,
   getCitiesWithCenters,
 } from "@/lib/queries";
 import { faqJsonLd } from "@/lib/seo";
-import { HOME_FAQ } from "@/content/faq";
+import { getHomeFaq } from "@/content/faq";
 import { formatDateAz } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
@@ -41,11 +42,12 @@ import { getDict } from "@/lib/i18n";
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [centers, posts, stats, counts, searchCities, allServices] = await Promise.all([
+  const [centers, posts, stats, counts, usage, searchCities, allServices] = await Promise.all([
     getFeaturedCenters(6),
     getPublishedPosts(3),
     getPlatformStats(),
     countApprovedCentersByService(),
+    getServiceRequestCounts(),
     getCitiesWithCenters(),
     getActiveServices(),
   ]);
@@ -58,17 +60,24 @@ export default async function HomePage() {
   const locale = await getLocale();
   const d = getDict(locale);
   const searchLabels = { ...d.search, search: d.cta.search };
+  const homeFaq = getHomeFaq(locale);
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
-  // Only feature services that at least one approved center offers.
+  // Feature the 4 most-used services that at least one approved center offers
+  // (most requests, then most centers offering them).
   const featuredServices = allServices
-    .filter((s) => s.featured && (counts[s.slug] ?? 0) > 0)
-    .slice(0, 8);
+    .filter((s) => (counts[s.slug] ?? 0) > 0)
+    .sort(
+      (a, b) =>
+        (usage[b.slug] ?? 0) - (usage[a.slug] ?? 0) ||
+        (counts[b.slug] ?? 0) - (counts[a.slug] ?? 0),
+    )
+    .slice(0, 4);
 
   return (
     <>
-      <JsonLd data={faqJsonLd(HOME_FAQ.map((f) => ({ question: f.question, answer: f.answer })))} />
+      <JsonLd data={faqJsonLd(homeFaq.map((f) => ({ question: f.question, answer: f.answer })))} />
 
       {/* ---------------- HERO ---------------- */}
       <section className="relative overflow-hidden bg-ink-950 text-white">
@@ -330,7 +339,7 @@ export default async function HomePage() {
         <Container>
           <SectionHeading eyebrow={d.home.faqEyebrow} title={d.home.faqTitle} />
           <div className="mt-10">
-            <FaqAccordion items={HOME_FAQ} />
+            <FaqAccordion items={homeFaq} />
           </div>
         </Container>
       </Section>

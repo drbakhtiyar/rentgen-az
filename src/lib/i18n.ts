@@ -296,6 +296,11 @@ type Dict = {
     noPartner: string;
     partnerCentersCta: string;
   };
+  faqPage: {
+    eyebrow: string;
+    title: string;
+    description: string;
+  };
 };
 
 const az: Dict = {
@@ -326,9 +331,9 @@ const az: Dict = {
     centerNamePlaceholder: "Mərkəzin adı",
   },
   hero: {
-    badge: "Azərbaycanın dental görüntüləmə platforması",
+    badge: "Azərbaycanın rentgen platforması",
     titleA: "Bakıda ",
-    titleHighlight: "dental rentgen",
+    titleHighlight: "rentgen",
     titleB: " və 3D tomoqrafiya mərkəzini tapın",
     subtitle:
       "Panoramik, sefalometrik rentgen, CBCT və implant öncəsi tomoqrafiya xidmətləri göstərən təsdiqlənmiş mərkəzləri xidmət və rayona görə axtarın — birbaşa zəng və WhatsApp ilə əlaqə saxlayın.",
@@ -612,6 +617,12 @@ const az: Dict = {
       "Hələ partnyor mərkəziniz yoxdur. Pasiyent göndərmək üçün əvvəlcə mərkəzlərlə əməkdaşlıq qurun.",
     partnerCentersCta: "Partnyor mərkəzlər",
   },
+  faqPage: {
+    eyebrow: "Kömək mərkəzi",
+    title: "Tez-tez verilən suallar",
+    description:
+      "Dental rentgen, 3D tomoqrafiya, qiymət, qeydiyyat və OTP giriş haqqında ən çox verilən sualların cavabları.",
+  },
 };
 
 const ru: Dict = {
@@ -642,9 +653,9 @@ const ru: Dict = {
     centerNamePlaceholder: "Название центра",
   },
   hero: {
-    badge: "Стоматологическая диагностическая платформа Азербайджана",
+    badge: "Рентген-платформа Азербайджана",
     titleA: "Найдите в Баку центр ",
-    titleHighlight: "стоматологического рентгена",
+    titleHighlight: "рентгена",
     titleB: " и 3D-томографии",
     subtitle:
       "Ищите проверенные центры, предоставляющие панорамный, цефалометрический рентген, КЛКТ и предимплантационную томографию — по услуге и району, с прямой связью по телефону и WhatsApp.",
@@ -926,6 +937,12 @@ const ru: Dict = {
     noPartner:
       "У вас пока нет партнёрских центров. Чтобы направлять пациентов, сначала установите сотрудничество с центрами.",
     partnerCentersCta: "Партнёрские центры",
+  },
+  faqPage: {
+    eyebrow: "Центр помощи",
+    title: "Часто задаваемые вопросы",
+    description:
+      "Ответы на частые вопросы о дентальном рентгене, 3D-томографии, ценах, регистрации и входе по OTP.",
   },
 };
 
