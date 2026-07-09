@@ -34,6 +34,8 @@ export type DoctorFormDefaults = {
   residencyUrl?: string;
   internshipUrl?: string;
   specialtyUrl?: string;
+  workplaceCenterId?: string;
+  workplaceStatus?: string;
 };
 
 type SaveInput = {
@@ -50,10 +52,12 @@ type SaveInput = {
   residencyUrl: string;
   internshipUrl: string;
   specialtyUrl: string;
+  workplaceCenterId: string;
 };
 
 export function DoctorProfileForm({
   cities,
+  centers = [],
   phone,
   defaults,
   mode,
@@ -61,6 +65,7 @@ export function DoctorProfileForm({
   locale = DEFAULT_LOCALE,
 }: {
   cities: Option[];
+  centers?: Option[];
   phone: string;
   defaults?: DoctorFormDefaults;
   mode: "create" | "edit";
@@ -84,6 +89,14 @@ export function DoctorProfileForm({
   const [residencyUrl, setResidencyUrl] = React.useState(defaults?.residencyUrl ?? "");
   const [internshipUrl, setInternshipUrl] = React.useState(defaults?.internshipUrl ?? "");
   const [specialtyUrl, setSpecialtyUrl] = React.useState(defaults?.specialtyUrl ?? "");
+  const [workplaceCenterId, setWorkplaceCenterId] = React.useState(
+    defaults?.workplaceCenterId ?? "",
+  );
+  // Show confirmation state only while the same center is still selected.
+  const workplaceStatus =
+    workplaceCenterId && workplaceCenterId === defaults?.workplaceCenterId
+      ? defaults?.workplaceStatus
+      : null;
 
   async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -126,6 +139,7 @@ export function DoctorProfileForm({
         firstName: get("firstName"),
         lastName: get("lastName"),
         clinic: get("clinic"),
+        workplaceCenterId,
         specializations: specs,
         city: get("city"),
         photoUrl,
@@ -244,6 +258,42 @@ export function DoctorProfileForm({
           })}
         </div>
       </div>
+
+      {centers.length > 0 && (
+        <Field
+          label="İş yeriniz sistemdə qeydiyyatlı mərkəzdirsə seçin"
+          htmlFor="workplaceCenterId"
+          hint="Seçdiyiniz mərkəz təsdiqlədikdən sonra profilinizdə link kimi görünəcək."
+        >
+          <Select
+            id="workplaceCenterId"
+            value={workplaceCenterId}
+            onChange={(e) => setWorkplaceCenterId(e.target.value)}
+          >
+            <option value="">Seçilməyib (sərbəst yazı)</option>
+            {centers.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
+          {workplaceStatus === "PENDING" && (
+            <p className="mt-1 text-xs font-medium text-amber-600">
+              Mərkəzin təsdiqi gözlənilir.
+            </p>
+          )}
+          {workplaceStatus === "ACCEPTED" && (
+            <p className="mt-1 text-xs font-medium text-emerald-600">
+              Mərkəz təsdiqlədi ✓ — profilinizdə link kimi görünür.
+            </p>
+          )}
+          {workplaceStatus === "REJECTED" && (
+            <p className="mt-1 text-xs font-medium text-red-600">
+              Mərkəz təsdiqləmədi.
+            </p>
+          )}
+        </Field>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t.clinic} htmlFor="clinic">

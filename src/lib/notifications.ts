@@ -8,7 +8,10 @@ export type NotifType =
   | "PARTNER_ACCEPTED"
   | "PARTNER_REJECTED"
   | "ADMIN_MESSAGE"
-  | "PATIENT_UPDATED";
+  | "PATIENT_UPDATED"
+  | "WORKPLACE_REQUEST"
+  | "WORKPLACE_ACCEPTED"
+  | "WORKPLACE_REJECTED";
 
 /** Create an in-app notification for a user (best-effort — never throws). */
 export async function notifyUser(

@@ -152,6 +152,7 @@ model CenterProfile {
   events              CenterEvent[]
   doctorPartners      CenterDoctor[]
   conversations       Conversation[]
+  workplaceDoctors    DoctorProfile[] @relation("DoctorWorkplace")
 
   @@index([status])
   @@index([city])
@@ -351,6 +352,10 @@ model DoctorProfile {
   internshipUrl   String? // internatura sənədi
   specialtyUrl    String? // uzmanlıq sənədi
   status          CenterStatus @default(PENDING)
+  // İş yeri = sistemdə qeydiyyatlı mərkəz (mərkəz təsdiqindən sonra profildə link olur)
+  workplaceCenterId String?
+  workplaceCenter   CenterProfile? @relation("DoctorWorkplace", fields: [workplaceCenterId], references: [id], onDelete: SetNull)
+  workplaceStatus   String? // PENDING | ACCEPTED | REJECTED
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
@@ -359,6 +364,7 @@ model DoctorProfile {
   conversations       Conversation[]
 
   @@index([status])
+  @@index([workplaceCenterId, workplaceStatus])
 }
 
 // Həkim↔mərkəz söhbəti (həmişə 2 tərəf). Mesajlar polling ilə yenilənir.

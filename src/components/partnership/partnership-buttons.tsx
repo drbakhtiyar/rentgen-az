@@ -6,6 +6,7 @@ import { Loader2, Send, Check, X, Clock } from "lucide-react";
 import {
   requestPartnershipAction,
   respondPartnershipAction,
+  respondWorkplaceAction,
 } from "@/app/actions/partnership";
 
 /** Doctor-side: send a partnership request to a center (state by status). */
@@ -52,6 +53,41 @@ export function RequestPartnerButton({
       {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
       {status === "REJECTED" ? "Yenidən sorğu" : "Əməkdaşlıq sorğusu"}
     </button>
+  );
+}
+
+/** Center-side: confirm / reject a doctor's "works here" claim. */
+export function RespondWorkplaceButtons({ doctorId }: { doctorId: string }) {
+  const router = useRouter();
+  const [pending, startTransition] = React.useTransition();
+
+  function respond(accept: boolean) {
+    startTransition(async () => {
+      await respondWorkplaceAction(doctorId, accept);
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {pending && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => respond(true)}
+        className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+      >
+        <Check className="h-3.5 w-3.5" /> Təsdiqlə
+      </button>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => respond(false)}
+        className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+      >
+        <X className="h-3.5 w-3.5" /> Rədd et
+      </button>
+    </div>
   );
 }
 

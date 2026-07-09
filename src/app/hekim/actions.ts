@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorProfileSchema } from "@/lib/validation";
+import { notifyUser } from "@/lib/notifications";
+import { doctorName } from "@/lib/utils";
 
 export type DoctorActionResult = { ok: boolean; error?: string; message?: string };
 
@@ -21,6 +23,7 @@ export async function saveDoctorProfileAction(input: {
   residencyUrl?: string;
   internshipUrl?: string;
   specialtyUrl?: string;
+  workplaceCenterId?: string;
 }): Promise<DoctorActionResult> {
   const user = await requireRole("DOCTOR");
   const parsed = doctorProfileSchema.safeParse(input);
@@ -33,6 +36,34 @@ export async function saveDoctorProfileAction(input: {
     const existing = await prisma.doctorProfile.findUnique({
       where: { userId: user.id },
     });
+
+    // Resolve the workplace claim (registered center → needs center confirmation).
+    const wcid = input.workplaceCenterId?.trim() || null;
+    let workplaceData: {
+      workplaceCenterId?: string | null;
+      workplaceStatus?: string | null;
+    } = {};
+    let centerToNotify: { userId: string } | null = null;
+    if (!wcid) {
+      workplaceData = { workplaceCenterId: null, workplaceStatus: null };
+    } else if (
+      existing?.workplaceCenterId === wcid &&
+      (existing?.workplaceStatus === "ACCEPTED" || existing?.workplaceStatus === "PENDING")
+    ) {
+      // Same center, already accepted/pending — keep as is, don't re-notify.
+      workplaceData = {};
+    } else {
+      const center = await prisma.centerProfile.findFirst({
+        where: { id: wcid, status: "APPROVED" },
+        select: { id: true, userId: true },
+      });
+      if (center) {
+        workplaceData = { workplaceCenterId: wcid, workplaceStatus: "PENDING" };
+        centerToNotify = { userId: center.userId };
+      } else {
+        workplaceData = { workplaceCenterId: null, workplaceStatus: null };
+      }
+    }
 
     const data = {
       firstName: d.firstName,
@@ -48,6 +79,7 @@ export async function saveDoctorProfileAction(input: {
       residencyUrl: d.residencyUrl || null,
       internshipUrl: d.internshipUrl || null,
       specialtyUrl: d.specialtyUrl || null,
+      ...workplaceData,
     };
 
     if (existing) {
@@ -56,6 +88,16 @@ export async function saveDoctorProfileAction(input: {
       await prisma.doctorProfile.create({
         data: { ...data, userId: user.id, status: "PENDING" },
       });
+    }
+
+    if (centerToNotify) {
+      await notifyUser(
+        centerToNotify.userId,
+        "WORKPLACE_REQUEST",
+        "İş yeri təsdiqi",
+        `${doctorName(d.firstName, d.lastName)} sizi iş yeri kimi göstərdi. Təsdiqləyin.`,
+        "/merkez/hekimler",
+      );
     }
 
     revalidatePath("/hekim");

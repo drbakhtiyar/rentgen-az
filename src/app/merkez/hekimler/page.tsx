@@ -7,7 +7,7 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { Badge } from "@/components/ui/badge";
-import { RespondPartnerButtons } from "@/components/partnership/partnership-buttons";
+import { RespondPartnerButtons, RespondWorkplaceButtons } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorName } from "@/lib/utils";
@@ -59,7 +59,7 @@ export default async function CenterDoctorsPage() {
   });
   if (!center) redirect("/merkez/qeydiyyat");
 
-  const [pending, accepted] = await Promise.all([
+  const [pending, accepted, workplaceClaims] = await Promise.all([
     prisma.centerDoctor.findMany({
       where: { centerId: center.id, status: "PENDING" },
       include: doctorInclude,
@@ -70,10 +70,58 @@ export default async function CenterDoctorsPage() {
       include: doctorInclude,
       orderBy: { updatedAt: "desc" },
     }),
+    prisma.doctorProfile.findMany({
+      where: { workplaceCenterId: center.id, workplaceStatus: "PENDING" },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        clinic: true,
+        city: true,
+        specializations: true,
+        photoUrl: true,
+      },
+      orderBy: { updatedAt: "desc" },
+    }),
   ]);
 
   return (
     <DashboardShell title="Partnyor həkimlər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+      {workplaceClaims.length > 0 && (
+        <div className="mb-5">
+          <Panel
+            title={
+              <span className="flex items-center gap-2 text-amber-700">
+                <MailQuestion className="h-4 w-4" /> İş yeri təsdiqləri ({workplaceClaims.length})
+              </span>
+            }
+          >
+            <p className="mb-3 text-sm text-slate-500">
+              Bu həkimlər sizi iş yeri kimi göstərib. Təsdiqləsəniz, həkimin profilində
+              mərkəziniz link kimi görünəcək.
+            </p>
+            <div className="space-y-3">
+              {workplaceClaims.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/40 p-4"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <DoctorAvatar photoUrl={doc.photoUrl} name={docName(doc)} />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-ink-900">{docName(doc)}</p>
+                      <p className="text-sm text-slate-500">
+                        {[doc.clinic, doc.city].filter(Boolean).join(" · ") || "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <RespondWorkplaceButtons doctorId={doc.id} />
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
+      )}
       {pending.length > 0 && (
         <div className="mb-5">
           <Panel

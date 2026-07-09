@@ -334,8 +334,8 @@ const az: Dict = {
   },
   doctors: {
     eyebrow: "Həkim kataloqu",
-    title: "Dental həkimlər",
-    description: "Təsdiqlənmiş dental həkimləri ixtisas və şəhərə görə tapın.",
+    title: "Həkimlər",
+    description: "Təsdiqlənmiş həkimləri ixtisas və şəhərə görə tapın.",
     empty: "Hələ həkim yoxdur",
     emptyDesc: "Təsdiqlənmiş həkimlər tezliklə burada görünəcək.",
     joinCta: "Həkim kimi qoşulun",

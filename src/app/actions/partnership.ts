@@ -113,3 +113,54 @@ export async function respondPartnershipAction(
     return { ok: false, error: "Texniki xəta." };
   }
 }
+
+/** Center → confirms or rejects a doctor's "works here" claim. */
+export async function respondWorkplaceAction(
+  doctorId: string,
+  accept: boolean,
+): Promise<PartnershipResult> {
+  const user = await requireRole("CENTER");
+  try {
+    const center = await prisma.centerProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true, name: true },
+    });
+    if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+    const doctor = await prisma.doctorProfile.findUnique({
+      where: { id: doctorId },
+      select: { id: true, workplaceCenterId: true, workplaceStatus: true, userId: true },
+    });
+    if (
+      !doctor ||
+      doctor.workplaceCenterId !== center.id ||
+      doctor.workplaceStatus !== "PENDING"
+    ) {
+      return { ok: false, error: "Sorğu tapılmadı." };
+    }
+
+    await prisma.doctorProfile.update({
+      where: { id: doctorId },
+      data: { workplaceStatus: accept ? "ACCEPTED" : "REJECTED" },
+    });
+
+    await notifyUser(
+      doctor.userId,
+      accept ? "WORKPLACE_ACCEPTED" : "WORKPLACE_REJECTED",
+      accept ? "İş yeri təsdiqləndi" : "İş yeri təsdiqlənmədi",
+      accept
+        ? `${center.name} sizi iş yeri kimi təsdiqlədi.`
+        : `${center.name} iş yeri sorğunuzu təsdiqləmədi.`,
+      "/hekim/profil",
+    );
+
+    revalidatePath("/merkez/hekimler");
+    revalidatePath("/hekim/profil");
+    return {
+      ok: true,
+      message: accept ? "İş yeri təsdiqləndi." : "Sorğu rədd edildi.",
+    };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}

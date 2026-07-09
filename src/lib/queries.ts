@@ -250,6 +250,7 @@ export async function getApprovedDoctorById(id: string) {
     () =>
       prisma.doctorProfile.findFirst({
         where: { id, status: "APPROVED" },
+        include: { workplaceCenter: { select: { slug: true, name: true, status: true } } },
       }),
     null,
   );

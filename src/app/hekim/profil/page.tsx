@@ -35,6 +35,16 @@ export default async function DoctorProfilePage() {
   }
   if (!profile) redirect("/hekim/qeydiyyat");
 
+  const centerOptions = (
+    await prisma.centerProfile
+      .findMany({
+        where: { status: "APPROVED" },
+        select: { id: true, name: true, city: true },
+        orderBy: { name: "asc" },
+      })
+      .catch(() => [])
+  ).map((c) => ({ value: c.id, label: `${c.name}${c.city ? ` — ${c.city}` : ""}` }));
+
   const fullName =
     doctorName(profile.firstName, profile.lastName);
 
@@ -50,6 +60,7 @@ export default async function DoctorProfilePage() {
           mode="edit"
           locale={locale}
           cities={cityOptions}
+          centers={centerOptions}
           phone={user.phone}
           defaults={{
             firstName: profile.firstName ?? "",
@@ -65,6 +76,8 @@ export default async function DoctorProfilePage() {
             residencyUrl: profile.residencyUrl ?? "",
             internshipUrl: profile.internshipUrl ?? "",
             specialtyUrl: profile.specialtyUrl ?? "",
+            workplaceCenterId: profile.workplaceCenterId ?? "",
+            workplaceStatus: profile.workplaceStatus ?? "",
           }}
         />
       </Card>
