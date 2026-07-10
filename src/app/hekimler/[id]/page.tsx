@@ -13,6 +13,7 @@ import { getApprovedDoctorById } from "@/lib/queries";
 import { DocumentGallery } from "@/components/documents/document-gallery";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
+import { doctorLimits } from "@/lib/plans";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -160,7 +161,7 @@ export default async function DoctorProfilePage({
                   ].filter((d): d is { label: string; url: string } => !!d.url)}
                 />
 
-                {(instagramUrl || doctor.website) && (
+                {doctorLimits(doctor.plan).branding && (instagramUrl || doctor.website) && (
                   <div className="mt-5 flex flex-wrap gap-3">
                     {instagramUrl && (
                       <a

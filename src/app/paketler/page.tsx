@@ -82,7 +82,7 @@ const centerTiers: Tier[] = [
       "1 TB bulud storage",
       "«Tövsiyə olunan» nişanı + featured yerləşdirmə",
       "Tam analitika paneli",
-      "Həkim-referral vurğusu",
+      "Həkim yönləndirmələrinin vurğulanması",
       "40 şəkil",
       "Prioritet dəstək",
     ],
@@ -111,12 +111,12 @@ const doctorTiers: Tier[] = [
     name: "Free",
     price: "0",
     period: "AZN / ay",
-    tagline: "Həkim profili və referral",
+    tagline: "Həkim profili və pasiyent yönləndirmə",
     icon: <Sparkles className="h-5 w-5" />,
     accent: "text-slate-600 bg-slate-100",
     features: [
       "Baza həkim profili",
-      "Pasiyent referralı göndərmə",
+      "Pasiyenti mərkəzə yönləndirmə",
       "20 GB storage (pasiyent görüntüləri)",
       "Mərkəzlərlə çat",
       "Standart sıralanma",
@@ -151,7 +151,7 @@ const doctorTiers: Tier[] = [
       "500 GB storage",
       "Həkimlər siyahısında üst sıra",
       "Instagram / vebsayt vurğusu",
-      "Limitsiz referral tarixçəsi",
+      "Limitsiz yönləndirmə tarixçəsi",
       "Prioritet dəstək",
     ],
   },
@@ -164,9 +164,9 @@ const doctorTiers: Tier[] = [
     accent: "text-cyan-700 bg-gradient-to-br from-cyan-200 to-cyan-100",
     features: [
       "Gold-dakı hər şey +",
-      "1 TB storage",
+      "1 TB storage (+1 TB blok ilə artırıla bilər)",
       "Axtarışda TOP yerləşmə",
-      "Tam brendinq",
+      "Tam brendinq (Instagram, sayt, profil banneri + vurğulanmış kart)",
       "Fərdi dəstək",
     ],
   },
@@ -257,7 +257,7 @@ export default function PackagesPage() {
             <h2 className="font-display text-2xl font-bold text-ink-900">Həkimlər üçün</h2>
           </div>
           <p className="mb-6 text-sm text-slate-500">
-            Həkim profili, referral alətləri və pasiyent görüntüləri üçün storage.
+            Həkim profili, yönləndirmə alətləri və pasiyent görüntüləri üçün storage.
           </p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {doctorTiers.map((t) => (
