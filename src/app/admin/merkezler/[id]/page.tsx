@@ -54,6 +54,7 @@ export default async function AdminEditCenterPage({
           mode="edit"
           onSave={save}
           maxImages={centerLimits(center.plan).photoLimit ?? 999}
+          allowBanner={centerLimits(center.plan).banner}
           defaults={{
             name: center.name,
             phone: center.phone,
@@ -68,6 +69,7 @@ export default async function AdminEditCenterPage({
             description: center.description ?? "",
             logoUrl: center.logoUrl,
             licenseUrl: center.licenseUrl,
+            bannerUrl: center.bannerUrl,
             images: center.images,
             hours: parseHours(center.hours),
             lat: center.lat,

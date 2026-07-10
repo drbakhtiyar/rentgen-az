@@ -123,6 +123,7 @@ export async function adminUpdateCenterAction(
     description?: string;
     logoUrl?: string;
     licenseUrl?: string;
+    bannerUrl?: string;
     images?: string[];
     lat?: number | null;
     lng?: number | null;
@@ -154,6 +155,7 @@ export async function adminUpdateCenterAction(
         description: d.description || null,
         logoUrl: d.logoUrl || null,
         licenseUrl: d.licenseUrl || null,
+        bannerUrl: d.bannerUrl || null,
         images: d.images ?? [],
         lat: d.lat ?? null,
         lng: d.lng ?? null,

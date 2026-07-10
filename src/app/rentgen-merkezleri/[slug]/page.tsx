@@ -33,6 +33,7 @@ import { TrackView } from "@/components/centers/track-view";
 import { parseHours, hoursRows, nowInBaku } from "@/lib/hours";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
+import { centerLimits } from "@/lib/plans";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 import { formatPrice, formatDateAz, cn, doctorName } from "@/lib/utils";
@@ -219,6 +220,16 @@ export default async function CenterDetailPage({
           {center.whatsapp && <WhatsAppButton phone={center.whatsapp} centerId={center.id} />}
         </div>
       </PageHeader>
+      {centerLimits(center.plan).banner && center.bannerUrl && (
+        <div className="relative h-40 w-full overflow-hidden sm:h-56 lg:h-64">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={center.bannerUrl}
+            alt={`${center.name} banner`}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      )}
       <TrackView centerId={center.id} />
 
       <Section className="py-12">

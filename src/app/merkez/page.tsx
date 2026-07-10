@@ -18,7 +18,8 @@ import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard
 import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { getCenterEventStats } from "@/lib/queries";
+import { getCenterEventStats, getCenterStorageUsage } from "@/lib/queries";
+import { StorageUsage } from "@/components/dashboard/storage-usage";
 import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
@@ -60,6 +61,7 @@ export default async function CenterDashboardPage() {
     where: { centerId: center.id, status: "NEW" },
   });
   const stats = await getCenterEventStats(center.id, 30);
+  const storageUsed = await getCenterStorageUsage(center.id);
 
   // Approved doctors for manual referring-doctor assignment.
   const doctorOptions = (
@@ -135,6 +137,10 @@ export default async function CenterDashboardPage() {
           <StatCard label="Zəng klikləri" value={stats.calls} icon={<Inbox />} tone="cyan" />
           <StatCard label="WhatsApp klikləri" value={stats.whatsapp} icon={<Inbox />} tone="green" />
         </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[var(--shadow-soft)]">
+        <StorageUsage usedBytes={storageUsed} plan={center.plan} />
       </div>
 
       {center._count.services === 0 && (

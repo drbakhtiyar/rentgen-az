@@ -69,6 +69,17 @@ export async function getCentersForService(serviceSlug: string, take = 12) {
   return getApprovedCenters({ service: serviceSlug, take });
 }
 
+/** Total bytes a center currently stores in B2 (sum of its rentgen files). */
+export async function getCenterStorageUsage(centerId: string): Promise<number> {
+  return safe(async () => {
+    const agg = await prisma.rentgenFile.aggregate({
+      _sum: { size: true },
+      where: { request: { centerId } },
+    });
+    return agg._sum.size ?? 0;
+  }, 0);
+}
+
 /** How many appointment requests each service has — usage popularity. */
 export async function getServiceRequestCounts(): Promise<Record<string, number>> {
   return safe(async () => {

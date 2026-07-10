@@ -45,6 +45,7 @@ export async function saveCenterProfileAction(input: {
   description?: string;
   logoUrl?: string;
   licenseUrl?: string;
+  bannerUrl?: string;
   images?: string[];
   lat?: number | null;
   lng?: number | null;
@@ -86,6 +87,7 @@ export async function saveCenterProfileAction(input: {
       description: d.description || null,
       logoUrl: d.logoUrl || null,
       licenseUrl: d.licenseUrl || null,
+      bannerUrl: centerLimits(existing?.plan ?? "FREE").banner ? d.bannerUrl || null : null,
       images,
       lat: d.lat ?? null,
       lng: d.lng ?? null,

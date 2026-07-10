@@ -27,6 +27,7 @@ export type CenterFormDefaults = {
   description?: string;
   logoUrl?: string | null;
   licenseUrl?: string | null;
+  bannerUrl?: string | null;
   images?: string[];
   lat?: number | null;
   lng?: number | null;
@@ -46,6 +47,7 @@ type SaveInput = {
   description: string;
   logoUrl: string;
   licenseUrl: string;
+  bannerUrl: string;
   images: string[];
   lat: number | null;
   lng: number | null;
@@ -57,6 +59,7 @@ export function CenterProfileForm({
   mode,
   onSave,
   maxImages,
+  allowBanner,
 }: {
   cities: Option[];
   defaults?: CenterFormDefaults;
@@ -65,6 +68,8 @@ export function CenterProfileForm({
   onSave?: (input: SaveInput) => Promise<{ ok: boolean; error?: string; message?: string }>;
   /** Max number of gallery photos allowed by the center's plan (default 12). */
   maxImages?: number;
+  /** Whether the plan allows a profile banner (Platinum). */
+  allowBanner?: boolean;
 }) {
   const imgCap = maxImages ?? 12;
   const [pending, startTransition] = React.useTransition();
@@ -81,6 +86,28 @@ export function CenterProfileForm({
   const [licenseUrl, setLicenseUrl] = React.useState(defaults?.licenseUrl ?? "");
   const [uploadingLicense, setUploadingLicense] = React.useState(false);
   const licenseRef = React.useRef<HTMLInputElement>(null);
+  const [bannerUrl, setBannerUrl] = React.useState(defaults?.bannerUrl ?? "");
+  const [uploadingBanner, setUploadingBanner] = React.useState(false);
+  const bannerRef = React.useRef<HTMLInputElement>(null);
+
+  async function onPickBanner(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploadingBanner(true);
+    try {
+      const blob = await upload(`center-banners/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+      setBannerUrl(blob.url);
+    } catch {
+      setError("Banner yüklənmədi. Yenidən cəhd edin.");
+    } finally {
+      setUploadingBanner(false);
+      if (bannerRef.current) bannerRef.current.value = "";
+    }
+  }
 
   async function onPickLicense(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -175,6 +202,7 @@ export function CenterProfileForm({
         description: get("description"),
         logoUrl,
         licenseUrl,
+        bannerUrl: allowBanner ? bannerUrl : "",
         images,
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
@@ -413,6 +441,47 @@ export function CenterProfileForm({
             </p>
           )}
         </div>
+
+        {allowBanner && (
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-ink-800">
+              Profil banneri{" "}
+              <span className="font-normal text-slate-400">— Platinum: mərkəz səhifənizin başında geniş banner</span>
+            </p>
+            <input
+              ref={bannerRef}
+              type="file"
+              accept="image/png,image/webp,image/jpeg"
+              onChange={onPickBanner}
+              className="hidden"
+            />
+            {bannerUrl ? (
+              <div className="group relative overflow-hidden rounded-xl ring-1 ring-slate-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={bannerUrl} alt="Banner" className="h-32 w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setBannerUrl("")}
+                  className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"
+                  aria-label="Sil"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => bannerRef.current?.click()}
+                disabled={uploadingBanner}
+                className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+              >
+                {uploadingBanner ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                Banner yüklə
+              </button>
+            )}
+          </div>
+        )}
+
         <div>
           <p className="mb-1.5 text-sm font-medium text-ink-800">
             Xəritədə yeriniz{" "}

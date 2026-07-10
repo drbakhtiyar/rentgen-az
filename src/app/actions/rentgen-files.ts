@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireRole } from "@/lib/auth/rbac";
 import { notifyUser } from "@/lib/notifications";
+import { centerLimits } from "@/lib/plans";
+import type { Plan } from "@/generated/prisma/client";
 import {
   b2Configured,
   presignUpload,
@@ -33,6 +35,21 @@ const ALLOWED_TYPES = new Set([
   "application/octet-stream", // .dcm / raw DICOM
 ]);
 const MAX_SIZE = 2_000_000_000; // ~2 GB (fits Int)
+const GB = 1024 ** 3;
+
+/** True if adding `addBytes` would exceed the center's plan storage quota. */
+async function wouldExceedQuota(centerId: string, plan: Plan, addBytes: number): Promise<boolean> {
+  const limitBytes = centerLimits(plan).storageGb * GB;
+  const agg = await prisma.rentgenFile.aggregate({
+    _sum: { size: true },
+    where: { request: { centerId } },
+  });
+  const used = agg._sum.size ?? 0;
+  return used + addBytes > limitBytes;
+}
+
+const QUOTA_ERROR =
+  "Storage limitiniz doldu. Paketi yüksəldin və ya köhnə faylları silin.";
 
 function safeName(name: string): string {
   return (name.split(/[\\/]/).pop() ?? "fayl")
@@ -121,7 +138,7 @@ export async function requestUploadUrlAction(input: {
 
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true },
+    select: { id: true, plan: true },
   });
   if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
@@ -131,6 +148,10 @@ export async function requestUploadUrlAction(input: {
   });
   if (!req || req.centerId !== center.id) {
     return { ok: false, error: "Müraciət tapılmadı." };
+  }
+
+  if (await wouldExceedQuota(center.id, center.plan, input.size)) {
+    return { ok: false, error: QUOTA_ERROR };
   }
 
   const key = `rentgen/${req.id}/${randomUUID()}-${safeName(input.fileName)}`;
@@ -163,7 +184,7 @@ export async function startMultipartUploadAction(input: {
 
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true },
+    select: { id: true, plan: true },
   });
   if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
   const req = await prisma.appointmentRequest.findUnique({
@@ -171,6 +192,10 @@ export async function startMultipartUploadAction(input: {
     select: { id: true, centerId: true },
   });
   if (!req || req.centerId !== center.id) return { ok: false, error: "Müraciət tapılmadı." };
+
+  if (await wouldExceedQuota(center.id, center.plan, input.size)) {
+    return { ok: false, error: QUOTA_ERROR };
+  }
 
   const key = `rentgen/${req.id}/${randomUUID()}-${safeName(input.fileName)}`;
   const partCount = Math.max(1, Math.ceil(input.size / MULTIPART_PART_SIZE));
