@@ -38,6 +38,14 @@ enum ReferralStatus {
   COMPLETED
 }
 
+// Abunə paketi (mərkəz və həkim üçün). FREE = defolt.
+enum Plan {
+  FREE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
 // ----------------------------- Core -----------------------------
 
 model User {
@@ -158,7 +166,10 @@ model CenterProfile {
   logoUrl           String? // mərkəzin loqosu (yüklənmiş şəkil)
   licenseUrl        String? // rentgenologiya üzrə lisenziya (məcburi)
   images            String[]     @default([])
+  bannerUrl         String? // Platinum brendinq banneri
   status            CenterStatus @default(PENDING)
+  plan              Plan         @default(FREE)
+  planUntil         DateTime? // abunənin bitmə tarixi (ödəniş fazasında)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
@@ -374,6 +385,8 @@ model DoctorProfile {
   workplaceCenterId String?
   workplaceCenter   CenterProfile? @relation("DoctorWorkplace", fields: [workplaceCenterId], references: [id], onDelete: SetNull)
   workplaceStatus   String? // PENDING | ACCEPTED | REJECTED
+  plan            Plan         @default(FREE)
+  planUntil       DateTime? // abunənin bitmə tarixi (ödəniş fazasında)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 

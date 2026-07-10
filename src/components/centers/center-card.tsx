@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Clock, ArrowUpRight, Tag } from "lucide-react";
+import { MapPin, Clock, ArrowUpRight, Tag, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
@@ -7,6 +7,7 @@ import { RatingSummary } from "@/components/reviews/stars";
 import { OpenStatus } from "@/components/centers/open-status";
 import { formatPrice } from "@/lib/utils";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { isCenterFeatured } from "@/lib/plans";
 import type { CenterWithServices } from "@/lib/queries";
 
 export function CenterCard({
@@ -21,7 +22,9 @@ export function CenterCard({
   highlightService?: string;
   locale?: Locale;
 }) {
-  const cta = getDict(locale).cta;
+  const d = getDict(locale);
+  const cta = d.cta;
+  const featured = isCenterFeatured(center.plan);
   const matched = highlightService
     ? center.services.find((cs) => cs.service.slug === highlightService)
     : undefined;
@@ -78,6 +81,14 @@ export function CenterCard({
         <div className="absolute left-3 top-3">
           <VerifiedBadge className="bg-white/95 text-brand-700 shadow-sm ring-slate-200/80 backdrop-blur" />
         </div>
+        {featured && (
+          <div className="absolute right-3 top-3">
+            <Badge tone="amber" className="shadow-sm ring-amber-200/80 backdrop-blur">
+              <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+              {d.centers.featuredBadge}
+            </Badge>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">

@@ -6,9 +6,10 @@ import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Panel } from "@/components/dashboard/widgets";
 import { CenterProfileForm } from "@/components/forms/center-profile-form";
 import { AdminMessageForm } from "@/components/admin/admin-message-form";
+import { PlanSelector } from "@/components/admin/plan-selector";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { adminUpdateCenterAction } from "@/app/admin/actions";
+import { adminUpdateCenterAction, adminSetCenterPlanAction } from "@/app/admin/actions";
 import { parseHours } from "@/lib/hours";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
@@ -35,6 +36,7 @@ export default async function AdminEditCenterPage({
   if (!center) notFound();
 
   const save = adminUpdateCenterAction.bind(null, center.id);
+  const setPlan = adminSetCenterPlanAction.bind(null, center.id);
 
   return (
     <AdminShell title="Mərkəzi redaktə et" userName={admin.phone}>
@@ -71,6 +73,12 @@ export default async function AdminEditCenterPage({
           }}
         />
       </Panel>
+
+      <div className="mt-5">
+        <Panel title="Paket / Abunə">
+          <PlanSelector current={center.plan} action={setPlan} />
+        </Panel>
+      </div>
 
       <div className="mt-5">
         <Panel title="Mərkəzə bildiriş göndər">

@@ -16,7 +16,8 @@ import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import { smsPatientStatusChange } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
 import { sendAdminWelcome } from "@/lib/admin-chat";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, type Plan } from "@/generated/prisma/client";
+import { ALL_PLANS } from "@/lib/plans";
 import type {
   CenterStatus,
   ReferralStatus,
@@ -554,4 +555,30 @@ export async function saveSeoSettingAction(input: {
   } catch {
     return { ok: false, error: "Texniki xəta." };
   }
+}
+
+/** Admin: bir mərkəzin abunə paketini təyin edir (FREE/SILVER/GOLD/PLATINUM). */
+export async function adminSetCenterPlanAction(centerId: string, formData: FormData) {
+  await requireRole("ADMIN");
+  const plan = String(formData.get("plan") ?? "");
+  if (!ALL_PLANS.includes(plan as Plan)) return;
+  await prisma.centerProfile.update({
+    where: { id: centerId },
+    data: { plan: plan as Plan },
+  });
+  revalidatePath(`/admin/merkezler/${centerId}`);
+  revalidatePath("/admin/merkezler");
+}
+
+/** Admin: bir həkimin abunə paketini təyin edir. */
+export async function adminSetDoctorPlanAction(doctorId: string, formData: FormData) {
+  await requireRole("ADMIN");
+  const plan = String(formData.get("plan") ?? "");
+  if (!ALL_PLANS.includes(plan as Plan)) return;
+  await prisma.doctorProfile.update({
+    where: { id: doctorId },
+    data: { plan: plan as Plan },
+  });
+  revalidatePath(`/admin/hekimler/${doctorId}`);
+  revalidatePath("/admin/hekimler");
 }

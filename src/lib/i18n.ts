@@ -73,6 +73,7 @@ type Dict = {
     noResultsDesc: string;
     allCenters: string;
     nearby: string;
+    featuredBadge: string;
     sortBy: string;
     sortRecommended: string;
     sortCheapest: string;
@@ -503,6 +504,7 @@ const az: Dict = {
       "Seçilmiş filtrə uyğun təsdiqlənmiş mərkəz yoxdur. Filtri dəyişin və ya bütün mərkəzlərə baxın.",
     allCenters: "Bütün mərkəzlər",
     nearby: "Yaxınımdakı mərkəzləri tap",
+    featuredBadge: "Tövsiyə olunan",
     sortBy: "Sırala",
     sortRecommended: "Tövsiyə",
     sortCheapest: "Ən ucuz",
@@ -1009,6 +1011,7 @@ const ru: Dict = {
       "Нет проверенных центров по выбранному фильтру. Измените фильтр или посмотрите все центры.",
     allCenters: "Все центры",
     nearby: "Найти центры рядом",
+    featuredBadge: "Рекомендуем",
     sortBy: "Сортировка",
     sortRecommended: "Рекомендуемые",
     sortCheapest: "Дешевле",

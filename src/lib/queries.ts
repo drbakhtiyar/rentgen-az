@@ -37,7 +37,8 @@ export async function getApprovedCenters(filters: CenterListFilters = {}) {
       prisma.centerProfile.findMany({
         where: centerWhere(filters),
         include: { services: { include: { service: true } } },
-        orderBy: [{ createdAt: "desc" }],
+        // Paid tiers (Gold/Platinum) rank first — enum order FREE<SILVER<GOLD<PLATINUM.
+        orderBy: [{ plan: "desc" }, { createdAt: "desc" }],
         take: filters.take ?? 60,
         skip: filters.skip ?? 0,
       }),
@@ -252,7 +253,8 @@ export async function getApprovedDoctors() {
     () =>
       prisma.doctorProfile.findMany({
         where: { status: "APPROVED" },
-        orderBy: [{ firstName: "asc" }],
+        // Paid tiers (Gold/Platinum) rank first, then alphabetical.
+        orderBy: [{ plan: "desc" }, { firstName: "asc" }],
       }),
     [],
   );

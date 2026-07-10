@@ -6,10 +6,11 @@ import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Panel } from "@/components/dashboard/widgets";
 import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
 import { AdminMessageForm } from "@/components/admin/admin-message-form";
+import { PlanSelector } from "@/components/admin/plan-selector";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorName } from "@/lib/utils";
-import { adminUpdateDoctorAction } from "@/app/admin/actions";
+import { adminUpdateDoctorAction, adminSetDoctorPlanAction } from "@/app/admin/actions";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 
@@ -40,6 +41,7 @@ export default async function AdminEditDoctorPage({
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
   const save = adminUpdateDoctorAction.bind(null, doctor.id);
+  const setPlan = adminSetDoctorPlanAction.bind(null, doctor.id);
 
   return (
     <AdminShell title="Həkimi redaktə et" userName={admin.phone}>
@@ -73,6 +75,12 @@ export default async function AdminEditDoctorPage({
           }}
         />
       </Panel>
+
+      <div className="mt-5">
+        <Panel title="Paket / Abunə">
+          <PlanSelector current={doctor.plan} action={setPlan} />
+        </Panel>
+      </div>
 
       <div className="mt-5">
         <Panel title="Həkimə bildiriş göndər">
