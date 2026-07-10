@@ -7,10 +7,15 @@ import { Panel } from "@/components/dashboard/widgets";
 import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
 import { AdminMessageForm } from "@/components/admin/admin-message-form";
 import { PlanSelector } from "@/components/admin/plan-selector";
+import { WalletCredit } from "@/components/admin/wallet-credit";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorName } from "@/lib/utils";
-import { adminUpdateDoctorAction, adminSetDoctorPlanAction } from "@/app/admin/actions";
+import {
+  adminUpdateDoctorAction,
+  adminSetDoctorPlanAction,
+  adminCreditWalletAction,
+} from "@/app/admin/actions";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 
@@ -42,6 +47,7 @@ export default async function AdminEditDoctorPage({
     doctorName(doctor.firstName, doctor.lastName);
   const save = adminUpdateDoctorAction.bind(null, doctor.id);
   const setPlan = adminSetDoctorPlanAction.bind(null, doctor.id);
+  const credit = adminCreditWalletAction.bind(null, doctor.userId);
 
   return (
     <AdminShell title="Həkimi redaktə et" userName={admin.phone}>
@@ -79,6 +85,7 @@ export default async function AdminEditDoctorPage({
       <div className="mt-5">
         <Panel title="Paket / Abunə">
           <PlanSelector current={doctor.plan} action={setPlan} />
+          <WalletCredit action={credit} />
         </Panel>
       </div>
 

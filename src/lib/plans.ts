@@ -17,6 +17,28 @@ export const PLAN_LABEL: Record<Plan, string> = {
 
 export const ALL_PLANS: Plan[] = ["FREE", "SILVER", "GOLD", "PLATINUM"];
 
+/** Aylıq qiymət (qəpik). AZN × 100. */
+export const CENTER_PLAN_PRICE: Record<Plan, number> = {
+  FREE: 0,
+  SILVER: 2900,
+  GOLD: 5900,
+  PLATINUM: 11900,
+};
+
+export const DOCTOR_PLAN_PRICE: Record<Plan, number> = {
+  FREE: 0,
+  SILVER: 1500,
+  GOLD: 2900,
+  PLATINUM: 4900,
+};
+
+/** Abunə müddəti (gün). */
+export const PLAN_DURATION_DAYS = 30;
+
+/** Manatla göstərmək üçün: qəpik → "29 ₼". */
+export const formatManat = (minor: number): string =>
+  `${(minor / 100).toFixed(minor % 100 === 0 ? 0 : 2)} ₼`;
+
 // ------------------------------ Centers ------------------------------
 
 export type CenterPlanLimits = {

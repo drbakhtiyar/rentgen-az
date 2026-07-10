@@ -13,6 +13,7 @@ import {
   Star,
   MessageSquare,
   Bell,
+  Wallet,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -25,6 +26,7 @@ export const centerNav: NavItem[] = [
   { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks /> },
   { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope /> },
   { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
+  { label: "Paket / Balans", href: "/merkez/paket", icon: <Wallet /> },
 ];
 
 export const doctorNav: NavItem[] = [
@@ -34,6 +36,7 @@ export const doctorNav: NavItem[] = [
   { label: "Profil", href: "/hekim/profil", icon: <User /> },
   { label: "Pasiyentlər", href: "/hekim/pasiyentler", icon: <Users /> },
   { label: "Partnyor mərkəzlər", href: "/hekim/merkezler", icon: <Building2 /> },
+  { label: "Paket / Balans", href: "/hekim/paket", icon: <Wallet /> },
 ];
 
 export const patientNav: NavItem[] = [

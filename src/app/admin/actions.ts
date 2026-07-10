@@ -18,6 +18,7 @@ import { notifyUser } from "@/lib/notifications";
 import { sendAdminWelcome } from "@/lib/admin-chat";
 import { Prisma, type Plan } from "@/generated/prisma/client";
 import { ALL_PLANS } from "@/lib/plans";
+import { creditWallet } from "@/lib/wallet";
 import type {
   CenterStatus,
   ReferralStatus,
@@ -582,5 +583,15 @@ export async function adminSetDoctorPlanAction(doctorId: string, formData: FormD
     data: { plan: plan as Plan },
   });
   revalidatePath(`/admin/hekimler/${doctorId}`);
+  revalidatePath("/admin/hekimler");
+}
+
+/** Admin: manually credits a user's wallet (₼) — for testing / manual top-up. */
+export async function adminCreditWalletAction(userId: string, formData: FormData) {
+  await requireRole("ADMIN");
+  const manat = Number(formData.get("manat") ?? 0);
+  if (!Number.isFinite(manat) || manat <= 0) return;
+  await creditWallet(userId, Math.round(manat * 100), "ADMIN", "Admin balans artırma");
+  revalidatePath("/admin/merkezler");
   revalidatePath("/admin/hekimler");
 }

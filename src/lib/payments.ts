@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "./db";
 import { SITE_URL } from "./env";
 import { createOrder, getOrderStatus } from "./payriff";
+import { creditWallet } from "./wallet";
 
 /**
  * Create a Payment record + a Payriff hosted-checkout order.
@@ -88,8 +89,13 @@ async function onPaymentSettled(
   userId: string | null,
   paymentId: string,
 ): Promise<void> {
-  // TODO (Phase 2): switch on `purpose` to grant the purchased benefit.
-  void purpose;
-  void userId;
-  void paymentId;
+  // Wallet top-up: credit the paid amount to the user's balance. Plan purchases
+  // are then paid from that balance (see billing actions).
+  if (purpose === "wallet_topup" && userId) {
+    const p = await prisma.payment.findUnique({
+      where: { id: paymentId },
+      select: { amount: true },
+    });
+    if (p) await creditWallet(userId, p.amount, "TOPUP", "Payriff top-up");
+  }
 }

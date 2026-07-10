@@ -63,8 +63,32 @@ model User {
   adminLogs      AdminActionLog[] @relation("AdminUser")
   notifications  Notification[]
   adminThread    AdminThread?
+  wallet         Wallet?
 
   @@index([role])
+}
+
+// Prepaid balans (coin rail). Ödəniş top-up ilə artır, plan alışı ilə azalır.
+model Wallet {
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance   Int            @default(0) // qəpik
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  ledger    WalletLedger[]
+}
+
+model WalletLedger {
+  id        String   @id @default(cuid())
+  walletId  String
+  wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount    Int // qəpik: +top-up / -alış
+  type      String // TOPUP | PLAN | REFUND | ADMIN
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([walletId])
 }
 
 // Admin ↔ istifadəçi (həkim/mərkəz) söhbəti. Hər userin bir admin-söhbəti olur.
