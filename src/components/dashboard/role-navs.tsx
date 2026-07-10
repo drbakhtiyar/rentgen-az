@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Bell,
   Wallet,
+  Download,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -27,6 +28,7 @@ export const centerNav: NavItem[] = [
   { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope /> },
   { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
   { label: "Paket / Balans", href: "/merkez/paket", icon: <Wallet /> },
+  { label: "Export / API", href: "/merkez/export", icon: <Download /> },
 ];
 
 export const doctorNav: NavItem[] = [

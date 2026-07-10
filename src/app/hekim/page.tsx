@@ -13,7 +13,9 @@ import {
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
 import { DoctorStats } from "@/components/dashboard/doctor-stats";
+import { SupportCard } from "@/components/dashboard/support-card";
 import { getDoctorStats } from "@/lib/queries";
+import { doctorLimits } from "@/lib/plans";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, doctorName } from "@/lib/utils";
@@ -157,6 +159,12 @@ export default async function DoctorDashboardPage() {
       <div className="mt-5">
         <DoctorStats plan={doctor.plan} stats={doctorStats} />
       </div>
+
+      {doctorLimits(doctor.plan).prioritySupport && (
+        <div className="mt-5">
+          <SupportCard chatHref="/hekim/chat" />
+        </div>
+      )}
 
       <div className="mt-5">
         <Panel

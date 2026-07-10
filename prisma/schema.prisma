@@ -194,6 +194,7 @@ model CenterProfile {
   status            CenterStatus @default(PENDING)
   plan              Plan         @default(FREE)
   planUntil         DateTime? // abunənin bitmə tarixi (ödəniş fazasında)
+  apiKey            String?      @unique // Platinum API girişi açarı
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 

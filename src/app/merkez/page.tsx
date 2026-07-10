@@ -20,6 +20,7 @@ import { requireRole } from "@/lib/auth/rbac";
 import { getCenterEventStats, getCenterStorageUsage, getCenterFullStats } from "@/lib/queries";
 import { StorageUsage } from "@/components/dashboard/storage-usage";
 import { CenterAnalytics } from "@/components/dashboard/center-analytics";
+import { SupportCard } from "@/components/dashboard/support-card";
 import { centerLimits } from "@/lib/plans";
 import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
@@ -137,6 +138,12 @@ export default async function CenterDashboardPage() {
       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[var(--shadow-soft)]">
         <StorageUsage usedBytes={storageUsed} plan={center.plan} />
       </div>
+
+      {centerLimits(center.plan).prioritySupport && (
+        <div className="mt-5">
+          <SupportCard chatHref="/merkez/chat" />
+        </div>
+      )}
 
       {center._count.services === 0 && (
         <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4">
