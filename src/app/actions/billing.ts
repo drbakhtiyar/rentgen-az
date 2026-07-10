@@ -11,6 +11,9 @@ import {
   DOCTOR_PLAN_PRICE,
   PLAN_DURATION_DAYS,
   PLAN_LABEL,
+  MIN_MONTHS,
+  MAX_MONTHS,
+  priceForMonths,
 } from "@/lib/plans";
 import type { Plan } from "@/generated/prisma/client";
 
@@ -23,41 +26,51 @@ export type BillingResult = {
 
 const PURCHASABLE: Plan[] = ["SILVER", "GOLD", "PLATINUM"];
 
-/** Buy/renew a plan by spending wallet balance. Center & doctor only. */
-export async function purchasePlanFromWalletAction(plan: Plan): Promise<BillingResult> {
+/** Buy/renew a plan for N months by spending wallet balance. Center & doctor only. */
+export async function purchasePlanFromWalletAction(
+  plan: Plan,
+  months: number,
+): Promise<BillingResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Giriş tələb olunur." };
   if (!PURCHASABLE.includes(plan)) return { ok: false, error: "Yanlış paket." };
+  const m = Math.round(months);
+  if (!Number.isFinite(m) || m < MIN_MONTHS || m > MAX_MONTHS) {
+    return { ok: false, error: "Müddət 1–12 ay aralığında olmalıdır." };
+  }
 
-  let price: number;
-  if (user.role === "CENTER") price = CENTER_PLAN_PRICE[plan];
-  else if (user.role === "DOCTOR") price = DOCTOR_PLAN_PRICE[plan];
-  else return { ok: false, error: "Yalnız mərkəz və həkim paket ala bilər." };
+  const isCenter = user.role === "CENTER";
+  const isDoctor = user.role === "DOCTOR";
+  if (!isCenter && !isDoctor) return { ok: false, error: "Yalnız mərkəz və həkim paket ala bilər." };
 
-  const res = await debitWallet(user.id, price, "PLAN", `${PLAN_LABEL[plan]} paketi`);
+  const base = isCenter ? CENTER_PLAN_PRICE[plan] : DOCTOR_PLAN_PRICE[plan];
+  const price = priceForMonths(base, m);
+
+  // Renew from the later of now / current expiry (early renewal adds time).
+  const profile = isCenter
+    ? await prisma.centerProfile.findUnique({ where: { userId: user.id }, select: { planUntil: true } })
+    : await prisma.doctorProfile.findUnique({ where: { userId: user.id }, select: { planUntil: true } });
+  const now = Date.now();
+  const from = profile?.planUntil && profile.planUntil.getTime() > now ? profile.planUntil.getTime() : now;
+  const until = new Date(from + m * PLAN_DURATION_DAYS * 24 * 60 * 60 * 1000);
+
+  const res = await debitWallet(user.id, price, "PLAN", `${PLAN_LABEL[plan]} paketi — ${m} ay`);
   if (!res.ok) {
     return { ok: false, error: "Balans kifayət etmir. Əvvəlcə balansı artırın." };
   }
 
-  const until = new Date(Date.now() + PLAN_DURATION_DAYS * 24 * 60 * 60 * 1000);
-  if (user.role === "CENTER") {
-    await prisma.centerProfile.update({
-      where: { userId: user.id },
-      data: { plan, planUntil: until },
-    });
+  if (isCenter) {
+    await prisma.centerProfile.update({ where: { userId: user.id }, data: { plan, planUntil: until } });
     revalidatePath("/merkez");
     revalidatePath("/merkez/paket");
     revalidatePath("/rentgen-merkezleri");
   } else {
-    await prisma.doctorProfile.update({
-      where: { userId: user.id },
-      data: { plan, planUntil: until },
-    });
+    await prisma.doctorProfile.update({ where: { userId: user.id }, data: { plan, planUntil: until } });
     revalidatePath("/hekim");
     revalidatePath("/hekim/paket");
     revalidatePath("/hekimler");
   }
-  return { ok: true, message: `${PLAN_LABEL[plan]} paketi ${PLAN_DURATION_DAYS} günlük aktivləşdi.` };
+  return { ok: true, message: `${PLAN_LABEL[plan]} paketi ${m} ay aktivləşdi.` };
 }
 
 /** Start a Payriff top-up to add funds to the wallet. Amount in qəpik. */

@@ -21,6 +21,7 @@ import { getCenterEventStats, getCenterStorageUsage, getCenterFullStats } from "
 import { StorageUsage } from "@/components/dashboard/storage-usage";
 import { CenterAnalytics } from "@/components/dashboard/center-analytics";
 import { SupportCard } from "@/components/dashboard/support-card";
+import { PlanExpiryBanner } from "@/components/dashboard/plan-expiry-banner";
 import { centerLimits } from "@/lib/plans";
 import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
@@ -35,6 +36,11 @@ export const metadata: Metadata = buildMetadata({
   path: "/merkez",
   noIndex: true,
 });
+
+function daysUntil(d: Date | null): number | null {
+  if (!d) return null;
+  return Math.ceil((d.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+}
 
 export default async function CenterDashboardPage() {
   const user = await requireRole("CENTER", "/merkez");
@@ -87,8 +93,17 @@ export default async function CenterDashboardPage() {
     [user.patientProfile?.firstName, user.patientProfile?.lastName].filter(Boolean).join(" ") ||
     "Mərkəz";
 
+  const planDaysLeft = daysUntil(center.planUntil);
+
   return (
     <DashboardShell title="İcmal" roleLabel="Rentgen mərkəzi" userName={name} nav={centerNav}>
+      {center.plan !== "FREE" && (
+        <PlanExpiryBanner
+          daysLeft={planDaysLeft}
+          planUntil={center.planUntil ? formatDateAz(center.planUntil) : null}
+          href="/merkez/paket"
+        />
+      )}
       {!center.licenseUrl && (
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
           <div className="flex items-start gap-3">

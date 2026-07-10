@@ -38,8 +38,27 @@ export const STORAGE_WARN_PCT = 90;
 /** Platinum-da limitdən artıq hər 1 TB üçün əlavə haqq (qəpik). */
 export const OVERAGE_PER_TB_MINOR = 2900;
 
-/** Abunə müddəti (gün). */
+/** Bir abunə ayının gün sayı. */
 export const PLAN_DURATION_DAYS = 30;
+
+/** İcazə verilən ödəniş müddəti (ay): min 1, max 12. */
+export const MIN_MONTHS = 1;
+export const MAX_MONTHS = 12;
+
+/** Uzun müddətli ödənişdə endirim faizi (SaaS praktikası). */
+export function monthsDiscountPct(months: number): number {
+  if (months >= 12) return 20;
+  if (months >= 6) return 10;
+  if (months >= 3) return 5;
+  return 0;
+}
+
+/** N ay üçün ümumi qiymət (qəpik), endirim tətbiq olunmuş. */
+export function priceForMonths(baseMonthlyMinor: number, months: number): number {
+  const m = Math.max(MIN_MONTHS, Math.min(MAX_MONTHS, Math.round(months)));
+  const pct = monthsDiscountPct(m);
+  return Math.round((baseMonthlyMinor * m * (100 - pct)) / 100);
+}
 
 /** Manatla göstərmək üçün: qəpik → "29 ₼". */
 export const formatManat = (minor: number): string =>

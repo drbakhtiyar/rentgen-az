@@ -69,6 +69,22 @@ export async function getCentersForService(serviceSlug: string, take = 12) {
   return getApprovedCenters({ service: serviceSlug, take });
 }
 
+/** A user's wallet balance movements (most recent first). */
+export async function getWalletHistory(userId: string, take = 50) {
+  return safe(async () => {
+    const wallet = await prisma.wallet.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!wallet) return [];
+    return prisma.walletLedger.findMany({
+      where: { walletId: wallet.id },
+      orderBy: { createdAt: "desc" },
+      take,
+    });
+  }, [] as Awaited<ReturnType<typeof prisma.walletLedger.findMany>>);
+}
+
 /** Total bytes a center currently stores in B2 (sum of its rentgen files). */
 export async function getCenterStorageUsage(centerId: string): Promise<number> {
   return safe(async () => {

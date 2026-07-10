@@ -14,6 +14,7 @@ import { RequestPartnerButton } from "@/components/partnership/partnership-butto
 import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
 import { DoctorStats } from "@/components/dashboard/doctor-stats";
 import { SupportCard } from "@/components/dashboard/support-card";
+import { PlanExpiryBanner } from "@/components/dashboard/plan-expiry-banner";
 import { getDoctorStats } from "@/lib/queries";
 import { doctorLimits } from "@/lib/plans";
 import { prisma } from "@/lib/db";
@@ -44,6 +45,11 @@ type Referral = {
 };
 
 type PartnerStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+
+function daysUntil(d: Date | null): number | null {
+  if (!d) return null;
+  return Math.ceil((d.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+}
 
 export default async function DoctorDashboardPage() {
   const user = await requireRole("DOCTOR", "/hekim");
@@ -119,6 +125,13 @@ export default async function DoctorDashboardPage() {
       userName={fullName}
       nav={doctorNav}
     >
+      {doctor.plan !== "FREE" && (
+        <PlanExpiryBanner
+          daysLeft={daysUntil(doctor.planUntil)}
+          planUntil={doctor.planUntil ? formatDateAz(doctor.planUntil) : null}
+          href="/hekim/paket"
+        />
+      )}
       {doctor.status !== "APPROVED" && (
         <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
