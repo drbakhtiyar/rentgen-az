@@ -52,7 +52,8 @@ export type CenterPlanLimits = {
   storageGb: number;
   featured: boolean; // "Tövsiyə olunan" nişanı + axtarışda önə çıxma
   banner: boolean;
-  fullAnalytics: boolean;
+  basicAnalytics: boolean; // baxış/zəng/WhatsApp (Silver+)
+  fullAnalytics: boolean; // xidmət üzrə bölgü + rəy/referral stat (Gold+)
   apiExport: boolean;
   prioritySupport: boolean;
   reviews: boolean; // rəy/reytinq qəbulu + göstərmə (Gold+)
@@ -63,10 +64,10 @@ export type CenterPlanLimits = {
 };
 
 export const CENTER_PLAN_LIMITS: Record<Plan, CenterPlanLimits> = {
-  FREE: { photoLimit: 5, storageGb: 30, featured: false, banner: false, fullAnalytics: false, apiExport: false, prioritySupport: false, reviews: false, monthlyRequests: 25, receivesReferrals: false, broadcast: false, storageOverage: false },
-  SILVER: { photoLimit: 15, storageGb: 150, featured: false, banner: false, fullAnalytics: true, apiExport: false, prioritySupport: false, reviews: false, monthlyRequests: null, receivesReferrals: false, broadcast: false, storageOverage: false },
-  GOLD: { photoLimit: 40, storageGb: 1024, featured: true, banner: false, fullAnalytics: true, apiExport: false, prioritySupport: true, reviews: true, monthlyRequests: null, receivesReferrals: true, broadcast: true, storageOverage: false },
-  PLATINUM: { photoLimit: null, storageGb: 3072, featured: true, banner: true, fullAnalytics: true, apiExport: true, prioritySupport: true, reviews: true, monthlyRequests: null, receivesReferrals: true, broadcast: true, storageOverage: true },
+  FREE: { photoLimit: 5, storageGb: 30, featured: false, banner: false, basicAnalytics: false, fullAnalytics: false, apiExport: false, prioritySupport: false, reviews: false, monthlyRequests: 25, receivesReferrals: false, broadcast: false, storageOverage: false },
+  SILVER: { photoLimit: 15, storageGb: 150, featured: false, banner: false, basicAnalytics: true, fullAnalytics: false, apiExport: false, prioritySupport: false, reviews: false, monthlyRequests: null, receivesReferrals: false, broadcast: false, storageOverage: false },
+  GOLD: { photoLimit: 40, storageGb: 1024, featured: true, banner: false, basicAnalytics: true, fullAnalytics: true, apiExport: false, prioritySupport: true, reviews: true, monthlyRequests: null, receivesReferrals: true, broadcast: true, storageOverage: false },
+  PLATINUM: { photoLimit: null, storageGb: 3072, featured: true, banner: true, basicAnalytics: true, fullAnalytics: true, apiExport: true, prioritySupport: true, reviews: true, monthlyRequests: null, receivesReferrals: true, broadcast: true, storageOverage: true },
 };
 
 // ------------------------------ Doctors ------------------------------

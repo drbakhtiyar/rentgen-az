@@ -12,6 +12,8 @@ import {
 } from "@/components/dashboard/widgets";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
+import { DoctorStats } from "@/components/dashboard/doctor-stats";
+import { getDoctorStats } from "@/lib/queries";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, doctorName } from "@/lib/utils";
@@ -56,6 +58,7 @@ export default async function DoctorDashboardPage() {
 
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
+  const doctorStats = await getDoctorStats(doctor.id, 30);
 
   let requests: Referral[] = [];
   const partnerByCenter = new Map<string, PartnerStatus>();
@@ -149,6 +152,10 @@ export default async function DoctorDashboardPage() {
           icon={<Building2 />}
           tone="green"
         />
+      </div>
+
+      <div className="mt-5">
+        <DoctorStats plan={doctor.plan} stats={doctorStats} />
       </div>
 
       <div className="mt-5">

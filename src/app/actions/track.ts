@@ -16,3 +16,13 @@ export async function trackCenterEventAction(
     /* best-effort */
   }
 }
+
+/** Fire-and-forget doctor profile view event (public, best-effort). */
+export async function trackDoctorEventAction(doctorId: string): Promise<void> {
+  if (!doctorId) return;
+  try {
+    await prisma.doctorEvent.create({ data: { doctorId, type: "view" } });
+  } catch {
+    /* best-effort */
+  }
+}

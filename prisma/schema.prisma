@@ -417,9 +417,20 @@ model DoctorProfile {
   appointmentRequests AppointmentRequest[]
   centerPartners      CenterDoctor[]
   conversations       Conversation[]
+  events              DoctorEvent[]
 
   @@index([status])
   @@index([workplaceCenterId, workplaceStatus])
+}
+
+model DoctorEvent {
+  id        String        @id @default(cuid())
+  doctorId  String
+  doctor    DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  type      String // "view"
+  createdAt DateTime      @default(now())
+
+  @@index([doctorId, type, createdAt])
 }
 
 // Həkim↔mərkəz söhbəti (həmişə 2 tərəf). Mesajlar polling ilə yenilənir.

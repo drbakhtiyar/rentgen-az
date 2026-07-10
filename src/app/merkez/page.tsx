@@ -5,7 +5,6 @@ import {
   Building2,
   Inbox,
   ListChecks,
-  Eye,
   Clock,
   AlertCircle,
   ArrowRight,
@@ -18,8 +17,10 @@ import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard
 import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
-import { getCenterEventStats, getCenterStorageUsage } from "@/lib/queries";
+import { getCenterEventStats, getCenterStorageUsage, getCenterFullStats } from "@/lib/queries";
 import { StorageUsage } from "@/components/dashboard/storage-usage";
+import { CenterAnalytics } from "@/components/dashboard/center-analytics";
+import { centerLimits } from "@/lib/plans";
 import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
@@ -62,6 +63,9 @@ export default async function CenterDashboardPage() {
   });
   const stats = await getCenterEventStats(center.id, 30);
   const storageUsed = await getCenterStorageUsage(center.id);
+  const fullStats = centerLimits(center.plan).fullAnalytics
+    ? await getCenterFullStats(center.id, 30)
+    : null;
 
   // Approved doctors for manual referring-doctor assignment.
   const doctorOptions = (
@@ -128,16 +132,7 @@ export default async function CenterDashboardPage() {
         <StatCard label="Xidmətlər" value={center._count.services} icon={<ListChecks />} tone="green" />
       </div>
 
-      <div className="mt-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Son 30 gün
-        </p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Profil baxışları" value={stats.views} icon={<Eye />} />
-          <StatCard label="Zəng klikləri" value={stats.calls} icon={<Inbox />} tone="cyan" />
-          <StatCard label="WhatsApp klikləri" value={stats.whatsapp} icon={<Inbox />} tone="green" />
-        </div>
-      </div>
+      <CenterAnalytics plan={center.plan} stats={stats} full={fullStats} />
 
       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[var(--shadow-soft)]">
         <StorageUsage usedBytes={storageUsed} plan={center.plan} />

@@ -14,6 +14,7 @@ import { DocumentGallery } from "@/components/documents/document-gallery";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { doctorLimits } from "@/lib/plans";
+import { TrackDoctorView } from "@/components/doctors/track-doctor-view";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -64,6 +65,7 @@ export default async function DoctorProfilePage({
 
   return (
     <>
+      <TrackDoctorView doctorId={doctor.id} />
       <JsonLd
         data={[
           breadcrumbJsonLd([

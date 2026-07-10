@@ -151,6 +151,48 @@ export async function getCenterEventStats(centerId: string, days = 30) {
   );
 }
 
+/** Doctor dashboard stats: profile views (N days), referrals sent, partner centers. */
+export async function getDoctorStats(doctorId: string, days = 30) {
+  return safe(
+    async () => {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      const [views, referralsSent, partnerCenters] = await Promise.all([
+        prisma.doctorEvent.count({ where: { doctorId, type: "view", createdAt: { gte: since } } }),
+        prisma.appointmentRequest.count({ where: { doctorId } }),
+        prisma.centerDoctor.count({ where: { doctorId, status: "ACCEPTED" } }),
+      ]);
+      return { views, referralsSent, partnerCenters };
+    },
+    { views: 0, referralsSent: 0, partnerCenters: 0 },
+  );
+}
+
+/** Center full analytics (Gold+): per-service request breakdown + referral count. */
+export async function getCenterFullStats(centerId: string, days = 30) {
+  return safe(
+    async () => {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      const [byService, referralsReceived, requests30d, services] = await Promise.all([
+        prisma.appointmentRequest.groupBy({
+          by: ["serviceSlug"],
+          where: { centerId, serviceSlug: { not: null } },
+          _count: { serviceSlug: true },
+        }),
+        prisma.appointmentRequest.count({ where: { centerId, doctorId: { not: null } } }),
+        prisma.appointmentRequest.count({ where: { centerId, createdAt: { gte: since } } }),
+        prisma.service.findMany({ select: { slug: true, name: true } }),
+      ]);
+      const nameBySlug = new Map(services.map((s) => [s.slug, s.name]));
+      const perService = byService
+        .map((r) => ({ slug: r.serviceSlug as string, name: nameBySlug.get(r.serviceSlug as string) ?? r.serviceSlug as string, count: r._count.serviceSlug }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+      return { perService, referralsReceived, requests30d };
+    },
+    { perService: [] as { slug: string; name: string; count: number }[], referralsReceived: 0, requests30d: 0 },
+  );
+}
+
 export type CenterRating = { avg: number; count: number };
 
 /** Average rating + count per center (visible reviews only). */
