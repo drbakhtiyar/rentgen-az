@@ -114,6 +114,10 @@ export default async function CenterDetailPage({
       .catch(() => null);
     isPartnerDoctor = partner?.status === "ACCEPTED";
   }
+  // Referral form only for centers whose plan accepts doctor referrals (Gold+).
+  const canRefer = isPartnerDoctor && centerLimits(center.plan).receivesReferrals;
+  // Reviews/rating only for centers whose plan includes them (Gold+).
+  const showReviews = centerLimits(center.plan).reviews;
   let canReview = false;
   let existingReview: {
     comment: string | null;
@@ -209,11 +213,13 @@ export default async function CenterDetailPage({
             </span>
           )}
           {center.hours ? <OpenStatus hours={center.hours} locale={locale} /> : null}
-          <RatingSummary
-            avg={rating.avg}
-            count={rating.count}
-            className="[&_.text-ink-900]:text-white [&_.text-slate-400]:text-slate-300"
-          />
+          {showReviews && (
+            <RatingSummary
+              avg={rating.avg}
+              count={rating.count}
+              className="[&_.text-ink-900]:text-white [&_.text-slate-400]:text-slate-300"
+            />
+          )}
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           <CallButton phone={center.phone} centerId={center.id} locale={locale} />
@@ -387,7 +393,8 @@ export default async function CenterDetailPage({
                 </Card>
               )}
 
-              {/* Reviews */}
+              {/* Reviews — Gold+ plans only */}
+              {showReviews && (
               <Card className="p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h2 className="font-display text-xl font-bold text-ink-900">
@@ -476,19 +483,20 @@ export default async function CenterDetailPage({
                   </p>
                 ) : null}
               </Card>
+              )}
             </div>
 
             {/* Sidebar — appointment form */}
             <aside className="lg:sticky lg:top-20 lg:self-start">
               <Card className="p-6">
                 <h2 className="font-display text-lg font-bold text-ink-900">
-                  {isPartnerDoctor ? dd.sendPatient : dd.sendRequest}
+                  {canRefer ? dd.sendPatient : dd.sendRequest}
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  {isPartnerDoctor ? dd.referHint : dd.requestDesc}
+                  {canRefer ? dd.referHint : dd.requestDesc}
                 </p>
                 <div className="mt-4">
-                  {isPartnerDoctor && referralDoctor ? (
+                  {canRefer && referralDoctor ? (
                     <DoctorReferralForm
                       doctorName={doctorName(referralDoctor.firstName, referralDoctor.lastName)}
                       clinic={referralDoctor.clinic}

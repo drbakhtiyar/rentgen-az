@@ -1,5 +1,5 @@
 import { HardDrive, AlertTriangle } from "lucide-react";
-import { centerLimits, PLAN_LABEL } from "@/lib/plans";
+import { centerLimits, PLAN_LABEL, STORAGE_WARN_PCT } from "@/lib/plans";
 import type { Plan } from "@/generated/prisma/client";
 
 const GB = 1024 ** 3;
@@ -16,10 +16,11 @@ function fmtLimit(gb: number): string {
 
 /** Center storage usage bar (used vs plan quota). */
 export function StorageUsage({ usedBytes, plan }: { usedBytes: number; plan: Plan }) {
-  const limitGb = centerLimits(plan).storageGb;
+  const limits = centerLimits(plan);
+  const limitGb = limits.storageGb;
   const limitBytes = limitGb * GB;
   const pct = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
-  const near = pct >= 85;
+  const near = pct >= STORAGE_WARN_PCT;
 
   return (
     <div>
@@ -47,7 +48,9 @@ export function StorageUsage({ usedBytes, plan }: { usedBytes: number; plan: Pla
       {near && (
         <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          Limit dolur — köhnə faylları silin və ya paketi yüksəldin.
+          {limits.storageOverage
+            ? "Yaddaşınız dolur — əlavə yaddaş alın (hər 1 TB +29 ₼)."
+            : "Yaddaşınız dolur — köhnə faylları silin və ya paketi yüksəldin."}
         </p>
       )}
     </div>

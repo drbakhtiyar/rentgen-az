@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { centerLimits } from "@/lib/plans";
 import { env } from "@/lib/env";
 import { normalizePhone } from "@/lib/phone";
 import { createOtp, verifyOtp } from "@/lib/otp";
@@ -139,6 +140,29 @@ export async function submitAppointmentAction(input: {
           data: { lastLoginAt: new Date() },
         });
         await setSessionCookie({ userId: existing.id, role: "PATIENT", phone });
+      }
+    }
+
+    // Plan-based monthly request cap (Free centers = 25/month).
+    if (data.centerId) {
+      const c = await prisma.centerProfile.findUnique({
+        where: { id: data.centerId },
+        select: { plan: true },
+      });
+      const limit = c ? centerLimits(c.plan).monthlyRequests : null;
+      if (limit != null) {
+        const monthStart = new Date();
+        monthStart.setDate(1);
+        monthStart.setHours(0, 0, 0, 0);
+        const used = await prisma.appointmentRequest.count({
+          where: { centerId: data.centerId, createdAt: { gte: monthStart } },
+        });
+        if (used >= limit) {
+          return {
+            ok: false,
+            error: "Bu mərkəz bu ay üçün müraciət limitinə çatıb. Zəhmət olmasa birbaşa əlaqə saxlayın.",
+          };
+        }
       }
     }
 

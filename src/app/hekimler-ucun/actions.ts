@@ -7,6 +7,7 @@ import { createOtp, verifyOtp } from "@/lib/otp";
 import { sendOtpSms } from "@/lib/sms";
 import { normalizePhone } from "@/lib/phone";
 import { requireRole } from "@/lib/auth/rbac";
+import { centerLimits } from "@/lib/plans";
 import { notifyNewAppointment, smsCenterBooking, smsPatientBooking } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
 import { doctorName } from "@/lib/utils";
@@ -86,9 +87,12 @@ export async function submitDoctorReferralAction(input: {
     }
     const center = await prisma.centerProfile.findUnique({
       where: { id: input.centerId },
-      select: { id: true, name: true, slug: true, phone: true, userId: true },
+      select: { id: true, name: true, slug: true, phone: true, userId: true, plan: true },
     });
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+    if (!centerLimits(center.plan).receivesReferrals) {
+      return { ok: false, error: "Bu mərkəz həkim yönləndirmələrini qəbul etmir (Gold/Platinum paket lazımdır)." };
+    }
 
     // Verify the patient's OTP.
     const v = await verifyOtp(phone, input.code.trim());

@@ -8,6 +8,7 @@ import { sendOtpSms } from "@/lib/sms";
 import { normalizePhone } from "@/lib/phone";
 import { setSessionCookie } from "@/lib/auth/session";
 import { isFlagged } from "@/lib/moderation";
+import { centerLimits } from "@/lib/plans";
 
 export type ReviewActionState = {
   ok: boolean;
@@ -74,9 +75,12 @@ export async function submitQrReviewAction(input: {
   try {
     const center = await prisma.centerProfile.findFirst({
       where: { slug: input.centerSlug, status: "APPROVED" },
-      select: { id: true },
+      select: { id: true, plan: true },
     });
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+    if (!centerLimits(center.plan).reviews) {
+      return { ok: false, error: "Bu mərkəz rəy qəbul etmir." };
+    }
 
     // Auto-create (or reuse) the patient account, filling missing names.
     const include = { patientProfile: true } as const;

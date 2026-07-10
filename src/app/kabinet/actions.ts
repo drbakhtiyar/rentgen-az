@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { patientProfileSchema, reviewSchema } from "@/lib/validation";
 import { isFlagged } from "@/lib/moderation";
+import { centerLimits } from "@/lib/plans";
 
 export type PatientActionResult = { ok: boolean; error?: string; message?: string };
 
@@ -147,6 +148,15 @@ export async function submitReviewAction(input: {
       where: { userId: user.id },
     });
     if (!profile) return { ok: false, error: "Profil tapılmadı." };
+
+    // Reviews are a Gold+ plan feature.
+    const rc = await prisma.centerProfile.findUnique({
+      where: { id: d.centerId },
+      select: { plan: true },
+    });
+    if (!rc || !centerLimits(rc.plan).reviews) {
+      return { ok: false, error: "Bu mərkəz rəy qəbul etmir." };
+    }
 
     // Eligibility: a COMPLETED appointment with this center (marked by either side)
     const completed = await prisma.appointmentRequest.findFirst({
