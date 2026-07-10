@@ -6,6 +6,8 @@ import { Container } from "@/components/ui/container";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getCurrentUser, dashboardPathForRole } from "@/lib/auth/rbac";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 import { LoginForm } from "./login-form";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +28,9 @@ export default async function LoginPage({
   const user = await getCurrentUser();
   const sp = await searchParams;
   if (user) redirect(sp.next || dashboardPathForRole(user.role));
+
+  const locale = await getLocale();
+  const t = getDict(locale).auth;
 
   const role =
     sp.role === "center" ? "CENTER" : sp.role === "doctor" ? "DOCTOR" : "PATIENT";
@@ -48,17 +53,16 @@ export default async function LoginPage({
             rentgen.az
           </span>
           <h1 className="font-display mt-5 text-4xl font-bold leading-tight">
-            Parolsuz, sürətli və təhlükəsiz giriş
+            {t.heroTitle}
           </h1>
           <p className="mt-4 max-w-md text-slate-300">
-            Telefon nömrənizi daxil edin — sizə birdəfəlik təsdiq kodu (OTP)
-            göndərəcəyik. Parol yadda saxlamağa ehtiyac yoxdur.
+            {t.heroDesc}
           </p>
           <ul className="mt-8 space-y-4">
             {[
-              { icon: <Zap className="h-5 w-5" />, t: "Sürətli", d: "Bir neçə saniyədə hesab yaradın." },
-              { icon: <Lock className="h-5 w-5" />, t: "Təhlükəsiz", d: "Kodlar şifrələnərək saxlanılır, 5 dəqiqə etibarlıdır." },
-              { icon: <ShieldCheck className="h-5 w-5" />, t: "Unikal nömrə", d: "Hər telefon nömrəsi üçün bir hesab." },
+              { icon: <Zap className="h-5 w-5" />, t: t.f1t, d: t.f1d },
+              { icon: <Lock className="h-5 w-5" />, t: t.f2t, d: t.f2d },
+              { icon: <ShieldCheck className="h-5 w-5" />, t: t.f3t, d: t.f3d },
             ].map((f, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600/20 text-cyan-300">
@@ -74,7 +78,7 @@ export default async function LoginPage({
         </div>
 
         <div className="mx-auto w-full max-w-md">
-          <LoginForm initialRole={role} next={sp.next} />
+          <LoginForm initialRole={role} next={sp.next} locale={locale} />
         </div>
       </Container>
     </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Phone, KeyRound, ArrowLeft, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Field } from "@/components/ui/field";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { requestOtpAction, verifyOtpAction } from "./actions";
 
 type Role = "PATIENT" | "CENTER" | "DOCTOR";
@@ -12,10 +13,13 @@ type Role = "PATIENT" | "CENTER" | "DOCTOR";
 export function LoginForm({
   initialRole,
   next,
+  locale = DEFAULT_LOCALE,
 }: {
   initialRole: Role;
   next?: string;
+  locale?: Locale;
 }) {
+  const t = getDict(locale).auth;
   const router = useRouter();
   const [role, setRole] = React.useState<Role>(initialRole);
   const [step, setStep] = React.useState<"phone" | "code">("phone");
@@ -28,8 +32,8 @@ export function LoginForm({
 
   React.useEffect(() => {
     if (cooldown <= 0) return;
-    const t = setInterval(() => setCooldown((c) => c - 1), 1000);
-    return () => clearInterval(t);
+    const id = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(id);
   }, [cooldown]);
 
   function submitPhone(e: React.FormEvent) {
@@ -38,7 +42,7 @@ export function LoginForm({
     startTransition(async () => {
       const res = await requestOtpAction({ phone, role });
       if (!res.ok) {
-        setError(res.error ?? "Xəta baş verdi");
+        setError(res.error ?? t.errGeneric);
         return;
       }
       setDevCode(res.devCode ?? null);
@@ -53,7 +57,7 @@ export function LoginForm({
     startTransition(async () => {
       const res = await verifyOtpAction({ phone, code, role });
       if (!res.ok) {
-        setError(res.error ?? "Kod yanlışdır");
+        setError(res.error ?? t.errCode);
         return;
       }
       router.push(next || res.redirectTo || "/");
@@ -68,7 +72,7 @@ export function LoginForm({
     startTransition(async () => {
       const res = await requestOtpAction({ phone, role });
       if (!res.ok) {
-        setError(res.error ?? "Xəta baş verdi");
+        setError(res.error ?? t.errGeneric);
         return;
       }
       setDevCode(res.devCode ?? null);
@@ -81,18 +85,18 @@ export function LoginForm({
       {step === "phone" ? (
         <>
           <h2 className="font-display text-2xl font-bold text-ink-900">
-            Giriş / Qeydiyyat
+            {t.title}
           </h2>
           <p className="mt-1.5 text-sm text-slate-500">
-            Telefon nömrənizi daxil edin, sizə təsdiq kodu göndərəcəyik.
+            {t.subtitle}
           </p>
 
           <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl bg-slate-100 p-1">
             {(
               [
-                { k: "PATIENT", label: "Pasiyent" },
-                { k: "CENTER", label: "Mərkəz" },
-                { k: "DOCTOR", label: "Həkim" },
+                { k: "PATIENT", label: t.rolePatient },
+                { k: "CENTER", label: t.roleCenter },
+                { k: "DOCTOR", label: t.roleDoctor },
               ] as { k: Role; label: string }[]
             ).map((opt) => (
               <button
@@ -112,10 +116,10 @@ export function LoginForm({
 
           <form onSubmit={submitPhone} className="mt-5 space-y-4">
             <Field
-              label="Telefon nömrəsi"
+              label={t.phoneLabel}
               htmlFor="phone"
               error={error ?? undefined}
-              hint="0XX XXX XX XX formatında daxil edin — +994 yazmağa ehtiyac yoxdur."
+              hint={t.phoneHint}
               required
             >
               <div className="relative">
@@ -125,7 +129,7 @@ export function LoginForm({
                   type="tel"
                   inputMode="tel"
                   autoComplete="tel"
-                  placeholder="050 123 45 67"
+                  placeholder={t.phonePlaceholder}
                   className="pl-9"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -135,7 +139,7 @@ export function LoginForm({
             </Field>
             <Button type="submit" size="lg" className="w-full" disabled={pending}>
               {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Kod göndər
+              {t.sendCode}
             </Button>
           </form>
         </>
@@ -150,28 +154,30 @@ export function LoginForm({
             }}
             className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-ink-800"
           >
-            <ArrowLeft className="h-4 w-4" /> Geri
+            <ArrowLeft className="h-4 w-4" /> {t.back}
           </button>
           <h2 className="font-display text-2xl font-bold text-ink-900">
-            Təsdiq kodu
+            {t.codeTitle}
           </h2>
           <p className="mt-1.5 text-sm text-slate-500">
-            <span className="font-semibold text-ink-800">{phone}</span> nömrəsinə
-            göndərilən 6 rəqəmli kodu daxil edin.
+            {t.codeSentPre}
+            <span className="font-semibold text-ink-800">{phone}</span>
+            {t.codeSentPost}
           </p>
 
           {devCode && (
             <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-800 ring-1 ring-amber-100">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
               <span>
-                Test rejimi: kodunuz <strong className="font-mono">{devCode}</strong>{" "}
-                (SMS provayderi qoşulduqda görünməyəcək).
+                {t.testModePre}
+                <strong className="font-mono">{devCode}</strong>
+                {t.testModePost}
               </span>
             </div>
           )}
 
           <form onSubmit={submitCode} className="mt-5 space-y-4">
-            <Field label="OTP kod" htmlFor="code" error={error ?? undefined} required>
+            <Field label={t.otpLabel} htmlFor="code" error={error ?? undefined} required>
               <div className="relative">
                 <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
@@ -189,13 +195,13 @@ export function LoginForm({
             </Field>
             <Button type="submit" size="lg" className="w-full" disabled={pending}>
               {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Təsdiqlə və daxil ol
+              {t.verify}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm text-slate-500">
             {cooldown > 0 ? (
-              <span>Yeni kod {cooldown} saniyədən sonra</span>
+              <span>{t.resendPre}{cooldown}{t.resendPost}</span>
             ) : (
               <button
                 type="button"
@@ -203,7 +209,7 @@ export function LoginForm({
                 className="font-semibold text-brand-600 hover:text-brand-700"
                 disabled={pending}
               >
-                Kodu yenidən göndər
+                {t.resend}
               </button>
             )}
           </div>
@@ -211,15 +217,15 @@ export function LoginForm({
       )}
 
       <p className="mt-6 text-center text-xs text-slate-400">
-        Davam etməklə{" "}
+        {t.termsPre}
         <a href="/istifade-shertleri" className="underline">
-          İstifadə şərtləri
-        </a>{" "}
-        və{" "}
-        <a href="/gizlilik-siyaseti" className="underline">
-          Gizlilik siyasəti
+          {t.termsLink}
         </a>
-        ni qəbul edirsiniz.
+        {t.termsMid}
+        <a href="/gizlilik-siyaseti" className="underline">
+          {t.privacyLink}
+        </a>
+        {t.termsPost}
       </p>
     </div>
   );

@@ -309,6 +309,40 @@ type Dict = {
     empty: string;
     allResults: string;
   };
+  auth: {
+    heroTitle: string;
+    heroDesc: string;
+    f1t: string; f1d: string;
+    f2t: string; f2d: string;
+    f3t: string; f3d: string;
+    title: string;
+    subtitle: string;
+    rolePatient: string;
+    roleCenter: string;
+    roleDoctor: string;
+    phoneLabel: string;
+    phoneHint: string;
+    phonePlaceholder: string;
+    sendCode: string;
+    back: string;
+    codeTitle: string;
+    codeSentPre: string;
+    codeSentPost: string;
+    testModePre: string;
+    testModePost: string;
+    otpLabel: string;
+    verify: string;
+    resendPre: string;
+    resendPost: string;
+    resend: string;
+    termsPre: string;
+    termsLink: string;
+    termsMid: string;
+    privacyLink: string;
+    termsPost: string;
+    errGeneric: string;
+    errCode: string;
+  };
 };
 
 const az: Dict = {
@@ -639,6 +673,44 @@ const az: Dict = {
     empty: "Uyğun mərkəz tapılmadı. Başqa söz yoxlayın.",
     allResults: "Bütün nəticələrə bax",
   },
+  auth: {
+    heroTitle: "Parolsuz, sürətli və təhlükəsiz giriş",
+    heroDesc:
+      "Telefon nömrənizi daxil edin — sizə birdəfəlik təsdiq kodu (OTP) göndərəcəyik. Parol yadda saxlamağa ehtiyac yoxdur.",
+    f1t: "Sürətli",
+    f1d: "Bir neçə saniyədə hesab yaradın.",
+    f2t: "Təhlükəsiz",
+    f2d: "Kodlar şifrələnərək saxlanılır, 5 dəqiqə etibarlıdır.",
+    f3t: "Unikal nömrə",
+    f3d: "Hər telefon nömrəsi üçün bir hesab.",
+    title: "Giriş / Qeydiyyat",
+    subtitle: "Telefon nömrənizi daxil edin, sizə təsdiq kodu göndərəcəyik.",
+    rolePatient: "Pasiyent",
+    roleCenter: "Mərkəz",
+    roleDoctor: "Həkim",
+    phoneLabel: "Telefon nömrəsi",
+    phoneHint: "0XX XXX XX XX formatında daxil edin — +994 yazmağa ehtiyac yoxdur.",
+    phonePlaceholder: "050 123 45 67",
+    sendCode: "Kod göndər",
+    back: "Geri",
+    codeTitle: "Təsdiq kodu",
+    codeSentPre: "",
+    codeSentPost: " nömrəsinə göndərilən 6 rəqəmli kodu daxil edin.",
+    testModePre: "Test rejimi: kodunuz ",
+    testModePost: " (SMS provayderi qoşulduqda görünməyəcək).",
+    otpLabel: "OTP kod",
+    verify: "Təsdiqlə və daxil ol",
+    resendPre: "Yeni kod ",
+    resendPost: " saniyədən sonra",
+    resend: "Kodu yenidən göndər",
+    termsPre: "Davam etməklə ",
+    termsLink: "İstifadə şərtləri",
+    termsMid: " və ",
+    privacyLink: "Gizlilik siyasəti",
+    termsPost: "ni qəbul edirsiniz.",
+    errGeneric: "Xəta baş verdi",
+    errCode: "Kod yanlışdır",
+  },
 };
 
 const ru: Dict = {
@@ -967,6 +1039,44 @@ const ru: Dict = {
     searching: "Идёт поиск…",
     empty: "Подходящих центров не найдено. Попробуйте другое слово.",
     allResults: "Смотреть все результаты",
+  },
+  auth: {
+    heroTitle: "Вход без пароля — быстро и безопасно",
+    heroDesc:
+      "Введите номер телефона — мы отправим вам одноразовый код (OTP). Пароль запоминать не нужно.",
+    f1t: "Быстро",
+    f1d: "Создайте аккаунт за несколько секунд.",
+    f2t: "Безопасно",
+    f2d: "Коды хранятся в зашифрованном виде и действуют 5 минут.",
+    f3t: "Уникальный номер",
+    f3d: "Один аккаунт на каждый номер телефона.",
+    title: "Вход / Регистрация",
+    subtitle: "Введите номер телефона, мы отправим вам код подтверждения.",
+    rolePatient: "Пациент",
+    roleCenter: "Центр",
+    roleDoctor: "Врач",
+    phoneLabel: "Номер телефона",
+    phoneHint: "Введите в формате 0XX XXX XX XX — +994 писать не нужно.",
+    phonePlaceholder: "050 123 45 67",
+    sendCode: "Отправить код",
+    back: "Назад",
+    codeTitle: "Код подтверждения",
+    codeSentPre: "Введите 6-значный код, отправленный на номер ",
+    codeSentPost: ".",
+    testModePre: "Тестовый режим: ваш код ",
+    testModePost: " (не будет показан после подключения SMS-провайдера).",
+    otpLabel: "OTP код",
+    verify: "Подтвердить и войти",
+    resendPre: "Новый код через ",
+    resendPost: " сек",
+    resend: "Отправить код повторно",
+    termsPre: "Продолжая, вы принимаете ",
+    termsLink: "Условия использования",
+    termsMid: " и ",
+    privacyLink: "Политику конфиденциальности",
+    termsPost: ".",
+    errGeneric: "Произошла ошибка",
+    errCode: "Неверный код",
   },
 };
 
