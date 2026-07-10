@@ -106,7 +106,7 @@ export async function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row">
           <p>© {year} Rentgen.az — {d.footer.rights}</p>
-          <p className="max-w-md text-center sm:text-right">
+          <p className="text-center sm:whitespace-nowrap sm:text-right">
             {d.footer.disclaimer}
           </p>
         </div>
