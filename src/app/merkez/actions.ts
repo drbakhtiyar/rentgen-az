@@ -14,6 +14,7 @@ import {
 } from "@/lib/notify";
 import { Prisma } from "@/generated/prisma/client";
 import type { RequestStatus } from "@/generated/prisma/enums";
+import { centerLimits } from "@/lib/plans";
 
 export type CenterActionResult = { ok: boolean; error?: string; message?: string };
 
@@ -65,6 +66,11 @@ export async function saveCenterProfileAction(input: {
       where: { userId: user.id },
     });
 
+    // Enforce the plan's photo limit (new centers default to FREE).
+    const photoLimit = centerLimits(existing?.plan ?? "FREE").photoLimit;
+    const images =
+      photoLimit == null ? (d.images ?? []) : (d.images ?? []).slice(0, photoLimit);
+
     const data = {
       name: d.name,
       phone: normalizePhone(d.phone) ?? d.phone,
@@ -80,7 +86,7 @@ export async function saveCenterProfileAction(input: {
       description: d.description || null,
       logoUrl: d.logoUrl || null,
       licenseUrl: d.licenseUrl || null,
-      images: d.images ?? [],
+      images,
       lat: d.lat ?? null,
       lng: d.lng ?? null,
     };

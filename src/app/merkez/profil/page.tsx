@@ -8,6 +8,7 @@ import { requireRole } from "@/lib/auth/rbac";
 import { CITIES } from "@/lib/constants";
 import { parseHours } from "@/lib/hours";
 import { buildMetadata } from "@/lib/seo";
+import { centerLimits } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function CenterProfilePage() {
       <CenterProfileForm
         cities={cityOptions}
         mode="edit"
+        maxImages={centerLimits(center.plan).photoLimit ?? 999}
         defaults={{
           name: center.name,
           phone: center.phone,

@@ -13,6 +13,7 @@ import { adminUpdateCenterAction, adminSetCenterPlanAction } from "@/app/admin/a
 import { parseHours } from "@/lib/hours";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
+import { centerLimits } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,7 @@ export default async function AdminEditCenterPage({
           cities={cityOptions}
           mode="edit"
           onSave={save}
+          maxImages={centerLimits(center.plan).photoLimit ?? 999}
           defaults={{
             name: center.name,
             phone: center.phone,

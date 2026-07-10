@@ -56,13 +56,17 @@ export function CenterProfileForm({
   defaults,
   mode,
   onSave,
+  maxImages,
 }: {
   cities: Option[];
   defaults?: CenterFormDefaults;
   mode: "create" | "edit";
   /** Overrides the default self-serve save (e.g. admin editing any center). */
   onSave?: (input: SaveInput) => Promise<{ ok: boolean; error?: string; message?: string }>;
+  /** Max number of gallery photos allowed by the center's plan (default 12). */
+  maxImages?: number;
 }) {
+  const imgCap = maxImages ?? 12;
   const [pending, startTransition] = React.useTransition();
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(
     typeof defaults?.lat === "number" && typeof defaults?.lng === "number"
@@ -108,14 +112,14 @@ export function CenterProfileForm({
     setUploadingImg(true);
     try {
       const uploaded: string[] = [];
-      for (const file of files.slice(0, 12 - images.length)) {
+      for (const file of files.slice(0, imgCap - images.length)) {
         const blob = await upload(`center-images/${file.name}`, file, {
           access: "public",
           handleUploadUrl: "/api/upload",
         });
         uploaded.push(blob.url);
       }
-      setImages((prev) => [...prev, ...uploaded].slice(0, 12));
+      setImages((prev) => [...prev, ...uploaded].slice(0, imgCap));
     } catch {
       setError("Şəkil yüklənmədi. Yenidən cəhd edin.");
     } finally {
@@ -362,7 +366,7 @@ export function CenterProfileForm({
           <div className="mb-1.5 flex items-center justify-between">
             <p className="text-sm font-medium text-ink-800">
               Şəkillər{" "}
-              <span className="font-normal text-slate-400">({images.length}/12)</span>
+              <span className="font-normal text-slate-400">({images.length}/{imgCap})</span>
             </p>
             <input
               ref={imgRef}
@@ -375,7 +379,7 @@ export function CenterProfileForm({
             <button
               type="button"
               onClick={() => imgRef.current?.click()}
-              disabled={uploadingImg || images.length >= 12}
+              disabled={uploadingImg || images.length >= imgCap}
               className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
             >
               {uploadingImg ? (
