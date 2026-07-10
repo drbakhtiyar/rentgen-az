@@ -215,7 +215,7 @@ export default async function CenterDetailPage({
           />
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
-          <CallButton phone={center.phone} centerId={center.id} />
+          <CallButton phone={center.phone} centerId={center.id} locale={locale} />
           {center.whatsapp && <WhatsAppButton phone={center.whatsapp} centerId={center.id} />}
         </div>
       </PageHeader>

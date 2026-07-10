@@ -8,6 +8,8 @@ import { JsonLd } from "@/components/ui/json-ld";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getPublishedPosts } from "@/lib/queries";
 import { formatDateAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 export const revalidate = 300;
 
@@ -29,6 +31,7 @@ export const metadata = buildMetadata({
 
 export default async function BlogPage() {
   const posts = await getPublishedPosts();
+  const t = getDict(await getLocale()).blog;
 
   return (
     <>
@@ -39,10 +42,10 @@ export default async function BlogPage() {
         ])}
       />
       <PageHeader
-        eyebrow="Blog"
-        title="Blog"
-        description="Dental rentgen, 3D tomoqrafiya və diaqnostika haqqında faydalı və etibarlı məqalələr."
-        breadcrumbs={[{ name: "Blog" }]}
+        eyebrow={t.eyebrow}
+        title={t.title}
+        description={t.description}
+        breadcrumbs={[{ name: t.title }]}
       />
 
       <Section>
@@ -50,11 +53,10 @@ export default async function BlogPage() {
           {posts.length === 0 ? (
             <Card className="mx-auto max-w-xl p-8 text-center sm:p-10">
               <h2 className="font-display text-xl font-bold text-ink-900">
-                Tezliklə məqalələr əlavə olunacaq
+                {t.emptyTitle}
               </h2>
               <p className="mt-3 text-slate-600">
-                Hazırda yeni məzmun üzərində işləyirik. Tezliklə dental rentgen və
-                tomoqrafiya haqqında faydalı məqalələri burada paylaşacağıq.
+                {t.emptyDesc}
               </p>
             </Card>
           ) : (
@@ -111,7 +113,7 @@ export default async function BlogPage() {
                     href={`/blog/${post.slug}`}
                     className="mt-5 inline-flex items-center gap-1.5 self-start text-sm font-semibold text-brand-700 hover:text-brand-800"
                   >
-                    Oxu
+                    {t.read}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </a>
                   </div>

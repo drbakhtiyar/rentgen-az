@@ -6,7 +6,7 @@ import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { RatingSummary } from "@/components/reviews/stars";
 import { OpenStatus } from "@/components/centers/open-status";
 import { formatPrice } from "@/lib/utils";
-import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import type { CenterWithServices } from "@/lib/queries";
 
 export function CenterCard({
@@ -21,6 +21,7 @@ export function CenterCard({
   highlightService?: string;
   locale?: Locale;
 }) {
+  const cta = getDict(locale).cta;
   const matched = highlightService
     ? center.services.find((cs) => cs.service.slug === highlightService)
     : undefined;
@@ -137,7 +138,7 @@ export function CenterCard({
         )}
 
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
-          <CallButton phone={center.phone} centerId={center.id} className="h-10 flex-1 px-3 text-xs" />
+          <CallButton phone={center.phone} centerId={center.id} locale={locale} className="h-10 flex-1 px-3 text-xs" />
           {center.whatsapp && (
             <WhatsAppButton
               phone={center.whatsapp}
@@ -148,7 +149,7 @@ export function CenterCard({
           <Link
             href={`/rentgen-merkezleri/${center.slug}`}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-ink-700 transition-colors hover:border-brand-300 hover:bg-brand-50"
-            aria-label="Ətraflı"
+            aria-label={cta.details}
           >
             <ArrowUpRight className="h-4 w-4" />
           </Link>

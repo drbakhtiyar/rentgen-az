@@ -3,20 +3,24 @@
 import { Phone, MessageCircle } from "lucide-react";
 import { phoneToInternational } from "@/lib/phone";
 import { cn } from "@/lib/utils";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { trackCenterEventAction } from "@/app/actions/track";
 
 export function CallButton({
   phone,
   className,
-  label = "Zəng et",
+  label,
   centerId,
+  locale = DEFAULT_LOCALE,
 }: {
   phone: string;
   className?: string;
   label?: string;
   /** when set, the click is logged as a "call" analytics event */
   centerId?: string;
+  locale?: Locale;
 }) {
+  const text = label ?? getDict(locale).cta.call;
   return (
     <a
       href={`tel:${phoneToInternational(phone)}`}
@@ -29,7 +33,7 @@ export function CallButton({
       )}
     >
       <Phone className="h-4 w-4" />
-      {label}
+      {text}
     </a>
   );
 }

@@ -5,6 +5,7 @@ import * as React from "react";
 import Link from "next/link";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { BAKU } from "@/lib/geo";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { pinIcon, userIcon } from "./icons";
 
 export type MapPoint = {
@@ -52,12 +53,15 @@ export default function CentersMapView({
   points,
   user,
   zoom,
+  locale = DEFAULT_LOCALE,
 }: {
   points: MapPoint[];
   user?: { lat: number; lng: number } | null;
   /** Override the initial zoom. Defaults to street-level for a single point. */
   zoom?: number;
+  locale?: Locale;
 }) {
+  const detailsLabel = getDict(locale).cta.details;
   const center: [number, number] = user
     ? [user.lat, user.lng]
     : points[0]
@@ -99,7 +103,7 @@ export default function CentersMapView({
             <strong>{p.name}</strong>
             {p.distance ? ` · ${p.distance}` : ""}
             <br />
-            <Link href={`/rentgen-merkezleri/${p.slug}`}>Ətraflı →</Link>
+            <Link href={`/rentgen-merkezleri/${p.slug}`}>{detailsLabel} →</Link>
           </Popup>
         </Marker>
       ))}

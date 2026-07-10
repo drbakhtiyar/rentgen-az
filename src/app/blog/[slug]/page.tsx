@@ -11,6 +11,8 @@ import { JsonLd } from "@/components/ui/json-ld";
 import { buildMetadata, breadcrumbJsonLd, articleJsonLd } from "@/lib/seo";
 import { getPostBySlug } from "@/lib/queries";
 import { formatDateAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 // The global header reads auth cookies, so all routes render dynamically (SSR).
 // Forcing dynamic avoids a static-optimization conflict for this catch-all route.
@@ -46,6 +48,7 @@ export default async function BlogPostPage({
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
+  const t = getDict(await getLocale()).blog;
   const html = await marked.parse(post.content);
 
   return (
@@ -106,25 +109,23 @@ export default async function BlogPostPage({
             />
 
             <p className="mt-10 text-sm text-slate-500">
-              Bu məqalə ümumi məlumat xarakteri daşıyır və həkim məsləhətini əvəz
-              etmir.
+              {t.disclaimer}
             </p>
 
             <div className="mt-10">
               <ButtonLink href="/blog" variant="outline">
                 <ArrowLeft className="h-4 w-4" />
-                Bütün məqalələr
+                {t.allPosts}
               </ButtonLink>
             </div>
 
             <Card className="mt-10 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
               <div>
                 <h2 className="font-display text-lg font-bold text-ink-900">
-                  Yaxın rentgen mərkəzini tapın
+                  {t.ctaTitle}
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">
-                  Bölgənizə uyğun dental rentgen və tomoqrafiya mərkəzlərini
-                  araşdırın və birbaşa əlaqə saxlayın.
+                  {t.ctaDesc}
                 </p>
               </div>
               <ButtonLink
@@ -132,7 +133,7 @@ export default async function BlogPostPage({
                 variant="primary"
                 className="shrink-0"
               >
-                Mərkəzlərə bax
+                {t.ctaButton}
                 <ArrowRight className="h-4 w-4" />
               </ButtonLink>
             </Card>

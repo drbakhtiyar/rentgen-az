@@ -158,7 +158,7 @@ export function CentersExplorer({
 
       {points.length > 0 ? (
         <div className="h-[360px] overflow-hidden rounded-2xl border border-slate-200 shadow-[var(--shadow-soft)]">
-          <CentersMapView points={points} user={user} />
+          <CentersMapView points={points} user={user} locale={locale} />
         </div>
       ) : (
         <div className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">

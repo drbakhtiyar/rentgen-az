@@ -407,6 +407,36 @@ type Dict = {
     noteLabel: string; notePh: string;
     submit: string;
   };
+  blog: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    emptyTitle: string;
+    emptyDesc: string;
+    read: string;
+    notFound: string;
+    disclaimer: string;
+    allPosts: string;
+    ctaTitle: string;
+    ctaDesc: string;
+    ctaButton: string;
+  };
+  serviceDetail: {
+    centersWithService: string;
+    benefits: string;
+    whenNeeded: string;
+    related: string;
+    centersEyebrow: string;
+    centersTitleTpl: string;
+    viewAll: string;
+    centersEmpty: string;
+    addCenter: string;
+    faqTitleTpl: string;
+    ctaTitleTpl: string;
+    ctaDesc: string;
+    findCenter: string;
+    notFound: string;
+  };
 };
 
 const az: Dict = {
@@ -879,6 +909,40 @@ const az: Dict = {
     notePh: "Əlavə məlumat (istəyə bağlı)",
     submit: "Davam et — pasiyentə təsdiq kodu göndər",
   },
+  blog: {
+    eyebrow: "Blog",
+    title: "Blog",
+    description:
+      "Dental rentgen, 3D tomoqrafiya və diaqnostika haqqında faydalı və etibarlı məqalələr.",
+    emptyTitle: "Tezliklə məqalələr əlavə olunacaq",
+    emptyDesc:
+      "Hazırda yeni məzmun üzərində işləyirik. Tezliklə dental rentgen və tomoqrafiya haqqında faydalı məqalələri burada paylaşacağıq.",
+    read: "Oxu",
+    notFound: "Məqalə tapılmadı",
+    disclaimer:
+      "Bu məqalə ümumi məlumat xarakteri daşıyır və həkim məsləhətini əvəz etmir.",
+    allPosts: "Bütün məqalələr",
+    ctaTitle: "Yaxın rentgen mərkəzini tapın",
+    ctaDesc:
+      "Bölgənizə uyğun dental rentgen və tomoqrafiya mərkəzlərini araşdırın və birbaşa əlaqə saxlayın.",
+    ctaButton: "Mərkəzlərə bax",
+  },
+  serviceDetail: {
+    centersWithService: "Bu xidməti göstərən mərkəzlər",
+    benefits: "Üstünlükləri",
+    whenNeeded: "Hansı hallarda lazımdır?",
+    related: "Əlaqəli xidmətlər",
+    centersEyebrow: "Mərkəzlər",
+    centersTitleTpl: "{s} xidməti göstərən mərkəzlər",
+    viewAll: "Hamısına bax",
+    centersEmpty: "Bu xidmət üzrə təsdiqlənmiş mərkəzlər tezliklə əlavə olunacaq.",
+    addCenter: "Mərkəzinizi əlavə edin",
+    faqTitleTpl: "{s} haqqında suallar",
+    ctaTitleTpl: "{s} üçün mərkəz axtarırsınız?",
+    ctaDesc: "Təsdiqlənmiş mərkəzləri rayona görə tapın və birbaşa əlaqə saxlayın.",
+    findCenter: "Mərkəz tap",
+    notFound: "Xidmət tapılmadı",
+  },
 };
 
 const ru: Dict = {
@@ -1349,6 +1413,40 @@ const ru: Dict = {
     noteLabel: "Заметка",
     notePh: "Дополнительная информация (необязательно)",
     submit: "Продолжить — отправить код пациенту",
+  },
+  blog: {
+    eyebrow: "Блог",
+    title: "Блог",
+    description:
+      "Полезные и достоверные статьи о дентальном рентгене, 3D-томографии и диагностике.",
+    emptyTitle: "Статьи скоро появятся",
+    emptyDesc:
+      "Сейчас мы работаем над новым контентом. Скоро мы будем публиковать здесь полезные статьи о дентальном рентгене и томографии.",
+    read: "Читать",
+    notFound: "Статья не найдена",
+    disclaimer:
+      "Эта статья носит общий информационный характер и не заменяет консультацию врача.",
+    allPosts: "Все статьи",
+    ctaTitle: "Найдите ближайший рентген-центр",
+    ctaDesc:
+      "Найдите центры дентального рентгена и томографии в вашем районе и свяжитесь с ними напрямую.",
+    ctaButton: "Смотреть центры",
+  },
+  serviceDetail: {
+    centersWithService: "Центры, предоставляющие эту услугу",
+    benefits: "Преимущества",
+    whenNeeded: "В каких случаях нужно?",
+    related: "Связанные услуги",
+    centersEyebrow: "Центры",
+    centersTitleTpl: "Центры с услугой «{s}»",
+    viewAll: "Смотреть все",
+    centersEmpty: "Проверенные центры по этой услуге скоро будут добавлены.",
+    addCenter: "Добавьте свой центр",
+    faqTitleTpl: "Вопросы об услуге «{s}»",
+    ctaTitleTpl: "Ищете центр для «{s}»?",
+    ctaDesc: "Найдите проверенные центры по району и свяжитесь с ними напрямую.",
+    findCenter: "Найти центр",
+    notFound: "Услуга не найдена",
   },
 };
 
