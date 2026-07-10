@@ -96,6 +96,17 @@ type Dict = {
     address: string;
     equipment: string;
     responsible: string;
+    servicesSoon: string;
+    verifiedCustomer: string;
+    writeReviewTitle: string;
+    updateReviewTitle: string;
+    onlyAfterService: string;
+    sendPatient: string;
+    sendRequest: string;
+    referHint: string;
+    patientFallback: string;
+    docsTitle: string;
+    licenseLabel: string;
   };
   services: {
     eyebrow: string;
@@ -144,6 +155,15 @@ type Dict = {
     submitOtp: string;
     disclaimer: string;
     centerLabel: string;
+    errGeneric: string;
+    submitted: string;
+    otpSentPre: string;
+    otpSentPost: string;
+    otpTestMode: string;
+    otpLabel: string;
+    otpPlaceholder: string;
+    verifySubmit: string;
+    back: string;
   };
   status: {
     openTpl: string; // {t} = closing time
@@ -343,6 +363,50 @@ type Dict = {
     errGeneric: string;
     errCode: string;
   };
+  reviews: {
+    ratingTitle: string;
+    qService: string; qStaff: string; qClean: string; qWait: string; qPrice: string;
+    starSuffix: string;
+    allStars: string;
+    errGeneric: string;
+    thanks: string;
+    centerLabel: string;
+    commentPlaceholder: string;
+    writeReview: string;
+    updateReview: string;
+    firstName: string; firstNamePh: string;
+    lastName: string; lastNamePh: string;
+    phoneLabel: string; phoneHint: string; phonePlaceholder: string;
+    doctorLabel: string; doctorHint: string; doctorNone: string; doctorOther: string;
+    doctorNameLabel: string; doctorNamePh: string;
+    reviewLabel: string;
+    submitOtp: string;
+    errName: string; errPhone: string;
+    otpSentPre: string; otpSentPost: string;
+    otpTestMode: string;
+    otpLabel: string; otpPlaceholder: string;
+    send: string; back: string;
+    gotoCenter: string;
+    pageTitleSuffix: string;
+    pageDesc: string;
+  };
+  referral: {
+    doctorLabel: string;
+    errCenter: string; errName: string; errPhone: string; errGeneric: string;
+    submitted: string;
+    otpSentPre: string; otpSentPost: string;
+    otpTestMode: string;
+    otpLabel: string; otpPlaceholder: string;
+    complete: string; back: string;
+    centerLabel: string; centerHintPartner: string; centerFallback: string; centerPlaceholder: string;
+    serviceLabel: string; servicePickCenter: string; serviceNone: string; servicePick: string;
+    firstLabel: string; firstPh: string; lastLabel: string; lastPh: string;
+    phoneLabel: string; phoneHint: string; phonePlaceholder: string;
+    dateLabel: string; optional: string; pickCenterFirst: string;
+    timeLabel: string; pickDateFirst: string; noTime: string; pickTime: string;
+    noteLabel: string; notePh: string;
+    submit: string;
+  };
 };
 
 const az: Dict = {
@@ -432,6 +496,17 @@ const az: Dict = {
     address: "Ünvan",
     equipment: "Avadanlıq",
     responsible: "Məsul şəxs",
+    servicesSoon: "Xidmət siyahısı tezliklə əlavə olunacaq.",
+    verifiedCustomer: "Təsdiqlənmiş müştəri",
+    writeReviewTitle: "Rəyinizi yazın",
+    updateReviewTitle: "Rəyinizi yeniləyin",
+    onlyAfterService: "Bu mərkəzə yalnız xidmət aldıqdan sonra rəy yaza bilərsiniz.",
+    sendPatient: "Pasiyent göndər",
+    sendRequest: "Müraciət göndər",
+    referHint: "Pasiyentinizi bu mərkəzə yönləndirin — pasiyentə OTP təsdiqi göndəriləcək.",
+    patientFallback: "Pasiyent",
+    docsTitle: "Lisenziya və sənədlər",
+    licenseLabel: "Rentgenologiya lisenziyası",
   },
   services: {
     eyebrow: "Görüntüləmə xidmətləri",
@@ -482,6 +557,15 @@ const az: Dict = {
     submitOtp: "Davam et — təsdiq kodu al",
     disclaimer: "Müraciətiniz seçilmiş mərkəzə çatdırılır. Ödəniş platformada alınmır.",
     centerLabel: "Mərkəz",
+    errGeneric: "Xəta baş verdi",
+    submitted: "Müraciətiniz göndərildi.",
+    otpSentPre: "",
+    otpSentPost: " nömrəsinə təsdiq kodu göndərdik. Müraciətin qeydə alınması üçün kodu daxil edin.",
+    otpTestMode: "Test rejimi — kod: ",
+    otpLabel: "Təsdiq kodu",
+    otpPlaceholder: "6 rəqəmli kod",
+    verifySubmit: "Təsdiqlə və göndər",
+    back: "Geri",
   },
   status: {
     openTpl: "Açıqdır · {t}-dək",
@@ -711,6 +795,90 @@ const az: Dict = {
     errGeneric: "Xəta baş verdi",
     errCode: "Kod yanlışdır",
   },
+  reviews: {
+    ratingTitle: "Qiymətləndirmə",
+    qService: "Xidmətin ümumi keyfiyyəti",
+    qStaff: "Personalın münasibəti",
+    qClean: "Təmizlik və rahatlıq",
+    qWait: "Gözləmə vaxtı",
+    qPrice: "Qiymət / dəyər nisbəti",
+    starSuffix: " ulduz",
+    allStars: "Zəhmət olmasa bütün suallara ulduz verin.",
+    errGeneric: "Xəta baş verdi",
+    thanks: "Rəyiniz üçün təşəkkürlər!",
+    centerLabel: "Mərkəz",
+    commentPlaceholder: "Təcrübəniz haqqında yazın…",
+    writeReview: "Rəy göndər",
+    updateReview: "Rəyi yenilə",
+    firstName: "Ad",
+    firstNamePh: "Adınız",
+    lastName: "Soyad",
+    lastNamePh: "Soyadınız",
+    phoneLabel: "Telefon nömrəsi",
+    phoneHint: "Təsdiq kodu bu nömrəyə gələcək.",
+    phonePlaceholder: "050 123 45 67",
+    doctorLabel: "Sizi göndərən həkim",
+    doctorHint: "İstəyə bağlı",
+    doctorNone: "Yoxdur / seçmək istəmirəm",
+    doctorOther: "Digər (əl ilə yazım)",
+    doctorNameLabel: "Həkimin adı",
+    doctorNamePh: "Həkimin adı",
+    reviewLabel: "Rəyiniz (istəyə bağlı)",
+    submitOtp: "Davam et — təsdiq kodu al",
+    errName: "Ad və soyadınızı yazın.",
+    errPhone: "Telefon nömrənizi yazın.",
+    otpSentPre: "",
+    otpSentPost: " nömrəsinə təsdiq kodu göndərdik. Rəyin dərc olunması üçün kodu daxil edin.",
+    otpTestMode: "Test rejimi — kod: ",
+    otpLabel: "Təsdiq kodu",
+    otpPlaceholder: "6 rəqəmli kod",
+    send: "Rəyi göndər",
+    back: "Geri",
+    gotoCenter: "Mərkəzin səhifəsinə keç",
+    pageTitleSuffix: " haqqında rəy",
+    pageDesc:
+      "Xidmətdən istifadə etdiyiniz üçün təşəkkür edirik. Təcrübənizi qiymətləndirin — rəyiniz digər pasiyentlərə kömək edəcək.",
+  },
+  referral: {
+    doctorLabel: "Həkim",
+    errCenter: "Mərkəzi seçin.",
+    errName: "Pasiyentin ad və soyadını yazın.",
+    errPhone: "Pasiyentin nömrəsini yazın.",
+    errGeneric: "Xəta",
+    submitted: "Göndəriş tamamlandı.",
+    otpSentPre: "",
+    otpSentPost: " nömrəsinə təsdiq kodu göndərdik. Göndərişin tamamlanması üçün pasiyentdən kodu alıb daxil edin.",
+    otpTestMode: "Test rejimi — kod: ",
+    otpLabel: "Təsdiq kodu",
+    otpPlaceholder: "6 rəqəmli kod",
+    complete: "Göndərişi tamamla",
+    back: "Geri",
+    centerLabel: "Mərkəz",
+    centerHintPartner: "Yalnız partnyor mərkəzləriniz",
+    centerFallback: "Mərkəz",
+    centerPlaceholder: "Mərkəz seçin",
+    serviceLabel: "Lazım olan müayinə",
+    servicePickCenter: "İlk öncə mərkəzi seçin",
+    serviceNone: "Bu mərkəzdə xidmət yoxdur",
+    servicePick: "Müayinə seçin (istəyə bağlı)",
+    firstLabel: "Pasiyentin adı",
+    firstPh: "Ad",
+    lastLabel: "Pasiyentin soyadı",
+    lastPh: "Soyad",
+    phoneLabel: "Pasiyentin telefonu",
+    phoneHint: "Təsdiq kodu bu nömrəyə gedəcək.",
+    phonePlaceholder: "050 123 45 67",
+    dateLabel: "Tarix",
+    optional: "İstəyə bağlı",
+    pickCenterFirst: "İlk öncə mərkəzi seçin",
+    timeLabel: "Saat",
+    pickDateFirst: "Əvvəlcə tarix seçin",
+    noTime: "Vaxt yoxdur",
+    pickTime: "Saat seçin",
+    noteLabel: "Qeyd",
+    notePh: "Əlavə məlumat (istəyə bağlı)",
+    submit: "Davam et — pasiyentə təsdiq kodu göndər",
+  },
 };
 
 const ru: Dict = {
@@ -800,6 +968,17 @@ const ru: Dict = {
     address: "Адрес",
     equipment: "Оборудование",
     responsible: "Ответственное лицо",
+    servicesSoon: "Список услуг скоро будет добавлен.",
+    verifiedCustomer: "Проверенный клиент",
+    writeReviewTitle: "Оставьте отзыв",
+    updateReviewTitle: "Обновите отзыв",
+    onlyAfterService: "Оставить отзыв об этом центре можно только после получения услуги.",
+    sendPatient: "Направить пациента",
+    sendRequest: "Отправить заявку",
+    referHint: "Направьте вашего пациента в этот центр — пациенту будет отправлено OTP-подтверждение.",
+    patientFallback: "Пациент",
+    docsTitle: "Лицензия и документы",
+    licenseLabel: "Лицензия на рентгенологию",
   },
   services: {
     eyebrow: "Диагностические услуги",
@@ -849,6 +1028,15 @@ const ru: Dict = {
     submitOtp: "Продолжить — получить код",
     disclaimer: "Ваша заявка передаётся выбранному центру. Оплата на платформе не взимается.",
     centerLabel: "Центр",
+    errGeneric: "Произошла ошибка",
+    submitted: "Ваша заявка отправлена.",
+    otpSentPre: "Мы отправили код подтверждения на номер ",
+    otpSentPost: ". Введите код, чтобы заявка была зарегистрирована.",
+    otpTestMode: "Тестовый режим — код: ",
+    otpLabel: "Код подтверждения",
+    otpPlaceholder: "6-значный код",
+    verifySubmit: "Подтвердить и отправить",
+    back: "Назад",
   },
   status: {
     openTpl: "Открыто · до {t}",
@@ -1077,6 +1265,90 @@ const ru: Dict = {
     termsPost: ".",
     errGeneric: "Произошла ошибка",
     errCode: "Неверный код",
+  },
+  reviews: {
+    ratingTitle: "Оценка",
+    qService: "Общее качество услуги",
+    qStaff: "Отношение персонала",
+    qClean: "Чистота и комфорт",
+    qWait: "Время ожидания",
+    qPrice: "Соотношение цена / качество",
+    starSuffix: " звёзд",
+    allStars: "Пожалуйста, оцените все вопросы звёздами.",
+    errGeneric: "Произошла ошибка",
+    thanks: "Спасибо за ваш отзыв!",
+    centerLabel: "Центр",
+    commentPlaceholder: "Расскажите о вашем опыте…",
+    writeReview: "Отправить отзыв",
+    updateReview: "Обновить отзыв",
+    firstName: "Имя",
+    firstNamePh: "Ваше имя",
+    lastName: "Фамилия",
+    lastNamePh: "Ваша фамилия",
+    phoneLabel: "Номер телефона",
+    phoneHint: "Код подтверждения придёт на этот номер.",
+    phonePlaceholder: "050 123 45 67",
+    doctorLabel: "Врач, направивший вас",
+    doctorHint: "Необязательно",
+    doctorNone: "Нет / не хочу выбирать",
+    doctorOther: "Другой (впишу вручную)",
+    doctorNameLabel: "Имя врача",
+    doctorNamePh: "Имя врача",
+    reviewLabel: "Ваш отзыв (необязательно)",
+    submitOtp: "Продолжить — получить код",
+    errName: "Введите имя и фамилию.",
+    errPhone: "Введите номер телефона.",
+    otpSentPre: "Мы отправили код подтверждения на номер ",
+    otpSentPost: ". Введите код для публикации отзыва.",
+    otpTestMode: "Тестовый режим — код: ",
+    otpLabel: "Код подтверждения",
+    otpPlaceholder: "6-значный код",
+    send: "Отправить отзыв",
+    back: "Назад",
+    gotoCenter: "Перейти на страницу центра",
+    pageTitleSuffix: ": ваш отзыв",
+    pageDesc:
+      "Спасибо, что воспользовались услугой. Оцените ваш опыт — ваш отзыв поможет другим пациентам.",
+  },
+  referral: {
+    doctorLabel: "Врач",
+    errCenter: "Выберите центр.",
+    errName: "Введите имя и фамилию пациента.",
+    errPhone: "Введите номер пациента.",
+    errGeneric: "Ошибка",
+    submitted: "Направление отправлено.",
+    otpSentPre: "Мы отправили код подтверждения на номер ",
+    otpSentPost: ". Чтобы завершить направление, получите код у пациента и введите его.",
+    otpTestMode: "Тестовый режим — код: ",
+    otpLabel: "Код подтверждения",
+    otpPlaceholder: "6-значный код",
+    complete: "Завершить направление",
+    back: "Назад",
+    centerLabel: "Центр",
+    centerHintPartner: "Только ваши партнёрские центры",
+    centerFallback: "Центр",
+    centerPlaceholder: "Выберите центр",
+    serviceLabel: "Необходимое обследование",
+    servicePickCenter: "Сначала выберите центр",
+    serviceNone: "В этом центре нет услуг",
+    servicePick: "Выберите обследование (необязательно)",
+    firstLabel: "Имя пациента",
+    firstPh: "Имя",
+    lastLabel: "Фамилия пациента",
+    lastPh: "Фамилия",
+    phoneLabel: "Телефон пациента",
+    phoneHint: "Код подтверждения придёт на этот номер.",
+    phonePlaceholder: "050 123 45 67",
+    dateLabel: "Дата",
+    optional: "Необязательно",
+    pickCenterFirst: "Сначала выберите центр",
+    timeLabel: "Время",
+    pickDateFirst: "Сначала выберите дату",
+    noTime: "Нет времени",
+    pickTime: "Выберите время",
+    noteLabel: "Заметка",
+    notePh: "Дополнительная информация (необязательно)",
+    submit: "Продолжить — отправить код пациенту",
   },
 };
 

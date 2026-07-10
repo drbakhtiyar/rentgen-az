@@ -5,6 +5,7 @@ import { Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { RatingQuestions, EMPTY_SCORES } from "@/components/reviews/rating-questions";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import {
   requestReviewOtpAction,
   submitQrReviewAction,
@@ -19,11 +20,14 @@ export function QrReviewForm({
   centerSlug,
   centerName,
   doctors,
+  locale = DEFAULT_LOCALE,
 }: {
   centerSlug: string;
   centerName: string;
   doctors: Option[];
+  locale?: Locale;
 }) {
+  const t = getDict(locale).reviews;
   const [step, setStep] = React.useState<"form" | "otp">("form");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -47,21 +51,21 @@ export function QrReviewForm({
     e.preventDefault();
     setError(null);
     if (firstName.trim().length < 2 || lastName.trim().length < 2) {
-      setError("Ad və soyadınızı yazın.");
+      setError(t.errName);
       return;
     }
     if (!phone.trim()) {
-      setError("Telefon nömrənizi yazın.");
+      setError(t.errPhone);
       return;
     }
     if (Object.values(scores).some((v) => v < 1)) {
-      setError("Zəhmət olmasa bütün suallara ulduz verin.");
+      setError(t.allStars);
       return;
     }
     startTransition(async () => {
       const res = await requestReviewOtpAction({ phone: phone.trim() });
       if (!res.ok) {
-        setError(res.error ?? "Xəta baş verdi");
+        setError(res.error ?? t.errGeneric);
         return;
       }
       setDevCode(res.devCode ?? null);
@@ -85,10 +89,10 @@ export function QrReviewForm({
         comment: comment.trim() || undefined,
       });
       if (!res.ok) {
-        setError(res.error ?? "Xəta baş verdi");
+        setError(res.error ?? t.errGeneric);
         return;
       }
-      setDone(res.message ?? "Rəyiniz üçün təşəkkürlər!");
+      setDone(res.message ?? t.thanks);
     });
   }
 
@@ -98,7 +102,7 @@ export function QrReviewForm({
         <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
         <p className="mt-4 text-lg font-semibold text-emerald-800">{done}</p>
         <ButtonLink href={`/rentgen-merkezleri/${centerSlug}`} className="mt-6">
-          Mərkəzin səhifəsinə keç
+          {t.gotoCenter}
         </ButtonLink>
       </div>
     );
@@ -109,21 +113,22 @@ export function QrReviewForm({
       <form onSubmit={submit} className="space-y-4">
         <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-sm text-brand-800">
           <ShieldCheck className="mb-1 h-5 w-5 text-brand-600" />
-          <span className="font-semibold">{phone}</span> nömrəsinə təsdiq kodu
-          göndərdik. Rəyin dərc olunması üçün kodu daxil edin.
+          {t.otpSentPre}
+          <span className="font-semibold">{phone}</span>
+          {t.otpSentPost}
         </div>
         {devCode && (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Test rejimi — kod: <span className="font-bold">{devCode}</span>
+            {t.otpTestMode}<span className="font-bold">{devCode}</span>
           </p>
         )}
-        <Field label="Təsdiq kodu" htmlFor="code" required>
+        <Field label={t.otpLabel} htmlFor="code" required>
           <Input
             id="code"
             inputMode="numeric"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="6 rəqəmli kod"
+            placeholder={t.otpPlaceholder}
             autoFocus
           />
         </Field>
@@ -135,7 +140,7 @@ export function QrReviewForm({
         <div className="flex items-center gap-3">
           <Button type="submit" size="lg" disabled={pending || code.trim().length < 4}>
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Rəyi göndər
+            {t.send}
           </Button>
           <button
             type="button"
@@ -145,7 +150,7 @@ export function QrReviewForm({
             }}
             className="text-sm font-medium text-slate-500 hover:text-slate-700"
           >
-            Geri
+            {t.back}
           </button>
         </div>
       </form>
@@ -155,46 +160,46 @@ export function QrReviewForm({
   return (
     <form onSubmit={requestOtp} className="space-y-5">
       <p className="text-sm text-slate-500">
-        Mərkəz: <span className="font-semibold text-ink-800">{centerName}</span>
+        {t.centerLabel}: <span className="font-semibold text-ink-800">{centerName}</span>
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Ad" htmlFor="firstName" required>
-          <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Adınız" required />
+        <Field label={t.firstName} htmlFor="firstName" required>
+          <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t.firstNamePh} required />
         </Field>
-        <Field label="Soyad" htmlFor="lastName" required>
-          <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Soyadınız" required />
+        <Field label={t.lastName} htmlFor="lastName" required>
+          <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t.lastNamePh} required />
         </Field>
       </div>
-      <Field label="Telefon nömrəsi" htmlFor="phone" required hint="Təsdiq kodu bu nömrəyə gələcək.">
-        <Input id="phone" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="050 123 45 67" required />
+      <Field label={t.phoneLabel} htmlFor="phone" required hint={t.phoneHint}>
+        <Input id="phone" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t.phonePlaceholder} required />
       </Field>
 
-      <Field label="Sizi göndərən həkim" htmlFor="doctor" hint="İstəyə bağlı">
+      <Field label={t.doctorLabel} htmlFor="doctor" hint={t.doctorHint}>
         <Select id="doctor" value={doctorSel} onChange={(e) => setDoctorSel(e.target.value)}>
-          <option value="">Yoxdur / seçmək istəmirəm</option>
+          <option value="">{t.doctorNone}</option>
           {doctors.map((d) => (
             <option key={d.value} value={d.value}>
               {d.label}
             </option>
           ))}
-          <option value={MANUAL}>Digər (əl ilə yazım)</option>
+          <option value={MANUAL}>{t.doctorOther}</option>
         </Select>
       </Field>
       {doctorSel === MANUAL && (
-        <Field label="Həkimin adı" htmlFor="doctorName">
-          <Input id="doctorName" value={doctorName} onChange={(e) => setDoctorName(e.target.value)} placeholder="Həkimin adı" />
+        <Field label={t.doctorNameLabel} htmlFor="doctorName">
+          <Input id="doctorName" value={doctorName} onChange={(e) => setDoctorName(e.target.value)} placeholder={t.doctorNamePh} />
         </Field>
       )}
 
-      <RatingQuestions scores={scores} onChange={setScore} />
+      <RatingQuestions scores={scores} onChange={setScore} locale={locale} />
 
-      <Field label="Rəyiniz (istəyə bağlı)" htmlFor="comment">
+      <Field label={t.reviewLabel} htmlFor="comment">
         <Textarea
           id="comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Təcrübəniz haqqında yazın…"
+          placeholder={t.commentPlaceholder}
           className="min-h-[90px]"
         />
       </Field>
@@ -207,7 +212,7 @@ export function QrReviewForm({
 
       <Button type="submit" size="lg" className="w-full" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        Davam et — təsdiq kodu al
+        {t.submitOtp}
       </Button>
     </form>
   );

@@ -27,7 +27,8 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function DoctorsPage() {
-  const fd = getDict(await getLocale()).forDoctors;
+  const locale = await getLocale();
+  const fd = getDict(locale).forDoctors;
   const centers = await getApprovedCenters({ take: 100 });
   const centerOptions = centers.map((c) => ({
     value: c.id,
@@ -146,6 +147,7 @@ export default async function DoctorsPage() {
                         centers={doctorCtx.centers}
                         servicesByCenter={doctorCtx.servicesByCenter}
                         hoursByCenter={doctorCtx.hoursByCenter}
+                        locale={locale}
                       />
                     </div>
                   </>

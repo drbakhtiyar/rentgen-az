@@ -286,7 +286,7 @@ export default async function CenterDetailPage({
                   </ul>
                 ) : (
                   <p className="mt-3 text-sm text-slate-500">
-                    Xidmət siyahısı tezliklə əlavə olunacaq.
+                    {dd.servicesSoon}
                   </p>
                 )}
               </Card>
@@ -333,8 +333,8 @@ export default async function CenterDetailPage({
                   </div>
                 )}
                 <DocumentGallery
-                  title="Lisenziya və sənədlər"
-                  docs={[{ label: "Rentgenologiya lisenziyası", url: center.licenseUrl }].filter(
+                  title={dd.docsTitle}
+                  docs={[{ label: dd.licenseLabel, url: center.licenseUrl }].filter(
                     (d): d is { label: string; url: string } => !!d.url,
                   )}
                 />
@@ -380,7 +380,7 @@ export default async function CenterDetailPage({
               <Card className="p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h2 className="font-display text-xl font-bold text-ink-900">
-                    Rəylər
+                    {dd.reviews}
                   </h2>
                   <RatingSummary avg={rating.avg} count={rating.count} />
                 </div>
@@ -391,7 +391,7 @@ export default async function CenterDetailPage({
                       const displayName =
                         `${r.patient.firstName} ${
                           r.patient.lastName ? r.patient.lastName[0] + "." : ""
-                        }`.trim() || "Pasiyent";
+                        }`.trim() || dd.patientFallback;
                       return (
                         <li
                           key={r.id}
@@ -403,7 +403,7 @@ export default async function CenterDetailPage({
                               {displayName}
                             </span>
                             {r.verified && (
-                              <Badge tone="green">Təsdiqlənmiş müştəri</Badge>
+                              <Badge tone="green">{dd.verifiedCustomer}</Badge>
                             )}
                           </div>
                           {r.comment && (
@@ -437,12 +437,13 @@ export default async function CenterDetailPage({
                 {canReview ? (
                   <div className="mt-6 border-t border-slate-100 pt-5">
                     <h3 className="font-display text-base font-bold text-ink-900">
-                      {existingReview ? "Rəyinizi yeniləyin" : "Rəyinizi yazın"}
+                      {existingReview ? dd.updateReviewTitle : dd.writeReviewTitle}
                     </h3>
                     <div className="mt-3">
                       <ReviewForm
                         centerId={center.id}
                         centerName={center.name}
+                        locale={locale}
                         defaultScores={
                           existingReview
                             ? {
@@ -460,7 +461,7 @@ export default async function CenterDetailPage({
                   </div>
                 ) : isPatient ? (
                   <p className="mt-6 border-t border-slate-100 pt-5 text-sm text-slate-500">
-                    Bu mərkəzə yalnız xidmət aldıqdan sonra rəy yaza bilərsiniz.
+                    {dd.onlyAfterService}
                   </p>
                 ) : null}
               </Card>
@@ -470,12 +471,10 @@ export default async function CenterDetailPage({
             <aside className="lg:sticky lg:top-20 lg:self-start">
               <Card className="p-6">
                 <h2 className="font-display text-lg font-bold text-ink-900">
-                  {isPartnerDoctor ? "Pasiyent göndər" : "Müraciət göndər"}
+                  {isPartnerDoctor ? dd.sendPatient : dd.sendRequest}
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  {isPartnerDoctor
-                    ? "Pasiyentinizi bu mərkəzə yönləndirin — pasiyentə OTP təsdiqi göndəriləcək."
-                    : dd.requestDesc}
+                  {isPartnerDoctor ? dd.referHint : dd.requestDesc}
                 </p>
                 <div className="mt-4">
                   {isPartnerDoctor && referralDoctor ? (
@@ -491,6 +490,7 @@ export default async function CenterDetailPage({
                       }}
                       hoursByCenter={{ [center.id]: week }}
                       lockedCenterId={center.id}
+                      locale={locale}
                     />
                   ) : (
                     <AppointmentForm

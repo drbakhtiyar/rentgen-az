@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 export type Scores = {
   service: number;
@@ -12,13 +13,7 @@ export type Scores = {
   price: number;
 };
 
-export const RATING_QUESTIONS: { key: keyof Scores; label: string }[] = [
-  { key: "service", label: "Xidmətin ümumi keyfiyyəti" },
-  { key: "staff", label: "Personalın münasibəti" },
-  { key: "clean", label: "Təmizlik və rahatlıq" },
-  { key: "wait", label: "Gözləmə vaxtı" },
-  { key: "price", label: "Qiymət / dəyər nisbəti" },
-];
+export const RATING_KEYS: (keyof Scores)[] = ["service", "staff", "clean", "wait", "price"];
 
 export const EMPTY_SCORES: Scores = {
   service: 0,
@@ -32,20 +27,31 @@ export const EMPTY_SCORES: Scores = {
 export function RatingQuestions({
   scores,
   onChange,
+  locale = DEFAULT_LOCALE,
 }: {
   scores: Scores;
   onChange: (key: keyof Scores, value: number) => void;
+  locale?: Locale;
 }) {
+  const t = getDict(locale).reviews;
+  const labels: Record<keyof Scores, string> = {
+    service: t.qService,
+    staff: t.qStaff,
+    clean: t.qClean,
+    wait: t.qWait,
+    price: t.qPrice,
+  };
   return (
     <div className="space-y-3 rounded-2xl border border-slate-200 p-4">
-      <p className="text-sm font-semibold text-ink-900">Qiymətləndirmə</p>
+      <p className="text-sm font-semibold text-ink-900">{t.ratingTitle}</p>
       <div className="space-y-3">
-        {RATING_QUESTIONS.map((q) => (
+        {RATING_KEYS.map((key) => (
           <StarQuestion
-            key={q.key}
-            label={q.label}
-            value={scores[q.key]}
-            onChange={(v) => onChange(q.key, v)}
+            key={key}
+            label={labels[key]}
+            starSuffix={t.starSuffix}
+            value={scores[key]}
+            onChange={(v) => onChange(key, v)}
           />
         ))}
       </div>
@@ -55,10 +61,12 @@ export function RatingQuestions({
 
 function StarQuestion({
   label,
+  starSuffix,
   value,
   onChange,
 }: {
   label: string;
+  starSuffix: string;
   value: number;
   onChange: (v: number) => void;
 }) {
@@ -74,7 +82,7 @@ function StarQuestion({
             onClick={() => onChange(i)}
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(0)}
-            aria-label={`${i} ulduz`}
+            aria-label={`${i}${starSuffix}`}
             className="p-0.5"
           >
             <Star

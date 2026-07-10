@@ -10,6 +10,7 @@ import {
   EMPTY_SCORES,
   type Scores,
 } from "@/components/reviews/rating-questions";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { submitReviewAction } from "@/app/kabinet/actions";
 
 export function ReviewForm({
@@ -18,13 +19,16 @@ export function ReviewForm({
   defaultScores,
   defaultComment,
   compact,
+  locale = DEFAULT_LOCALE,
 }: {
   centerId: string;
   centerName?: string;
   defaultScores?: Partial<Scores>;
   defaultComment?: string;
   compact?: boolean;
+  locale?: Locale;
 }) {
+  const t = getDict(locale).reviews;
   const router = useRouter();
   const [scores, setScores] = React.useState<Scores>({
     ...EMPTY_SCORES,
@@ -45,13 +49,13 @@ export function ReviewForm({
     e.preventDefault();
     setError(null);
     if (Object.values(scores).some((v) => v < 1)) {
-      setError("Zəhmət olmasa bütün suallara ulduz verin.");
+      setError(t.allStars);
       return;
     }
     startTransition(async () => {
       const res = await submitReviewAction({ centerId, ...scores, comment });
       if (!res.ok) {
-        setError(res.error ?? "Xəta");
+        setError(res.error ?? t.errGeneric);
         return;
       }
       setDone(true);
@@ -62,7 +66,7 @@ export function ReviewForm({
   if (done) {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-        <CheckCircle2 className="h-5 w-5" /> Rəyiniz üçün təşəkkürlər!
+        <CheckCircle2 className="h-5 w-5" /> {t.thanks}
       </div>
     );
   }
@@ -71,14 +75,14 @@ export function ReviewForm({
     <form onSubmit={submit} className="space-y-3">
       {centerName && !compact && (
         <p className="text-sm text-slate-500">
-          Mərkəz: <span className="font-semibold text-ink-800">{centerName}</span>
+          {t.centerLabel}: <span className="font-semibold text-ink-800">{centerName}</span>
         </p>
       )}
-      <RatingQuestions scores={scores} onChange={setScore} />
+      <RatingQuestions scores={scores} onChange={setScore} locale={locale} />
       <Textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        placeholder="Təcrübəniz haqqında yazın (istəyə bağlı)"
+        placeholder={t.commentPlaceholder}
         className="min-h-[80px]"
       />
       {error && (
@@ -86,7 +90,7 @@ export function ReviewForm({
       )}
       <Button type="submit" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        {hasExisting ? "Rəyi yenilə" : "Rəy göndər"}
+        {hasExisting ? t.updateReview : t.writeReview}
       </Button>
     </form>
   );

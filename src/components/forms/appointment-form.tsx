@@ -97,14 +97,14 @@ export function AppointmentForm({
     startTransition(async () => {
       if (skipOtp) {
         const res = await submitAppointmentAction(payload());
-        if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+        if (!res.ok) return setError(res.error ?? t.errGeneric);
         trackConversion();
-        setDone(res.message ?? "Müraciətiniz göndərildi.");
+        setDone(res.message ?? t.submitted);
         return;
       }
       // Not logged in → verify the phone with an OTP first.
       const res = await requestAppointmentOtpAction({ phone: pendingRef.current.phone });
-      if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+      if (!res.ok) return setError(res.error ?? t.errGeneric);
       setDevCode(res.devCode ?? null);
       setOtpPhone(pendingRef.current.phone);
       setStep("otp");
@@ -116,9 +116,9 @@ export function AppointmentForm({
     setError(null);
     startTransition(async () => {
       const res = await submitAppointmentAction(payload({ code: code.trim() }));
-      if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+      if (!res.ok) return setError(res.error ?? t.errGeneric);
       trackConversion();
-      setDone(res.message ?? "Müraciətiniz göndərildi.");
+      setDone(res.message ?? t.submitted);
     });
   }
 
@@ -136,21 +136,22 @@ export function AppointmentForm({
       <form onSubmit={verifyAndSubmit} className="space-y-4">
         <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-sm text-brand-800">
           <ShieldCheck className="mb-1 h-5 w-5 text-brand-600" />
-          <span className="font-semibold">{otpPhone}</span> nömrəsinə təsdiq kodu
-          göndərdik. Müraciətin qeydə alınması üçün kodu daxil edin.
+          {t.otpSentPre}
+          <span className="font-semibold">{otpPhone}</span>
+          {t.otpSentPost}
         </div>
         {devCode && (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Test rejimi — kod: <span className="font-bold">{devCode}</span>
+            {t.otpTestMode}<span className="font-bold">{devCode}</span>
           </p>
         )}
-        <Field label="Təsdiq kodu" htmlFor="apt-code" required>
+        <Field label={t.otpLabel} htmlFor="apt-code" required>
           <Input
             id="apt-code"
             inputMode="numeric"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="6 rəqəmli kod"
+            placeholder={t.otpPlaceholder}
             autoFocus
           />
         </Field>
@@ -162,7 +163,7 @@ export function AppointmentForm({
         <div className="flex items-center gap-3">
           <Button type="submit" size="lg" disabled={pending || code.trim().length < 4}>
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            Təsdiqlə və göndər
+            {t.verifySubmit}
           </Button>
           <button
             type="button"
@@ -172,7 +173,7 @@ export function AppointmentForm({
             }}
             className="text-sm font-medium text-slate-500 hover:text-slate-700"
           >
-            Geri
+            {t.back}
           </button>
         </div>
       </form>

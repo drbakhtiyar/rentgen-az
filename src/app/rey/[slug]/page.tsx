@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db";
 import { getApprovedDoctors } from "@/lib/queries";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getDict } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,8 @@ export default async function QrReviewPage({
   });
   if (!center) notFound();
 
+  const locale = await getLocale();
+  const t = getDict(locale).reviews;
   const doctors = await getApprovedDoctors();
   const doctorOptions = doctors.map((d) => ({
     value: d.id,
@@ -45,11 +49,10 @@ export default async function QrReviewPage({
             <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
           </span>
           <h1 className="font-display mt-4 text-2xl font-bold text-ink-900">
-            {center.name} haqqında rəy
+            {center.name}{t.pageTitleSuffix}
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Xidmətdən istifadə etdiyiniz üçün təşəkkür edirik. Təcrübənizi
-            qiymətləndirin — rəyiniz digər pasiyentlərə kömək edəcək.
+            {t.pageDesc}
           </p>
         </div>
         <Card className="p-6 sm:p-8">
@@ -57,6 +60,7 @@ export default async function QrReviewPage({
             centerSlug={center.slug}
             centerName={center.name}
             doctors={doctorOptions}
+            locale={locale}
           />
         </Card>
       </Container>

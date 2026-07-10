@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { DatePicker } from "@/components/forms/date-picker";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
+import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import {
   requestReferralOtpAction,
   submitDoctorReferralAction,
@@ -21,6 +22,7 @@ export function DoctorReferralForm({
   servicesByCenter,
   hoursByCenter,
   lockedCenterId,
+  locale = DEFAULT_LOCALE,
 }: {
   doctorName: string;
   clinic: string | null;
@@ -29,7 +31,9 @@ export function DoctorReferralForm({
   hoursByCenter: Record<string, WeeklyHours | null>;
   /** When set, the center is fixed (e.g. on a center's own page). */
   lockedCenterId?: string;
+  locale?: Locale;
 }) {
+  const t = getDict(locale).referral;
   const [step, setStep] = React.useState<"form" | "otp">("form");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
@@ -57,13 +61,13 @@ export function DoctorReferralForm({
   function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!centerId) return setError("Mərkəzi seçin.");
+    if (!centerId) return setError(t.errCenter);
     if (firstName.trim().length < 2 || lastName.trim().length < 2)
-      return setError("Pasiyentin ad və soyadını yazın.");
-    if (!phone.trim()) return setError("Pasiyentin nömrəsini yazın.");
+      return setError(t.errName);
+    if (!phone.trim()) return setError(t.errPhone);
     startTransition(async () => {
       const res = await requestReferralOtpAction({ phone: phone.trim() });
-      if (!res.ok) return setError(res.error ?? "Xəta");
+      if (!res.ok) return setError(res.error ?? t.errGeneric);
       setDevCode(res.devCode ?? null);
       setStep("otp");
     });
@@ -83,8 +87,8 @@ export function DoctorReferralForm({
         note: note.trim() || undefined,
         preferredDate: date && time ? `${date}T${time}:00+04:00` : undefined,
       });
-      if (!res.ok) return setError(res.error ?? "Xəta");
-      setDone(res.message ?? "Göndəriş tamamlandı.");
+      if (!res.ok) return setError(res.error ?? t.errGeneric);
+      setDone(res.message ?? t.submitted);
     });
   }
 
@@ -102,21 +106,22 @@ export function DoctorReferralForm({
       <form onSubmit={submit} className="space-y-4">
         <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-sm text-brand-800">
           <ShieldCheck className="mb-1 h-5 w-5 text-brand-600" />
-          <span className="font-semibold">{phone}</span> nömrəsinə təsdiq kodu
-          göndərdik. Göndərişin tamamlanması üçün pasiyentdən kodu alıb daxil edin.
+          {t.otpSentPre}
+          <span className="font-semibold">{phone}</span>
+          {t.otpSentPost}
         </div>
         {devCode && (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Test rejimi — kod: <span className="font-bold">{devCode}</span>
+            {t.otpTestMode}<span className="font-bold">{devCode}</span>
           </p>
         )}
-        <Field label="Təsdiq kodu" htmlFor="ref-code" required>
+        <Field label={t.otpLabel} htmlFor="ref-code" required>
           <Input
             id="ref-code"
             inputMode="numeric"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="6 rəqəmli kod"
+            placeholder={t.otpPlaceholder}
             autoFocus
           />
         </Field>
@@ -126,7 +131,7 @@ export function DoctorReferralForm({
         <div className="flex items-center gap-3">
           <Button type="submit" size="lg" disabled={pending || code.trim().length < 4}>
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            Göndərişi tamamla
+            {t.complete}
           </Button>
           <button
             type="button"
@@ -136,7 +141,7 @@ export function DoctorReferralForm({
             }}
             className="text-sm font-medium text-slate-500 hover:text-slate-700"
           >
-            Geri
+            {t.back}
           </button>
         </div>
       </form>
@@ -146,14 +151,14 @@ export function DoctorReferralForm({
   return (
     <form onSubmit={requestOtp} className="space-y-4">
       <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-        Həkim: <span className="font-semibold text-ink-800">{doctorName}</span>
+        {t.doctorLabel}: <span className="font-semibold text-ink-800">{doctorName}</span>
         {clinic ? ` · ${clinic}` : ""}
       </p>
 
-      <Field label="Mərkəz" htmlFor="ref-center" required hint={lockedCenterId ? undefined : "Yalnız partnyor mərkəzləriniz"}>
+      <Field label={t.centerLabel} htmlFor="ref-center" required hint={lockedCenterId ? undefined : t.centerHintPartner}>
         {lockedCenterId ? (
           <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-ink-800">
-            {centers.find((c) => c.id === lockedCenterId)?.name ?? "Mərkəz"}
+            {centers.find((c) => c.id === lockedCenterId)?.name ?? t.centerFallback}
           </div>
         ) : (
           <Select
@@ -167,7 +172,7 @@ export function DoctorReferralForm({
             }}
             required
           >
-            <option value="">Mərkəz seçin</option>
+            <option value="">{t.centerPlaceholder}</option>
             {centers.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -178,7 +183,7 @@ export function DoctorReferralForm({
         )}
       </Field>
 
-      <Field label="Lazım olan müayinə" htmlFor="ref-service">
+      <Field label={t.serviceLabel} htmlFor="ref-service">
         <Select
           id="ref-service"
           value={serviceSlug}
@@ -187,10 +192,10 @@ export function DoctorReferralForm({
         >
           <option value="">
             {!centerId
-              ? "İlk öncə mərkəzi seçin"
+              ? t.servicePickCenter
               : services.length === 0
-                ? "Bu mərkəzdə xidmət yoxdur"
-                : "Müayinə seçin (istəyə bağlı)"}
+                ? t.serviceNone
+                : t.servicePick}
           </option>
           {services.map((s) => (
             <option key={s.slug} value={s.slug}>
@@ -201,20 +206,20 @@ export function DoctorReferralForm({
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Pasiyentin adı" htmlFor="ref-first" required>
-          <Input id="ref-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Ad" required />
+        <Field label={t.firstLabel} htmlFor="ref-first" required>
+          <Input id="ref-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t.firstPh} required />
         </Field>
-        <Field label="Pasiyentin soyadı" htmlFor="ref-last" required>
-          <Input id="ref-last" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Soyad" required />
+        <Field label={t.lastLabel} htmlFor="ref-last" required>
+          <Input id="ref-last" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t.lastPh} required />
         </Field>
       </div>
 
-      <Field label="Pasiyentin telefonu" htmlFor="ref-phone" required hint="Təsdiq kodu bu nömrəyə gedəcək.">
-        <Input id="ref-phone" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="050 123 45 67" required />
+      <Field label={t.phoneLabel} htmlFor="ref-phone" required hint={t.phoneHint}>
+        <Input id="ref-phone" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t.phonePlaceholder} required />
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Tarix" htmlFor="ref-date" hint="İstəyə bağlı">
+        <Field label={t.dateLabel} htmlFor="ref-date" hint={t.optional}>
           {centerHours ? (
             <DatePicker
               value={date}
@@ -231,11 +236,11 @@ export function DoctorReferralForm({
               disabled
               className="flex h-11 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-left text-sm text-slate-400"
             >
-              İlk öncə mərkəzi seçin
+              {t.pickCenterFirst}
             </button>
           )}
         </Field>
-        <Field label="Saat" htmlFor="ref-time">
+        <Field label={t.timeLabel} htmlFor="ref-time">
           <Select
             id="ref-time"
             value={time}
@@ -244,12 +249,12 @@ export function DoctorReferralForm({
           >
             <option value="">
               {!centerId
-                ? "İlk öncə mərkəzi seçin"
+                ? t.pickCenterFirst
                 : !date
-                  ? "Əvvəlcə tarix seçin"
+                  ? t.pickDateFirst
                   : slots.length === 0
-                    ? "Vaxt yoxdur"
-                    : "Saat seçin"}
+                    ? t.noTime
+                    : t.pickTime}
             </option>
             {slots.map((s) => (
               <option key={s} value={s}>
@@ -260,8 +265,8 @@ export function DoctorReferralForm({
         </Field>
       </div>
 
-      <Field label="Qeyd" htmlFor="ref-note">
-        <Textarea id="ref-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Əlavə məlumat (istəyə bağlı)" />
+      <Field label={t.noteLabel} htmlFor="ref-note">
+        <Textarea id="ref-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t.notePh} />
       </Field>
 
       {error && (
@@ -270,7 +275,7 @@ export function DoctorReferralForm({
 
       <Button type="submit" size="lg" className="w-full" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        Davam et — pasiyentə təsdiq kodu göndər
+        {t.submit}
       </Button>
     </form>
   );
