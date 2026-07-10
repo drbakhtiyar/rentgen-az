@@ -64,6 +64,7 @@ model User {
   notifications  Notification[]
   adminThread    AdminThread?
   wallet         Wallet?
+  payments       Payment[]
 
   @@index([role])
 }
@@ -109,6 +110,7 @@ model AdminThread {
 model Payment {
   id             String    @id @default(cuid())
   userId         String? // kim ödəyir (qonaq üçün null ola bilər)
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   amount         Int // qəpik
   currency       String    @default("AZN")
   purpose        String // "subscription" | "featured" | ... (Faza 2-də model təyin edir)

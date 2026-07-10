@@ -57,6 +57,7 @@ export const adminNav: NavItem[] = [
   { label: "Həkim göndərişləri", href: "/admin/gonderisler", icon: <Stethoscope /> },
   { label: "Blog", href: "/admin/blog", icon: <FileText /> },
   { label: "Rəylər", href: "/admin/reyler", icon: <Star /> },
+  { label: "Ödənişlər", href: "/admin/odenisler", icon: <Wallet /> },
   { label: "Xidmətlər", href: "/admin/xidmetler", icon: <ListChecks /> },
   { label: "SMS", href: "/admin/sms", icon: <MessageSquare /> },
   { label: "Parametrlər", href: "/admin/parametrler", icon: <Settings /> },

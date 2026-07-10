@@ -69,6 +69,93 @@ export async function getCentersForService(serviceSlug: string, take = 12) {
   return getApprovedCenters({ service: serviceSlug, take });
 }
 
+export type PaymentFilters = {
+  status?: string;
+  purpose?: string;
+  q?: string; // ad / telefon axtarışı
+  from?: Date;
+  to?: Date;
+};
+
+function paymentWhere(f: PaymentFilters): Prisma.PaymentWhereInput {
+  const where: Prisma.PaymentWhereInput = {};
+  if (f.status) where.status = f.status;
+  if (f.purpose) where.purpose = f.purpose;
+  if (f.from || f.to) where.createdAt = { ...(f.from ? { gte: f.from } : {}), ...(f.to ? { lte: f.to } : {}) };
+  if (f.q) {
+    where.user = {
+      OR: [
+        { phone: { contains: f.q, mode: "insensitive" } },
+        { centerProfile: { name: { contains: f.q, mode: "insensitive" } } },
+        { doctorProfile: { firstName: { contains: f.q, mode: "insensitive" } } },
+        { doctorProfile: { lastName: { contains: f.q, mode: "insensitive" } } },
+      ],
+    };
+  }
+  return where;
+}
+
+export type AdminPayment = Prisma.PaymentGetPayload<{
+  include: {
+    user: {
+      select: {
+        phone: true;
+        role: true;
+        centerProfile: { select: { name: true } };
+        doctorProfile: { select: { firstName: true; lastName: true } };
+      };
+    };
+  };
+}>;
+
+/** Admin: payments (Payriff orders) with filters. */
+export async function getAdminPayments(filters: PaymentFilters = {}, take = 200) {
+  return safe<AdminPayment[]>(
+    () =>
+      prisma.payment.findMany({
+        where: paymentWhere(filters),
+        orderBy: { createdAt: "desc" },
+        take,
+        include: {
+          user: {
+            select: {
+              phone: true,
+              role: true,
+              centerProfile: { select: { name: true } },
+              doctorProfile: { select: { firstName: true, lastName: true } },
+            },
+          },
+        },
+      }),
+    [],
+  );
+}
+
+/** Admin: payment totals for the summary cards. */
+export async function getPaymentSummary() {
+  return safe(
+    async () => {
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const [paidAgg, monthAgg, pending, failed] = await Promise.all([
+        prisma.payment.aggregate({ _sum: { amount: true }, _count: true, where: { status: "PAID" } }),
+        prisma.payment.aggregate({ _sum: { amount: true }, where: { status: "PAID", paidAt: { gte: monthStart } } }),
+        prisma.payment.count({ where: { status: "PENDING" } }),
+        prisma.payment.count({ where: { status: "FAILED" } }),
+      ]);
+      return {
+        totalPaid: paidAgg._sum.amount ?? 0,
+        paidCount: paidAgg._count,
+        monthPaid: monthAgg._sum.amount ?? 0,
+        pending,
+        failed,
+      };
+    },
+    { totalPaid: 0, paidCount: 0, monthPaid: 0, pending: 0, failed: 0 },
+  );
+}
+
 /** A user's wallet balance movements (most recent first). */
 export async function getWalletHistory(userId: string, take = 50) {
   return safe(async () => {
