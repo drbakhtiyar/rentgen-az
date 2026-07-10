@@ -481,7 +481,7 @@ const az: Dict = {
   },
   footer: {
     tagline:
-      "Azərbaycanda dental rentgen, panoramik rentgen, sefalometrik rentgen və 3D dental tomoqrafiya (CBCT) mərkəzlərini bir platformada tapın.",
+      "Azərbaycanda rentgen, panoramik rentgen, sefalometrik rentgen və 3D dental tomoqrafiya (CBCT), MRT mərkəzlərini bir platformada tapın.",
     platform: "Platforma",
     company: "Şirkət",
     about: "Haqqımızda",
@@ -988,7 +988,7 @@ const ru: Dict = {
   },
   footer: {
     tagline:
-      "Найдите центры стоматологического рентгена, панорамного, цефалометрического рентгена и 3D-томографии (КЛКТ) в Азербайджане на одной платформе.",
+      "Найдите центры рентгена, панорамного, цефалометрического рентгена, 3D-томографии (КЛКТ) и МРТ в Азербайджане на одной платформе.",
     platform: "Платформа",
     company: "Компания",
     about: "О нас",
