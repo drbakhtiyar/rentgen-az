@@ -17,6 +17,7 @@ export function PlanSelector({
       <label className="text-sm">
         <span className="mb-1 block font-medium text-slate-600">Paket</span>
         <select
+          key={current}
           name="plan"
           defaultValue={current}
           className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-ink-900"
