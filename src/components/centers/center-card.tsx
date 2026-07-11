@@ -98,8 +98,8 @@ export function CenterCard({
               {center.name}
             </h3>
           </Link>
-          {/* When a cover photo occupies the header, surface the logo next to the name. */}
-          {center.images?.[0] && center.logoUrl && (
+          {/* Show the logo next to the name on every center (cover or not). */}
+          {center.logoUrl && (
             <span className="flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
