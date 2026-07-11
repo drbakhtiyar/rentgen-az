@@ -48,7 +48,7 @@ const centerTiers: Tier[] = [
       "30 GB bulud storage (rentgen faylları)",
       "5 şəkil",
       "Standart axtarış sırası",
-      "Aylıq 25 pasiyent müraciəti",
+      "Aylıq 5 pasiyent müraciəti",
       "Həkimlərlə mesajlaşma",
     ],
   },
