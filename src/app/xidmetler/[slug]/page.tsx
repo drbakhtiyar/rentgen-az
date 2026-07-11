@@ -61,7 +61,18 @@ export default async function ServiceDetailPage({
 
   const shortName = service.shortName ?? service.name;
   const content = getServiceContent(slug, service.name);
-  const centers = await getCentersForService(slug, 9);
+  const centersRaw = await getCentersForService(slug, 12);
+  // Price comparison: cheapest first for this service (centers with no price go last).
+  const priceOf = (c: (typeof centersRaw)[number]) =>
+    c.services.find((cs) => cs.service.slug === slug)?.price ?? null;
+  const centers = [...centersRaw].sort((a, b) => {
+    const pa = priceOf(a);
+    const pb = priceOf(b);
+    if (pa == null && pb == null) return 0;
+    if (pa == null) return 1;
+    if (pb == null) return -1;
+    return pa - pb;
+  });
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const allServices = await getActiveServices();
   const locale = await getLocale();
@@ -182,8 +193,15 @@ export default async function ServiceDetailPage({
               {t.viewAll} <ArrowRight className="h-4 w-4" />
             </ButtonLink>
           </div>
+          {centers.length > 0 && (
+            <p className="mt-2 text-sm text-slate-500">
+              {locale === "ru"
+                ? "Отсортировано по цене — самые выгодные предложения сверху."
+                : "Qiymətə görə sıralanıb — ən sərfəli təkliflər yuxarıda."}
+            </p>
+          )}
           {centers.length > 0 ? (
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {centers.map((c) => (
                 <CenterCard
                   key={c.id}

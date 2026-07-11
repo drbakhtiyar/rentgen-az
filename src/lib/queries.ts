@@ -404,11 +404,23 @@ export async function getPostBySlug(slug: string) {
   );
 }
 
-export async function getApprovedDoctors() {
+export type DoctorFilters = { q?: string; spec?: string; city?: string };
+
+export async function getApprovedDoctors(filters: DoctorFilters = {}) {
+  const where: Prisma.DoctorProfileWhereInput = { status: "APPROVED" };
+  if (filters.city) where.city = filters.city;
+  if (filters.spec) where.specializations = { has: filters.spec };
+  if (filters.q) {
+    where.OR = [
+      { firstName: { contains: filters.q, mode: "insensitive" } },
+      { lastName: { contains: filters.q, mode: "insensitive" } },
+      { clinic: { contains: filters.q, mode: "insensitive" } },
+    ];
+  }
   return safe(
     () =>
       prisma.doctorProfile.findMany({
-        where: { status: "APPROVED" },
+        where,
         // Paid tiers (Gold/Platinum) rank first, then alphabetical.
         orderBy: [{ plan: "desc" }, { firstName: "asc" }],
       }),
