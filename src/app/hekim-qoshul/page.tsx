@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
 import {
   Search,
-  Phone,
-  Stethoscope,
-  HardDrive,
+  Send,
+  FileDown,
+  MessageSquare,
+  ImageIcon,
   Star,
-  BarChart3,
   ShieldCheck,
   Sparkles,
   CheckCircle2,
   ArrowRight,
   Globe,
   Building2,
-  Users,
+  Stethoscope,
   MapPin,
+  Users,
   Rocket,
 } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
@@ -23,35 +24,35 @@ import { FaqAccordion } from "@/components/faq-accordion";
 import { CountUp } from "@/components/join/count-up";
 import { getPlatformStats } from "@/lib/queries";
 import { getLocale } from "@/lib/i18n-server";
-import { CENTER_PLAN_PRICE, formatManat } from "@/lib/plans";
-import { CENTER_FEATURES } from "@/content/plan-features";
+import { DOCTOR_PLAN_PRICE, formatManat } from "@/lib/plans";
+import { DOCTOR_FEATURES } from "@/content/plan-features";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Bizə qoşulun — rentgen mərkəzləri üçün",
-  description: "Rentgen mərkəzinizi Rentgen.az platformasına əlavə edin — pulsuz başlayın.",
-  path: "/bize-qoshul",
+  title: "Bizə qoşulun — həkimlər üçün",
+  description: "Həkim profilinizi Rentgen.az platformasına əlavə edin — pulsuz başlayın.",
+  path: "/hekim-qoshul",
   noIndex: true,
 });
 
-const REGISTER = "/giris?role=center";
+const REGISTER = "/giris?role=doctor";
 
 type L = "az" | "ru";
 
 const t = {
-  eyebrow: { az: "Rentgen mərkəzləri üçün", ru: "Для рентген-центров" },
-  title: { az: "Azərbaycanın rentgen platformasına qoşulun", ru: "Присоединяйтесь к рентген-платформе Азербайджана" },
+  eyebrow: { az: "Həkimlər üçün", ru: "Для врачей" },
+  title: { az: "Rentgen.az platformasına həkim kimi qoşulun", ru: "Присоединяйтесь как врач к платформе Rentgen.az" },
   subtitle: {
-    az: "Pasiyentlər sizi tapsın, birbaşa zəng və WhatsApp ilə əlaqə saxlasın, rəy yazsın. Pulsuz başlayın — heç bir ilkin ödəniş yoxdur, komissiya almırıq.",
-    ru: "Пациенты находят вас, связываются напрямую по звонку и WhatsApp, оставляют отзывы. Начните бесплатно — без первоначальных платежей и комиссий.",
+    az: "Pasiyentlər sizi tapsın, pasiyentlərinizi güvəndiyiniz mərkəzlərə yönləndirin, rentgen nəticələrini birbaşa platformadan izləyin. Pulsuz başlayın.",
+    ru: "Пациенты находят вас, вы направляете своих пациентов в доверенные центры и отслеживаете рентген-результаты прямо на платформе. Начните бесплатно.",
   },
   ctaPrimary: { az: "Pulsuz qeydiyyatdan keç", ru: "Зарегистрироваться бесплатно" },
   ctaSecondary: { az: "Necə işləyir?", ru: "Как это работает?" },
   trust: {
-    az: ["Pulsuz qoşulma", "Təsdiqlənmiş mərkəz nişanı", "Azərbaycan + rus dilində"],
-    ru: ["Бесплатное подключение", "Значок проверенного центра", "На азербайджанском + русском"],
+    az: ["Pulsuz qoşulma", "Təsdiqlənmiş həkim nişanı", "Azərbaycan + rus dilində"],
+    ru: ["Бесплатное подключение", "Значок проверенного врача", "На азербайджанском + русском"],
   },
   statsLabel: {
     az: ["Təsdiqlənmiş mərkəz", "Həkim", "Şəhər/rayon", "Xidmət növü"],
@@ -60,48 +61,48 @@ const t = {
   whyTitle: { az: "Nə üçün Rentgen.az?", ru: "Почему Rentgen.az?" },
   why: {
     az: [
-      { icon: "seo", h: "Google-da tapılın", d: "«rentgen.az» dəqiq uyğun domendir — pasiyentlər Google-da axtaranda reklama pul vermədən görünürsünüz." },
-      { icon: "phone", h: "Birbaşa pasiyent axını", d: "Pasiyent kartınızdan birbaşa zəng və ya WhatsApp yazır — arada vasitəçi yoxdur." },
-      { icon: "doctor", h: "Həkim yönləndirmələri", d: "Partnyor həkimlər pasiyentlərini birbaşa sizə yönləndirir." },
-      { icon: "storage", h: "Bulud fayl saxlama", d: "Rentgen nəticələrini bulud yaddaşında saxlayın və pasiyent/həkimlə təhlükəsiz paylaşın." },
-      { icon: "star", h: "Rəylər və reputasiya", d: "Real pasiyent rəyləri ilə etibar qazanın, yeni pasiyentlər cəlb edin." },
-      { icon: "chart", h: "Analitika", d: "Profil baxışları, zənglər və WhatsApp kliklərini görün — biznesinizi ölçün." },
+      { icon: "seo", h: "Google-da tapılın", d: "«rentgen.az» dəqiq uyğun domendir — pasiyentlər sizi axtaranda reklama pul vermədən görünürsünüz." },
+      { icon: "send", h: "Pasiyent yönləndirin", d: "Pasiyentinizi partnyor mərkəzə bir kliklə göndərin — pasiyentə OTP təsdiqi gedir, hər şey qeydə alınır." },
+      { icon: "file", h: "Nəticələri izləyin", d: "Yönləndirdiyiniz pasiyentin rentgen nəticəsini birbaşa platformadan görün və endirin." },
+      { icon: "chat", h: "Mərkəzlərlə çat", d: "Partnyor mərkəzlərlə birbaşa mesajlaşın — telefon nömrəsi paylaşmadan." },
+      { icon: "portfolio", h: "Portfolio + reputasiya", d: "İş nümunələrinizi göstərin, təsdiqlənmiş nişanla etibar qazanın." },
+      { icon: "star", h: "Statistika", d: "Profil baxışlarını, göndərdiyiniz pasiyentləri və partnyorları izləyin." },
     ],
     ru: [
       { icon: "seo", h: "Вас находят в Google", d: "«rentgen.az» — точное доменное совпадение: вы видны в поиске без затрат на рекламу." },
-      { icon: "phone", h: "Прямой поток пациентов", d: "Пациент звонит или пишет в WhatsApp прямо с вашей карточки — без посредников." },
-      { icon: "doctor", h: "Направления от врачей", d: "Партнёрские врачи направляют своих пациентов напрямую к вам." },
-      { icon: "storage", h: "Облачное хранилище", d: "Храните рентген-снимки в облаке и безопасно делитесь с пациентом и врачом." },
-      { icon: "star", h: "Отзывы и репутация", d: "Завоёвывайте доверие реальными отзывами и привлекайте новых пациентов." },
-      { icon: "chart", h: "Аналитика", d: "Просмотры профиля, звонки и клики WhatsApp — измеряйте свой бизнес." },
+      { icon: "send", h: "Направляйте пациентов", d: "Отправьте пациента в партнёрский центр в один клик — пациенту идёт OTP-подтверждение, всё фиксируется." },
+      { icon: "file", h: "Отслеживайте результаты", d: "Смотрите и скачивайте рентген-результат направленного пациента прямо на платформе." },
+      { icon: "chat", h: "Чат с центрами", d: "Общайтесь с партнёрскими центрами напрямую — без обмена номерами телефонов." },
+      { icon: "portfolio", h: "Портфолио + репутация", d: "Показывайте примеры работ, завоёвывайте доверие значком проверенного врача." },
+      { icon: "star", h: "Статистика", d: "Отслеживайте просмотры профиля, направленных пациентов и партнёров." },
     ],
   },
   seoTitle: { az: "«Rentgen.az» adı Google-da qızıl dəyərindədir", ru: "Название «Rentgen.az» — на вес золота в Google" },
   seoBody: {
-    az: "İnsanlar Google-da «rentgen», «rentgen mərkəzi», «dental rentgen Bakı», «CBCT» axtaranda dəqiq uyğun domen (exact-match) daha yuxarı sıralanır. Bizim platformada olduqda siz bu axtarışlarda təbii şəkildə — bir manat reklam vermədən — görünürsünüz. Öz saytınızı sıfırdan Google-da yuxarı çıxarmaq aylar çəkir; biz bunu sizin üçün etmişik.",
-    ru: "Когда люди ищут в Google «рентген», «рентген-центр», «дентальный рентген Баку», «КЛКТ» — точное доменное совпадение ранжируется выше. На нашей платформе вы появляетесь в этих запросах органически, не платя за рекламу. Вывести собственный сайт в топ Google — это месяцы; мы уже сделали это за вас.",
+    az: "İnsanlar Google-da «rentgen həkimi», «dental həkim Bakı», «implantoloq», «ortodont» axtaranda dəqiq uyğun domen (exact-match) daha yuxarı sıralanır. Bizim platformada profiliniz olduqda bu axtarışlarda təbii şəkildə — bir manat reklam vermədən — görünürsünüz.",
+    ru: "Когда люди ищут в Google «рентген-врач», «дентальный врач Баку», «имплантолог», «ортодонт» — точное доменное совпадение ранжируется выше. С профилем на нашей платформе вы появляетесь в этих запросах органически, не платя за рекламу.",
   },
   seoPoints: {
-    az: ["Exact-match .az domen", "Hazır SEO strukturu (sitemap, JSON-LD)", "Hər mərkəz üçün ayrıca səhifə", "Xidmət və rayon üzrə axtarış"],
-    ru: ["Точный .az домен", "Готовая SEO-структура (sitemap, JSON-LD)", "Отдельная страница для каждого центра", "Поиск по услуге и району"],
+    az: ["Exact-match .az domen", "Hər həkim üçün ayrıca profil səhifəsi", "İxtisas və şəhər üzrə axtarış", "Hazır SEO strukturu"],
+    ru: ["Точный .az домен", "Отдельная страница профиля для каждого врача", "Поиск по специализации и городу", "Готовая SEO-структура"],
   },
   stepsTitle: { az: "4 addımda qoşulun", ru: "Подключитесь за 4 шага" },
   steps: {
     az: [
       { h: "Qeydiyyatdan keçin", d: "Telefon nömrəsi və OTP ilə — parol yoxdur." },
-      { h: "Profili doldurun", d: "Xidmətlər, qiymətlər, iş saatları və rentgenologiya lisenziyası." },
-      { h: "Təsdiq alın", d: "Admin yoxlamasından sonra saytda «təsdiqlənmiş» statusu ilə görünün." },
-      { h: "Pasiyent qəbul edin", d: "Pasiyentlər sizi tapıб birbaşa əlaqə saxlayır." },
+      { h: "Profili doldurun", d: "İxtisaslar, klinika, diplom və sertifikatlar." },
+      { h: "Təsdiq alın", d: "Admin yoxlamasından sonra «təsdiqlənmiş həkim» kimi görünün." },
+      { h: "İşə başlayın", d: "Pasiyentlər sizi tapır, siz mərkəzlərə pasiyent yönləndirirsiniz." },
     ],
     ru: [
       { h: "Зарегистрируйтесь", d: "По номеру телефона и OTP — без пароля." },
-      { h: "Заполните профиль", d: "Услуги, цены, часы работы и лицензия на рентгенологию." },
-      { h: "Пройдите проверку", d: "После проверки админом вы появляетесь со статусом «проверено»." },
-      { h: "Принимайте пациентов", d: "Пациенты находят вас и связываются напрямую." },
+      { h: "Заполните профиль", d: "Специализации, клиника, диплом и сертификаты." },
+      { h: "Пройдите проверку", d: "После проверки админом вы видны как «проверенный врач»." },
+      { h: "Начните работать", d: "Пациенты находят вас, вы направляете пациентов в центры." },
     ],
   },
   plansTitle: { az: "Sizə uyğun paket", ru: "Подходящий вам пакет" },
-  plansSub: { az: "Pulsuz başlayın, biznesiniz böyüdükcə yüksəldin.", ru: "Начните бесплатно, растите вместе с бизнесом." },
+  plansSub: { az: "Pulsuz başlayın, praktikanız böyüdükcə yüksəldin.", ru: "Начните бесплатно, растите вместе с практикой." },
   perMonth: { az: "/ay", ru: "/мес" },
   popular: { az: "Ən populyar", ru: "Популярный" },
   finalTitle: { az: "Bu gün pulsuz qoşulun", ru: "Присоединяйтесь бесплатно уже сегодня" },
@@ -109,34 +110,34 @@ const t = {
   faqTitle: { az: "Tez-tez verilən suallar", ru: "Частые вопросы" },
   faq: {
     az: [
-      { question: "Qoşulmaq pulludurmu?", answer: "Xeyr. Pulsuz (Free) paketlə başlaya bilərsiniz — heç bir ilkin ödəniş yoxdur. İstəsəniz sonradan daha çox imkan üçün paketi yüksəldərsiniz." },
-      { question: "Platforma komissiya alırmı?", answer: "Xeyr. Pasiyent birbaşa sizinlə əlaqə saxlayır, ödəniş və müayinə birbaşa mərkəzinizdə olur — biz araya girmirik." },
+      { question: "Qoşulmaq pulludurmu?", answer: "Xeyr. Pulsuz (Free) paketlə başlaya bilərsiniz — heç bir ilkin ödəniş yoxdur. Sonradan istəsəniz paketi yüksəldərsiniz." },
+      { question: "Pasiyenti necə yönləndirim?", answer: "Partnyor mərkəzi seçib pasiyentin ad və nömrəsini daxil edirsiniz. Pasiyentə OTP təsdiqi gedir, göndəriş qeydə alınır və nəticə hazır olanda sizə bildiriş gəlir." },
+      { question: "Nəticələri görə bilərəmmi?", answer: "Bəli. Yönləndirdiyiniz pasiyentin rentgen nəticəsi hazır olduqda onu birbaşa profilinizdən görə və endirə bilərsiniz (partnyor mərkəzlə əməkdaşlıq təsdiqlənəndə)." },
       { question: "Necə qeydiyyatdan keçirəm?", answer: "Telefon nömrənizi daxil edirsiniz, OTP kod gəlir, təsdiqləyirsiniz — parol lazım deyil. Sonra profili doldurursunuz." },
-      { question: "Nə vaxt saytda görünəcəyəm?", answer: "Profili doldurduqdan və admin yoxlamasından sonra «təsdiqlənmiş mərkəz» statusu ilə dərhal görünürsünüz." },
-      { question: "Hansı sənəd lazımdır?", answer: "Rentgenologiya üzrə fəaliyyət lisenziyası. Bu, pasiyentlərin etibarını təmin edir." },
+      { question: "Hansı sənəd lazımdır?", answer: "Diplom və müvafiq sertifikatlar (rezidentura/internatura/uzmanlıq). Bu, pasiyentlərin etibarını təmin edir." },
     ],
     ru: [
-      { question: "Подключение платное?", answer: "Нет. Можно начать с бесплатного (Free) пакета — без первоначальных платежей. При желании позже повысите пакет ради больших возможностей." },
-      { question: "Платформа берёт комиссию?", answer: "Нет. Пациент связывается с вами напрямую, оплата и обследование — в вашем центре. Мы не вмешиваемся." },
+      { question: "Подключение платное?", answer: "Нет. Можно начать с бесплатного (Free) пакета — без первоначальных платежей. Позже при желании повысите пакет." },
+      { question: "Как направить пациента?", answer: "Выбираете партнёрский центр, вводите имя и номер пациента. Пациенту идёт OTP-подтверждение, направление фиксируется, а когда результат готов — вам приходит уведомление." },
+      { question: "Смогу ли я видеть результаты?", answer: "Да. Когда рентген-результат направленного пациента готов, вы можете видеть и скачивать его прямо из профиля (при подтверждённом сотрудничестве с центром)." },
       { question: "Как зарегистрироваться?", answer: "Вводите номер телефона, приходит OTP-код, подтверждаете — пароль не нужен. Затем заполняете профиль." },
-      { question: "Когда я появлюсь на сайте?", answer: "После заполнения профиля и проверки админом вы сразу видны со статусом «проверенный центр»." },
-      { question: "Какие документы нужны?", answer: "Лицензия на рентгенологическую деятельность. Это обеспечивает доверие пациентов." },
+      { question: "Какие документы нужны?", answer: "Диплом и соответствующие сертификаты (резидентура/интернатура/специализация). Это обеспечивает доверие пациентов." },
     ],
   },
 };
 
 const WHY_ICON: Record<string, React.ReactNode> = {
   seo: <Globe className="h-5 w-5" />,
-  phone: <Phone className="h-5 w-5" />,
-  doctor: <Stethoscope className="h-5 w-5" />,
-  storage: <HardDrive className="h-5 w-5" />,
+  send: <Send className="h-5 w-5" />,
+  file: <FileDown className="h-5 w-5" />,
+  chat: <MessageSquare className="h-5 w-5" />,
+  portfolio: <ImageIcon className="h-5 w-5" />,
   star: <Star className="h-5 w-5" />,
-  chart: <BarChart3 className="h-5 w-5" />,
 };
 
 const TIERS = ["FREE", "SILVER", "GOLD", "PLATINUM"] as const;
 
-export default async function JoinPage() {
+export default async function DoctorJoinPage() {
   const locale = (await getLocale()) as L;
   const stats = await getPlatformStats();
 
@@ -162,9 +163,7 @@ export default async function JoinPage() {
             <h1 className="font-display mt-5 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
               {t.title[locale]}
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">
-              {t.subtitle[locale]}
-            </p>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">{t.subtitle[locale]}</p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <ButtonLink href={REGISTER} variant="primary" size="lg">
                 {t.ctaPrimary[locale]} <ArrowRight className="h-4 w-4" />
@@ -293,19 +292,19 @@ export default async function JoinPage() {
                   </p>
                   <div className="mt-1 flex items-baseline gap-1">
                     <span className="font-display text-3xl font-bold text-ink-900">
-                      {CENTER_PLAN_PRICE[tier] === 0 ? (locale === "ru" ? "0 ₼" : "0 ₼") : formatManat(CENTER_PLAN_PRICE[tier])}
+                      {formatManat(DOCTOR_PLAN_PRICE[tier])}
                     </span>
                     <span className="text-sm text-slate-400">{t.perMonth[locale]}</span>
                   </div>
                   <ul className="mt-4 flex-1 space-y-2">
-                    {CENTER_FEATURES[locale][tier].map((f) => (
+                    {DOCTOR_FEATURES[locale][tier].map((f) => (
                       <li key={f} className="flex items-start gap-2 text-sm text-slate-700">
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> {f}
                       </li>
                     ))}
                   </ul>
                   <ButtonLink href={REGISTER} variant={popular ? "primary" : "outline"} className="mt-5 w-full justify-center">
-                    {tier === "FREE" ? t.ctaPrimary[locale] : t.ctaPrimary[locale]}
+                    {t.ctaPrimary[locale]}
                   </ButtonLink>
                 </div>
               );

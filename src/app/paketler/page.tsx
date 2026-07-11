@@ -15,6 +15,7 @@ import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buildMetadata } from "@/lib/seo";
+import { CENTER_FEATURES, DOCTOR_FEATURES } from "@/content/plan-features";
 
 // Hidden internal draft — not linked in nav/footer, excluded from sitemap, noindex.
 export const metadata: Metadata = buildMetadata({
@@ -43,15 +44,8 @@ const centerTiers: Tier[] = [
     tagline: "Başlamaq üçün — platformada görün",
     icon: <Sparkles className="h-5 w-5" />,
     accent: "text-slate-600 bg-slate-100",
-    features: [
-      "Baza mərkəz profili",
-      "30 GB bulud storage (rentgen faylları)",
-      "5 şəkil",
-      "Standart axtarış sırası",
-      "Aylıq 5 pasiyent müraciəti",
-      "Həkimlərlə mesajlaşma",
-    ],
-  },
+    features: CENTER_FEATURES.az.FREE,
+      },
   {
     name: "Silver",
     price: "39",
@@ -59,16 +53,8 @@ const centerTiers: Tier[] = [
     tagline: "Aktiv mərkəzlər üçün",
     icon: <Star className="h-5 w-5" />,
     accent: "text-slate-700 bg-gradient-to-br from-slate-200 to-slate-100",
-    features: [
-      "Free-dəki hər şey +",
-      "150 GB bulud storage",
-      "15 şəkil",
-      "Axtarışda prioritet sıralanma",
-      "Limitsiz pasiyent müraciəti",
-      "Əsas analitika (baxış · zəng · WhatsApp)",
-      "Həkimlərlə mesajlaşma",
-    ],
-  },
+    features: CENTER_FEATURES.az.SILVER,
+      },
   {
     name: "Gold",
     price: "99",
@@ -77,18 +63,8 @@ const centerTiers: Tier[] = [
     icon: <Crown className="h-5 w-5" />,
     accent: "text-amber-700 bg-gradient-to-br from-amber-200 to-amber-100",
     popular: true,
-    features: [
-      "Silver-dəki hər şey +",
-      "1 TB bulud storage",
-      "Rəylər və reytinq",
-      "Həkimlərdən pasiyent yönləndirmələri",
-      "«Tövsiyə olunan» nişanı + featured yerləşdirmə",
-      "Tam analitika paneli",
-      "40 şəkil",
-      "Əməkdaşlıq həkimlərinə toplu mesaj",
-      "Prioritet dəstək",
-    ],
-  },
+    features: CENTER_FEATURES.az.GOLD,
+      },
   {
     name: "Platinum",
     price: "198",
@@ -96,16 +72,8 @@ const centerTiers: Tier[] = [
     tagline: "Böyük mərkəzlər üçün maksimum",
     icon: <Gem className="h-5 w-5" />,
     accent: "text-cyan-700 bg-gradient-to-br from-cyan-200 to-cyan-100",
-    features: [
-      "Gold-dakı hər şey +",
-      "3 TB bulud storage (hər əlavə 1 TB +29 AZN)",
-      "Şəhər / kateqoriya üzrə TOP #1 yerləşdirmə",
-      "Limitsiz şəkil",
-      "Brendinq (loqo · banner)",
-      "Fayl export / API girişi",
-      "Fərdi menecer + prioritet dəstək",
-    ],
-  },
+    features: CENTER_FEATURES.az.PLATINUM,
+      },
 ];
 
 const doctorTiers: Tier[] = [
@@ -116,14 +84,8 @@ const doctorTiers: Tier[] = [
     tagline: "Həkim profili və pasiyent yönləndirmə",
     icon: <Sparkles className="h-5 w-5" />,
     accent: "text-slate-600 bg-slate-100",
-    features: [
-      "Baza həkim profili",
-      "Pasiyenti mərkəzə yönləndirmə",
-      "20 GB storage (pasiyent görüntüləri)",
-      "Mərkəzlərlə çat",
-      "Standart sıralanma",
-    ],
-  },
+    features: DOCTOR_FEATURES.az.FREE,
+      },
   {
     name: "Silver",
     price: "19",
@@ -131,15 +93,8 @@ const doctorTiers: Tier[] = [
     tagline: "Profilini gücləndir",
     icon: <Star className="h-5 w-5" />,
     accent: "text-slate-700 bg-gradient-to-br from-slate-200 to-slate-100",
-    features: [
-      "Free-dəki hər şey +",
-      "Təsdiqlənmiş nişan",
-      "100 GB storage",
-      "Portfolio (şəkillər)",
-      "Profil statistikası",
-      "Axtarışda prioritet",
-    ],
-  },
+    features: DOCTOR_FEATURES.az.SILVER,
+      },
   {
     name: "Gold",
     price: "49",
@@ -148,15 +103,8 @@ const doctorTiers: Tier[] = [
     icon: <Crown className="h-5 w-5" />,
     accent: "text-amber-700 bg-gradient-to-br from-amber-200 to-amber-100",
     popular: true,
-    features: [
-      "Silver-dəki hər şey +",
-      "500 GB storage",
-      "Həkimlər siyahısında üst sıra",
-      "Instagram / vebsayt vurğusu",
-      "Limitsiz yönləndirmə tarixçəsi",
-      "Prioritet dəstək",
-    ],
-  },
+    features: DOCTOR_FEATURES.az.GOLD,
+      },
   {
     name: "Platinum",
     price: "99",
@@ -164,14 +112,8 @@ const doctorTiers: Tier[] = [
     tagline: "Maksimum görünürlük",
     icon: <Gem className="h-5 w-5" />,
     accent: "text-cyan-700 bg-gradient-to-br from-cyan-200 to-cyan-100",
-    features: [
-      "Gold-dakı hər şey +",
-      "1 TB storage (+1 TB blok ilə artırıla bilər)",
-      "Axtarışda TOP yerləşmə",
-      "Tam brendinq (Instagram, sayt, profil banneri + vurğulanmış kart)",
-      "Fərdi dəstək",
-    ],
-  },
+    features: DOCTOR_FEATURES.az.PLATINUM,
+      },
 ];
 
 function TierCard({ tier }: { tier: Tier }) {
