@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { JsonLd } from "@/components/ui/json-ld";
+import { SymptomSuggest } from "@/components/symptom-suggest";
 import { countApprovedCentersByService, getActiveServices } from "@/lib/queries";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
@@ -33,7 +34,8 @@ export default async function ServicesPage() {
     countApprovedCentersByService(),
     getActiveServices(),
   ]);
-  const d = getDict(await getLocale()).services;
+  const locale = await getLocale();
+  const d = getDict(locale).services;
 
   // Only show services that at least one approved center offers.
   const visible = services.filter((s) => (counts[s.slug] ?? 0) > 0);
@@ -56,6 +58,12 @@ export default async function ServicesPage() {
         description={d.description}
         breadcrumbs={[{ name: d.title }]}
       />
+
+      <Section className="py-8">
+        <Container>
+          <SymptomSuggest ru={locale === "ru"} />
+        </Container>
+      </Section>
 
       {categories.map((cat) => (
         <Section key={cat} className="py-12 odd:bg-surface">
