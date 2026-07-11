@@ -95,6 +95,14 @@ export default async function DoctorPatientsPage({
   const services = await getActiveServices();
   const serviceName = new Map(services.map((s) => [s.slug, s.shortName ?? s.name]));
 
+  // Referrals this doctor sent via the quick (public) referral form — matched by phone.
+  const myReferrals = await prisma.referral.findMany({
+    where: { doctorPhone: user.phone },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    include: { center: { select: { name: true, slug: true } } },
+  });
+
   // Group by patient phone.
   const groups: { phone: string; name: string; items: typeof requests }[] = [];
   const index = new Map<string, number>();
@@ -224,6 +232,35 @@ export default async function DoctorPatientsPage({
             }
           />
         </Panel>
+      )}
+
+      {myReferrals.length > 0 && (
+        <div className="mt-6">
+          <Panel title="Sürətli göndərişlərim">
+            <ul className="divide-y divide-slate-100">
+              {myReferrals.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+                  <div className="min-w-0">
+                    <span className="font-medium text-ink-900">{r.patientName}</span>
+                    <span className="ml-2 text-slate-500">{r.examType}</span>
+                    {r.center && (
+                      <Link
+                        href={`/rentgen-merkezleri/${r.center.slug}`}
+                        className="ml-2 text-xs text-slate-400 hover:text-brand-600"
+                      >
+                        → {r.center.name}
+                      </Link>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <StatusBadge status={r.status} />
+                    <span className="text-xs text-slate-400">{formatDateAz(r.createdAt)}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </div>
       )}
     </DashboardShell>
   );

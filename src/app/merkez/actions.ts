@@ -241,7 +241,10 @@ export async function updateRequestStatusAction(
         centerId: true,
         status: true,
         phone: true,
+        name: true,
+        doctorId: true,
         patient: { select: { userId: true } },
+        doctor: { select: { userId: true } },
       },
     });
     if (!req || req.centerId !== center.id) {
@@ -291,8 +294,21 @@ export async function updateRequestStatusAction(
         centerName: center.name,
       }).catch(() => {});
     }
+    // Notify the referring doctor when their referred patient advances.
+    if (req.doctorId && req.doctor?.userId && status !== "NEW") {
+      const label =
+        status === "COMPLETED" ? "tamamlandı" : status === "CANCELLED" ? "ləğv edildi" : "mərkəzlə əlaqədədir";
+      await notifyUser(
+        req.doctor.userId,
+        "STATUS_UPDATE",
+        "Göndərdiyiniz pasiyent üzrə yeniləmə",
+        `${req.name || "Pasiyent"} — ${center.name}: müraciət ${label}.`,
+        "/hekim/pasiyentler",
+      );
+    }
     revalidatePath("/merkez");
     revalidatePath("/merkez/pasiyentler");
+    revalidatePath("/hekim/pasiyentler");
     return { ok: true };
   } catch {
     return { ok: false, error: "Texniki xəta." };
@@ -405,4 +421,35 @@ export async function setRequestDoctorAction(
   } catch {
     return { ok: false, error: "Texniki xəta." };
   }
+}
+
+/** Center (Gold+) sends one in-app message to all its ACCEPTED partner doctors. */
+export async function broadcastToPartnerDoctorsAction(
+  message: string,
+): Promise<CenterActionResult> {
+  const user = await requireRole("CENTER");
+  const text = message.trim();
+  if (text.length < 2) return { ok: false, error: "Mesaj yazın." };
+  if (text.length > 2000) return { ok: false, error: "Mesaj çox uzundur (maks. 2000 simvol)." };
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true, name: true, plan: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  if (!centerLimits(center.plan).broadcast) {
+    return { ok: false, error: "Toplu mesaj yalnız Gold və Platinum paketlərdə mövcuddur." };
+  }
+  const partners = await prisma.centerDoctor.findMany({
+    where: { centerId: center.id, status: "ACCEPTED" },
+    select: { doctor: { select: { userId: true } } },
+  });
+  let sent = 0;
+  for (const p of partners) {
+    if (p.doctor?.userId) {
+      await notifyUser(p.doctor.userId, "CENTER_BROADCAST", `${center.name} bildirişi`, text, "/hekim/bildirisler");
+      sent++;
+    }
+  }
+  if (sent === 0) return { ok: false, error: "Təsdiqlənmiş partnyor həkim yoxdur." };
+  return { ok: true, message: `Mesaj ${sent} partnyor həkimə göndərildi.` };
 }

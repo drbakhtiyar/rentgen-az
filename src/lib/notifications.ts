@@ -15,7 +15,8 @@ export type NotifType =
   | "STATUS_UPDATE"
   | "REVIEW_REPLY"
   | "REVIEW_INVITE"
-  | "NEW_MESSAGE";
+  | "NEW_MESSAGE"
+  | "CENTER_BROADCAST";
 
 /** Create an in-app notification for a user (best-effort — never throws). */
 export async function notifyUser(

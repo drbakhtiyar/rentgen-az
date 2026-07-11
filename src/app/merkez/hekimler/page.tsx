@@ -2,10 +2,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { Stethoscope, MailQuestion, MessageSquare } from "lucide-react";
+import { Stethoscope, MailQuestion, MessageSquare, Megaphone } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
+import { BroadcastForm } from "@/components/dashboard/broadcast-form";
+import { centerLimits } from "@/lib/plans";
 import { Badge } from "@/components/ui/badge";
 import { RespondPartnerButtons, RespondWorkplaceButtons } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
@@ -55,9 +57,10 @@ export default async function CenterDoctorsPage() {
   const user = await requireRole("CENTER", "/merkez/hekimler");
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true, name: true },
+    select: { id: true, name: true, plan: true },
   });
   if (!center) redirect("/merkez/qeydiyyat");
+  const canBroadcast = centerLimits(center.plan).broadcast;
 
   const [pending, accepted, workplaceClaims] = await Promise.all([
     prisma.centerDoctor.findMany({
@@ -87,6 +90,27 @@ export default async function CenterDoctorsPage() {
 
   return (
     <DashboardShell title="Partnyor həkimlər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+      {canBroadcast ? (
+        accepted.length > 0 && (
+          <div className="mb-5">
+            <Panel title="Partnyor həkimlərə toplu mesaj">
+              <BroadcastForm />
+            </Panel>
+          </div>
+        )
+      ) : (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center gap-3">
+            <Megaphone className="h-5 w-5 shrink-0 text-slate-400" />
+            <p className="text-sm text-slate-600">
+              Partnyor həkimlərə <span className="font-semibold">toplu mesaj</span> Gold və Platinum paketlərdə mövcuddur.
+            </p>
+          </div>
+          <Link href="/merkez/paket" className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            Paketə bax
+          </Link>
+        </div>
+      )}
       {workplaceClaims.length > 0 && (
         <div className="mb-5">
           <Panel
