@@ -49,7 +49,8 @@ export default async function DoctorProfilePage({
   const doctor = await getApprovedDoctorById(id);
   if (!doctor) notFound();
 
-  const t = getDict(await getLocale()).doctors;
+  const locale = await getLocale();
+  const t = getDict(locale).doctors;
   const name = doctorName(doctor.firstName, doctor.lastName);
   const verified = Boolean(doctor.diplomaUrl || doctor.certificateUrl);
   // Confirmed registered workplace → link to that center.
@@ -188,6 +189,28 @@ export default async function DoctorProfilePage({
                   </div>
                 )}
               </Card>
+
+              {doctorLimits(doctor.plan).portfolio && doctor.portfolio.length > 0 && (
+                <Card className="mt-6 p-6">
+                  <h2 className="font-display text-lg font-bold text-ink-900">
+                    {locale === "ru" ? "Портфолио" : "Portfolio"}
+                  </h2>
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {doctor.portfolio.map((p) => (
+                      <a
+                        key={p}
+                        href={p}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="aspect-square overflow-hidden rounded-xl ring-1 ring-slate-200"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p} alt="" className="h-full w-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
 
             <aside className="space-y-6">

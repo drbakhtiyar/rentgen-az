@@ -181,6 +181,7 @@ export async function adminUpdateDoctorAction(
     lastName: string;
     clinic?: string;
     specializations?: string[];
+    portfolio?: string[];
     city?: string;
     photoUrl?: string;
     instagram?: string;
@@ -206,6 +207,7 @@ export async function adminUpdateDoctorAction(
         lastName: d.lastName,
         clinic: d.clinic || null,
         specializations: d.specializations ?? [],
+        portfolio: d.portfolio ?? [],
         city: d.city || null,
         photoUrl: d.photoUrl || null,
         instagram: d.instagram || null,

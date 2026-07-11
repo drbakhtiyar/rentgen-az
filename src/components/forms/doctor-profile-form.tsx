@@ -25,6 +25,7 @@ export type DoctorFormDefaults = {
   lastName?: string;
   clinic?: string;
   specializations?: string[];
+  portfolio?: string[];
   city?: string;
   photoUrl?: string;
   instagram?: string;
@@ -43,6 +44,7 @@ type SaveInput = {
   lastName: string;
   clinic: string;
   specializations: string[];
+  portfolio: string[];
   city: string;
   photoUrl: string;
   instagram: string;
@@ -63,6 +65,7 @@ export function DoctorProfileForm({
   mode,
   onSave,
   locale = DEFAULT_LOCALE,
+  allowPortfolio,
 }: {
   cities: Option[];
   centers?: Option[];
@@ -72,9 +75,37 @@ export function DoctorProfileForm({
   /** Overrides the default self-serve save (e.g. admin editing any doctor). */
   onSave?: (input: SaveInput) => Promise<{ ok: boolean; error?: string; message?: string }>;
   locale?: Locale;
+  /** Whether the plan allows a work-sample portfolio (Silver+). */
+  allowPortfolio?: boolean;
 }) {
   const t = getDict(locale).docForm;
+  const ru = locale === "ru";
   const [pending, startTransition] = React.useTransition();
+  const [portfolio, setPortfolio] = React.useState<string[]>(defaults?.portfolio ?? []);
+  const [uploadingPortfolio, setUploadingPortfolio] = React.useState(false);
+  const portfolioRef = React.useRef<HTMLInputElement>(null);
+
+  async function onPickPortfolio(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploadingPortfolio(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files.slice(0, 12 - portfolio.length)) {
+        const blob = await upload(`doctor-portfolio/${file.name}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        uploaded.push(blob.url);
+      }
+      setPortfolio((prev) => [...prev, ...uploaded].slice(0, 12));
+    } catch {
+      /* best-effort */
+    } finally {
+      setUploadingPortfolio(false);
+      if (portfolioRef.current) portfolioRef.current.value = "";
+    }
+  }
   const [message, setMessage] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -141,6 +172,7 @@ export function DoctorProfileForm({
         clinic: get("clinic"),
         workplaceCenterId,
         specializations: specs,
+        portfolio: allowPortfolio ? portfolio : [],
         city: get("city"),
         photoUrl,
         instagram: get("instagram"),
@@ -258,6 +290,47 @@ export function DoctorProfileForm({
           })}
         </div>
       </div>
+
+      {/* Portfolio (Silver+) */}
+      {allowPortfolio && (
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-ink-800">
+            {ru ? "Портфолио (примеры работ)" : "Portfolio (iş nümunələri)"}{" "}
+            <span className="font-normal text-slate-400">
+              {ru ? "профиль" : "profilinizdə görünür"}
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {portfolio.map((p) => (
+              <span key={p} className="group relative h-20 w-20 overflow-hidden rounded-lg ring-1 ring-slate-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p} alt="" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setPortfolio((prev) => prev.filter((x) => x !== p))}
+                  className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
+                  aria-label="Sil"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+            {portfolio.length < 12 && (
+              <>
+                <input ref={portfolioRef} type="file" accept="image/*" multiple onChange={onPickPortfolio} className="hidden" />
+                <button
+                  type="button"
+                  onClick={() => portfolioRef.current?.click()}
+                  disabled={uploadingPortfolio}
+                  className="inline-flex h-20 w-20 items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 hover:border-brand-300 hover:text-brand-500 disabled:opacity-50"
+                >
+                  {uploadingPortfolio ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {centers.length > 0 && (
         <Field

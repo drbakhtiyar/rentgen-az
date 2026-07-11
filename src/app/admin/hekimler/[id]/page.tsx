@@ -10,6 +10,7 @@ import { PlanSelector } from "@/components/admin/plan-selector";
 import { WalletCredit } from "@/components/admin/wallet-credit";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { doctorLimits } from "@/lib/plans";
 import { doctorName } from "@/lib/utils";
 import {
   adminUpdateDoctorAction,
@@ -64,11 +65,13 @@ export default async function AdminEditDoctorPage({
           phone={doctor.user.phone}
           mode="edit"
           onSave={save}
+          allowPortfolio={doctorLimits(doctor.plan).portfolio}
           defaults={{
             firstName: doctor.firstName ?? "",
             lastName: doctor.lastName ?? "",
             clinic: doctor.clinic ?? "",
             specializations: doctor.specializations ?? [],
+            portfolio: doctor.portfolio ?? [],
             city: doctor.city ?? "",
             photoUrl: doctor.photoUrl ?? "",
             instagram: doctor.instagram ?? "",

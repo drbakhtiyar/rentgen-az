@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorProfileSchema } from "@/lib/validation";
+import { doctorLimits } from "@/lib/plans";
 import { notifyUser } from "@/lib/notifications";
 import { doctorName } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ export async function saveDoctorProfileAction(input: {
   lastName: string;
   clinic?: string;
   specializations?: string[];
+  portfolio?: string[];
   city?: string;
   photoUrl?: string;
   instagram?: string;
@@ -70,6 +72,7 @@ export async function saveDoctorProfileAction(input: {
       lastName: d.lastName,
       clinic: d.clinic || null,
       specializations: d.specializations ?? [],
+      portfolio: doctorLimits(existing?.plan ?? "FREE").portfolio ? (d.portfolio ?? []) : [],
       city: d.city || null,
       photoUrl: d.photoUrl || null,
       instagram: d.instagram || null,

@@ -108,6 +108,7 @@ export const doctorProfileSchema = z.object({
   lastName: z.string().trim().min(2, "Soyad ən azı 2 hərf olmalıdır").max(60),
   clinic: z.string().trim().max(160).optional().or(z.literal("")),
   specializations: z.array(z.string().trim().max(120)).max(8).optional().default([]),
+  portfolio: z.array(z.string().trim().url()).max(12).optional(),
   city: z.string().trim().max(80).optional().or(z.literal("")),
   photoUrl: z.string().trim().max(500).optional().or(z.literal("")),
   instagram: z.string().trim().max(200).optional().or(z.literal("")),

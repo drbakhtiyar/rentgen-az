@@ -7,6 +7,7 @@ import { DoctorProfileForm } from "@/components/forms/doctor-profile-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorName } from "@/lib/utils";
+import { doctorLimits } from "@/lib/plans";
 import { CITIES } from "@/lib/constants";
 import { getLocale } from "@/lib/i18n-server";
 import { buildMetadata } from "@/lib/seo";
@@ -62,11 +63,13 @@ export default async function DoctorProfilePage() {
           cities={cityOptions}
           centers={centerOptions}
           phone={user.phone}
+          allowPortfolio={doctorLimits(profile.plan).portfolio}
           defaults={{
             firstName: profile.firstName ?? "",
             lastName: profile.lastName ?? "",
             clinic: profile.clinic ?? "",
             specializations: profile.specializations ?? [],
+            portfolio: profile.portfolio ?? [],
             city: profile.city ?? "",
             photoUrl: profile.photoUrl ?? "",
             instagram: profile.instagram ?? "",
