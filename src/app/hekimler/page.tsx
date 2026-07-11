@@ -105,12 +105,8 @@ export default async function DoctorsPage({
               </Link>
             </div>
           </div>
-        </Container>
-      </Section>
 
-      <Section className="pb-12 pt-2">
-        <Container>
-          <form method="get" className="mb-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1fr_auto_auto_auto]">
+          <form method="get" className="mb-8 mt-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1fr_auto_auto_auto]">
             <input
               name="q"
               defaultValue={sp.q ?? ""}

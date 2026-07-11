@@ -9,8 +9,8 @@ export async function SiteHeader() {
 
   const nav = [
     { label: d.nav.centers, href: "/rentgen-merkezleri" },
-    { label: d.nav.services, href: "/xidmetler" },
     { label: d.nav.doctors, href: "/hekimler" },
+    { label: d.nav.services, href: "/xidmetler" },
     { label: d.nav.blog, href: "/blog" },
     { label: d.nav.faq, href: "/faq" },
     { label: d.nav.contact, href: "/elaqe" },
