@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
-// Merged into /hekimler — this page now redirects there.
+// Merged into /hekimler — permanent (308) redirect for SEO link equity.
 export default function ForDoctorsRedirect() {
-  redirect("/hekimler");
+  permanentRedirect("/hekimler");
 }
