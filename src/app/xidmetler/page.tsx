@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Container, Section, SectionHeading } from "@/components/ui/container";
+import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ServiceIcon } from "@/components/ui/service-icon";
 import { JsonLd } from "@/components/ui/json-ld";
 import { SymptomSuggest } from "@/components/symptom-suggest";
+import { ServicesExplorer } from "@/components/services-explorer";
 import { countApprovedCentersByService, getActiveServices } from "@/lib/queries";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
@@ -37,11 +33,23 @@ export default async function ServicesPage() {
   const locale = await getLocale();
   const d = getDict(locale).services;
 
-  // Only show services that at least one approved center offers.
-  const visible = services.filter((s) => (counts[s.slug] ?? 0) > 0);
+  // Only services offered by at least one approved center, ordered by how many
+  // centers offer them (most-offered first).
+  const explorerServices = services
+    .filter((s) => (counts[s.slug] ?? 0) > 0)
+    .map((s) => ({
+      slug: s.slug,
+      name: s.name,
+      description: s.description,
+      icon: s.icon,
+      iconUrl: s.iconUrl,
+      category: s.category,
+      count: counts[s.slug] ?? 0,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   const categories = Array.from(
-    new Set(visible.map((s) => s.category).filter((c): c is string => Boolean(c))),
+    new Set(explorerServices.map((s) => s.category).filter((c): c is string => Boolean(c))),
   );
 
   return (
@@ -59,44 +67,22 @@ export default async function ServicesPage() {
         breadcrumbs={[{ name: d.title }]}
       />
 
-      <Section className="py-8">
+      <Section className="py-10">
         <Container>
           <SymptomSuggest ru={locale === "ru"} />
+          <div className="mt-10">
+            <ServicesExplorer
+              services={explorerServices}
+              categories={categories}
+              labels={{
+                all: locale === "ru" ? "Все" : "Hamısı",
+                centerWord: d.centerWord,
+                more: d.more,
+              }}
+            />
+          </div>
         </Container>
       </Section>
-
-      {categories.map((cat) => (
-        <Section key={cat} className="py-12 odd:bg-surface">
-          <Container>
-            <SectionHeading align="left" eyebrow={cat ?? undefined} title={`${cat} ${d.categorySuffix}`} />
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {visible.filter((s) => s.category === cat).map((s) => (
-                <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
-                  <Card className="group h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-glow)]">
-                    <div className="flex items-start justify-between">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                        <ServiceIcon name={s.icon} url={s.iconUrl} className="h-6 w-6" />
-                      </div>
-                      {counts[s.slug] ? (
-                        <Badge tone="cyan">{counts[s.slug]} {d.centerWord}</Badge>
-                      ) : null}
-                    </div>
-                    <h3 className="font-display mt-4 text-lg font-bold text-ink-900">
-                      {s.name}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                      {s.description}
-                    </p>
-                    <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-                      {d.more} <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </Container>
-        </Section>
-      ))}
     </>
   );
 }
