@@ -67,7 +67,7 @@ export default async function ServicesPage() {
         breadcrumbs={[{ name: d.title }]}
       />
 
-      <Section className="py-10">
+      <Section className="pt-10 pb-16 sm:pt-10 lg:pt-10">
         <Container>
           <SymptomSuggest ru={locale === "ru"} />
           <div className="mt-10">
