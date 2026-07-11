@@ -92,11 +92,25 @@ export function CenterCard({
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <Link href={`/rentgen-merkezleri/${center.slug}`} className="group/link">
-          <h3 className="font-display text-lg font-bold text-ink-900 transition-colors group-hover/link:text-brand-700">
-            {center.name}
-          </h3>
-        </Link>
+        <div className="flex items-start justify-between gap-3">
+          <Link href={`/rentgen-merkezleri/${center.slug}`} className="group/link min-w-0">
+            <h3 className="font-display text-lg font-bold text-ink-900 transition-colors group-hover/link:text-brand-700">
+              {center.name}
+            </h3>
+          </Link>
+          {/* When a cover photo occupies the header, surface the logo next to the name. */}
+          {center.images?.[0] && center.logoUrl && (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={center.logoUrl}
+                alt={`${center.name} loqosu`}
+                className="h-full w-full object-contain"
+                loading="lazy"
+              />
+            </span>
+          )}
+        </div>
 
         {rating && (
           <div className="mt-2">
