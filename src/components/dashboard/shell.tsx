@@ -37,6 +37,7 @@ export async function DashboardShell({
   if (unread > 0) {
     mergedBadges["/merkez/bildirisler"] = unread;
     mergedBadges["/hekim/bildirisler"] = unread;
+    mergedBadges["/kabinet/bildirisler"] = unread;
   }
   // Unread chat messages badge.
   let unreadChat = 0;

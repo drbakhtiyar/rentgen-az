@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/rbac";
+import { notifyUser } from "@/lib/notifications";
+import { doctorName } from "@/lib/utils";
 
 export type ChatResult<T = unknown> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -42,6 +44,44 @@ async function assertParticipant(conversationId: string) {
     (me.role === "CENTER" && conv.centerId === me.profileId) ||
     (me.role === "DOCTOR" && conv.doctorId === me.profileId);
   return ok ? { me, conv } : null;
+}
+
+/** Notify the message recipient (one unread chat notice at a time — anti-spam). */
+async function notifyRecipient(
+  senderRole: "CENTER" | "DOCTOR",
+  conv: { centerId: string; doctorId: string },
+): Promise<void> {
+  if (senderRole === "CENTER") {
+    const [dr, center] = await Promise.all([
+      prisma.doctorProfile.findUnique({ where: { id: conv.doctorId }, select: { userId: true } }),
+      prisma.centerProfile.findUnique({ where: { id: conv.centerId }, select: { name: true } }),
+    ]);
+    if (!dr?.userId) return;
+    const unread = await prisma.notification.findFirst({
+      where: { userId: dr.userId, type: "NEW_MESSAGE", read: false },
+      select: { id: true },
+    });
+    if (unread) return;
+    await notifyUser(dr.userId, "NEW_MESSAGE", "Yeni mesaj", `${center?.name ?? "Mərkəz"} sizə yazdı.`, "/hekim/chat");
+  } else {
+    const [center, dr] = await Promise.all([
+      prisma.centerProfile.findUnique({ where: { id: conv.centerId }, select: { userId: true } }),
+      prisma.doctorProfile.findUnique({ where: { id: conv.doctorId }, select: { firstName: true, lastName: true } }),
+    ]);
+    if (!center?.userId) return;
+    const unread = await prisma.notification.findFirst({
+      where: { userId: center.userId, type: "NEW_MESSAGE", read: false },
+      select: { id: true },
+    });
+    if (unread) return;
+    await notifyUser(
+      center.userId,
+      "NEW_MESSAGE",
+      "Yeni mesaj",
+      `${doctorName(dr?.firstName, dr?.lastName) || "Həkim"} sizə yazdı.`,
+      "/merkez/chat",
+    );
+  }
 }
 
 /**
@@ -99,6 +139,8 @@ export async function sendMessageAction(
       where: { id: conversationId },
       data: { lastMessageAt: msg.createdAt },
     });
+    // Notify the recipient (dedupe: skip if they already have an unread chat notice).
+    await notifyRecipient(ctx.me.role, ctx.conv).catch(() => {});
     revalidatePath("/merkez/chat");
     revalidatePath("/hekim/chat");
     return { ok: true, id: msg.id };

@@ -12,6 +12,8 @@ import {
   XCircle,
   MessageSquare,
   Clock,
+  Star,
+  PhoneCall,
 } from "lucide-react";
 import { EmptyState } from "@/components/dashboard/widgets";
 import {
@@ -37,6 +39,10 @@ const ICONS: Record<string, React.ReactNode> = {
   PARTNER_REJECTED: <XCircle className="h-4 w-4" />,
   ADMIN_MESSAGE: <MessageSquare className="h-4 w-4" />,
   PATIENT_UPDATED: <Clock className="h-4 w-4" />,
+  STATUS_UPDATE: <PhoneCall className="h-4 w-4" />,
+  REVIEW_REPLY: <MessageSquare className="h-4 w-4" />,
+  REVIEW_INVITE: <Star className="h-4 w-4" />,
+  NEW_MESSAGE: <MessageSquare className="h-4 w-4" />,
 };
 
 function timeAgo(d: string | Date): string {

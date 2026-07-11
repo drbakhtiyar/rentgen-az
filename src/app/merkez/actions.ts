@@ -15,6 +15,7 @@ import {
 import { Prisma } from "@/generated/prisma/client";
 import type { RequestStatus } from "@/generated/prisma/enums";
 import { centerLimits } from "@/lib/plans";
+import { notifyUser } from "@/lib/notifications";
 
 export type CenterActionResult = { ok: boolean; error?: string; message?: string };
 
@@ -180,7 +181,7 @@ export async function replyToReviewAction(
 
     const review = await prisma.review.findUnique({
       where: { id: reviewId },
-      select: { centerId: true },
+      select: { centerId: true, patient: { select: { userId: true } } },
     });
     if (!review || review.centerId !== center.id) {
       return { ok: false, error: "Rəy tapılmadı." };
@@ -193,6 +194,16 @@ export async function replyToReviewAction(
         repliedAt: text ? new Date() : null,
       },
     });
+    // Notify the patient that the center replied.
+    if (text) {
+      await notifyUser(
+        review.patient?.userId,
+        "REVIEW_REPLY",
+        "Mərkəz rəyinizə cavab verdi",
+        "Rəyinizə mərkəz tərəfindən cavab yazıldı.",
+        `/rentgen-merkezleri/${center.slug}`,
+      );
+    }
     revalidatePath("/merkez/reyler");
     revalidatePath(`/rentgen-merkezleri/${center.slug}`);
     return { ok: true, message: text ? "Cavab yadda saxlanıldı." : "Cavab silindi." };
@@ -219,13 +230,19 @@ export async function updateRequestStatusAction(
   try {
     const center = await prisma.centerProfile.findUnique({
       where: { userId: user.id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, slug: true, plan: true },
     });
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
     const req = await prisma.appointmentRequest.findUnique({
       where: { id: requestId },
-      select: { id: true, centerId: true, status: true, phone: true },
+      select: {
+        id: true,
+        centerId: true,
+        status: true,
+        phone: true,
+        patient: { select: { userId: true } },
+      },
     });
     if (!req || req.centerId !== center.id) {
       return { ok: false, error: "Müraciət tapılmadı." };
@@ -246,10 +263,28 @@ export async function updateRequestStatusAction(
       },
     });
 
-    // SMS only where it's genuinely useful (avoid annoying the patient):
-    // - CONTACTED: no SMS (the center just called them).
-    // - COMPLETED: no generic SMS (the result-ready SMS covers it when the link is added).
-    // - CANCELLED: notify the patient.
+    const patientUserId = req.patient?.userId;
+    // CONTACTED: in-app notification (no SMS — the center just called them).
+    if (status === "CONTACTED") {
+      await notifyUser(
+        patientUserId,
+        "STATUS_UPDATE",
+        "Mərkəz sizinlə əlaqə saxlayır",
+        `${center.name} müraciətiniz üzrə sizinlə əlaqə saxlayır.`,
+        "/kabinet",
+      );
+    }
+    // COMPLETED: invite the patient to leave a review (only if the plan accepts reviews).
+    if (status === "COMPLETED" && centerLimits(center.plan).reviews) {
+      await notifyUser(
+        patientUserId,
+        "REVIEW_INVITE",
+        "Təcrübənizi qiymətləndirin",
+        `${center.name} müayinəniz tamamlandı — rəy yazaraq digər pasiyentlərə kömək edin.`,
+        "/kabinet",
+      );
+    }
+    // CANCELLED: notify the patient by SMS.
     if (status === "CANCELLED") {
       await smsPatientStatusChange(req.phone, {
         status,

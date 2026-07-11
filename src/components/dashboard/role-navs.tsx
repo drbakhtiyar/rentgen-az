@@ -43,6 +43,7 @@ export const doctorNav: NavItem[] = [
 
 export const patientNav: NavItem[] = [
   { label: "İcmal", href: "/kabinet", icon: <LayoutDashboard /> },
+  { label: "Bildirişlər", href: "/kabinet/bildirisler", icon: <Bell /> },
   { label: "Profil", href: "/kabinet/profil", icon: <User /> },
   { label: "Seçilmişlər", href: "/kabinet/secilmisler", icon: <Heart /> },
 ];

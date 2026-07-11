@@ -11,7 +11,11 @@ export type NotifType =
   | "PATIENT_UPDATED"
   | "WORKPLACE_REQUEST"
   | "WORKPLACE_ACCEPTED"
-  | "WORKPLACE_REJECTED";
+  | "WORKPLACE_REJECTED"
+  | "STATUS_UPDATE"
+  | "REVIEW_REPLY"
+  | "REVIEW_INVITE"
+  | "NEW_MESSAGE";
 
 /** Create an in-app notification for a user (best-effort — never throws). */
 export async function notifyUser(
