@@ -139,6 +139,7 @@ export const reviewSchema = z.object({
   wait: scoreField,
   price: scoreField,
   comment: z.string().trim().max(1000).optional().or(z.literal("")),
+  photos: z.array(z.string().trim().url()).max(4).optional(),
 });
 
 export const serviceFormSchema = z.object({

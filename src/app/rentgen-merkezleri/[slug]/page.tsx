@@ -429,6 +429,22 @@ export default async function CenterDetailPage({
                               {r.comment}
                             </p>
                           )}
+                          {r.photos.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {r.photos.map((ph) => (
+                                <a
+                                  key={ph}
+                                  href={ph}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="h-20 w-20 overflow-hidden rounded-lg ring-1 ring-slate-200"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={ph} alt="" className="h-full w-full object-cover" />
+                                </a>
+                              ))}
+                            </div>
+                          )}
                           <p className="mt-2 text-xs text-slate-400">
                             {formatDateAz(r.createdAt)}
                           </p>

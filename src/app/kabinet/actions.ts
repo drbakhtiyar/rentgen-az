@@ -132,6 +132,7 @@ export async function submitReviewAction(input: {
   wait: number;
   price: number;
   comment?: string;
+  photos?: string[];
 }): Promise<PatientActionResult> {
   const user = await requireRole("PATIENT");
   const parsed = reviewSchema.safeParse(input);
@@ -182,6 +183,7 @@ export async function submitReviewAction(input: {
       scoreClean: d.clean,
       scoreWait: d.wait,
       scorePrice: d.price,
+      photos: d.photos ?? [],
     };
 
     await prisma.review.upsert({

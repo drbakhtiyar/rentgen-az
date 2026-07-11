@@ -342,6 +342,7 @@ model Review {
   rating    Int // 1..5 (5 alt-balın ortası)
   comment   String?
   verified  Boolean        @default(false) // təsdiqlənmiş müştəri
+  photos      String[]       @default([]) // pasiyentin əlavə etdiyi şəkillər
   hidden    Boolean        @default(false) // admin moderasiyası (gizlədilib)
   flagged   Boolean        @default(false) // avtomatik moderasiya — admin təsdiqini gözləyir
   reply     String? // mərkəzin cavabı
@@ -398,6 +399,7 @@ model DoctorProfile {
   clinic          String? // iş yeri / klinika
   specialization  String? // (köhnə — sərbəst mətn, istifadə olunmur)
   specializations String[]     @default([]) // seçilmiş ixtisaslar
+  portfolio       String[]     @default([]) // iş nümunələri (Silver+ brendinq)
   city            String?
   photoUrl        String? // profil şəkli
   instagram       String?
