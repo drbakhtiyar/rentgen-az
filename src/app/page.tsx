@@ -268,7 +268,7 @@ export default async function HomePage() {
                 <p className="mt-3 text-slate-600">
                   {d.home.forDoctorsDesc}
                 </p>
-                <ButtonLink href="/hekimler-ucun" className="mt-6">
+                <ButtonLink href="/hekimler" className="mt-6">
                   {d.home.openReferral} <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
               </div>

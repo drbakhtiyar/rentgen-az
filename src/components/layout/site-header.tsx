@@ -11,7 +11,6 @@ export async function SiteHeader() {
     { label: d.nav.centers, href: "/rentgen-merkezleri" },
     { label: d.nav.services, href: "/xidmetler" },
     { label: d.nav.doctors, href: "/hekimler" },
-    { label: d.nav.forDoctors, href: "/hekimler-ucun" },
     { label: d.nav.blog, href: "/blog" },
     { label: d.nav.faq, href: "/faq" },
     { label: d.nav.contact, href: "/elaqe" },
