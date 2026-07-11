@@ -404,6 +404,26 @@ export async function getPostBySlug(slug: string) {
   );
 }
 
+/** Cities + specializations that at least one APPROVED doctor actually has. */
+export async function getDoctorFacets(): Promise<{ cities: string[]; specializations: string[] }> {
+  return safe(
+    async () => {
+      const docs = await prisma.doctorProfile.findMany({
+        where: { status: "APPROVED" },
+        select: { city: true, specializations: true },
+      });
+      const cities = new Set<string>();
+      const specs = new Set<string>();
+      for (const d of docs) {
+        if (d.city) cities.add(d.city);
+        for (const s of d.specializations) specs.add(s);
+      }
+      return { cities: [...cities], specializations: [...specs] };
+    },
+    { cities: [], specializations: [] },
+  );
+}
+
 export type DoctorFilters = { q?: string; spec?: string; city?: string };
 
 export async function getApprovedDoctors(filters: DoctorFilters = {}) {

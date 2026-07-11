@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { DoctorCard } from "@/components/doctors/doctor-card";
-import { getApprovedDoctors } from "@/lib/queries";
+import { getApprovedDoctors, getDoctorFacets } from "@/lib/queries";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
@@ -34,10 +34,21 @@ export default async function DoctorsPage({
     spec: sp.spec || undefined,
     city: sp.city || undefined,
   };
-  const [doctors, locale] = await Promise.all([getApprovedDoctors(filters), getLocale()]);
+  const [doctors, facets, locale] = await Promise.all([
+    getApprovedDoctors(filters),
+    getDoctorFacets(),
+    getLocale(),
+  ]);
   const t = getDict(locale).doctors;
   const fd = getDict(locale).forDoctors;
   const ru = locale === "ru";
+
+  // Only show cities / specializations that actually have registered doctors
+  // (keep canonical order; always include the current selection).
+  const cityOptions = CITIES.filter((c) => facets.cities.includes(c.name) || c.name === sp.city);
+  const specOptions = DENTAL_SPECIALIZATIONS.filter(
+    (s) => facets.specializations.includes(s) || s === sp.spec,
+  );
 
   const advantages = [
     { icon: <ShieldCheck />, h: fd.f1t, d: fd.f1d },
@@ -115,13 +126,13 @@ export default async function DoctorsPage({
             />
             <select name="spec" defaultValue={sp.spec ?? ""} className="h-11 rounded-xl border border-slate-200 px-3 text-sm">
               <option value="">{ru ? "Все специализации" : "Bütün ixtisaslar"}</option>
-              {DENTAL_SPECIALIZATIONS.map((s) => (
+              {specOptions.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
             <select name="city" defaultValue={sp.city ?? ""} className="h-11 rounded-xl border border-slate-200 px-3 text-sm">
               <option value="">{ru ? "Все города" : "Bütün şəhərlər"}</option>
-              {CITIES.map((c) => (
+              {cityOptions.map((c) => (
                 <option key={c.name} value={c.name}>{c.name}</option>
               ))}
             </select>
