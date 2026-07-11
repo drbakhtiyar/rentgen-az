@@ -109,7 +109,7 @@ export default async function CentersPage({
         </Container>
       </div>
 
-      <Section className="py-12">
+      <Section className="pt-8 pb-12 sm:pt-8 lg:pt-8">
         <Container>
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600">
