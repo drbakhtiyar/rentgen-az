@@ -76,7 +76,7 @@ export default async function DoctorsPage({
       </PageHeader>
 
       {/* For doctors — advantages + join CTA (merged from the old /hekimler-ucun) */}
-      <Section className="py-10">
+      <Section className="pt-8 pb-12 sm:pt-8 lg:pt-8">
         <Container>
           <div className="rounded-2xl border border-slate-200 bg-surface p-6 sm:p-8">
             <div className="flex flex-wrap items-end justify-between gap-3">
