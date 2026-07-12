@@ -20,22 +20,40 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
+const PER_PAGE = 30;
+
 const reviewInclude = {
   center: { select: { name: true, slug: true } },
   patient: { select: { firstName: true, lastName: true } },
 } as const;
 
-export default async function AdminReviewsPage() {
+export default async function AdminReviewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const admin = await requireRole("ADMIN", "/admin/reyler");
+  const sp = await searchParams;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const [flagged, reviews] = await Promise.all([
+  const [flagged, reviews, total] = await Promise.all([
     prisma.review
       .findMany({ where: { flagged: true }, include: reviewInclude, orderBy: { createdAt: "desc" } })
       .catch(() => []),
     prisma.review
-      .findMany({ where: { flagged: false }, include: reviewInclude, orderBy: { createdAt: "desc" }, take: 200 })
+      .findMany({
+        where: { flagged: false },
+        include: reviewInclude,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * PER_PAGE,
+        take: PER_PAGE,
+      })
       .catch(() => []),
+    prisma.review.count({ where: { flagged: false } }).catch(() => 0),
   ]);
+
+  const pageCount = Math.max(1, Math.ceil(total / PER_PAGE));
+  const pageUrl = (p: number) => (p > 1 ? `/admin/reyler?page=${p}` : "/admin/reyler");
 
   // Resolve referring-doctor names (admin-only info).
   const docIds = [...new Set([...flagged, ...reviews].map((r) => r.doctorId).filter(Boolean))] as string[];
@@ -64,9 +82,9 @@ export default async function AdminReviewsPage() {
               </span>
             }
           >
-            <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-2">
               {flagged.map((r) => (
-                <div key={r.id} className="rounded-xl border border-amber-200 bg-amber-50/40 p-4">
+                <div key={r.id} className="flex flex-col rounded-xl border border-amber-200 bg-amber-50/40 p-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Stars value={r.rating} size="sm" />
                     {r.center && <span className="font-semibold text-ink-900">{r.center.name}</span>}
@@ -83,7 +101,7 @@ export default async function AdminReviewsPage() {
                       <Stethoscope className="h-3.5 w-3.5" /> Göndərən: {referrer(r)}
                     </p>
                   )}
-                  <div className="mt-3 flex items-center justify-between">
+                  <div className="mt-3 flex items-center justify-between border-t border-amber-100 pt-3">
                     <span className="text-xs text-slate-400">{formatDateAz(r.createdAt)}</span>
                     <ReviewModerationButtons reviewId={r.id} />
                   </div>
@@ -94,21 +112,18 @@ export default async function AdminReviewsPage() {
         </div>
       )}
 
-      <Panel title={`Rəylər (${reviews.length})`}>
+      <Panel title={`Rəylər (${total})`}>
         {reviews.length > 0 ? (
-          <div className="space-y-3">
+          <div className="grid gap-3 lg:grid-cols-2">
             {reviews.map((r) => (
-              <div
-                key={r.id}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
+              <div key={r.id} className="flex flex-col rounded-xl border border-slate-200 p-4">
+                <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {r.center && (
                         <Link
                           href={`/rentgen-merkezleri/${r.center.slug}`}
-                          className="font-semibold text-ink-900 hover:text-brand-600"
+                          className="truncate font-semibold text-ink-900 hover:text-brand-600"
                         >
                           {r.center.name}
                         </Link>
@@ -144,6 +159,30 @@ export default async function AdminReviewsPage() {
           </div>
         ) : (
           <EmptyState icon={<Star />} title="Hələ rəy yoxdur" />
+        )}
+
+        {pageCount > 1 && (
+          <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm">
+            <span className="text-slate-500">
+              Səhifə {page} / {pageCount} · {total} rəy
+            </span>
+            <div className="flex items-center gap-2">
+              {page > 1 ? (
+                <a href={pageUrl(page - 1)} className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold text-slate-700 hover:bg-slate-200">
+                  ← Əvvəlki
+                </a>
+              ) : (
+                <span className="cursor-not-allowed rounded-lg bg-slate-50 px-3 py-1.5 text-slate-300">← Əvvəlki</span>
+              )}
+              {page < pageCount ? (
+                <a href={pageUrl(page + 1)} className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold text-slate-700 hover:bg-slate-200">
+                  Növbəti →
+                </a>
+              ) : (
+                <span className="cursor-not-allowed rounded-lg bg-slate-50 px-3 py-1.5 text-slate-300">Növbəti →</span>
+              )}
+            </div>
+          </div>
         )}
       </Panel>
     </AdminShell>
