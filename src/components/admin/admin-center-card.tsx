@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/dashboard/widgets";
 import { RatingSummary } from "@/components/reviews/stars";
 import { CenterStatusControls, BlockToggle } from "@/components/admin/controls";
+import { PLAN_LABEL } from "@/lib/plans";
 import type { CenterStatus } from "@/generated/prisma/enums";
+import type { Plan } from "@/generated/prisma/client";
 
 type AdminCenter = {
   id: string;
@@ -18,8 +20,16 @@ type AdminCenter = {
   images: string[];
   workingHours: string | null;
   status: CenterStatus;
+  plan: Plan;
   user: { id: string; isBlocked: boolean };
   services: { id: string; service: { name: string; shortName: string | null } }[];
+};
+
+const PLAN_TONE: Record<Plan, string> = {
+  FREE: "bg-slate-100 text-slate-600 ring-slate-200",
+  SILVER: "bg-slate-200 text-slate-700 ring-slate-300",
+  GOLD: "bg-amber-50 text-amber-700 ring-amber-200",
+  PLATINUM: "bg-cyan-50 text-cyan-700 ring-cyan-200",
 };
 
 /** Admin-side center card: same visual language as the public site card,
@@ -60,6 +70,13 @@ export function AdminCenterCard({
         )}
         <div className="absolute left-3 top-3">
           <StatusBadge status={center.status} />
+        </div>
+        <div className="absolute right-3 top-3">
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold shadow-sm ring-1 ring-inset ${PLAN_TONE[center.plan]}`}
+          >
+            {PLAN_LABEL[center.plan]}
+          </span>
         </div>
       </div>
 

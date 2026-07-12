@@ -6,7 +6,9 @@ import { StatusBadge } from "@/components/dashboard/widgets";
 import { DoctorStatusControls, BlockToggle } from "@/components/admin/controls";
 import { doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
+import { PLAN_LABEL } from "@/lib/plans";
 import type { CenterStatus } from "@/generated/prisma/enums";
+import type { Plan } from "@/generated/prisma/client";
 
 type AdminDoctor = {
   id: string;
@@ -15,8 +17,16 @@ type AdminDoctor = {
   clinic: string | null;
   photoUrl: string | null;
   status: CenterStatus;
+  plan: Plan;
   user: { id: string; isBlocked: boolean; phone: string };
   _count: { appointmentRequests: number };
+};
+
+const PLAN_TONE: Record<Plan, string> = {
+  FREE: "bg-slate-100 text-slate-600 ring-slate-200",
+  SILVER: "bg-slate-200 text-slate-700 ring-slate-300",
+  GOLD: "bg-amber-50 text-amber-700 ring-amber-200",
+  PLATINUM: "bg-cyan-50 text-cyan-700 ring-cyan-200",
 };
 
 /** Admin-side doctor card: name, clinic, phone + admin controls. City and
@@ -41,7 +51,14 @@ export function AdminDoctorCard({ doctor }: { doctor: AdminDoctor }) {
                 {name}
               </h3>
             </Link>
-            <StatusBadge status={doctor.status} />
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <StatusBadge status={doctor.status} />
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${PLAN_TONE[doctor.plan]}`}
+              >
+                {PLAN_LABEL[doctor.plan]}
+              </span>
+            </div>
           </div>
           {doctor.clinic && <p className="mt-0.5 text-sm text-slate-500">{doctor.clinic}</p>}
         </div>
