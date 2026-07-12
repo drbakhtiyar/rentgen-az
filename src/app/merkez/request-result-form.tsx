@@ -20,12 +20,14 @@ export function RequestResultForm({
   doctorId,
   doctors,
   files = [],
+  trashDays = 0,
 }: {
   requestId: string;
   defaultUrl: string | null;
   doctorId: string | null;
   doctors: Option[];
   files?: RentgenFileItem[];
+  trashDays?: number;
 }) {
   const router = useRouter();
   const [url, setUrl] = React.useState(defaultUrl ?? "");
@@ -77,7 +79,7 @@ export function RequestResultForm({
       )}
 
       {/* Upload rentgen files directly (B2) */}
-      <RentgenFilesPanel requestId={requestId} files={files} />
+      <RentgenFilesPanel requestId={requestId} files={files} trashDays={trashDays} />
 
       {/* Result link (optional / legacy external link) */}
       <div className="border-t border-slate-100 pt-3">

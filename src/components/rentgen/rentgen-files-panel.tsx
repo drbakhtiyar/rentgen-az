@@ -94,13 +94,25 @@ async function putBlobRetry(
   throw lastErr;
 }
 
+/** Warning shown before deletion, worded by the center's trash retention. */
+function deleteWarning(trashDays: number): string {
+  if (trashDays <= 0) {
+    return "Bu fayl həmişəlik silinəcək və bərpa oluna bilməyəcək. Davam edilsin?";
+  }
+  const months = Math.round(trashDays / 30);
+  const period = months <= 1 ? "1 ay" : `${months} ay`;
+  return `Bu fayl zibil qutusuna atılacaq. ${period} ərzində bərpa edə bilərsiniz. Davam edilsin?`;
+}
+
 /** Center-side: upload rentgen files for a request, list and delete them. */
 export function RentgenFilesPanel({
   requestId,
   files,
+  trashDays = 0,
 }: {
   requestId: string;
   files: RentgenFileItem[];
+  trashDays?: number;
 }) {
   const router = useRouter();
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -199,7 +211,7 @@ export function RentgenFilesPanel({
   }
 
   async function remove(id: string) {
-    if (!confirm("Bu faylı silmək istəyirsiniz?")) return;
+    if (!confirm(deleteWarning(trashDays))) return;
     setBusy("Silinir…");
     const res = await deleteFileAction(id);
     setBusy(null);

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireRole } from "@/lib/auth/rbac";
 import { notifyUser } from "@/lib/notifications";
-import { centerLimits } from "@/lib/plans";
+import { centerLimits, trashRetentionDays } from "@/lib/plans";
 import type { Plan } from "@/generated/prisma/client";
 import {
   b2Configured,
@@ -42,7 +42,7 @@ async function wouldExceedQuota(centerId: string, plan: Plan, addBytes: number):
   const limitBytes = centerLimits(plan).storageGb * GB;
   const agg = await prisma.rentgenFile.aggregate({
     _sum: { size: true },
-    where: { request: { centerId } },
+    where: { request: { centerId }, deletedAt: null },
   });
   const used = agg._sum.size ?? 0;
   return used + addBytes > limitBytes;
@@ -349,10 +349,15 @@ export async function getDownloadUrlAction(
       id: true,
       key: true,
       fileName: true,
+      deletedAt: true,
       request: { select: { id: true, centerId: true, doctorId: true, patientId: true } },
     },
   });
   if (!file) return { ok: false, error: "Fayl tapılmadı." };
+  // Trashed files are visible only to the owning center / admin (for restore).
+  if (file.deletedAt && me.role !== "CENTER" && me.role !== "ADMIN") {
+    return { ok: false, error: "Fayl tapılmadı." };
+  }
   const r = file.request;
 
   let allowed = false;
@@ -394,25 +399,62 @@ export async function getDownloadUrlAction(
   }
 }
 
-/** Center deletes one of its own request's files (from B2 + DB). */
+/**
+ * Center deletes one of its own request's files.
+ *
+ * Depending on the center's plan this is either a permanent delete (Free /
+ * Silver — no trash) or a soft-delete into the trash bin (Gold: 30 days,
+ * Platinum: 90 days), after which a cron purges it from B2. Soft-deleted files
+ * stop counting toward the storage quota immediately.
+ */
 export async function deleteFileAction(
   fileId: string,
-): Promise<FileResult> {
+): Promise<FileResult<{ trashed: boolean; retentionDays: number }>> {
   const user = await requireRole("CENTER");
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true },
+    select: { id: true, plan: true },
   });
   if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
   const file = await prisma.rentgenFile.findUnique({
     where: { id: fileId },
-    select: { id: true, key: true, fileName: true, request: { select: { id: true, centerId: true } } },
+    select: {
+      id: true,
+      key: true,
+      fileName: true,
+      deletedAt: true,
+      request: { select: { id: true, centerId: true } },
+    },
   });
-  if (!file || file.request.centerId !== center.id) {
+  if (!file || file.request.centerId !== center.id || file.deletedAt) {
     return { ok: false, error: "Fayl tapılmadı." };
   }
 
+  const retentionDays = trashRetentionDays(center.plan);
+
+  if (retentionDays > 0) {
+    // Soft-delete: move to the trash bin; cron purges after `purgeAt`.
+    const now = new Date();
+    const purgeAt = new Date(now.getTime() + retentionDays * 86_400_000);
+    await prisma.rentgenFile.update({
+      where: { id: file.id },
+      data: { deletedAt: now, deletedById: user.id, purgeAt },
+    });
+    await audit("DELETE", {
+      fileId: file.id,
+      requestId: file.request.id,
+      userId: user.id,
+      role: "CENTER",
+      fileName: file.fileName,
+    });
+    revalidatePath("/merkez");
+    revalidatePath("/merkez/pasiyentler");
+    revalidatePath("/merkez/zibil-qutusu");
+    return { ok: true, trashed: true, retentionDays };
+  }
+
+  // No trash on this plan → permanent delete from B2 + DB.
   try {
     await deleteObject(file.key);
   } catch {
@@ -428,5 +470,121 @@ export async function deleteFileAction(
   });
   revalidatePath("/merkez");
   revalidatePath("/merkez/pasiyentler");
+  return { ok: true, trashed: false, retentionDays: 0 };
+}
+
+/** Restore a soft-deleted file from the trash back to active (quota re-checked). */
+export async function restoreFileAction(fileId: string): Promise<FileResult> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true, plan: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const file = await prisma.rentgenFile.findUnique({
+    where: { id: fileId },
+    select: {
+      id: true,
+      size: true,
+      deletedAt: true,
+      request: { select: { id: true, centerId: true } },
+    },
+  });
+  if (!file || file.request.centerId !== center.id || !file.deletedAt) {
+    return { ok: false, error: "Fayl tapılmadı." };
+  }
+
+  // Restoring adds the bytes back — make sure it still fits the quota.
+  if (await wouldExceedQuota(center.id, center.plan, file.size)) {
+    return { ok: false, error: QUOTA_ERROR };
+  }
+
+  await prisma.rentgenFile.update({
+    where: { id: file.id },
+    data: { deletedAt: null, deletedById: null, purgeAt: null },
+  });
+  revalidatePath("/merkez");
+  revalidatePath("/merkez/pasiyentler");
+  revalidatePath("/merkez/zibil-qutusu");
   return { ok: true };
+}
+
+/** Permanently remove a single trashed file (from B2 + DB) before its purge date. */
+export async function purgeFileAction(fileId: string): Promise<FileResult> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const file = await prisma.rentgenFile.findUnique({
+    where: { id: fileId },
+    select: {
+      id: true,
+      key: true,
+      fileName: true,
+      deletedAt: true,
+      request: { select: { id: true, centerId: true } },
+    },
+  });
+  if (!file || file.request.centerId !== center.id || !file.deletedAt) {
+    return { ok: false, error: "Fayl tapılmadı." };
+  }
+
+  try {
+    await deleteObject(file.key);
+  } catch {
+    /* already gone — still drop the row */
+  }
+  await prisma.rentgenFile.delete({ where: { id: file.id } });
+  await audit("DELETE", {
+    fileId: file.id,
+    requestId: file.request.id,
+    userId: user.id,
+    role: "CENTER",
+    fileName: file.fileName,
+  });
+  revalidatePath("/merkez/zibil-qutusu");
+  return { ok: true };
+}
+
+/** Empty the whole trash bin — permanently delete every trashed file. */
+export async function emptyTrashAction(): Promise<FileResult<{ removed: number }>> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const files = await prisma.rentgenFile.findMany({
+    where: { deletedAt: { not: null }, request: { centerId: center.id } },
+    select: { id: true, key: true, fileName: true, requestId: true },
+  });
+
+  let removed = 0;
+  for (const f of files) {
+    try {
+      await deleteObject(f.key);
+    } catch {
+      /* best-effort */
+    }
+    try {
+      await prisma.rentgenFile.delete({ where: { id: f.id } });
+      await audit("DELETE", {
+        fileId: f.id,
+        requestId: f.requestId,
+        userId: user.id,
+        role: "CENTER",
+        fileName: f.fileName,
+      });
+      removed++;
+    } catch {
+      /* skip */
+    }
+  }
+  revalidatePath("/merkez/zibil-qutusu");
+  return { ok: true, removed };
 }

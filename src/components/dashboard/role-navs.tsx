@@ -15,6 +15,7 @@ import {
   Bell,
   Wallet,
   Download,
+  Trash2,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -28,6 +29,7 @@ export const centerNav: NavItem[] = [
   { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope /> },
   { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
   { label: "Paket / Balans", href: "/merkez/paket", icon: <Wallet /> },
+  { label: "Zibil qutusu", href: "/merkez/zibil-qutusu", icon: <Trash2 /> },
   { label: "Export / API", href: "/merkez/export", icon: <Download /> },
 ];
 

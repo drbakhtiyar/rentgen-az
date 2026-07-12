@@ -84,6 +84,7 @@ export default async function DoctorDashboardPage() {
         resultUrl: true,
         center: { select: { name: true, slug: true } },
         files: {
+          where: { deletedAt: null },
           select: { id: true, fileName: true, size: true },
           orderBy: { createdAt: "asc" },
         },

@@ -41,6 +41,7 @@ export default async function PatientDashboardPage() {
     include: {
       center: { select: { name: true, slug: true, hours: true } },
       files: {
+        where: { deletedAt: null },
         select: { id: true, fileName: true, size: true },
         orderBy: { createdAt: "asc" },
       },

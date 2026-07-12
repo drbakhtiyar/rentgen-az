@@ -172,15 +172,51 @@ export async function getWalletHistory(userId: string, take = 50) {
   }, [] as Awaited<ReturnType<typeof prisma.walletLedger.findMany>>);
 }
 
-/** Total bytes a center currently stores in B2 (sum of its rentgen files). */
+/** Total bytes a center currently stores in B2 (active files only — trash excluded). */
 export async function getCenterStorageUsage(centerId: string): Promise<number> {
   return safe(async () => {
     const agg = await prisma.rentgenFile.aggregate({
       _sum: { size: true },
-      where: { request: { centerId } },
+      where: { request: { centerId }, deletedAt: null },
     });
     return agg._sum.size ?? 0;
   }, 0);
+}
+
+export type TrashFile = {
+  id: string;
+  fileName: string;
+  size: number;
+  deletedAt: Date;
+  purgeAt: Date | null;
+  patientName: string;
+};
+
+/** Soft-deleted (trashed) rentgen files for a center, newest first. */
+export async function getCenterTrash(centerId: string): Promise<TrashFile[]> {
+  return safe(async () => {
+    const rows = await prisma.rentgenFile.findMany({
+      where: { deletedAt: { not: null }, request: { centerId } },
+      select: {
+        id: true,
+        fileName: true,
+        size: true,
+        deletedAt: true,
+        purgeAt: true,
+        request: { select: { name: true } },
+      },
+      orderBy: { deletedAt: "desc" },
+      take: 500,
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      fileName: r.fileName,
+      size: r.size,
+      deletedAt: r.deletedAt as Date,
+      purgeAt: r.purgeAt,
+      patientName: r.request.name,
+    }));
+  }, [] as TrashFile[]);
 }
 
 /** How many appointment requests each service has — usage popularity. */

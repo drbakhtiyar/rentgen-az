@@ -314,8 +314,14 @@ model RentgenFile {
   contentType  String
   uploadedById String? // yükləyən User.id
   createdAt    DateTime           @default(now())
+  // Zibil qutusu (soft-delete). deletedAt != null → zibildə. purgeAt tarixində
+  // cron faylı B2-dən həmişəlik silir. Saxlama müddəti plana bağlıdır.
+  deletedAt    DateTime? // zibil qutusuna atılıb (null = aktiv)
+  deletedById  String? // silən User.id
+  purgeAt      DateTime? // bu tarixdə həmişəlik silinəcək
 
   @@index([requestId])
+  @@index([purgeAt])
 }
 
 // Fayl əməliyyatlarının audit jurnalı (medical data — kim, nə vaxt, nə etdi).

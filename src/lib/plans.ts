@@ -107,6 +107,20 @@ export const DOCTOR_PLAN_LIMITS: Record<Plan, DoctorPlanLimits> = {
   PLATINUM: { storageGb: 1024, portfolio: true, profileStats: true, topPlacement: true, branding: true, prioritySupport: true },
 };
 
+/**
+ * Silinən rentgen faylının zibil qutusunda qalma müddəti (gün).
+ * 0 = zibil qutusu yoxdur, fayl dərhal həmişəlik silinir.
+ */
+export const CENTER_TRASH_RETENTION_DAYS: Record<Plan, number> = {
+  FREE: 0,
+  SILVER: 0,
+  GOLD: 30,
+  PLATINUM: 90,
+};
+
+export const trashRetentionDays = (plan: Plan): number =>
+  CENTER_TRASH_RETENTION_DAYS[plan];
+
 export const centerLimits = (plan: Plan): CenterPlanLimits => CENTER_PLAN_LIMITS[plan];
 export const doctorLimits = (plan: Plan): DoctorPlanLimits => DOCTOR_PLAN_LIMITS[plan];
 

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { getActiveServices } from "@/lib/queries";
+import { trashRetentionDays } from "@/lib/plans";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
@@ -45,9 +46,10 @@ export default async function CenterPatientsPage({
   const user = await requireRole("CENTER", "/merkez/pasiyentler");
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true, name: true },
+    select: { id: true, name: true, plan: true },
   });
   if (!center) redirect("/merkez/qeydiyyat");
+  const trashDays = trashRetentionDays(center.plan);
 
   const { q } = await searchParams;
   const query = (q ?? "").trim();
@@ -67,6 +69,7 @@ export default async function CenterPatientsPage({
     include: {
       doctor: { select: { firstName: true, lastName: true } },
       files: {
+        where: { deletedAt: null },
         select: { id: true, fileName: true, size: true, createdAt: true },
         orderBy: { createdAt: "asc" },
       },
@@ -187,6 +190,7 @@ export default async function CenterPatientsPage({
                           defaultUrl={r.resultUrl}
                           doctorId={r.doctorId}
                           doctors={doctorOptions}
+                          trashDays={trashDays}
                           files={r.files.map((f) => ({
                             ...f,
                             downloadNote: downloadLabels[f.id],
