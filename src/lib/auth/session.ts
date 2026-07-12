@@ -1,6 +1,8 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { env } from "@/lib/env";
+import { prisma } from "@/lib/db";
+import { LOCALE_COOKIE, isLocale } from "@/lib/i18n";
 import {
   createSessionToken,
   verifySessionToken,
@@ -26,6 +28,23 @@ export async function setSessionCookie(payload: SessionPayload) {
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS,
   });
+  // Apply the user's saved language preference, if any, so a returning user
+  // lands in the language they last chose (persists across devices/logins).
+  try {
+    const u = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { locale: true },
+    });
+    if (u?.locale && isLocale(u.locale)) {
+      cookieStore.set(LOCALE_COOKIE, u.locale, {
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+      });
+    }
+  } catch {
+    /* preference is best-effort — never block login */
+  }
 }
 
 export async function clearSessionCookie() {

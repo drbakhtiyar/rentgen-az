@@ -53,6 +53,7 @@ model User {
   phone       String    @unique // normalized +994XXXXXXXXX
   role        Role      @default(PATIENT)
   isBlocked   Boolean   @default(false)
+  locale      String? // seçilmiş dil (az/ru); login-də tətbiq olunur
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   lastLoginAt DateTime?
