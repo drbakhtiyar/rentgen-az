@@ -81,22 +81,25 @@ export default async function AdminDashboardPage() {
           }
         >
           {pendingCenters.length > 0 ? (
-            <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-2">
               {pendingCenters.map((c) => (
                 <div
                   key={c.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-4"
+                  className="flex flex-col rounded-xl border border-slate-100 p-3.5"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-ink-900">{c.name}</p>
-                      <StatusBadge status={c.status} />
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-ink-900">{c.name}</p>
+                      <p className="mt-0.5 truncate text-xs text-slate-500">
+                        {[c.city, c.phone].filter(Boolean).join(" · ") || "—"}
+                      </p>
+                      <p className="text-xs text-slate-400">{formatDateAz(c.createdAt)}</p>
                     </div>
-                    <p className="text-sm text-slate-500">
-                      {[c.city, c.phone].filter(Boolean).join(" · ")} · {formatDateAz(c.createdAt)}
-                    </p>
+                    <StatusBadge status={c.status} />
                   </div>
-                  <CenterStatusControls centerId={c.id} status={c.status} />
+                  <div className="mt-3 border-t border-slate-100 pt-3">
+                    <CenterStatusControls centerId={c.id} status={c.status} />
+                  </div>
                 </div>
               ))}
             </div>

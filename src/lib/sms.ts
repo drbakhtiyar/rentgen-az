@@ -41,6 +41,19 @@ export async function sendSms(
   return result;
 }
 
+/**
+ * Fire-and-forget SMS alert to the platform admin (e.g. a new center/doctor is
+ * awaiting approval). Number configurable via ADMIN_ALERT_PHONE. Never throws.
+ */
+export async function alertAdminSms(message: string): Promise<void> {
+  const to = process.env.ADMIN_ALERT_PHONE || "+994505010107";
+  try {
+    await sendSms(to, message, "other");
+  } catch {
+    /* best-effort */
+  }
+}
+
 /** Records a send to SmsLog. OTP codes are masked. Never throws. */
 async function logSms(
   to: string,

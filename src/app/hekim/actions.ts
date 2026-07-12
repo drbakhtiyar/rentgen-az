@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth/rbac";
 import { doctorProfileSchema } from "@/lib/validation";
 import { doctorLimits } from "@/lib/plans";
 import { notifyUser } from "@/lib/notifications";
+import { alertAdminSms } from "@/lib/sms";
 import { doctorName } from "@/lib/utils";
 
 export type DoctorActionResult = { ok: boolean; error?: string; message?: string };
@@ -91,6 +92,10 @@ export async function saveDoctorProfileAction(input: {
       await prisma.doctorProfile.create({
         data: { ...data, userId: user.id, status: "PENDING" },
       });
+      // Alert the admin by SMS that a new doctor awaits approval.
+      await alertAdminSms(
+        `Rentgen.az: yeni həkim müraciəti təsdiq gözləyir — ${doctorName(d.firstName, d.lastName)}`,
+      );
     }
 
     if (centerToNotify) {

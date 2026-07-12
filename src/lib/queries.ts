@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./db";
+import { centerLimits } from "./plans";
 import type { Prisma } from "@/generated/prisma/client";
 
 /** Wraps a DB call so the UI degrades gracefully (e.g. before the DB is set up). */
@@ -33,15 +34,34 @@ function centerWhere(filters: CenterListFilters): Prisma.CenterProfileWhereInput
 
 export async function getApprovedCenters(filters: CenterListFilters = {}) {
   return safe(
-    () =>
-      prisma.centerProfile.findMany({
+    async () => {
+      // Start of the current month — for the plan-based monthly request cap.
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+
+      const centers = await prisma.centerProfile.findMany({
         where: centerWhere(filters),
-        include: { services: { include: { service: true } } },
+        include: {
+          services: { include: { service: true } },
+          _count: {
+            select: { appointmentRequests: { where: { createdAt: { gte: monthStart } } } },
+          },
+        },
         // Paid tiers (Gold/Platinum) rank first — enum order FREE<SILVER<GOLD<PLATINUM.
         orderBy: [{ plan: "desc" }, { createdAt: "desc" }],
         take: filters.take ?? 60,
         skip: filters.skip ?? 0,
-      }),
+      });
+
+      // Centers that have used up their monthly request quota (Free = 5) sink to
+      // the very bottom of the listing. Stable sort keeps the plan/date order.
+      const overLimit = (c: (typeof centers)[number]) => {
+        const lim = centerLimits(c.plan).monthlyRequests;
+        return lim != null && c._count.appointmentRequests >= lim;
+      };
+      return centers.sort((a, b) => Number(overLimit(a)) - Number(overLimit(b)));
+    },
     [],
   );
 }

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/rbac";
+import { alertAdminSms } from "@/lib/sms";
 import { centerProfileSchema } from "@/lib/validation";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import {
@@ -109,6 +110,8 @@ export async function saveCenterProfileAction(input: {
           status: "PENDING",
         },
       });
+      // Alert the admin by SMS that a new center awaits approval.
+      await alertAdminSms(`Rentgen.az: yeni mərkəz təsdiq gözləyir — ${d.name}`);
     }
 
     revalidatePath("/merkez");

@@ -160,7 +160,7 @@ export async function submitAppointmentAction(input: {
         if (used >= limit) {
           return {
             ok: false,
-            error: "Bu mərkəz bu ay üçün müraciət limitinə çatıb. Zəhmət olmasa birbaşa əlaqə saxlayın.",
+            error: "Mərkəzin aylıq göndəriş alma limiti bitmişdir. Zəhmət olmasa birbaşa əlaqə saxlayın.",
           };
         }
       }
