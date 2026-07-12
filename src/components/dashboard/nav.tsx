@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export type NavItem = { label: string; href: string; icon?: React.ReactNode };
+export type NavItem = { label: string; href: string; icon?: React.ReactNode; navKey?: string };
 
 function Count({ n, light }: { n: number; light?: boolean }) {
   if (!n) return null;

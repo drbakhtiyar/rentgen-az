@@ -5,6 +5,8 @@ import { getCurrentUser } from "@/lib/auth/rbac";
 import { unreadNotificationCount } from "@/lib/notifications";
 import { unreadMessageCount } from "@/lib/chat";
 import { getUserAdminContact } from "@/lib/admin-chat";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { DashboardNav, type NavItem } from "./nav";
 import { RoleSwitcher } from "./role-switcher";
 
@@ -24,6 +26,14 @@ export async function DashboardShell({
   children: React.ReactNode;
 }) {
   const me = await getCurrentUser();
+  const locale = await getLocale();
+  const pd = getPanelDict(locale);
+  // Localize nav labels by their stable key (falls back to the AZ label).
+  const navItems: NavItem[] = nav.map((item) =>
+    item.navKey && item.navKey in pd.nav
+      ? { ...item, label: pd.nav[item.navKey as keyof typeof pd.nav] }
+      : item,
+  );
   // Use the entity's own logo/photo as the sidebar avatar; fall back to the site mark.
   const avatarUrl =
     me?.role === "CENTER"
@@ -86,17 +96,20 @@ export async function DashboardShell({
               </div>
             </div>
             {me && availableRoles.length > 1 && (
-              <RoleSwitcher roles={availableRoles} current={me.role} />
+              <RoleSwitcher roles={availableRoles} current={me.role} locale={locale} />
             )}
-            <DashboardNav items={nav} badges={mergedBadges} />
+            <DashboardNav items={navItems} badges={mergedBadges} />
             <div className="mt-3 border-t border-slate-100 pt-3">
               <Link
                 href="/"
                 className="block rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50"
               >
-                ← Sayta qayıt
+                {pd.shell.backToSite}
               </Link>
-              <LogoutButton className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50" />
+              <LogoutButton
+                label={pd.shell.logout}
+                className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              />
             </div>
           </div>
         </aside>
@@ -109,7 +122,7 @@ export async function DashboardShell({
 
           {/* Mobile nav */}
           <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-            <DashboardNav items={nav} mobile badges={mergedBadges} />
+            <DashboardNav items={navItems} mobile badges={mergedBadges} />
           </div>
 
           {children}

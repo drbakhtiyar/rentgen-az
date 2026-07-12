@@ -20,34 +20,34 @@ import {
 import type { NavItem } from "./nav";
 
 export const centerNav: NavItem[] = [
-  { label: "İcmal", href: "/merkez", icon: <LayoutDashboard /> },
-  { label: "Söhbətlər", href: "/merkez/chat", icon: <MessageSquare /> },
-  { label: "Bildirişlər", href: "/merkez/bildirisler", icon: <Bell /> },
-  { label: "Profil", href: "/merkez/profil", icon: <Building2 /> },
-  { label: "Pasiyentlər", href: "/merkez/pasiyentler", icon: <Users /> },
-  { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks /> },
-  { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope /> },
-  { label: "Rəylər", href: "/merkez/reyler", icon: <Star /> },
-  { label: "Paket / Balans", href: "/merkez/paket", icon: <Wallet /> },
-  { label: "Zibil qutusu", href: "/merkez/zibil-qutusu", icon: <Trash2 /> },
-  { label: "Export / API", href: "/merkez/export", icon: <Download /> },
+  { label: "İcmal", href: "/merkez", icon: <LayoutDashboard />, navKey: "icmal" },
+  { label: "Söhbətlər", href: "/merkez/chat", icon: <MessageSquare />, navKey: "chat" },
+  { label: "Bildirişlər", href: "/merkez/bildirisler", icon: <Bell />, navKey: "bildirisler" },
+  { label: "Profil", href: "/merkez/profil", icon: <Building2 />, navKey: "profil" },
+  { label: "Pasiyentlər", href: "/merkez/pasiyentler", icon: <Users />, navKey: "pasiyentler" },
+  { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks />, navKey: "xidmetler" },
+  { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope />, navKey: "hekimler" },
+  { label: "Rəylər", href: "/merkez/reyler", icon: <Star />, navKey: "reyler" },
+  { label: "Paket / Balans", href: "/merkez/paket", icon: <Wallet />, navKey: "paket" },
+  { label: "Zibil qutusu", href: "/merkez/zibil-qutusu", icon: <Trash2 />, navKey: "zibil" },
+  { label: "Export / API", href: "/merkez/export", icon: <Download />, navKey: "export" },
 ];
 
 export const doctorNav: NavItem[] = [
-  { label: "İcmal", href: "/hekim", icon: <LayoutDashboard /> },
-  { label: "Söhbətlər", href: "/hekim/chat", icon: <MessageSquare /> },
-  { label: "Bildirişlər", href: "/hekim/bildirisler", icon: <Bell /> },
-  { label: "Profil", href: "/hekim/profil", icon: <User /> },
-  { label: "Pasiyentlər", href: "/hekim/pasiyentler", icon: <Users /> },
-  { label: "Partnyor mərkəzlər", href: "/hekim/merkezler", icon: <Building2 /> },
-  { label: "Paket / Balans", href: "/hekim/paket", icon: <Wallet /> },
+  { label: "İcmal", href: "/hekim", icon: <LayoutDashboard />, navKey: "icmal" },
+  { label: "Söhbətlər", href: "/hekim/chat", icon: <MessageSquare />, navKey: "chat" },
+  { label: "Bildirişlər", href: "/hekim/bildirisler", icon: <Bell />, navKey: "bildirisler" },
+  { label: "Profil", href: "/hekim/profil", icon: <User />, navKey: "profil" },
+  { label: "Pasiyentlər", href: "/hekim/pasiyentler", icon: <Users />, navKey: "pasiyentler" },
+  { label: "Partnyor mərkəzlər", href: "/hekim/merkezler", icon: <Building2 />, navKey: "merkezler" },
+  { label: "Paket / Balans", href: "/hekim/paket", icon: <Wallet />, navKey: "paket" },
 ];
 
 export const patientNav: NavItem[] = [
-  { label: "İcmal", href: "/kabinet", icon: <LayoutDashboard /> },
-  { label: "Bildirişlər", href: "/kabinet/bildirisler", icon: <Bell /> },
-  { label: "Profil", href: "/kabinet/profil", icon: <User /> },
-  { label: "Seçilmişlər", href: "/kabinet/secilmisler", icon: <Heart /> },
+  { label: "İcmal", href: "/kabinet", icon: <LayoutDashboard />, navKey: "icmal" },
+  { label: "Bildirişlər", href: "/kabinet/bildirisler", icon: <Bell />, navKey: "bildirisler" },
+  { label: "Profil", href: "/kabinet/profil", icon: <User />, navKey: "profil" },
+  { label: "Seçilmişlər", href: "/kabinet/secilmisler", icon: <Heart />, navKey: "secilmisler" },
 ];
 
 export const adminNav: NavItem[] = [

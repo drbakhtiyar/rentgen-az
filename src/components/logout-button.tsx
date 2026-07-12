@@ -3,7 +3,7 @@
 import { LogOut } from "lucide-react";
 import { logoutAction } from "@/app/giris/actions";
 
-export function LogoutButton({ className }: { className?: string }) {
+export function LogoutButton({ className, label = "Çıxış" }: { className?: string; label?: string }) {
   return (
     <form action={logoutAction}>
       <button
@@ -14,7 +14,7 @@ export function LogoutButton({ className }: { className?: string }) {
         }
       >
         <LogOut className="h-4 w-4" />
-        Çıxış
+        {label}
       </button>
     </form>
   );
