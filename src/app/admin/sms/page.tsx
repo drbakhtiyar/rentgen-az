@@ -96,11 +96,8 @@ export default async function AdminSmsPage({
 }) {
   const admin = await requireRole("ADMIN", "/admin/sms");
   const { role: rawRole } = await searchParams;
-  const roleFilter: Role | "ALL" = (["PATIENT", "CENTER", "DOCTOR"] as const).includes(
-    rawRole as Role,
-  )
-    ? (rawRole as Role)
-    : "ALL";
+  const roleFilter: Role | "ALL" =
+    rawRole === "PATIENT" || rawRole === "CENTER" || rawRole === "DOCTOR" ? rawRole : "ALL";
 
   let logs: Awaited<ReturnType<typeof prisma.smsLog.findMany>> = [];
   let sent24h = 0;
