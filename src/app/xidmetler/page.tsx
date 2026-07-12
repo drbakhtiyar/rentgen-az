@@ -4,7 +4,11 @@ import { PageHeader } from "@/components/page-header";
 import { JsonLd } from "@/components/ui/json-ld";
 import { SymptomSuggest } from "@/components/symptom-suggest";
 import { ServicesExplorer } from "@/components/services-explorer";
-import { countApprovedCentersByService, getActiveServices } from "@/lib/queries";
+import {
+  countApprovedCentersByService,
+  getActiveServices,
+  getServicePriceRanges,
+} from "@/lib/queries";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
@@ -29,9 +33,10 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function ServicesPage() {
-  const [counts, services] = await Promise.all([
+  const [counts, services, priceRanges] = await Promise.all([
     countApprovedCentersByService(),
     getActiveServices(),
+    getServicePriceRanges(),
   ]);
   const locale = await getLocale();
   const d = getDict(locale).services;
@@ -49,6 +54,8 @@ export default async function ServicesPage() {
       iconUrl: s.iconUrl,
       category: s.category,
       count: counts[s.slug] ?? 0,
+      priceMin: priceRanges[s.slug]?.min ?? null,
+      priceMax: priceRanges[s.slug]?.max ?? null,
     }))
     .sort((a, b) => {
       const ha = a.count > 0 ? 1 : 0;

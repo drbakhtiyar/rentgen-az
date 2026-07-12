@@ -250,6 +250,36 @@ export async function countApprovedCentersByService() {
   }, {} as Record<string, number>);
 }
 
+export type ServicePriceRange = { min: number; max: number };
+
+/**
+ * Approximate price range per service, computed from approved centers that
+ * actually entered a price. `min` = lowest `price`; `max` = highest upper bound
+ * (a center's own `priceTo` range is honoured). Centers offering the service
+ * without a price are ignored. Slugs with no priced center are absent.
+ */
+export async function getServicePriceRanges(): Promise<Record<string, ServicePriceRange>> {
+  return safe(async () => {
+    const rows = await prisma.centerService.groupBy({
+      by: ["serviceId"],
+      where: { center: { status: "APPROVED" }, price: { not: null } },
+      _min: { price: true },
+      _max: { price: true, priceTo: true },
+    });
+    const services = await prisma.service.findMany({ select: { id: true, slug: true } });
+    const slugById = new Map(services.map((s) => [s.id, s.slug]));
+    const out: Record<string, ServicePriceRange> = {};
+    for (const r of rows) {
+      const slug = slugById.get(r.serviceId);
+      const min = r._min.price;
+      if (!slug || min == null) continue;
+      const max = Math.max(r._max.price ?? min, r._max.priceTo ?? 0, min);
+      out[slug] = { min, max };
+    }
+    return out;
+  }, {} as Record<string, ServicePriceRange>);
+}
+
 export type CatalogService = Prisma.ServiceGetPayload<object>;
 
 /** All active services, ordered — the single source of truth for the catalog. */

@@ -15,7 +15,16 @@ export type ExplorerService = {
   iconUrl: string | null;
   category: string | null;
   count: number;
+  priceMin: number | null;
+  priceMax: number | null;
 };
+
+/** Approximate price: single value if min===max, otherwise a "min–max" range. */
+function priceLabel(min: number | null, max: number | null): string | null {
+  if (min == null) return null;
+  const hi = max ?? min;
+  return hi > min ? `${min}–${hi} ₼` : `${min} ₼`;
+}
 
 export function ServicesExplorer({
   services,
@@ -68,6 +77,12 @@ export function ServicesExplorer({
                 ) : null}
               </div>
               <h3 className="font-display mt-4 text-lg font-bold text-ink-900">{s.name}</h3>
+              {priceLabel(s.priceMin, s.priceMax) && (
+                <p className="mt-1.5 text-sm font-semibold text-brand-700">
+                  ~ {priceLabel(s.priceMin, s.priceMax)}
+                  <span className="ml-1 font-normal text-slate-400">təxmini</span>
+                </p>
+              )}
               <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.description}</p>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
                 {labels.more} <ArrowRight className="h-4 w-4" />
