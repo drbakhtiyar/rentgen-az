@@ -136,6 +136,15 @@ export async function saveCenterServicesAction(
 
     const enabled = services.filter((s) => s.enabled);
 
+    // Price is mandatory for every offered service (so /xidmetler always has a
+    // price to show). Optional upper bound, if given, must be ≥ the base price.
+    if (enabled.some((s) => s.price == null || !Number.isFinite(s.price) || s.price <= 0)) {
+      return { ok: false, error: "Seçdiyiniz hər xidmət üçün qiymət (₼) daxil edin." };
+    }
+    if (enabled.some((s) => s.priceTo != null && s.price != null && s.priceTo < s.price)) {
+      return { ok: false, error: "Yuxarı hədd qiymətdən kiçik ola bilməz." };
+    }
+
     await prisma.$transaction([
       prisma.centerService.deleteMany({ where: { centerId: center.id } }),
       ...(enabled.length

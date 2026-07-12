@@ -33,6 +33,12 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
 
   function save() {
     setError(null);
+    // Price is required for every enabled service.
+    const missing = rows.some((r) => r.enabled && (r.price == null || r.price <= 0));
+    if (missing) {
+      setError("Seçdiyiniz hər xidmət üçün qiymət (₼) yazın.");
+      return;
+    }
     startTransition(async () => {
       const res = await saveCenterServicesAction(
         rows.map((r) => ({
@@ -80,7 +86,9 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
             {r.enabled && (
               <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-[120px_120px_1fr]">
                 <div>
-                  <label className="mb-1 block text-xs text-slate-500">Qiymət (₼)</label>
+                  <label className="mb-1 block text-xs text-slate-500">
+                    Qiymət (₼) <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     type="number"
                     min={0}
@@ -90,8 +98,13 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
                         price: e.target.value === "" ? null : Number(e.target.value),
                       })
                     }
-                    placeholder="—"
-                    className="h-9"
+                    placeholder="Məcburi"
+                    className={cn(
+                      "h-9",
+                      r.price == null || r.price <= 0
+                        ? "border-red-300 focus:border-red-400 focus:ring-red-400"
+                        : "",
+                    )}
                   />
                 </div>
                 <div>
