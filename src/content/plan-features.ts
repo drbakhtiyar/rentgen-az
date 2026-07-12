@@ -34,6 +34,7 @@ export const CENTER_FEATURES: Record<Locale, Record<Plan, string[]>> = {
       "Tam analitika paneli",
       "40 şəkil",
       "Əməkdaşlıq həkimlərinə toplu mesaj",
+      "Zibil qutusu — silinən fayl 1 ay bərpa oluna bilir",
       "Prioritet dəstək",
     ],
     PLATINUM: [
@@ -42,6 +43,7 @@ export const CENTER_FEATURES: Record<Locale, Record<Plan, string[]>> = {
       "Şəhər / kateqoriya üzrə TOP #1 yerləşdirmə",
       "Limitsiz şəkil",
       "Brendinq (loqo · banner)",
+      "Zibil qutusu — silinən fayl 3 ay bərpa oluna bilir",
       "Fayl export / API girişi",
       "Fərdi menecer + prioritet dəstək",
     ],
@@ -73,6 +75,7 @@ export const CENTER_FEATURES: Record<Locale, Record<Plan, string[]>> = {
       "Полная панель аналитики",
       "40 фото",
       "Массовое сообщение партнёрским врачам",
+      "Корзина — удалённый файл можно восстановить в течение 1 месяца",
       "Приоритетная поддержка",
     ],
     PLATINUM: [
@@ -81,6 +84,7 @@ export const CENTER_FEATURES: Record<Locale, Record<Plan, string[]>> = {
       "ТОП #1 размещение по городу / категории",
       "Безлимит фото",
       "Брендинг (логотип · баннер)",
+      "Корзина — удалённый файл можно восстановить в течение 3 месяцев",
       "Экспорт файлов / доступ к API",
       "Персональный менеджер + приоритетная поддержка",
     ],
