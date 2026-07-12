@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import {
   MessageSquare,
   Wallet,
@@ -36,6 +37,13 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 type Role = "PATIENT" | "CENTER" | "DOCTOR" | "ADMIN";
+
+const ROLE_FILTERS: { value: Role | "ALL"; label: string }[] = [
+  { value: "ALL", label: "Hamısı" },
+  { value: "DOCTOR", label: "Həkimlər" },
+  { value: "CENTER", label: "Mərkəzlər" },
+  { value: "PATIENT", label: "Pasiyentlər" },
+];
 
 const ROLE_META: Record<
   Role,
@@ -81,8 +89,18 @@ function RoleTag({ role }: { role: Role | null }) {
   );
 }
 
-export default async function AdminSmsPage() {
+export default async function AdminSmsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string }>;
+}) {
   const admin = await requireRole("ADMIN", "/admin/sms");
+  const { role: rawRole } = await searchParams;
+  const roleFilter: Role | "ALL" = (["PATIENT", "CENTER", "DOCTOR"] as const).includes(
+    rawRole as Role,
+  )
+    ? (rawRole as Role)
+    : "ALL";
 
   let logs: Awaited<ReturnType<typeof prisma.smsLog.findMany>> = [];
   let sent24h = 0;
@@ -123,6 +141,13 @@ export default async function AdminSmsPage() {
 
   const balance = await getSmsBalance();
 
+  // Resolve each log's recipient role once, then apply the role filter.
+  const logsWithRole = logs.map((s) => ({ ...s, role: roleFor(s.kind, s.phone) }));
+  const visibleLogs =
+    roleFilter === "ALL"
+      ? logsWithRole
+      : logsWithRole.filter((s) => s.role === roleFilter);
+
   return (
     <AdminShell title="SMS" userName={admin.phone}>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -142,11 +167,43 @@ export default async function AdminSmsPage() {
         </div>
       )}
 
-      <div className="mt-5">
+      <div className="mt-5 flex flex-wrap gap-2">
+        {ROLE_FILTERS.map((f) => {
+          const isActive = f.value === "ALL" ? roleFilter === "ALL" : roleFilter === f.value;
+          const count =
+            f.value === "ALL"
+              ? logsWithRole.length
+              : logsWithRole.filter((s) => s.role === f.value).length;
+          return (
+            <Link
+              key={f.value}
+              href={f.value === "ALL" ? "/admin/sms" : `/admin/sms?role=${f.value}`}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ring-inset transition-colors",
+                isActive
+                  ? "bg-brand-600 text-white ring-brand-600"
+                  : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50",
+              )}
+            >
+              {f.label}
+              <span
+                className={cn(
+                  "rounded-full px-1.5 text-xs font-bold",
+                  isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500",
+                )}
+              >
+                {count}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className="mt-4">
         <Panel title="Göndərilən SMS-lər">
-          {logs.length > 0 ? (
+          {visibleLogs.length > 0 ? (
             <div className="grid gap-2 lg:grid-cols-2">
-              {logs.map((s) => (
+              {visibleLogs.map((s) => (
                 <div
                   key={s.id}
                   className="rounded-xl border border-slate-100 p-2.5 text-sm"
@@ -175,7 +232,7 @@ export default async function AdminSmsPage() {
                     </span>
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <RoleTag role={roleFor(s.kind, s.phone)} />
+                    <RoleTag role={s.role} />
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                       {KIND_LABEL[s.kind] ?? s.kind}
                     </span>
@@ -190,8 +247,12 @@ export default async function AdminSmsPage() {
           ) : (
             <EmptyState
               icon={<MessageSquare />}
-              title="Hələ SMS göndərilməyib"
-              description="Göndərilən bütün SMS-lər (OTP, bildirişlər) burada görünəcək."
+              title={roleFilter === "ALL" ? "Hələ SMS göndərilməyib" : "Bu filtrə uyğun SMS yoxdur"}
+              description={
+                roleFilter === "ALL"
+                  ? "Göndərilən bütün SMS-lər (OTP, bildirişlər) burada görünəcək."
+                  : "Seçilmiş rol üzrə SMS tapılmadı."
+              }
             />
           )}
         </Panel>
