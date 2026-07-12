@@ -62,6 +62,20 @@ export async function requestOtpAction(input: {
       return { ok: false, error: result.error };
     }
 
+    // Record the intended registration type so an incomplete signup (OTP asked
+    // for but never finished) shows up for the admin to follow up on.
+    if (input.role === "PATIENT" || input.role === "CENTER" || input.role === "DOCTOR") {
+      try {
+        await prisma.signupAttempt.upsert({
+          where: { phone_role: { phone, role: input.role } },
+          create: { phone, role: input.role },
+          update: { role: input.role },
+        });
+      } catch {
+        /* best-effort */
+      }
+    }
+
     const sms = await sendOtpSms(phone, result.code);
     if (!sms.ok) {
       return {

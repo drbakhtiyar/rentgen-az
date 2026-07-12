@@ -14,6 +14,7 @@ import {
 import { withAutoFill } from "@/lib/services";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import { smsPatientStatusChange } from "@/lib/notify";
+import { sendSms } from "@/lib/sms";
 import { notifyUser } from "@/lib/notifications";
 import { sendAdminWelcome } from "@/lib/admin-chat";
 import { Prisma, type Plan } from "@/generated/prisma/client";
@@ -41,6 +42,25 @@ async function logAction(
   } catch {
     /* logging is best-effort */
   }
+}
+
+/** Admin sends a free-form SMS to any phone number (support / follow-up). */
+export async function adminSendSmsAction(input: {
+  phone: string;
+  message: string;
+}): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  const phone = normalizePhone(input.phone);
+  if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
+  const message = input.message.trim();
+  if (message.length < 2) return { ok: false, error: "Mesaj mətnini yazın." };
+  if (message.length > 480) return { ok: false, error: "Mesaj çox uzundur (maks. 480 simvol)." };
+
+  const res = await sendSms(phone, message, "other");
+  if (!res.ok) return { ok: false, error: res.error ?? "SMS göndərilə bilmədi." };
+  await logAction(admin.id, "sms:send", "Sms", phone);
+  revalidatePath("/admin/sms");
+  return { ok: true, message: "SMS göndərildi." };
 }
 
 /** Admin sends an in-app message (notification) to a center/doctor user. */

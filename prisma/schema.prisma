@@ -387,6 +387,20 @@ model SmsLog {
   @@index([kind])
 }
 
+// OTP alan zaman seçilmiş qeydiyyat tipi. Yarımçıq qalan qeydiyyatları izləmək
+// üçün: admin hansı tip profil (həkim/mərkəz/pasiyent) yaratmaq istəyib amma
+// tamamlamayıb görür və istifadəçi ilə əlaqə saxlaya bilir.
+model SignupAttempt {
+  id        String   @id @default(cuid())
+  phone     String
+  role      String // "PATIENT" | "CENTER" | "DOCTOR" (niyyət)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([phone, role])
+  @@index([updatedAt])
+}
+
 model CenterEvent {
   id        String        @id @default(cuid())
   centerId  String

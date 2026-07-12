@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { StatCard, EmptyState, Panel } from "@/components/dashboard/widgets";
+import { AdminSmsSender } from "@/components/admin/admin-sms-sender";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getSmsBalance } from "@/lib/sms";
@@ -92,10 +93,11 @@ function RoleTag({ role }: { role: Role | null }) {
 export default async function AdminSmsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ role?: string }>;
+  searchParams: Promise<{ role?: string; to?: string }>;
 }) {
   const admin = await requireRole("ADMIN", "/admin/sms");
-  const { role: rawRole } = await searchParams;
+  const { role: rawRole, to: rawTo } = await searchParams;
+  const prefillPhone = typeof rawTo === "string" ? rawTo : "";
   const roleFilter: Role | "ALL" =
     rawRole === "PATIENT" || rawRole === "CENTER" || rawRole === "DOCTOR" ? rawRole : "ALL";
 
@@ -163,6 +165,12 @@ export default async function AdminSmsPage({
           Balans azdır ({balance} kredit). SMS-lərin dayanmaması üçün balansı artırın.
         </div>
       )}
+
+      <div className="mt-5">
+        <Panel title="Yeni SMS göndər">
+          <AdminSmsSender initialPhone={prefillPhone} />
+        </Panel>
+      </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
         {ROLE_FILTERS.map((f) => {

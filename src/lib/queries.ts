@@ -299,6 +299,60 @@ export async function getServicePriceRanges(): Promise<Record<string, ServicePri
   }, {} as Record<string, ServicePriceRange>);
 }
 
+export type IncompleteSignup = {
+  phone: string;
+  role: string; // PATIENT | CENTER | DOCTOR (intended)
+  at: Date;
+  stage: "otp" | "profile"; // otp = never verified; profile = account made, profile missing
+};
+
+/**
+ * Registration attempts (an OTP was requested for a chosen role) that were
+ * never finished — either the code was never verified (no account) or the
+ * account exists but the center/doctor profile was never created. Lets the
+ * admin follow up and help the person complete signup.
+ */
+export async function getIncompleteSignups(): Promise<IncompleteSignup[]> {
+  return safe(async () => {
+    const attempts = await prisma.signupAttempt.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 300,
+    });
+    const phones = [...new Set(attempts.map((a) => a.phone))];
+    const users = phones.length
+      ? await prisma.user.findMany({
+          where: { phone: { in: phones } },
+          select: {
+            phone: true,
+            centerProfile: { select: { id: true } },
+            doctorProfile: { select: { id: true } },
+            patientProfile: { select: { id: true } },
+          },
+        })
+      : [];
+    const byPhone = new Map(users.map((u) => [u.phone, u]));
+
+    const out: IncompleteSignup[] = [];
+    for (const a of attempts) {
+      const u = byPhone.get(a.phone);
+      let completed: boolean;
+      let stage: "otp" | "profile" = "profile";
+      if (!u) {
+        completed = false;
+        stage = "otp";
+      } else if (a.role === "CENTER") {
+        completed = !!u.centerProfile;
+      } else if (a.role === "DOCTOR") {
+        completed = !!u.doctorProfile;
+      } else {
+        completed = !!u.patientProfile;
+      }
+      if (!completed) out.push({ phone: a.phone, role: a.role, at: a.updatedAt, stage });
+    }
+    return out;
+  }, [] as IncompleteSignup[]);
+}
+
 export type CatalogService = Prisma.ServiceGetPayload<object>;
 
 /** All active services, ordered — the single source of truth for the catalog. */
