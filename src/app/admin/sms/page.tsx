@@ -145,45 +145,45 @@ export default async function AdminSmsPage() {
       <div className="mt-5">
         <Panel title="Göndərilən SMS-lər">
           {logs.length > 0 ? (
-            <div className="space-y-2">
+            <div className="grid gap-2 lg:grid-cols-2">
               {logs.map((s) => (
                 <div
                   key={s.id}
-                  className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-100 p-3"
+                  className="rounded-xl border border-slate-100 p-2.5 text-sm"
                 >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="flex min-w-0 items-center gap-1.5">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
-                          s.ok
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-red-50 text-red-600",
+                          "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
+                          s.ok ? "text-emerald-600" : "text-red-500",
                         )}
+                        title={s.ok ? "Göndərildi" : "Uğursuz"}
                       >
                         {s.ok ? (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <CheckCircle2 className="h-4 w-4" />
                         ) : (
-                          <XCircle className="h-3.5 w-3.5" />
+                          <XCircle className="h-4 w-4" />
                         )}
-                        {s.ok ? "Göndərildi" : "Uğursuz"}
                       </span>
-                      <RoleTag role={roleFor(s.kind, s.phone)} />
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                        {KIND_LABEL[s.kind] ?? s.kind}
-                      </span>
-                      <span className="text-sm font-semibold text-ink-900">
+                      <span className="truncate font-semibold text-ink-900">
                         {formatPhoneDisplay(s.phone)}
                       </span>
-                    </div>
-                    <p className="mt-1 break-words text-sm text-slate-600">{s.text}</p>
-                    {s.error && (
-                      <p className="mt-0.5 text-xs text-red-500">Xəta: {s.error}</p>
-                    )}
+                    </span>
+                    <span className="shrink-0 text-xs text-slate-400">
+                      {formatDateTimeAz(s.createdAt)}
+                    </span>
                   </div>
-                  <span className="shrink-0 text-xs text-slate-400">
-                    {formatDateTimeAz(s.createdAt)}
-                  </span>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <RoleTag role={roleFor(s.kind, s.phone)} />
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                      {KIND_LABEL[s.kind] ?? s.kind}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 break-words text-xs text-slate-600">{s.text}</p>
+                  {s.error && (
+                    <p className="mt-0.5 text-xs text-red-500">Xəta: {s.error}</p>
+                  )}
                 </div>
               ))}
             </div>

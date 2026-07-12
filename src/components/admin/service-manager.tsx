@@ -11,6 +11,8 @@ import {
   X,
   Upload,
   Star,
+  Search,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Field } from "@/components/ui/field";
@@ -36,63 +38,133 @@ export type AdminService = {
 export function ServiceManager({ services }: { services: AdminService[] }) {
   // null = closed, "new" = create form, otherwise the id being edited
   const [editing, setEditing] = React.useState<string | "new" | null>(null);
+  const [q, setQ] = React.useState("");
+  const [openCats, setOpenCats] = React.useState<Set<string>>(new Set());
+
+  const query = q.trim().toLowerCase();
+  const filtered = query
+    ? services.filter(
+        (s) =>
+          s.name.toLowerCase().includes(query) ||
+          (s.category ?? "").toLowerCase().includes(query),
+      )
+    : services;
+
+  // Group (preserving the incoming catalog order) into categories.
+  const groups: { category: string; items: AdminService[] }[] = [];
+  const idx = new Map<string, number>();
+  for (const s of filtered) {
+    const cat = s.category || "Digər";
+    if (!idx.has(cat)) {
+      idx.set(cat, groups.length);
+      groups.push({ category: cat, items: [] });
+    }
+    groups[idx.get(cat)!].items.push(s);
+  }
+
+  const toggleCat = (c: string) =>
+    setOpenCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(c)) next.delete(c);
+      else next.add(c);
+      return next;
+    });
+
+  const renderItem = (s: AdminService) =>
+    editing === s.id ? (
+      <div key={s.id} className="sm:col-span-2">
+        <ServiceForm service={s} onClose={() => setEditing(null)} />
+      </div>
+    ) : (
+      <div
+        key={s.id}
+        className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 p-2.5"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+            <ServiceIcon name={s.icon} url={s.iconUrl} className="h-3.5 w-3.5" />
+          </span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-sm font-medium text-ink-900">{s.name}</span>
+            {s.featured && <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />}
+            {!s.isActive && (
+              <span className="shrink-0 rounded bg-slate-100 px-1 text-[10px] font-semibold text-slate-500">
+                deaktiv
+              </span>
+            )}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setEditing(s.id)}
+            title="Redaktə"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <ActiveToggle id={s.id} kind="service" active={s.isActive} />
+        </span>
+      </div>
+    );
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Xidmət və ya kateqoriya axtar…"
+            className="w-full pl-9 sm:w-72"
+          />
+        </div>
         <Button type="button" onClick={() => setEditing(editing === "new" ? null : "new")}>
           <Plus className="h-4 w-4" /> Yeni xidmət
         </Button>
       </div>
 
-      {editing === "new" && (
-        <ServiceForm onClose={() => setEditing(null)} />
-      )}
+      {editing === "new" && <ServiceForm onClose={() => setEditing(null)} />}
 
-      {services.length > 0 ? (
-        <div className="space-y-2">
-          {services.map((s) =>
-            editing === s.id ? (
-              <ServiceForm key={s.id} service={s} onClose={() => setEditing(null)} />
-            ) : (
-              <div
-                key={s.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-3"
-              >
-                <span className="flex min-w-0 items-center gap-2.5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                    <ServiceIcon name={s.icon} url={s.iconUrl} className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-medium text-ink-900">{s.name}</span>
-                      {s.featured && (
-                        <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
-                      )}
-                    </span>
-                    {s.category && (
-                      <span className="text-xs text-slate-400">{s.category}</span>
-                    )}
-                  </span>
-                </span>
-                <span className="flex shrink-0 items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(s.id)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200"
-                  >
-                    <Pencil className="h-3.5 w-3.5" /> Redaktə
-                  </button>
-                  <ActiveToggle id={s.id} kind="service" active={s.isActive} />
-                </span>
-              </div>
-            ),
-          )}
-        </div>
-      ) : (
+      {filtered.length === 0 ? (
         <p className="py-4 text-center text-sm text-slate-500">
-          Hələ xidmət yoxdur. “Yeni xidmət” ilə əlavə edin.
+          {query ? "Axtarışa uyğun xidmət tapılmadı." : "Hələ xidmət yoxdur. “Yeni xidmət” ilə əlavə edin."}
         </p>
+      ) : query ? (
+        // Search results: flat compact grid.
+        <div className="grid gap-2 sm:grid-cols-2">{filtered.map(renderItem)}</div>
+      ) : (
+        // Collapsible category sections.
+        <div className="space-y-2">
+          {groups.map((g) => {
+            const open = openCats.has(g.category);
+            return (
+              <div key={g.category} className="overflow-hidden rounded-xl border border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => toggleCat(g.category)}
+                  className="flex w-full items-center justify-between gap-2 bg-slate-50/60 px-3 py-2.5 text-left hover:bg-slate-100/60"
+                >
+                  <span className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+                    <ChevronDown
+                      className={cn("h-4 w-4 text-slate-400 transition-transform", open ? "" : "-rotate-90")}
+                    />
+                    {g.category}
+                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-500 ring-1 ring-slate-200">
+                      {g.items.length}
+                    </span>
+                  </span>
+                </button>
+                {open && (
+                  <div className="grid gap-2 border-t border-slate-100 p-2 sm:grid-cols-2">
+                    {g.items.map(renderItem)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
