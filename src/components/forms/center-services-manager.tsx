@@ -45,7 +45,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
           serviceId: r.serviceId,
           enabled: r.enabled,
           price: r.price ?? null,
-          priceTo: r.priceTo ?? null,
+          priceTo: null, // fixed price only — no per-center range
           note: r.note,
         })),
       );
@@ -84,7 +84,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
             </div>
 
             {r.enabled && (
-              <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-[120px_120px_1fr]">
+              <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-[140px_1fr]">
                 <div>
                   <label className="mb-1 block text-xs text-slate-500">
                     Qiymət (₼) <span className="text-red-500">*</span>
@@ -98,28 +98,13 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
                         price: e.target.value === "" ? null : Number(e.target.value),
                       })
                     }
-                    placeholder="Məcburi"
+                    placeholder="Fiks qiymət"
                     className={cn(
                       "h-9",
                       r.price == null || r.price <= 0
                         ? "border-red-300 focus:border-red-400 focus:ring-red-400"
                         : "",
                     )}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs text-slate-500">Yuxarı hədd (₼)</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={r.priceTo ?? ""}
-                    onChange={(e) =>
-                      update(r.serviceId, {
-                        priceTo: e.target.value === "" ? null : Number(e.target.value),
-                      })
-                    }
-                    placeholder="—"
-                    className="h-9"
                   />
                 </div>
                 <div>
