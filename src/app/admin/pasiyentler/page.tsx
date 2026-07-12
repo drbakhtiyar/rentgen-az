@@ -21,50 +21,71 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-async function getPatients(q?: string) {
-  try {
-    // Profile-based (not role-based): a person who is also a doctor/center but
-    // has a patient profile still shows here. Phone is the unique identity.
-    const where: Prisma.UserWhereInput = q
-      ? {
-          patientProfile: { isNot: null },
-          OR: [
-            { phone: { contains: q } },
-            {
-              patientProfile: {
-                is: {
-                  OR: [
-                    { firstName: { contains: q, mode: "insensitive" } },
-                    { lastName: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-              },
-            },
-          ],
-        }
-      : { patientProfile: { isNot: null } };
-    return await prisma.user.findMany({
-      where,
-      include: { patientProfile: true },
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    });
-  } catch {
-    return [];
-  }
-}
+const PER_PAGE = 30;
+
+const SORTS = {
+  date_desc: { createdAt: "desc" },
+  date_asc: { createdAt: "asc" },
+  name_asc: { patientProfile: { firstName: "asc" } },
+  name_desc: { patientProfile: { firstName: "desc" } },
+} as const;
+type SortKey = keyof typeof SORTS;
 
 export default async function AdminPatientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; page?: string }>;
 }) {
   const admin = await requireRole("ADMIN", "/admin/pasiyentler");
-  const { q } = await searchParams;
-  const patients = await getPatients(q);
+  const sp = await searchParams;
+  const q = sp.q?.trim() || undefined;
+  const sort: SortKey = (sp.sort as SortKey) in SORTS ? (sp.sort as SortKey) : "date_desc";
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const total = patients.length;
-  const blockedCount = patients.filter((u) => u.isBlocked).length;
+  const base: Prisma.UserWhereInput = { patientProfile: { isNot: null } };
+  const where: Prisma.UserWhereInput = q
+    ? {
+        patientProfile: { isNot: null },
+        OR: [
+          { phone: { contains: q } },
+          {
+            patientProfile: {
+              is: {
+                OR: [
+                  { firstName: { contains: q, mode: "insensitive" } },
+                  { lastName: { contains: q, mode: "insensitive" } },
+                ],
+              },
+            },
+          },
+        ],
+      }
+    : base;
+
+  const [patients, filteredTotal, total, blockedCount] = await Promise.all([
+    prisma.user
+      .findMany({
+        where,
+        include: { patientProfile: true },
+        orderBy: SORTS[sort],
+        skip: (page - 1) * PER_PAGE,
+        take: PER_PAGE,
+      })
+      .catch(() => []),
+    prisma.user.count({ where }).catch(() => 0),
+    prisma.user.count({ where: base }).catch(() => 0),
+    prisma.user.count({ where: { ...base, isBlocked: true } }).catch(() => 0),
+  ]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredTotal / PER_PAGE));
+  const pageUrl = (p: number) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (sort !== "date_desc") params.set("sort", sort);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return `/admin/pasiyentler${qs ? `?${qs}` : ""}`;
+  };
 
   return (
     <AdminShell title="Pasiyentlər" userName={admin.phone}>
@@ -88,6 +109,16 @@ export default async function AdminPatientsPage({
           placeholder="Ad və ya telefon üzrə axtar"
           className="max-w-xs"
         />
+        <select
+          name="sort"
+          defaultValue={sort}
+          className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+        >
+          <option value="date_desc">Qeydiyyat: yeni əvvəl</option>
+          <option value="date_asc">Qeydiyyat: köhnə əvvəl</option>
+          <option value="name_asc">Ad: A → Z</option>
+          <option value="name_desc">Ad: Z → A</option>
+        </select>
         <Button type="submit">Axtar</Button>
       </form>
 
@@ -142,6 +173,30 @@ export default async function AdminPatientsPage({
             title="Pasiyent tapılmadı"
             description="Hələ qeydiyyatdan keçmiş pasiyent yoxdur."
           />
+        )}
+
+        {pageCount > 1 && (
+          <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm">
+            <span className="text-slate-500">
+              Səhifə {page} / {pageCount} · {filteredTotal} pasiyent
+            </span>
+            <div className="flex items-center gap-2">
+              {page > 1 ? (
+                <a href={pageUrl(page - 1)} className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold text-slate-700 hover:bg-slate-200">
+                  ← Əvvəlki
+                </a>
+              ) : (
+                <span className="cursor-not-allowed rounded-lg bg-slate-50 px-3 py-1.5 text-slate-300">← Əvvəlki</span>
+              )}
+              {page < pageCount ? (
+                <a href={pageUrl(page + 1)} className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold text-slate-700 hover:bg-slate-200">
+                  Növbəti →
+                </a>
+              ) : (
+                <span className="cursor-not-allowed rounded-lg bg-slate-50 px-3 py-1.5 text-slate-300">Növbəti →</span>
+              )}
+            </div>
+          </div>
         )}
       </Panel>
     </AdminShell>
