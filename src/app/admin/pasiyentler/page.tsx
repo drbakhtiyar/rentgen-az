@@ -103,7 +103,7 @@ export default async function AdminPatientsPage({
         }
       >
         {patients.length > 0 ? (
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {patients.map((u) => {
               const name =
                 [u.patientProfile?.firstName, u.patientProfile?.lastName]
@@ -113,24 +113,25 @@ export default async function AdminPatientsPage({
               return (
                 <div
                   key={u.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-4"
+                  className="flex flex-col rounded-xl border border-slate-200 p-4"
                 >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-ink-900">{name}</p>
-                      {u.isBlocked && <Badge tone="red">Bloklanıb</Badge>}
-                    </div>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {[
-                        formatPhoneDisplay(u.phone),
-                        u.patientProfile?.city,
-                        `Qeydiyyat: ${formatDateAz(u.createdAt)}`,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="min-w-0 truncate font-semibold text-ink-900">{name}</p>
+                    {u.isBlocked && <Badge tone="red">Bloklanıb</Badge>}
                   </div>
-                  <BlockToggle userId={u.id} blocked={u.isBlocked} />
+                  <a
+                    href={`tel:${u.phone}`}
+                    className="mt-1 text-sm text-slate-600 hover:text-brand-600"
+                  >
+                    {formatPhoneDisplay(u.phone)}
+                  </a>
+                  <p className="text-xs text-slate-400">
+                    Qeydiyyat: {formatDateAz(u.createdAt)}
+                    {u.patientProfile?.city ? ` · ${u.patientProfile.city}` : ""}
+                  </p>
+                  <div className="mt-3 border-t border-slate-100 pt-3">
+                    <BlockToggle userId={u.id} blocked={u.isBlocked} />
+                  </div>
                 </div>
               );
             })}
