@@ -13,6 +13,206 @@ export type ServiceSeed = {
   featured: boolean;
 };
 
+/**
+ * Full radiology taxonomy grouped by body region / modality. Existing dental
+ * services keep their hand-tuned slugs (category "Dental"); everything below is
+ * generated so we ship ~90 SEO landing pages targeting long-tail "X rentgeni"
+ * searches. Slugs are derived deterministically from the AZ name.
+ */
+const TAXONOMY: { category: string; icon: string; names: string[] }[] = [
+  {
+    category: "Baş və üz",
+    icon: "Brain",
+    names: [
+      "Kəllə rentgeni",
+      "Burun sümükləri rentgeni",
+      "Üz sümükləri rentgeni",
+      "Göz yuvası (orbita) rentgeni",
+      "Alt çənə rentgeni",
+      "Üst çənə rentgeni",
+      "Temporomandibulyar oynaq (TMJ) rentgeni",
+      "Mastoid rentgeni",
+      "Paranazal sinusların rentgeni",
+    ],
+  },
+  {
+    category: "Boyun",
+    icon: "Bone",
+    names: ["Boyun rentgeni", "Boyun fəqərələri rentgeni", "Boyun yumşaq toxumalarının rentgeni"],
+  },
+  {
+    category: "Sinə",
+    icon: "HeartPulse",
+    names: [
+      "Ağciyər rentgeni",
+      "Döş qəfəsi rentgeni",
+      "Qabırğa rentgeni",
+      "Sternum (döş sümüyü) rentgeni",
+      "Körpücük sümüyü rentgeni",
+    ],
+  },
+  {
+    category: "Onurğa",
+    icon: "Bone",
+    names: [
+      "Boyun onurğası rentgeni",
+      "Döş onurğası rentgeni",
+      "Bel onurğası rentgeni",
+      "Oma (sakrum) rentgeni",
+      "Quyruq sümüyü (koksiks) rentgeni",
+      "Tam onurğa rentgeni",
+      "Skolioz rentgeni",
+    ],
+  },
+  {
+    category: "Çiyin və yuxarı ətraf",
+    icon: "Bone",
+    names: [
+      "Çiyin rentgeni",
+      "Kürək sümüyü rentgeni",
+      "Bazu rentgeni",
+      "Dirsək rentgeni",
+      "Bilək rentgeni",
+      "Əl rentgeni",
+      "Barmaq rentgeni",
+    ],
+  },
+  {
+    category: "Çanaq və omba",
+    icon: "Bone",
+    names: ["Çanaq rentgeni", "Omba oynağı rentgeni", "Sakroiliak oynaq rentgeni"],
+  },
+  {
+    category: "Aşağı ətraf",
+    icon: "Bone",
+    names: [
+      "Bud rentgeni",
+      "Diz rentgeni",
+      "Baldır rentgeni",
+      "Topuq rentgeni",
+      "Ayaq rentgeni",
+      "Ayaq barmaqları rentgeni",
+      "Daban rentgeni",
+    ],
+  },
+  {
+    category: "Uşaqlar üçün",
+    icon: "Baby",
+    names: [
+      "Uşaq skelet rentgeni",
+      "Bud-çanaq skrininqi",
+      "Sümük yaşının təyini (Bone Age)",
+      "Uşaqlarda skolioz rentgeni",
+    ],
+  },
+  {
+    category: "Floroskopiya",
+    icon: "Activity",
+    names: [
+      "Qida borusunun kontrast müayinəsi",
+      "Mədə-bağırsaq kontrast müayinəsi",
+      "Barium udma testi",
+      "Histerosalpinqoqrafiya (HSG)",
+      "Venoqrafiya",
+      "Fistuloqrafiya",
+    ],
+  },
+  {
+    category: "Mammoqrafiya",
+    icon: "ScanLine",
+    names: [
+      "Rəqəmsal mammoqrafiya",
+      "Skrininq mammoqrafiyası",
+      "Diaqnostik mammoqrafiya",
+      "Tomosintez (3D mammoqrafiya)",
+    ],
+  },
+  {
+    category: "Densitometriya",
+    icon: "Activity",
+    names: [
+      "Sümük mineral sıxlığı ölçülməsi (DEXA)",
+      "Bel DEXA",
+      "Bud DEXA",
+      "Tam bədən DEXA",
+    ],
+  },
+  {
+    category: "Kompüter tomoqrafiyası (KT)",
+    icon: "ScanFace",
+    names: [
+      "Baş KT",
+      "Beyin KT",
+      "Sinus KT",
+      "Temporal sümük KT",
+      "Boyun KT",
+      "Ağciyər KT",
+      "Qarın KT",
+      "Kiçik çanaq KT",
+      "Onurğa KT",
+      "Diz KT",
+      "Ayaq KT",
+      "Əl KT",
+      "Ürək KT",
+      "Koronar KT-angioqrafiya",
+    ],
+  },
+  {
+    category: "MRT",
+    icon: "Scan",
+    names: [
+      "Baş MRT",
+      "Beyin MRT",
+      "Hipofiz MRT",
+      "Boyun MRT",
+      "Bel MRT",
+      "Diz MRT",
+      "Çiyin MRT",
+      "Qarın MRT",
+      "Çanaq MRT",
+      "Ürək MRT",
+    ],
+  },
+  {
+    category: "USM",
+    icon: "ScanLine",
+    names: [
+      "Qarın USM",
+      "Tiroid USM",
+      "Süd vəzi USM",
+      "Doppler USM",
+      "Hamiləlik USM",
+      "Uşaq USM",
+    ],
+  },
+];
+
+/** Flatten the taxonomy into ServiceSeed rows with deterministic, unique slugs. */
+function buildTaxonomyServices(): ServiceSeed[] {
+  const seen = new Set<string>();
+  const out: ServiceSeed[] = [];
+  TAXONOMY.forEach((group, gi) => {
+    const base = (gi + 1) * 100;
+    group.names.forEach((name, i) => {
+      let slug = slugify(name);
+      while (seen.has(slug)) slug = `${slug}-x`;
+      seen.add(slug);
+      const shortName = name.replace(/\s*\(.*?\)\s*/g, " ").replace(/\s+/g, " ").trim();
+      out.push({
+        slug,
+        name,
+        shortName: shortName.length <= 60 ? shortName : shortName.slice(0, 60),
+        description: `${name} — Bakıda bu müayinəni göstərən təsdiqlənmiş mərkəzlər, qiymət və ünvanlar bir platformada.`,
+        icon: group.icon,
+        category: group.category,
+        order: base + i + 1,
+        featured: false,
+      });
+    });
+  });
+  return out;
+}
+
 export const SERVICES: ServiceSeed[] = [
   {
     slug: "dental-rentgen",
@@ -21,7 +221,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Diş və ətraf toxumaların qiymətləndirilməsi üçün rəqəmsal dental rentgen görüntüləməsi.",
     icon: "ScanLine",
-    category: "Rentgen",
+    category: "Dental",
     order: 1,
     featured: true,
   },
@@ -32,7 +232,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Tək dişin və ya bir neçə dişin detallı qiymətləndirilməsi üçün periapikal diş rentgeni.",
     icon: "ScanSearch",
-    category: "Rentgen",
+    category: "Dental",
     order: 2,
     featured: false,
   },
@@ -43,7 +243,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Hər iki çənənin, bütün dişlərin və ətraf strukturların tək görüntüdə icmalı (OPG).",
     icon: "PanelsTopLeft",
-    category: "Rentgen",
+    category: "Dental",
     order: 3,
     featured: true,
   },
@@ -54,7 +254,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Ortodontik planlama üçün baş və çənə nisbətlərinin yandan görüntülənməsi.",
     icon: "Ruler",
-    category: "Rentgen",
+    category: "Dental",
     order: 4,
     featured: true,
   },
@@ -65,7 +265,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Çənə və diş strukturlarının üçölçülü, yüksək detallı qiymətləndirilməsi.",
     icon: "Box",
-    category: "Tomoqrafiya",
+    category: "Dental",
     order: 5,
     featured: true,
   },
@@ -76,7 +276,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Aşağı dozalı konus-şüalı kompüter tomoqrafiya ilə dəqiq üçölçülü diaqnostika.",
     icon: "ScanFace",
-    category: "Tomoqrafiya",
+    category: "Dental",
     order: 6,
     featured: true,
   },
@@ -87,7 +287,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "İmplant yerləşdirilməsindən əvvəl sümük həcminin və anatomiyanın qiymətləndirilməsi.",
     icon: "Layers",
-    category: "Tomoqrafiya",
+    category: "Dental",
     order: 7,
     featured: true,
   },
@@ -98,7 +298,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Ağıl dişinin vəziyyətinin və ətraf sinirlərlə əlaqəsinin qiymətləndirilməsi.",
     icon: "Stethoscope",
-    category: "Rentgen",
+    category: "Dental",
     order: 8,
     featured: true,
   },
@@ -109,7 +309,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Ortodontik müalicədən əvvəl diş və çənə vəziyyətinin görüntülənməsi.",
     icon: "AlignHorizontalDistributeCenter",
-    category: "Rentgen",
+    category: "Dental",
     order: 9,
     featured: false,
   },
@@ -120,7 +320,7 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Çənə sümüyünün sıxlığının və strukturunun ətraflı qiymətləndirilməsi.",
     icon: "Activity",
-    category: "Tomoqrafiya",
+    category: "Dental",
     order: 10,
     featured: false,
   },
@@ -131,14 +331,20 @@ export const SERVICES: ServiceSeed[] = [
     description:
       "Sinus lift və digər müdaxilələrdən əvvəl sinus və çənə anatomiyasının analizi.",
     icon: "Wind",
-    category: "Tomoqrafiya",
+    category: "Dental",
     order: 11,
     featured: false,
   },
+  ...buildTaxonomyServices(),
 ];
 
 export const FEATURED_SERVICE_SLUGS = SERVICES.filter((s) => s.featured).map(
   (s) => s.slug,
+);
+
+/** Canonical service categories in catalog order (for admin category picker). */
+export const SERVICE_CATEGORIES: string[] = Array.from(
+  new Set(SERVICES.map((s) => s.category)),
 );
 
 export function getService(slug: string) {

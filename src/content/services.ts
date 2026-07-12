@@ -11,34 +11,135 @@ export type ServiceContent = {
   faq: { question: string; answer: string }[];
 };
 
-const generic = (name: string): ServiceContent => ({
-  metaTitle: `${name} | Bakıda rentgen mərkəzləri — Rentgen.az`,
-  metaDescription: `Bakıda ${name.toLowerCase()} xidməti göstərən təsdiqlənmiş mərkəzlər. Qiymət, ünvan və əlaqə məlumatı bir platformada.`,
-  keywords: [name, "Bakı", "rentgen mərkəzi", "dental rentgen"],
-  intro: `${name} diş və çənə strukturlarının qiymətləndirilməsində istifadə olunan görüntüləmə üsuludur və həkimin dəqiq diaqnostika verməsinə kömək edir.`,
-  sections: [
-    {
-      heading: `${name} nədir?`,
-      body: `${name} müasir rəqəmsal aparatlar vasitəsilə aparılan görüntüləmə müayinəsidir. Nəticələr həkimin müalicə planlamasını asanlaşdırır.`,
-    },
-  ],
-  benefits: [
-    "Dəqiq diaqnostikaya kömək edir",
-    "Müalicə planlamasını asanlaşdırır",
-    "Müasir rəqəmsal aparatlarda aşağı doza rejimi",
-  ],
-  whenNeeded: [
-    "Həkimin klinik göstərişi olduqda",
-    "Müalicədən əvvəl strukturların qiymətləndirilməsi üçün",
-  ],
-  faq: [
-    {
-      question: `${name} təhlükəlidirmi?`,
-      answer:
-        "Müasir rəqəmsal aparatlarda şüalanma dozası nəzarət altında və aşağı səviyyədədir. Müayinə yalnız klinik göstəriş olduqda təyin edilir.",
-    },
-  ],
-});
+/** Modality descriptor so auto-generated SEO copy is accurate per exam type. */
+type Modality = { word: string; long: string; radiation: string; prep: string };
+
+function modalityFor(name: string, category?: string): Modality {
+  const c = (category ?? "").toLowerCase();
+  const n = name.toLowerCase();
+  if (c.includes("mrt") || n.includes("mrt")) {
+    return {
+      word: "maqnit-rezonans tomoqrafiya (MRT)",
+      long: "güclü maqnit sahəsi ilə orqan və toxumaların yüksək dəqiqlikli görüntülənməsi",
+      radiation:
+        "MRT-də ionlaşdırıcı şüalanma yoxdur — görüntü maqnit sahəsi və radiotezlik dalğaları ilə alınır. Bədənində metal implant və ya kardiostimulyator olanlar həkimi əvvəlcədən məlumatlandırmalıdır.",
+      prep: "Bəzi MRT müayinələri ac qarına və ya kontrast maddə ilə aparıla bilər — mərkəz sizə əvvəlcədən təlimat verəcək.",
+    };
+  }
+  if (c.includes("usm") || n.includes("usm") || n.includes("doppler")) {
+    return {
+      word: "ultrasəs müayinəsi (USM)",
+      long: "ultrasəs dalğaları ilə orqan və yumşaq toxumaların real vaxt rejimində görüntülənməsi",
+      radiation:
+        "USM tamamilə şüalanmasızdır və təhlükəsizdir — hamilələr və uşaqlar üçün də tətbiq olunur.",
+      prep: "Qarın USM-i çox vaxt ac qarına, kiçik çanaq USM-i isə dolu sidik kisəsi ilə aparılır — mərkəz dəqiq təlimat verəcək.",
+    };
+  }
+  if (c.includes("kt") || c.includes("kompüter") || n.includes(" kt") || n.includes("angioqraf")) {
+    return {
+      word: "kompüter tomoqrafiyası (KT)",
+      long: "rentgen şüaları ilə orqanların kəsik-kəsik, üçölçülü görüntülənməsi",
+      radiation:
+        "KT rentgen şüalarından istifadə edir; müasir aparatlarda doza optimallaşdırılır və müayinə yalnız klinik göstəriş olduqda təyin olunur.",
+      prep: "Kontrastlı KT ac qarına aparılır və böyrək göstəriciləri tələb oluna bilər — mərkəz sizi əvvəlcədən yönləndirəcək.",
+    };
+  }
+  if (c.includes("mammoqraf") || n.includes("mammoqraf") || n.includes("tomosintez")) {
+    return {
+      word: "mammoqrafiya",
+      long: "süd vəzilərinin aşağı dozalı rentgen görüntülənməsi",
+      radiation:
+        "Mammoqrafiyada doza çox aşağıdır; erkən diaqnostikanın faydası şüalanma riskini əhəmiyyətli dərəcədə üstələyir.",
+      prep: "Müayinə günü qoltuqaltı və döş nahiyəsinə deodorant, krem və ya pudra çəkməyin.",
+    };
+  }
+  if (c.includes("densitometr") || n.includes("dexa") || n.includes("densitometr")) {
+    return {
+      word: "sümük densitometriyası (DEXA)",
+      long: "sümük mineral sıxlığının aşağı dozalı ölçülməsi",
+      radiation:
+        "DEXA-da şüalanma dozası adi rentgendən də azdır və müayinə tam ağrısızdır.",
+      prep: "Müayinədən əvvəl kalsium əlavələri qəbul etməyin və metal aksesuarları çıxarın.",
+    };
+  }
+  if (
+    c.includes("floroskop") ||
+    n.includes("kontrast") ||
+    n.includes("barium") ||
+    n.includes("hsg") ||
+    n.includes("venoqraf") ||
+    n.includes("fistuloqraf")
+  ) {
+    return {
+      word: "floroskopik (kontrastlı) müayinə",
+      long: "kontrast maddə ilə orqanların hərəkətdə, real vaxtda rentgen görüntülənməsi",
+      radiation:
+        "Floroskopiyada rentgen şüası istifadə olunur; doza nəzarət altındadır və müayinə mütəxəssis nəzarətində aparılır.",
+      prep: "Bir çox kontrastlı müayinə ac qarına aparılır — mərkəz sizə hazırlıq təlimatını verəcək.",
+    };
+  }
+  if (c === "dental") {
+    return {
+      word: "dental rentgen",
+      long: "diş və çənə strukturlarının rəqəmsal rentgen görüntülənməsi",
+      radiation:
+        "Dental rentgendə doza çox aşağıdır; müasir rəqəmsal aparatlarda şüalanma minimuma endirilir.",
+      prep: "Xüsusi hazırlıq tələb olunmur; müayinədən əvvəl metal aksesuarları çıxarmaq kifayətdir.",
+    };
+  }
+  return {
+    word: "rentgen müayinəsi",
+    long: "sümük və toxumaların rəqəmsal rentgen görüntülənməsi",
+    radiation:
+      "Müasir rəqəmsal rentgen aparatlarında şüalanma dozası aşağı və nəzarət altındadır; müayinə yalnız klinik göstəriş olduqda təyin edilir.",
+    prep: "Adətən xüsusi hazırlıq tələb olunmur; müayinə nahiyəsindəki metal əşyaları çıxarmaq kifayətdir.",
+  };
+}
+
+const generic = (name: string, category?: string): ServiceContent => {
+  const m = modalityFor(name, category);
+  const low = name.toLowerCase();
+  return {
+    metaTitle: `${name} — Bakıda qiymət və mərkəzlər | Rentgen.az`,
+    metaDescription: `${name} xidmətini Bakıda göstərən təsdiqlənmiş mərkəzlər. Qiymətləri müqayisə edin, ünvan və əlaqə məlumatını tapın, birbaşa növbə yazın.`,
+    keywords: [name, `${name} Bakı`, `${name} qiyməti`, m.word, "Bakı", "Rentgen.az"],
+    intro: `${name} — ${m.long} üsuludur. Rentgen.az vasitəsilə Bakıda ${low} xidməti göstərən mərkəzləri tapa, qiymətləri müqayisə edə və birbaşa əlaqə saxlaya bilərsiniz.`,
+    sections: [
+      {
+        heading: `${name} nədir?`,
+        body: `${name} — ${m.long} üçün istifadə olunan ${m.word} növüdür. Nəticələr həkimə dəqiq diaqnoz qoymağa və müalicəni planlaşdırmağa kömək edir.`,
+      },
+      {
+        heading: `Bakıda ${low} qiyməti`,
+        body: `Qiymət mərkəzə və avadanlığa görə dəyişir. Rentgen.az-da ${low} xidmətini göstərən mərkəzlərin qiymətlərini yan-yana müqayisə edib özünüzə uyğun olanı seçə bilərsiniz.`,
+      },
+      {
+        heading: "Hazırlıq və nəticələr",
+        body: m.prep,
+      },
+    ],
+    benefits: [
+      "Təsdiqlənmiş mərkəzlər bir platformada",
+      "Qiymətləri asanlıqla müqayisə et",
+      "Ünvan, əlaqə və iş saatları bir yerdə",
+      "Birbaşa növbə yazma imkanı",
+    ],
+    whenNeeded: [
+      "Həkimin klinik göstərişi olduqda",
+      "Müalicədən əvvəl və ya sonra strukturların qiymətləndirilməsi üçün",
+      "Şikayət və ya travma zamanı diaqnostika məqsədilə",
+    ],
+    faq: [
+      { question: `${name} təhlükəlidirmi?`, answer: m.radiation },
+      {
+        question: `Bakıda ${low} qiyməti nə qədərdir?`,
+        answer:
+          "Qiymət seçdiyiniz mərkəzə görə dəyişir. Rentgen.az-da müxtəlif mərkəzlərin qiymətlərini müqayisə edib ən uyğun variantı seçə bilərsiniz.",
+      },
+      { question: `${name} üçün hazırlıq lazımdırmı?`, answer: m.prep },
+    ],
+  };
+};
 
 export const SERVICE_CONTENT: Record<string, ServiceContent> = {
   "3d-tomoqrafiya": {
@@ -317,6 +418,6 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
 };
 
-export function getServiceContent(slug: string, name: string): ServiceContent {
-  return SERVICE_CONTENT[slug] ?? generic(name);
+export function getServiceContent(slug: string, name: string, category?: string): ServiceContent {
+  return SERVICE_CONTENT[slug] ?? generic(name, category);
 }

@@ -34,20 +34,24 @@ export function pickIconForName(name: string): string {
   return "ScanLine";
 }
 
-// Category inference from the name.
+// Category inference from the name — maps to canonical catalog categories so
+// admin-created services (blank category) don't spawn orphan groups.
 const CATEGORY_RULES: { kw: string[]; category: string }[] = [
-  { kw: ["tomoqraf", "cbct", "3d", "konus", "üçölçülü"], category: "Tomoqrafiya" },
-  { kw: ["analiz", "qiymətləndir", "ölçü", "laborator", "biopsi"], category: "Analiz" },
-  { kw: ["rentgen", "opg", "panoramik", "sefalo", "periapikal", "x-ray"], category: "Rentgen" },
+  { kw: ["mrt", "maqnit-rezonans"], category: "MRT" },
+  { kw: ["usm", "ultrasəs", "ultrases", "doppler"], category: "USM" },
+  { kw: ["mammoqraf", "tomosintez"], category: "Mammoqrafiya" },
+  { kw: ["dexa", "densitometr", "mineral sıxlıq"], category: "Densitometriya" },
+  { kw: ["floroskop", "barium", "kontrast", "hsg", "venoqraf", "fistuloqraf"], category: "Floroskopiya" },
+  { kw: [" kt", "kt-", "kompüter tomoqraf"], category: "Kompüter tomoqrafiyası (KT)" },
 ];
 
-/** Infer a category from the name (fallback: "Digər"). */
+/** Infer a category from the name (fallback: "Dental" — the platform's core). */
 export function autoCategory(name: string): string {
   const n = name.toLowerCase();
   for (const rule of CATEGORY_RULES) {
     if (rule.kw.some((k) => n.includes(k))) return rule.category;
   }
-  return "Digər";
+  return "Dental";
 }
 
 /** A short label for badges/cards. Trims a parenthetical, caps length. */

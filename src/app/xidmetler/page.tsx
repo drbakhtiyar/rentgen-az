@@ -12,16 +12,19 @@ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Xidmətlər — dental rentgen və tomoqrafiya növləri",
+  title: "Rentgen xidmətləri — bütün rentgen və tomoqrafiya növləri",
   description:
-    "Dental rentgen, panoramik və sefalometrik rentgen, 3D tomoqrafiya, CBCT, implant öncəsi tomoqrafiya və digər görüntüləmə xidmətləri.",
+    "Bakıda bütün rentgen növləri: kəllə, ağciyər, onurğa, əl-ayaq, dental rentgen, KT (kompüter tomoqrafiya), MRT, mammoqrafiya, densitometriya, floroskopiya və USM. Qiymətləri müqayisə et, mərkəz tap.",
   path: "/xidmetler",
   keywords: [
+    "rentgen növləri",
+    "rentgen Bakı",
+    "kompüter tomoqrafiya",
+    "MRT Bakı",
+    "mammoqrafiya",
     "dental rentgen",
-    "3D tomoqrafiya",
-    "panoramik rentgen",
-    "sefalometrik rentgen",
-    "CBCT",
+    "ağciyər rentgeni",
+    "onurğa rentgeni",
   ],
 });
 
@@ -33,10 +36,11 @@ export default async function ServicesPage() {
   const locale = await getLocale();
   const d = getDict(locale).services;
 
-  // Only services offered by at least one approved center, ordered by how many
-  // centers offer them (most-offered first).
+  // Show every service for SEO reach. Services offered by at least one approved
+  // center come first (most-offered first); services no center offers yet still
+  // appear (each has its own landing page) but after the offered ones. The sort
+  // is stable, so within each group the catalog order (category grouping) holds.
   const explorerServices = services
-    .filter((s) => (counts[s.slug] ?? 0) > 0)
     .map((s) => ({
       slug: s.slug,
       name: s.name,
@@ -46,10 +50,16 @@ export default async function ServicesPage() {
       category: s.category,
       count: counts[s.slug] ?? 0,
     }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => {
+      const ha = a.count > 0 ? 1 : 0;
+      const hb = b.count > 0 ? 1 : 0;
+      if (ha !== hb) return hb - ha;
+      return b.count - a.count;
+    });
 
+  // Category chips follow the catalog order (Dental → body regions → modalities).
   const categories = Array.from(
-    new Set(explorerServices.map((s) => s.category).filter((c): c is string => Boolean(c))),
+    new Set(services.map((s) => s.category).filter((c): c is string => Boolean(c))),
   );
 
   return (

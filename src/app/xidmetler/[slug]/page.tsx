@@ -41,7 +41,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const service = await getServiceBySlug(slug);
   if (!service) return buildMetadata({ title: "Xidmət tapılmadı", noIndex: true });
-  const content = getServiceContent(slug, service.name);
+  const content = getServiceContent(slug, service.name, service.category ?? undefined);
   return buildMetadata({
     title: content.metaTitle.replace(/ \| .*$/, ""),
     description: content.metaDescription,
@@ -60,7 +60,7 @@ export default async function ServiceDetailPage({
   if (!service) notFound();
 
   const shortName = service.shortName ?? service.name;
-  const content = getServiceContent(slug, service.name);
+  const content = getServiceContent(slug, service.name, service.category ?? undefined);
   const centersRaw = await getCentersForService(slug, 12);
   // Price comparison: cheapest first for this service (centers with no price go last).
   const priceOf = (c: (typeof centersRaw)[number]) =>

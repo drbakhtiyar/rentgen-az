@@ -17,6 +17,7 @@ import { Input, Textarea, Field } from "@/components/ui/field";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { ActiveToggle } from "@/components/admin/settings-controls";
 import { saveServiceAction } from "@/app/admin/actions";
+import { SERVICE_CATEGORIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export type AdminService = {
@@ -249,9 +250,15 @@ function ServiceForm({
           <Input
             id="svc-cat"
             name="category"
+            list="svc-cat-options"
             defaultValue={service?.category ?? ""}
-            placeholder="Rentgen / Tomoqrafiya…"
+            placeholder="Dental / Onurğa / KT…"
           />
+          <datalist id="svc-cat-options">
+            {SERVICE_CATEGORIES.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
         </Field>
       </div>
 
