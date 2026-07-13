@@ -9,6 +9,55 @@ import type { Locale } from "./i18n";
  */
 
 export type PanelDict = {
+  cform: {
+    errBanner: string;
+    errLicense: string;
+    errImage: string;
+    errLogo: string;
+    licenseRequired: string;
+    saved: string;
+    errGeneric: string;
+    s1: string;
+    s2: string;
+    s3: string;
+    step: string;
+    logoLabel: string;
+    logoUpload: string;
+    del: string;
+    logoHint: string;
+    licenseTitle: string;
+    licenseHint: string;
+    licenseChange: string;
+    licenseUpload: string;
+    licenseView: string;
+    nameLabel: string;
+    namePh: string;
+    responsible: string;
+    responsiblePh: string;
+    about: string;
+    aboutPh: string;
+    phoneOfficial: string;
+    whatsapp: string;
+    cityDistrict: string;
+    select: string;
+    districtExtra: string;
+    districtPh: string;
+    address: string;
+    addressPh: string;
+    mapsUrl: string;
+    equipment: string;
+    equipmentPh: string;
+    images: string;
+    addImage: string;
+    imagesHint: string;
+    banner: string;
+    bannerHint: string;
+    bannerUpload: string;
+    mapLabel: string;
+    mapHint: string;
+    createBtn: string;
+    saveBtn: string;
+  };
   form: {
     firstName: string;
     firstNamePh: string;
@@ -275,6 +324,55 @@ export type PanelDict = {
 };
 
 const az: PanelDict = {
+  cform: {
+    errBanner: "Banner yüklənmədi. Yenidən cəhd edin.",
+    errLicense: "Lisenziya yüklənmədi. Yenidən cəhd edin.",
+    errImage: "Şəkil yüklənmədi. Yenidən cəhd edin.",
+    errLogo: "Loqo yüklənmədi. Yenidən cəhd edin.",
+    licenseRequired: "Rentgenologiya üzrə lisenziyanı yükləmək məcburidir.",
+    saved: "Yadda saxlanıldı.",
+    errGeneric: "Xəta baş verdi",
+    s1: "Əsas məlumat",
+    s2: "Əlaqə",
+    s3: "Ünvan və iş saatları",
+    step: "Addım",
+    logoLabel: "Mərkəzin loqosu",
+    logoUpload: "Loqo yüklə",
+    del: "Sil",
+    logoHint: "Kvadrat loqo tövsiyə olunur. PNG/SVG/WebP.",
+    licenseTitle: "Rentgenologiya üzrə lisenziya",
+    licenseHint: "Mərkəzin qeydiyyatının tamamlanması üçün lisenziya sənədi mütləq yüklənməlidir (şəkil və ya PDF).",
+    licenseChange: "Lisenziyanı dəyiş",
+    licenseUpload: "Lisenziya yüklə",
+    licenseView: "Yüklənib — bax",
+    nameLabel: "Mərkəzin adı",
+    namePh: "Məs: Dental Imaging Center",
+    responsible: "Məsul şəxs",
+    responsiblePh: "Ad Soyad",
+    about: "Mərkəz haqqında",
+    aboutPh: "Mərkəz, avadanlıq və xidmətlər haqqında qısa məlumat",
+    phoneOfficial: "Rəsmi telefon",
+    whatsapp: "WhatsApp nömrəsi",
+    cityDistrict: "Şəhər / rayon",
+    select: "Seçin",
+    districtExtra: "Rayon / qəsəbə (əlavə)",
+    districtPh: "Məs: 28 May",
+    address: "Ünvan",
+    addressPh: "Küçə, bina",
+    mapsUrl: "Google Maps linki",
+    equipment: "Avadanlıq məlumatı",
+    equipmentPh: "Məs: CBCT aparatı, panoramik aparat və s.",
+    images: "Şəkillər",
+    addImage: "Şəkil əlavə et",
+    imagesHint: "Mərkəzin fotolarını əlavə edin — kartda və mərkəz səhifəsində görünəcək.",
+    banner: "Profil banneri",
+    bannerHint: "— Platinum: mərkəz səhifənizin başında geniş banner",
+    bannerUpload: "Banner yüklə",
+    mapLabel: "Xəritədə yeriniz",
+    mapHint: "— pasiyentlər «yaxınımdakı mərkəz» ilə sizi tapsın (istəyə bağlı)",
+    createBtn: "Profili yarat",
+    saveBtn: "Dəyişiklikləri yadda saxla",
+  },
   form: {
     firstName: "Ad",
     firstNamePh: "Adınız",
@@ -541,6 +639,55 @@ const az: PanelDict = {
 };
 
 const ru: PanelDict = {
+  cform: {
+    errBanner: "Баннер не загрузился. Попробуйте снова.",
+    errLicense: "Лицензия не загрузилась. Попробуйте снова.",
+    errImage: "Фото не загрузилось. Попробуйте снова.",
+    errLogo: "Логотип не загрузился. Попробуйте снова.",
+    licenseRequired: "Загрузка лицензии на рентгенологию обязательна.",
+    saved: "Сохранено.",
+    errGeneric: "Произошла ошибка",
+    s1: "Основная информация",
+    s2: "Контакты",
+    s3: "Адрес и часы работы",
+    step: "Шаг",
+    logoLabel: "Логотип центра",
+    logoUpload: "Загрузить логотип",
+    del: "Удалить",
+    logoHint: "Рекомендуется квадратный логотип. PNG/SVG/WebP.",
+    licenseTitle: "Лицензия на рентгенологию",
+    licenseHint: "Для завершения регистрации центра необходимо загрузить документ лицензии (изображение или PDF).",
+    licenseChange: "Заменить лицензию",
+    licenseUpload: "Загрузить лицензию",
+    licenseView: "Загружено — открыть",
+    nameLabel: "Название центра",
+    namePh: "Напр.: Dental Imaging Center",
+    responsible: "Ответственное лицо",
+    responsiblePh: "Имя Фамилия",
+    about: "О центре",
+    aboutPh: "Кратко о центре, оборудовании и услугах",
+    phoneOfficial: "Официальный телефон",
+    whatsapp: "Номер WhatsApp",
+    cityDistrict: "Город / район",
+    select: "Выберите",
+    districtExtra: "Район / посёлок (доп.)",
+    districtPh: "Напр.: 28 May",
+    address: "Адрес",
+    addressPh: "Улица, здание",
+    mapsUrl: "Ссылка Google Maps",
+    equipment: "Информация об оборудовании",
+    equipmentPh: "Напр.: аппарат КЛКТ, панорамный аппарат и т. д.",
+    images: "Фотографии",
+    addImage: "Добавить фото",
+    imagesHint: "Добавьте фото центра — они появятся на карточке и странице центра.",
+    banner: "Баннер профиля",
+    bannerHint: "— Platinum: широкий баннер вверху страницы вашего центра",
+    bannerUpload: "Загрузить баннер",
+    mapLabel: "Ваше место на карте",
+    mapHint: "— чтобы пациенты находили вас через «центр рядом со мной» (необязательно)",
+    createBtn: "Создать профиль",
+    saveBtn: "Сохранить изменения",
+  },
   form: {
     firstName: "Имя",
     firstNamePh: "Ваше имя",

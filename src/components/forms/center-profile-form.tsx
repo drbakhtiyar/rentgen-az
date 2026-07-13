@@ -9,6 +9,8 @@ import { LocationPicker } from "@/components/map/location-picker";
 import { WeeklyHoursPicker } from "@/components/forms/weekly-hours-picker";
 import type { WeeklyHours } from "@/lib/hours";
 import { saveCenterProfileAction } from "@/app/merkez/actions";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 type Option = { value: string; label: string };
 
@@ -71,6 +73,7 @@ export function CenterProfileForm({
   /** Whether the plan allows a profile banner (Platinum). */
   allowBanner?: boolean;
 }) {
+  const c = getPanelDict(useLocale()).cform;
   const imgCap = maxImages ?? 12;
   const [pending, startTransition] = React.useTransition();
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(
@@ -102,7 +105,7 @@ export function CenterProfileForm({
       });
       setBannerUrl(blob.url);
     } catch {
-      setError("Banner yüklənmədi. Yenidən cəhd edin.");
+      setError(c.errBanner);
     } finally {
       setUploadingBanner(false);
       if (bannerRef.current) bannerRef.current.value = "";
@@ -121,7 +124,7 @@ export function CenterProfileForm({
       });
       setLicenseUrl(blob.url);
     } catch {
-      setError("Lisenziya yüklənmədi. Yenidən cəhd edin.");
+      setError(c.errLicense);
     } finally {
       setUploadingLicense(false);
       if (licenseRef.current) licenseRef.current.value = "";
@@ -148,7 +151,7 @@ export function CenterProfileForm({
       }
       setImages((prev) => [...prev, ...uploaded].slice(0, imgCap));
     } catch {
-      setError("Şəkil yüklənmədi. Yenidən cəhd edin.");
+      setError(c.errImage);
     } finally {
       setUploadingImg(false);
       if (imgRef.current) imgRef.current.value = "";
@@ -167,7 +170,7 @@ export function CenterProfileForm({
       });
       setLogoUrl(blob.url);
     } catch {
-      setError("Loqo yüklənmədi. Yenidən cəhd edin.");
+      setError(c.errLogo);
     } finally {
       setUploadingLogo(false);
       if (logoRef.current) logoRef.current.value = "";
@@ -180,7 +183,7 @@ export function CenterProfileForm({
     setDone(null);
     // Radiology license is mandatory — registration/profile can't be saved without it.
     if (!licenseUrl) {
-      setError("Rentgenologiya üzrə lisenziyanı yükləmək məcburidir.");
+      setError(c.licenseRequired);
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -208,11 +211,11 @@ export function CenterProfileForm({
         lng: coords?.lng ?? null,
       });
       if (!res.ok) {
-        setError(res.error ?? "Xəta baş verdi");
+        setError(res.error ?? c.errGeneric);
         if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
-      setDone(res.message ?? "Yadda saxlanıldı.");
+      setDone(res.message ?? c.saved);
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
@@ -230,7 +233,7 @@ export function CenterProfileForm({
         </div>
       )}
 
-      <FormSection icon={<Building2 />} title="Əsas məlumat" step={1}>
+      <FormSection icon={<Building2 />} title={c.s1} stepLabel={c.step} step={1}>
         {/* Logo */}
         <div className="mb-5 flex items-center gap-4">
           <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
@@ -242,7 +245,7 @@ export function CenterProfileForm({
             )}
           </span>
           <div>
-            <p className="mb-1.5 text-sm font-medium text-ink-800">Mərkəzin loqosu</p>
+            <p className="mb-1.5 text-sm font-medium text-ink-800">{c.logoLabel}</p>
             <input
               ref={logoRef}
               type="file"
@@ -262,7 +265,7 @@ export function CenterProfileForm({
                 ) : (
                   <Upload className="h-3.5 w-3.5" />
                 )}
-                Loqo yüklə
+                {c.logoUpload}
               </button>
               {logoUrl && (
                 <button
@@ -270,7 +273,7 @@ export function CenterProfileForm({
                   onClick={() => setLogoUrl("")}
                   className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-600"
                 >
-                  <X className="h-3.5 w-3.5" /> Sil
+                  <X className="h-3.5 w-3.5" /> {c.del}
                 </button>
               )}
             </div>
@@ -288,10 +291,10 @@ export function CenterProfileForm({
           }
         >
           <p className="text-sm font-semibold text-ink-900">
-            Rentgenologiya üzrə lisenziya <span className="text-red-500">*</span>
+            {c.licenseTitle} <span className="text-red-500">*</span>
           </p>
           <p className="mt-0.5 text-xs text-slate-500">
-            Mərkəzin qeydiyyatının tamamlanması üçün lisenziya sənədi mütləq yüklənməlidir (şəkil və ya PDF).
+            {c.licenseHint}
           </p>
           <input
             ref={licenseRef}
@@ -312,7 +315,7 @@ export function CenterProfileForm({
               ) : (
                 <Upload className="h-3.5 w-3.5" />
               )}
-              {licenseUrl ? "Lisenziyanı dəyiş" : "Lisenziya yüklə"}
+              {licenseUrl ? c.licenseChange : c.licenseUpload}
             </button>
             {licenseUrl && (
               <>
@@ -322,14 +325,14 @@ export function CenterProfileForm({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
-                  <FileText className="h-3.5 w-3.5" /> Yüklənib — bax
+                  <FileText className="h-3.5 w-3.5" /> {c.licenseView}
                 </a>
                 <button
                   type="button"
                   onClick={() => setLicenseUrl("")}
                   className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-600"
                 >
-                  <X className="h-3.5 w-3.5" /> Sil
+                  <X className="h-3.5 w-3.5" /> {c.del}
                 </button>
               </>
             )}
@@ -337,35 +340,35 @@ export function CenterProfileForm({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Mərkəzin adı" htmlFor="name" required>
-            <Input id="name" name="name" defaultValue={defaults?.name} required placeholder="Məs: Dental Imaging Center" />
+          <Field label={c.nameLabel} htmlFor="name" required>
+            <Input id="name" name="name" defaultValue={defaults?.name} required placeholder={c.namePh} />
           </Field>
-          <Field label="Məsul şəxs" htmlFor="responsiblePerson">
-            <Input id="responsiblePerson" name="responsiblePerson" defaultValue={defaults?.responsiblePerson} placeholder="Ad Soyad" />
+          <Field label={c.responsible} htmlFor="responsiblePerson">
+            <Input id="responsiblePerson" name="responsiblePerson" defaultValue={defaults?.responsiblePerson} placeholder={c.responsiblePh} />
           </Field>
         </div>
-        <Field label="Mərkəz haqqında" htmlFor="description">
-          <Textarea id="description" name="description" defaultValue={defaults?.description} placeholder="Mərkəz, avadanlıq və xidmətlər haqqında qısa məlumat" />
+        <Field label={c.about} htmlFor="description">
+          <Textarea id="description" name="description" defaultValue={defaults?.description} placeholder={c.aboutPh} />
         </Field>
       </FormSection>
 
-      <FormSection icon={<Phone />} title="Əlaqə" step={2}>
+      <FormSection icon={<Phone />} title={c.s2} stepLabel={c.step} step={2}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Rəsmi telefon" htmlFor="phone" required>
+          <Field label={c.phoneOfficial} htmlFor="phone" required>
             <Input id="phone" name="phone" type="tel" inputMode="tel" defaultValue={defaults?.phone} required placeholder="050 123 45 67" />
           </Field>
-          <Field label="WhatsApp nömrəsi" htmlFor="whatsapp">
+          <Field label={c.whatsapp} htmlFor="whatsapp">
             <Input id="whatsapp" name="whatsapp" type="tel" inputMode="tel" defaultValue={defaults?.whatsapp} placeholder="050 123 45 67" />
           </Field>
         </div>
       </FormSection>
 
-      <FormSection icon={<MapPin />} title="Ünvan və iş saatları" step={3}>
+      <FormSection icon={<MapPin />} title={c.s3} stepLabel={c.step} step={3}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Şəhər / rayon" htmlFor="city" required>
+          <Field label={c.cityDistrict} htmlFor="city" required>
             <Select id="city" name="city" defaultValue={defaults?.city ?? ""} required>
               <option value="" disabled>
-                Seçin
+                {c.select}
               </option>
               {cities.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -374,26 +377,26 @@ export function CenterProfileForm({
               ))}
             </Select>
           </Field>
-          <Field label="Rayon / qəsəbə (əlavə)" htmlFor="district">
-            <Input id="district" name="district" defaultValue={defaults?.district} placeholder="Məs: 28 May" />
+          <Field label={c.districtExtra} htmlFor="district">
+            <Input id="district" name="district" defaultValue={defaults?.district} placeholder={c.districtPh} />
           </Field>
         </div>
-        <Field label="Ünvan" htmlFor="address">
-          <Input id="address" name="address" defaultValue={defaults?.address} placeholder="Küçə, bina" />
+        <Field label={c.address} htmlFor="address">
+          <Input id="address" name="address" defaultValue={defaults?.address} placeholder={c.addressPh} />
         </Field>
-        <Field label="Google Maps linki" htmlFor="mapsUrl">
+        <Field label={c.mapsUrl} htmlFor="mapsUrl">
           <Input id="mapsUrl" name="mapsUrl" type="url" defaultValue={defaults?.mapsUrl} placeholder="https://maps.google.com/..." />
         </Field>
         <WeeklyHoursPicker value={hours} onChange={setHours} />
-        <Field label="Avadanlıq məlumatı" htmlFor="equipment">
-          <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder="Məs: CBCT aparatı, panoramik aparat və s." />
+        <Field label={c.equipment} htmlFor="equipment">
+          <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder={c.equipmentPh} />
         </Field>
 
         {/* Gallery */}
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <p className="text-sm font-medium text-ink-800">
-              Şəkillər{" "}
+              {c.images}{" "}
               <span className="font-normal text-slate-400">({images.length}/{imgCap})</span>
             </p>
             <input
@@ -415,7 +418,7 @@ export function CenterProfileForm({
               ) : (
                 <Upload className="h-3.5 w-3.5" />
               )}
-              Şəkil əlavə et
+              {c.addImage}
             </button>
           </div>
           {images.length > 0 ? (
@@ -428,7 +431,7 @@ export function CenterProfileForm({
                     type="button"
                     onClick={() => setImages((prev) => prev.filter((x) => x !== img))}
                     className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    aria-label="Sil"
+                    aria-label={c.del}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -437,7 +440,7 @@ export function CenterProfileForm({
             </div>
           ) : (
             <p className="text-xs text-slate-400">
-              Mərkəzin fotolarını əlavə edin — kartda və mərkəz səhifəsində görünəcək.
+              {c.imagesHint}
             </p>
           )}
         </div>
@@ -445,8 +448,8 @@ export function CenterProfileForm({
         {allowBanner && (
           <div>
             <p className="mb-1.5 text-sm font-medium text-ink-800">
-              Profil banneri{" "}
-              <span className="font-normal text-slate-400">— Platinum: mərkəz səhifənizin başında geniş banner</span>
+              {c.banner}{" "}
+              <span className="font-normal text-slate-400">{c.bannerHint}</span>
             </p>
             <input
               ref={bannerRef}
@@ -463,7 +466,7 @@ export function CenterProfileForm({
                   type="button"
                   onClick={() => setBannerUrl("")}
                   className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"
-                  aria-label="Sil"
+                  aria-label={c.del}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -476,7 +479,7 @@ export function CenterProfileForm({
                 className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
               >
                 {uploadingBanner ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                Banner yüklə
+                {c.bannerUpload}
               </button>
             )}
           </div>
@@ -484,9 +487,9 @@ export function CenterProfileForm({
 
         <div>
           <p className="mb-1.5 text-sm font-medium text-ink-800">
-            Xəritədə yeriniz{" "}
+            {c.mapLabel}{" "}
             <span className="font-normal text-slate-400">
-              — pasiyentlər «yaxınımdakı mərkəz» ilə sizi tapsın (istəyə bağlı)
+              {c.mapHint}
             </span>
           </p>
           <LocationPicker
@@ -503,7 +506,7 @@ export function CenterProfileForm({
       <div className="flex items-center justify-end gap-3">
         <Button type="submit" size="lg" disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {mode === "create" ? "Profili yarat" : "Dəyişiklikləri yadda saxla"}
+          {mode === "create" ? c.createBtn : c.saveBtn}
         </Button>
       </div>
     </form>
@@ -514,11 +517,13 @@ function FormSection({
   icon,
   title,
   step,
+  stepLabel,
   children,
 }: {
   icon: React.ReactNode;
   title: string;
   step: number;
+  stepLabel: string;
   children: React.ReactNode;
 }) {
   return (
@@ -529,7 +534,7 @@ function FormSection({
         </span>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-            Addım {step}
+            {stepLabel} {step}
           </p>
           <h3 className="font-display font-bold text-ink-900">{title}</h3>
         </div>
