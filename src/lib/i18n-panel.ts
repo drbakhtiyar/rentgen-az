@@ -9,6 +9,15 @@ import type { Locale } from "./i18n";
  */
 
 export type PanelDict = {
+  notif: {
+    empty: string;
+    emptyBody: string;
+    markAll: string;
+    now: string;
+    minAgo: string;
+    hourAgo: string;
+    dayAgo: string;
+  };
   status: {
     PENDING: string;
     APPROVED: string;
@@ -135,6 +144,8 @@ export type PanelDict = {
     svcDropHint: string;
     svcDeleteConfirmPerm: string;
     svcDeleteConfirmTrash: string;
+    resultAssignDoctor: string;
+    resultSelectDoctor: string;
     resultLink: string;
     resultLinkHint: string;
     resultSave: string;
@@ -201,6 +212,15 @@ export type PanelDict = {
 };
 
 const az: PanelDict = {
+  notif: {
+    empty: "Bildiriş yoxdur",
+    emptyBody: "Yeni pasiyent, fayl və ya mesaj olduqda burada görünəcək.",
+    markAll: "Hamısını oxundu işarələ",
+    now: "indi",
+    minAgo: "dəq əvvəl",
+    hourAgo: "saat əvvəl",
+    dayAgo: "gün əvvəl",
+  },
   status: {
     PENDING: "Gözləmədə",
     APPROVED: "Təsdiqlənib",
@@ -327,6 +347,8 @@ const az: PanelDict = {
     svcDropHint: "Faylı bura sürüşdürün və ya yuxarıdakı düymə ilə seçin",
     svcDeleteConfirmPerm: "Bu fayl həmişəlik silinəcək və bərpa oluna bilməyəcək. Davam edilsin?",
     svcDeleteConfirmTrash: "Bu fayl zibil qutusuna atılacaq.",
+    resultAssignDoctor: "Yönləndirən həkim (pasiyent seçməyibsə)",
+    resultSelectDoctor: "Həkim seçin",
     resultLink: "Xarici link (istəyə bağlı)",
     resultLinkHint: "Faylı birbaşa yükləmək əvəzinə xarici bulud linki də əlavə edə bilərsiniz.",
     resultSave: "Yadda saxla",
@@ -393,6 +415,15 @@ const az: PanelDict = {
 };
 
 const ru: PanelDict = {
+  notif: {
+    empty: "Уведомлений нет",
+    emptyBody: "Появятся здесь при новом пациенте, файле или сообщении.",
+    markAll: "Отметить все как прочитанные",
+    now: "сейчас",
+    minAgo: "мин назад",
+    hourAgo: "ч назад",
+    dayAgo: "дн назад",
+  },
   status: {
     PENDING: "Ожидание",
     APPROVED: "Подтверждён",
@@ -519,6 +550,8 @@ const ru: PanelDict = {
     svcDropHint: "Перетащите файл сюда или выберите кнопкой выше",
     svcDeleteConfirmPerm: "Этот файл будет удалён навсегда и не может быть восстановлен. Продолжить?",
     svcDeleteConfirmTrash: "Файл будет перемещён в корзину.",
+    resultAssignDoctor: "Направивший врач (если пациент не выбрал)",
+    resultSelectDoctor: "Выберите врача",
     resultLink: "Внешняя ссылка (необязательно)",
     resultLinkHint: "Вместо прямой загрузки файла можно добавить внешнюю облачную ссылку.",
     resultSave: "Сохранить",

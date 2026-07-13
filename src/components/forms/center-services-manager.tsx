@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/field";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { cn } from "@/lib/utils";
 import { saveCenterServicesAction } from "@/app/merkez/actions";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 export type ServiceRow = {
   serviceId: string;
@@ -21,6 +23,7 @@ export type ServiceRow = {
 };
 
 export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
+  const t = getPanelDict(useLocale()).center;
   const [rows, setRows] = React.useState<ServiceRow[]>(initial);
   const [pending, startTransition] = React.useTransition();
   const [done, setDone] = React.useState(false);
@@ -36,7 +39,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
     // Price is required for every enabled service.
     const missing = rows.some((r) => r.enabled && (r.price == null || r.price <= 0));
     if (missing) {
-      setError("Seçdiyiniz hər xidmət üçün qiymət (₼) yazın.");
+      setError(t.svcPriceRequired);
       return;
     }
     startTransition(async () => {
@@ -87,7 +90,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
               <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-[140px_1fr]">
                 <div>
                   <label className="mb-1 block text-xs text-slate-500">
-                    Qiymət (₼) <span className="text-red-500">*</span>
+                    {t.svcPrice} <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="number"
@@ -98,7 +101,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
                         price: e.target.value === "" ? null : Number(e.target.value),
                       })
                     }
-                    placeholder="Fiks qiymət"
+                    placeholder={t.svcPricePlaceholder}
                     className={cn(
                       "h-9",
                       r.price == null || r.price <= 0
@@ -108,11 +111,11 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-slate-500">Qeyd</label>
+                  <label className="mb-1 block text-xs text-slate-500">{t.svcNote}</label>
                   <Input
                     value={r.note ?? ""}
                     onChange={(e) => update(r.serviceId, { note: e.target.value })}
-                    placeholder="İstəyə bağlı"
+                    placeholder={t.svcNoteOptional}
                     className="h-9"
                   />
                 </div>
@@ -129,11 +132,11 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
       <div className="flex items-center gap-3">
         <Button onClick={save} size="lg" disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Yadda saxla
+          {t.svcSave}
         </Button>
         {done && (
           <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
-            <CheckCircle2 className="h-4 w-4" /> Yadda saxlanıldı
+            <CheckCircle2 className="h-4 w-4" /> {t.svcSaved}
           </span>
         )}
       </div>

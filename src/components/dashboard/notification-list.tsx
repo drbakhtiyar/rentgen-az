@@ -21,6 +21,9 @@ import {
   markNotificationReadAction,
   markAllNotificationsReadAction,
 } from "@/app/actions/notifications";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
+import type { Locale } from "@/lib/i18n";
 
 export type NotificationItem = {
   id: string;
@@ -47,21 +50,25 @@ const ICONS: Record<string, React.ReactNode> = {
   CENTER_BROADCAST: <Megaphone className="h-4 w-4" />,
 };
 
-function timeAgo(d: string | Date): string {
+function timeAgo(d: string | Date, locale: Locale, nt: PanelNotif): string {
   const t = new Date(d).getTime();
   const diff = Math.max(0, Date.now() - t);
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "indi";
-  if (m < 60) return `${m} dəq əvvəl`;
+  if (m < 1) return nt.now;
+  if (m < 60) return `${m} ${nt.minAgo}`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} saat əvvəl`;
+  if (h < 24) return `${h} ${nt.hourAgo}`;
   const days = Math.floor(h / 24);
-  if (days < 30) return `${days} gün əvvəl`;
-  return new Date(d).toLocaleDateString("az");
+  if (days < 30) return `${days} ${nt.dayAgo}`;
+  return new Date(d).toLocaleDateString(locale === "ru" ? "ru" : "az");
 }
+
+type PanelNotif = ReturnType<typeof getPanelDict>["notif"];
 
 export function NotificationList({ items }: { items: NotificationItem[] }) {
   const router = useRouter();
+  const locale = useLocale();
+  const nt = getPanelDict(locale).notif;
   const [pending, startTransition] = React.useTransition();
   const hasUnread = items.some((n) => !n.read);
 
@@ -84,8 +91,8 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
     return (
       <EmptyState
         icon={<Bell />}
-        title="Bildiriş yoxdur"
-        description="Yeni pasiyent, fayl və ya mesaj olduqda burada görünəcək."
+        title={nt.empty}
+        description={nt.emptyBody}
       />
     );
   }
@@ -100,7 +107,7 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
             disabled={pending}
             className="text-sm font-semibold text-brand-600 hover:text-brand-700 disabled:opacity-50"
           >
-            Hamısını oxundu işarələ
+            {nt.markAll}
           </button>
         </div>
       )}
@@ -132,7 +139,7 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
                   {!n.read && <span className="h-2 w-2 shrink-0 rounded-full bg-brand-500" />}
                 </span>
                 {n.body && <span className="mt-0.5 block text-sm text-slate-600">{n.body}</span>}
-                <span className="mt-1 block text-xs text-slate-400">{timeAgo(n.createdAt)}</span>
+                <span className="mt-1 block text-xs text-slate-400">{timeAgo(n.createdAt, locale, nt)}</span>
               </span>
             </button>
           </li>

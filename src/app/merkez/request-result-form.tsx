@@ -7,6 +7,8 @@ import { Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { setRequestResultAction, setRequestDoctorAction } from "./actions";
 import { RentgenFilesPanel, type RentgenFileItem } from "@/components/rentgen/rentgen-files-panel";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 type Option = { value: string; label: string };
 
@@ -30,6 +32,7 @@ export function RequestResultForm({
   trashDays?: number;
 }) {
   const router = useRouter();
+  const t = getPanelDict(useLocale()).center;
   const [url, setUrl] = React.useState(defaultUrl ?? "");
   const [doctor, setDoctor] = React.useState(doctorId ?? "");
   const [pending, startTransition] = React.useTransition();
@@ -61,14 +64,14 @@ export function RequestResultForm({
       {!doctorId && doctors.length > 0 && (
         <div>
           <p className="mb-1 text-xs font-medium text-slate-500">
-            Yönləndirən həkim (pasiyent seçməyibsə)
+            {t.resultAssignDoctor}
           </p>
           <Select
             value={doctor}
             onChange={(e) => changeDoctor(e.target.value)}
             className="h-9 text-sm"
           >
-            <option value="">Həkim seçin</option>
+            <option value="">{t.resultSelectDoctor}</option>
             {doctors.map((d) => (
               <option key={d.value} value={d.value}>
                 {d.label}
@@ -84,10 +87,10 @@ export function RequestResultForm({
       {/* Result link (optional / legacy external link) */}
       <div className="border-t border-slate-100 pt-3">
         <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-          <Link2 className="h-3.5 w-3.5" /> Xarici link (istəyə bağlı)
+          <Link2 className="h-3.5 w-3.5" /> {t.resultLink}
         </p>
         <p className="mb-1.5 text-xs text-slate-400">
-          Faylı birbaşa yükləmək əvəzinə xarici bulud linki də əlavə edə bilərsiniz.
+          {t.resultLinkHint}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <Input
@@ -97,7 +100,7 @@ export function RequestResultForm({
             className="h-9 min-w-0 flex-1 text-sm"
           />
           <Button type="button" size="sm" onClick={saveUrl} disabled={pending}>
-            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Yadda saxla"}
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : t.resultSave}
           </Button>
           {defaultUrl && (
             <a
@@ -106,7 +109,7 @@ export function RequestResultForm({
               rel="noopener noreferrer"
               className="inline-flex h-9 items-center gap-1 rounded-full border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-white"
             >
-              <ExternalLink className="h-3.5 w-3.5" /> Aç
+              <ExternalLink className="h-3.5 w-3.5" /> {t.resultOpen}
             </a>
           )}
         </div>
