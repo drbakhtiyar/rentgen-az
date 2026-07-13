@@ -164,6 +164,15 @@ export type PanelDict = {
     deleting: string;
     cancelConfirm: string;
     cancelBtn: string;
+    planExpired: string;
+    planExpiringPre: string;
+    planExpiringPost: string;
+    renew: string;
+    apiError: string;
+    apiNoKey: string;
+    apiRegen: string;
+    apiCreate: string;
+    apiHint: string;
   };
   patient: {
     greeting: string;
@@ -367,6 +376,15 @@ const az: PanelDict = {
     deleting: "Silinir…",
     cancelConfirm: "Müraciəti ləğv etmək istədiyinizə əminsiniz?",
     cancelBtn: "Ləğv et",
+    planExpired: "Paketinizin vaxtı bitib — yeniləmək üçün ödəniş lazımdır.",
+    planExpiringPre: "Paketinizin vaxtı bitir",
+    planExpiringPost: "gün qalıb. Ödəniş lazımdır.",
+    renew: "Yenilə",
+    apiError: "Xəta baş verdi",
+    apiNoKey: "— açar hələ yaradılmayıb —",
+    apiRegen: "Yenilə",
+    apiCreate: "Açar yarat",
+    apiHint: "Açarı gizli saxlayın. Yeniləsəniz, köhnə açar dərhal etibarsız olur.",
   },
   patient: {
     greeting: "Salam",
@@ -570,6 +588,15 @@ const ru: PanelDict = {
     deleting: "Удаление…",
     cancelConfirm: "Вы уверены, что хотите отменить заявку?",
     cancelBtn: "Отменить",
+    planExpired: "Срок вашего пакета истёк — для продления нужна оплата.",
+    planExpiringPre: "Срок вашего пакета истекает",
+    planExpiringPost: "дн. осталось. Требуется оплата.",
+    renew: "Продлить",
+    apiError: "Произошла ошибка",
+    apiNoKey: "— ключ ещё не создан —",
+    apiRegen: "Обновить",
+    apiCreate: "Создать ключ",
+    apiHint: "Держите ключ в секрете. При обновлении старый ключ сразу станет недействительным.",
   },
   patient: {
     greeting: "Здравствуйте",
