@@ -14,6 +14,8 @@ import {
   fetchAdminThreadMessagesAction,
 } from "@/app/actions/admin-chat";
 import type { ChatContact } from "@/lib/chat";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 const POLL_MS = 4000;
 
@@ -59,6 +61,7 @@ export function ChatInterface({
   meRole: "CENTER" | "DOCTOR";
   initialWith?: string;
 }) {
+  const ct = getPanelDict(useLocale()).chat;
   const [active, setActive] = React.useState<ChatContact | null>(null);
   const [convId, setConvId] = React.useState<string | null>(null);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -306,7 +309,7 @@ export function ChatInterface({
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Mesaj yazın…"
+                placeholder={ct.write}
                 className="min-w-0 flex-1 rounded-full border border-slate-200 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
               />
               <button

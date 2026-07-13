@@ -80,6 +80,10 @@ export type PanelDict = {
     hourAgo: string;
     dayAgo: string;
   };
+  chat: {
+    search: string;
+    write: string;
+  };
   status: {
     PENDING: string;
     APPROVED: string;
@@ -395,6 +399,10 @@ const az: PanelDict = {
     hourAgo: "saat əvvəl",
     dayAgo: "gün əvvəl",
   },
+  chat: {
+    search: "Axtar…",
+    write: "Mesaj yazın…",
+  },
   status: {
     PENDING: "Gözləmədə",
     APPROVED: "Təsdiqlənib",
@@ -709,6 +717,10 @@ const ru: PanelDict = {
     minAgo: "мин назад",
     hourAgo: "ч назад",
     dayAgo: "дн назад",
+  },
+  chat: {
+    search: "Поиск…",
+    write: "Напишите сообщение…",
   },
   status: {
     PENDING: "Ожидание",
