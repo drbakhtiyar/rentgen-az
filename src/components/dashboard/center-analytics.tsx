@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Eye, Phone, MessageCircle, Lock, BarChart3, Stethoscope, ArrowUpRight } from "lucide-react";
 import { StatCard } from "@/components/dashboard/widgets";
 import { centerLimits } from "@/lib/plans";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import type { Plan } from "@/generated/prisma/client";
 
 type Basic = { views: number; calls: number; whatsapp: number };
@@ -11,7 +13,7 @@ type Full = {
   requests30d: number;
 };
 
-export function CenterAnalytics({
+export async function CenterAnalytics({
   plan,
   stats,
   full,
@@ -21,6 +23,7 @@ export function CenterAnalytics({
   full: Full | null;
 }) {
   const limits = centerLimits(plan);
+  const t = getPanelDict(await getLocale()).center;
 
   // Free: no analytics — upsell.
   if (!limits.basicAnalytics) {
@@ -31,15 +34,15 @@ export function CenterAnalytics({
             <Lock className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-ink-900">Analitika Silver paketdən başlayır</p>
-            <p className="text-xs text-slate-500">Baxış, zəng və WhatsApp statistikasını görmək üçün paketi yüksəldin.</p>
+            <p className="text-sm font-semibold text-ink-900">{t.anLockTitle}</p>
+            <p className="text-xs text-slate-500">{t.anLockBody}</p>
           </div>
         </div>
         <Link
           href="/merkez/paket"
           className="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
         >
-          Paketə bax <ArrowUpRight className="h-4 w-4" />
+          {t.viewPackage} <ArrowUpRight className="h-4 w-4" />
         </Link>
       </div>
     );
@@ -47,11 +50,11 @@ export function CenterAnalytics({
 
   return (
     <div className="mt-4">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Son 30 gün</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t.anLast30}</p>
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Profil baxışları" value={stats.views} icon={<Eye />} />
-        <StatCard label="Zəng klikləri" value={stats.calls} icon={<Phone />} tone="cyan" />
-        <StatCard label="WhatsApp klikləri" value={stats.whatsapp} icon={<MessageCircle />} tone="green" />
+        <StatCard label={t.anViews} value={stats.views} icon={<Eye />} />
+        <StatCard label={t.anCalls} value={stats.calls} icon={<Phone />} tone="cyan" />
+        <StatCard label={t.anWhatsapp} value={stats.whatsapp} icon={<MessageCircle />} tone="green" />
       </div>
 
       {/* Full analytics — Gold+ */}
@@ -59,7 +62,7 @@ export function CenterAnalytics({
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
             <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <BarChart3 className="h-4 w-4 text-brand-600" /> Xidmət üzrə müraciətlər
+              <BarChart3 className="h-4 w-4 text-brand-600" /> {t.anPerService}
             </p>
             {full.perService.length > 0 ? (
               <ul className="mt-3 space-y-2">
@@ -79,13 +82,13 @@ export function CenterAnalytics({
                 })}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-slate-400">Hələ müraciət yoxdur.</p>
+              <p className="mt-3 text-sm text-slate-400">{t.anNoRequests}</p>
             )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            <StatCard label="Son 30 gün müraciət" value={full.requests30d} icon={<BarChart3 />} tone="cyan" />
-            <StatCard label="Həkim yönləndirmələri" value={full.referralsReceived} icon={<Stethoscope />} tone="green" />
+            <StatCard label={t.anReq30} value={full.requests30d} icon={<BarChart3 />} tone="cyan" />
+            <StatCard label={t.anReferrals} value={full.referralsReceived} icon={<Stethoscope />} tone="green" />
           </div>
         </div>
       )}

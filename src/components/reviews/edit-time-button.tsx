@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
 import { DatePicker } from "@/components/forms/date-picker";
 import { editRequestTimeAction } from "@/app/kabinet/actions";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 /**
  * Lets a patient edit the arrival time of a request. If the center has
@@ -21,6 +23,8 @@ export function EditTimeButton({
   hours: WeeklyHours | null;
 }) {
   const router = useRouter();
+  const pd = getPanelDict(useLocale());
+  const t = pd.center;
   const [open, setOpen] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const [date, setDate] = React.useState("");
@@ -35,14 +39,14 @@ export function EditTimeButton({
   function save() {
     setError(null);
     if (!date || !time) {
-      setError("Tarix və saat seçin.");
+      setError(t.etPickDateTime);
       return;
     }
     const preferredDate = `${date}T${time}:00+04:00`;
     startTransition(async () => {
       const res = await editRequestTimeAction(requestId, preferredDate);
       if (!res.ok) {
-        setError(res.error ?? "Xəta");
+        setError(res.error ?? t.apiError);
         return;
       }
       setOpen(false);
@@ -57,7 +61,7 @@ export function EditTimeButton({
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
       >
-        <CalendarClock className="h-3.5 w-3.5" /> Vaxtı dəyiş
+        <CalendarClock className="h-3.5 w-3.5" /> {t.etChange}
       </button>
     );
   }
@@ -95,7 +99,7 @@ export function EditTimeButton({
             className="h-9 text-sm"
           >
             <option value="">
-              {!date ? "Əvvəlcə tarix seçin" : slots.length === 0 ? "Vaxt yoxdur" : "Saat seçin"}
+              {!date ? t.etPickDate : slots.length === 0 ? t.etNoSlots : t.etPickTime}
             </option>
             {slots.map((s) => (
               <option key={s} value={s}>
@@ -116,14 +120,14 @@ export function EditTimeButton({
       <div className="mt-2 flex items-center gap-2">
         <Button type="button" size="sm" onClick={save} disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-          Yadda saxla
+          {pd.form.save}
         </Button>
         <button
           type="button"
           onClick={() => setOpen(false)}
           className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700"
         >
-          <X className="h-3.5 w-3.5" /> Ləğv et
+          <X className="h-3.5 w-3.5" /> {t.cancelBtn}
         </button>
       </div>
     </div>

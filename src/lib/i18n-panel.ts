@@ -201,6 +201,25 @@ export type PanelDict = {
     extend: string;
     buyWithBalance: string;
     billingNote: string;
+    anLockTitle: string;
+    anLockBody: string;
+    anLast30: string;
+    anViews: string;
+    anCalls: string;
+    anWhatsapp: string;
+    anPerService: string;
+    anNoRequests: string;
+    anReq30: string;
+    anReferrals: string;
+    bcSent: string;
+    bcPlaceholder: string;
+    bcIntro: string;
+    bcSend: string;
+    etPickDateTime: string;
+    etPickDate: string;
+    etNoSlots: string;
+    etPickTime: string;
+    etChange: string;
   };
   patient: {
     greeting: string;
@@ -245,6 +264,13 @@ export type PanelDict = {
     centersPanel: string;
     centersEmptyTitle: string;
     centersEmptyBody: string;
+    dsLockTitle: string;
+    dsLockBody: string;
+    dsViewPackage: string;
+    dsHeading: string;
+    dsViews: string;
+    dsSent: string;
+    dsPartners: string;
   };
 };
 
@@ -441,6 +467,25 @@ const az: PanelDict = {
     extend: "Uzat",
     buyWithBalance: "Balansla al",
     billingNote: "Paket balansdan ödənilir. Uzun müddət seçəndə endirim tətbiq olunur (6 ay −10%, 12 ay −20%). Balans artırma Payriff (kart / Apple Pay) ilə həyata keçir.",
+    anLockTitle: "Analitika Silver paketdən başlayır",
+    anLockBody: "Baxış, zəng və WhatsApp statistikasını görmək üçün paketi yüksəldin.",
+    anLast30: "Son 30 gün",
+    anViews: "Profil baxışları",
+    anCalls: "Zəng klikləri",
+    anWhatsapp: "WhatsApp klikləri",
+    anPerService: "Xidmət üzrə müraciətlər",
+    anNoRequests: "Hələ müraciət yoxdur.",
+    anReq30: "Son 30 gün müraciət",
+    anReferrals: "Həkim yönləndirmələri",
+    bcSent: "Göndərildi.",
+    bcPlaceholder: "Məsələn: Bu həftə CBCT xidmətində 20% endirim...",
+    bcIntro: "Bütün təsdiqlənmiş partnyor həkimlərinizə bir mesaj göndərin.",
+    bcSend: "Toplu mesaj göndər",
+    etPickDateTime: "Tarix və saat seçin.",
+    etPickDate: "Əvvəlcə tarix seçin",
+    etNoSlots: "Vaxt yoxdur",
+    etPickTime: "Saat seçin",
+    etChange: "Vaxtı dəyiş",
   },
   patient: {
     greeting: "Salam",
@@ -485,6 +530,13 @@ const az: PanelDict = {
     centersPanel: "Mərkəzlər",
     centersEmptyTitle: "Mərkəz yoxdur",
     centersEmptyBody: "Təsdiqlənmiş mərkəz hələ yoxdur.",
+    dsLockTitle: "Statistika Silver paketdən başlayır",
+    dsLockBody: "Profil baxışları və göndəriş statistikanızı görmək üçün paketi yüksəldin.",
+    dsViewPackage: "Paketə bax",
+    dsHeading: "Statistika",
+    dsViews: "Profil baxışları (30 gün)",
+    dsSent: "Göndərdiyiniz pasiyentlər",
+    dsPartners: "Partnyor mərkəzlər",
   },
 };
 
@@ -681,6 +733,25 @@ const ru: PanelDict = {
     extend: "Продлить",
     buyWithBalance: "Купить с баланса",
     billingNote: "Пакет оплачивается с баланса. При выборе длительного срока применяется скидка (6 мес. −10%, 12 мес. −20%). Пополнение баланса — через Payriff (карта / Apple Pay).",
+    anLockTitle: "Аналитика доступна с пакета Silver",
+    anLockBody: "Чтобы видеть статистику просмотров, звонков и WhatsApp, повысьте пакет.",
+    anLast30: "Последние 30 дней",
+    anViews: "Просмотры профиля",
+    anCalls: "Клики по звонку",
+    anWhatsapp: "Клики по WhatsApp",
+    anPerService: "Заявки по услугам",
+    anNoRequests: "Заявок пока нет.",
+    anReq30: "Заявки за 30 дней",
+    anReferrals: "Направления врачей",
+    bcSent: "Отправлено.",
+    bcPlaceholder: "Например: на этой неделе скидка 20% на КЛКТ...",
+    bcIntro: "Отправьте сообщение всем вашим подтверждённым врачам-партнёрам.",
+    bcSend: "Отправить массовое сообщение",
+    etPickDateTime: "Выберите дату и время.",
+    etPickDate: "Сначала выберите дату",
+    etNoSlots: "Нет времени",
+    etPickTime: "Выберите время",
+    etChange: "Изменить время",
   },
   patient: {
     greeting: "Здравствуйте",
@@ -725,6 +796,13 @@ const ru: PanelDict = {
     centersPanel: "Центры",
     centersEmptyTitle: "Центров нет",
     centersEmptyBody: "Подтверждённых центров пока нет.",
+    dsLockTitle: "Статистика доступна с пакета Silver",
+    dsLockBody: "Чтобы видеть просмотры профиля и статистику направлений, повысьте пакет.",
+    dsViewPackage: "Посмотреть пакет",
+    dsHeading: "Статистика",
+    dsViews: "Просмотры профиля (30 дней)",
+    dsSent: "Отправленные пациенты",
+    dsPartners: "Центры-партнёры",
   },
 };
 
