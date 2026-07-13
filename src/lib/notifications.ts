@@ -16,7 +16,9 @@ export type NotifType =
   | "REVIEW_REPLY"
   | "REVIEW_INVITE"
   | "NEW_MESSAGE"
-  | "CENTER_BROADCAST";
+  | "CENTER_BROADCAST"
+  | "PLAN_EXPIRING"
+  | "PLAN_EXPIRED";
 
 /** Create an in-app notification for a user (best-effort — never throws). */
 export async function notifyUser(

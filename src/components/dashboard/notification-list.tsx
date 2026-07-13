@@ -15,6 +15,7 @@ import {
   Star,
   PhoneCall,
   Megaphone,
+  Wallet,
 } from "lucide-react";
 import { EmptyState } from "@/components/dashboard/widgets";
 import {
@@ -48,6 +49,8 @@ const ICONS: Record<string, React.ReactNode> = {
   REVIEW_INVITE: <Star className="h-4 w-4" />,
   NEW_MESSAGE: <MessageSquare className="h-4 w-4" />,
   CENTER_BROADCAST: <Megaphone className="h-4 w-4" />,
+  PLAN_EXPIRING: <Clock className="h-4 w-4" />,
+  PLAN_EXPIRED: <Wallet className="h-4 w-4" />,
 };
 
 function timeAgo(d: string | Date, locale: Locale, nt: PanelNotif): string {
