@@ -173,6 +173,21 @@ export type PanelDict = {
     apiRegen: string;
     apiCreate: string;
     apiHint: string;
+    payActivated: string;
+    payMinTopup: string;
+    currentPackage: string;
+    activeUntilPre: string;
+    activeUntilPost: string;
+    expiringShort: string;
+    balanceLabel: string;
+    topupBtn: string;
+    durationLabel: string;
+    monthWord: string;
+    perMonth: string;
+    discountApplied: string;
+    extend: string;
+    buyWithBalance: string;
+    billingNote: string;
   };
   patient: {
     greeting: string;
@@ -385,6 +400,21 @@ const az: PanelDict = {
     apiRegen: "Yenilə",
     apiCreate: "Açar yarat",
     apiHint: "Açarı gizli saxlayın. Yeniləsəniz, köhnə açar dərhal etibarsız olur.",
+    payActivated: "Paket aktivləşdi.",
+    payMinTopup: "Minimum 1 ₼.",
+    currentPackage: "Cari paket",
+    activeUntilPre: "Aktivdir:",
+    activeUntilPost: "-ə kimi",
+    expiringShort: "Vaxtınız bitir — paketi yeniləyin.",
+    balanceLabel: "Balans",
+    topupBtn: "Balans artır",
+    durationLabel: "Ödəniş müddəti:",
+    monthWord: "ay",
+    perMonth: "/ay",
+    discountApplied: "endirim tətbiq olunur",
+    extend: "Uzat",
+    buyWithBalance: "Balansla al",
+    billingNote: "Paket balansdan ödənilir. Uzun müddət seçəndə endirim tətbiq olunur (6 ay −10%, 12 ay −20%). Balans artırma Payriff (kart / Apple Pay) ilə həyata keçir.",
   },
   patient: {
     greeting: "Salam",
@@ -597,6 +627,21 @@ const ru: PanelDict = {
     apiRegen: "Обновить",
     apiCreate: "Создать ключ",
     apiHint: "Держите ключ в секрете. При обновлении старый ключ сразу станет недействительным.",
+    payActivated: "Пакет активирован.",
+    payMinTopup: "Минимум 1 ₼.",
+    currentPackage: "Текущий пакет",
+    activeUntilPre: "Активен до:",
+    activeUntilPost: "",
+    expiringShort: "Срок истекает — продлите пакет.",
+    balanceLabel: "Баланс",
+    topupBtn: "Пополнить баланс",
+    durationLabel: "Срок оплаты:",
+    monthWord: "мес.",
+    perMonth: "/мес.",
+    discountApplied: "скидка применяется",
+    extend: "Продлить",
+    buyWithBalance: "Купить с баланса",
+    billingNote: "Пакет оплачивается с баланса. При выборе длительного срока применяется скидка (6 мес. −10%, 12 мес. −20%). Пополнение баланса — через Payriff (карта / Apple Pay).",
   },
   patient: {
     greeting: "Здравствуйте",

@@ -16,6 +16,8 @@ import {
   MAX_MONTHS,
 } from "@/lib/plans";
 import type { Plan } from "@/generated/prisma/client";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 const TIERS: { plan: Plan; icon: React.ReactNode }[] = [
   { plan: "SILVER", icon: <Star className="h-5 w-5" /> },
@@ -39,6 +41,7 @@ export function BillingPanel({
   prices: Record<Plan, number>;
 }) {
   const router = useRouter();
+  const t = getPanelDict(useLocale()).center;
   const [pending, startTransition] = React.useTransition();
   const [msg, setMsg] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -53,8 +56,8 @@ export function BillingPanel({
     setError(null);
     startTransition(async () => {
       const res = await purchasePlanFromWalletAction(plan, months);
-      if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
-      setMsg(res.message ?? "Paket aktivləşdi.");
+      if (!res.ok) return setError(res.error ?? t.apiError);
+      setMsg(res.message ?? t.payActivated);
       router.refresh();
     });
   }
@@ -63,10 +66,10 @@ export function BillingPanel({
     setMsg(null);
     setError(null);
     const manat = Number(topup);
-    if (!Number.isFinite(manat) || manat < 1) return setError("Minimum 1 ₼.");
+    if (!Number.isFinite(manat) || manat < 1) return setError(t.payMinTopup);
     startTransition(async () => {
       const res = await startWalletTopupAction(Math.round(manat * 100));
-      if (!res.ok) return setError(res.error ?? "Xəta baş verdi");
+      if (!res.ok) return setError(res.error ?? t.apiError);
       if (res.paymentUrl) window.location.href = res.paymentUrl;
     });
   }
@@ -87,23 +90,23 @@ export function BillingPanel({
       {/* Current plan + balance */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <p className="text-sm text-slate-500">Cari paket</p>
+          <p className="text-sm text-slate-500">{t.currentPackage}</p>
           <p className="mt-1 font-display text-2xl font-bold text-ink-900">
             {PLAN_LABEL[currentPlan]}
           </p>
           {planUntil && currentPlan !== "FREE" && (
-            <p className="mt-1 text-xs text-slate-400">Aktivdir: {planUntil}-ə kimi</p>
+            <p className="mt-1 text-xs text-slate-400">{t.activeUntilPre} {planUntil}{t.activeUntilPost}</p>
           )}
           {expiringSoon && (
             <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              Vaxtınız bitir{daysLeft != null ? ` (${daysLeft} gün qalıб)` : ""} — paketi yeniləyin.
+              {t.expiringShort}
             </p>
           )}
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="flex items-center gap-1.5 text-sm text-slate-500">
-            <Wallet className="h-4 w-4" /> Balans
+            <Wallet className="h-4 w-4" /> {t.balanceLabel}
           </p>
           <p className="mt-1 font-display text-2xl font-bold text-ink-900">
             {formatManat(balance)}
@@ -127,7 +130,7 @@ export function BillingPanel({
               disabled={pending}
               className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
             >
-              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Balans artır
+              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {t.topupBtn}
             </button>
           </div>
         </div>
@@ -135,7 +138,7 @@ export function BillingPanel({
 
       {/* Duration selector */}
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <label className="text-sm font-medium text-slate-700">Ödəniş müddəti:</label>
+        <label className="text-sm font-medium text-slate-700">{t.durationLabel}</label>
         <select
           value={months}
           onChange={(e) => setMonths(Number(e.target.value))}
@@ -143,13 +146,13 @@ export function BillingPanel({
         >
           {MONTH_OPTIONS.map((m) => (
             <option key={m} value={m}>
-              {m} ay{monthsDiscountPct(m) > 0 ? ` (−${monthsDiscountPct(m)}%)` : ""}
+              {m} {t.monthWord}{monthsDiscountPct(m) > 0 ? ` (−${monthsDiscountPct(m)}%)` : ""}
             </option>
           ))}
         </select>
         {discountPct > 0 && (
           <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-            {discountPct}% endirim tətbiq olunur
+            {discountPct}% {t.discountApplied}
           </span>
         )}
       </div>
@@ -175,7 +178,7 @@ export function BillingPanel({
                   <span className="text-sm text-slate-400 line-through">{formatManat(full)}</span>
                 )}
               </div>
-              <p className="text-xs text-slate-500">{months} ay · {formatManat(prices[plan])}/ay</p>
+              <p className="text-xs text-slate-500">{months} {t.monthWord} · {formatManat(prices[plan])}{t.perMonth}</p>
               <button
                 type="button"
                 onClick={() => buy(plan)}
@@ -183,17 +186,14 @@ export function BillingPanel({
                 className="mt-4 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-ink-900 px-4 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-50"
               >
                 {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {active ? "Uzat" : "Balansla al"}
+                {active ? t.extend : t.buyWithBalance}
               </button>
             </div>
           );
         })}
       </div>
 
-      <p className="text-xs text-slate-400">
-        Paket balansdan ödənilir. Uzun müddət seçəndə endirim tətbiq olunur (6 ay −10%, 12 ay
-        −20%). Balans artırma Payriff (kart / Apple Pay) ilə həyata keçir.
-      </p>
+      <p className="text-xs text-slate-400">{t.billingNote}</p>
     </div>
   );
 }
