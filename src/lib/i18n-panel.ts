@@ -83,6 +83,8 @@ export type PanelDict = {
   chat: {
     search: string;
     write: string;
+    attach: string;
+    fileError: string;
   };
   status: {
     PENDING: string;
@@ -402,6 +404,8 @@ const az: PanelDict = {
   chat: {
     search: "Axtar…",
     write: "Mesaj yazın…",
+    attach: "Fayl əlavə et",
+    fileError: "Fayl yüklənmədi. Yenidən cəhd edin.",
   },
   status: {
     PENDING: "Gözləmədə",
@@ -721,6 +725,8 @@ const ru: PanelDict = {
   chat: {
     search: "Поиск…",
     write: "Напишите сообщение…",
+    attach: "Прикрепить файл",
+    fileError: "Файл не загрузился. Попробуйте снова.",
   },
   status: {
     PENDING: "Ожидание",

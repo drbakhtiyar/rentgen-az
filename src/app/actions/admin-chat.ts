@@ -11,7 +11,7 @@ export type AdminChatResult<T = unknown> =
   | { ok: false; error: string };
 
 function toMessages(
-  rows: { id: string; fromAdmin: boolean; content: string; createdAt: Date }[],
+  rows: { id: string; fromAdmin: boolean; content: string; fileUrl: string | null; fileName: string | null; createdAt: Date }[],
   mineWhenAdmin: boolean,
 ): ChatMessage[] {
   return rows.map((m) => ({
@@ -19,6 +19,8 @@ function toMessages(
     senderId: m.fromAdmin ? "admin" : "user",
     senderRole: m.fromAdmin ? "ADMIN" : "USER",
     content: m.content,
+    fileUrl: m.fileUrl,
+    fileName: m.fileName,
     readAt: null,
     createdAt: m.createdAt.toISOString(),
     mine: m.fromAdmin === mineWhenAdmin,
@@ -39,19 +41,22 @@ async function ensureThread(userId: string): Promise<string> {
 }
 
 /** Current user (doctor/center) sends a message to admin. */
-export async function sendToAdminAction(content: string): Promise<AdminChatResult<{ id: string }>> {
+export async function sendToAdminAction(
+  content: string,
+  file?: { url: string; name: string } | null,
+): Promise<AdminChatResult<{ id: string }>> {
   const me = await getCurrentUser();
   if (!me || (me.role !== "DOCTOR" && me.role !== "CENTER")) {
     return { ok: false, error: "İcazə yoxdur." };
   }
   const text = content.trim();
-  if (!text) return { ok: false, error: "Mesaj boşdur." };
+  if (!text && !file) return { ok: false, error: "Mesaj boşdur." };
   if (text.length > 4000) return { ok: false, error: "Mesaj çox uzundur." };
 
   try {
     const threadId = await ensureThread(me.id);
     const msg = await prisma.adminMessage.create({
-      data: { threadId, fromAdmin: false, content: text },
+      data: { threadId, fromAdmin: false, content: text, fileUrl: file?.url ?? null, fileName: file?.name ?? null },
       select: { id: true, createdAt: true },
     });
     await prisma.adminThread.update({
@@ -81,7 +86,7 @@ export async function fetchAdminThreadMessagesAction(): Promise<
     where: { threadId },
     orderBy: { createdAt: "asc" },
     take: 200,
-    select: { id: true, fromAdmin: true, content: true, createdAt: true },
+    select: { id: true, fromAdmin: true, content: true, fileUrl: true, fileName: true, createdAt: true },
   });
   // User perspective: their own (fromAdmin=false) messages are "mine".
   return { ok: true, messages: toMessages(rows, false) };
@@ -93,16 +98,17 @@ export async function fetchAdminThreadMessagesAction(): Promise<
 export async function adminSendToUserAction(
   userId: string,
   content: string,
+  file?: { url: string; name: string } | null,
 ): Promise<AdminChatResult<{ threadId: string }>> {
   await requireRole("ADMIN");
   const text = content.trim();
-  if (!text) return { ok: false, error: "Mesaj boşdur." };
+  if (!text && !file) return { ok: false, error: "Mesaj boşdur." };
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
   if (!user) return { ok: false, error: "İstifadəçi tapılmadı." };
 
   const threadId = await ensureThread(userId);
   const msg = await prisma.adminMessage.create({
-    data: { threadId, fromAdmin: true, content: text },
+    data: { threadId, fromAdmin: true, content: text, fileUrl: file?.url ?? null, fileName: file?.name ?? null },
     select: { createdAt: true },
   });
   await prisma.adminThread.update({
@@ -130,7 +136,7 @@ export async function adminFetchThreadMessagesAction(
     where: { threadId },
     orderBy: { createdAt: "asc" },
     take: 200,
-    select: { id: true, fromAdmin: true, content: true, createdAt: true },
+    select: { id: true, fromAdmin: true, content: true, fileUrl: true, fileName: true, createdAt: true },
   });
   // Admin perspective: admin (fromAdmin=true) messages are "mine".
   return { ok: true, messages: toMessages(rows, true) };

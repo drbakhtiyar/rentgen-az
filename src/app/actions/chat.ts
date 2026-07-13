@@ -13,6 +13,8 @@ export type ChatMessage = {
   senderId: string;
   senderRole: string;
   content: string;
+  fileUrl: string | null;
+  fileName: string | null;
   readAt: string | null;
   createdAt: string;
   mine: boolean;
@@ -118,11 +120,12 @@ export async function openConversationAction(
 export async function sendMessageAction(
   conversationId: string,
   content: string,
+  file?: { url: string; name: string } | null,
 ): Promise<ChatResult<{ id: string }>> {
   const ctx = await assertParticipant(conversationId);
   if (!ctx) return { ok: false, error: "İcazə yoxdur." };
   const text = content.trim();
-  if (!text) return { ok: false, error: "Mesaj boşdur." };
+  if (!text && !file) return { ok: false, error: "Mesaj boşdur." };
   if (text.length > 4000) return { ok: false, error: "Mesaj çox uzundur." };
 
   try {
@@ -132,6 +135,8 @@ export async function sendMessageAction(
         senderId: ctx.me.userId,
         senderRole: ctx.me.role,
         content: text,
+        fileUrl: file?.url ?? null,
+        fileName: file?.name ?? null,
       },
       select: { id: true, createdAt: true },
     });
@@ -171,7 +176,7 @@ export async function fetchMessagesAction(
     where: { conversationId },
     orderBy: { createdAt: "asc" },
     take: 200,
-    select: { id: true, senderId: true, senderRole: true, content: true, readAt: true, createdAt: true },
+    select: { id: true, senderId: true, senderRole: true, content: true, fileUrl: true, fileName: true, readAt: true, createdAt: true },
   });
 
   const messages: ChatMessage[] = rows.map((m) => ({
@@ -179,6 +184,8 @@ export async function fetchMessagesAction(
     senderId: m.senderId,
     senderRole: m.senderRole,
     content: m.content,
+    fileUrl: m.fileUrl,
+    fileName: m.fileName,
     readAt: m.readAt ? m.readAt.toISOString() : null,
     createdAt: m.createdAt.toISOString(),
     mine: m.senderId === ctx.me.userId,

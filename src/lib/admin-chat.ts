@@ -62,7 +62,7 @@ export async function getAdminThreads(): Promise<AdminThreadItem[]> {
       adminReadAt: true,
       lastMessageAt: true,
       user: { select: USER_SELECT },
-      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true } },
+      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true, fileUrl: true } },
     },
   });
   // Unread = incoming (fromAdmin=false) messages after adminReadAt.
@@ -86,7 +86,7 @@ export async function getAdminThreads(): Promise<AdminThreadItem[]> {
       role: t.user.role,
       avatarUrl: l.avatarUrl,
       lastMessageAt: t.lastMessageAt.toISOString(),
-      preview: t.messages[0]?.content ?? null,
+      preview: t.messages[0] ? (t.messages[0].content || (t.messages[0].fileUrl ? "📎 Fayl" : null)) : null,
       unread: unreadByThread[t.id] ?? 0,
     };
   });
@@ -212,7 +212,7 @@ export async function getUserAdminContact(
     select: {
       id: true,
       userReadAt: true,
-      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true } },
+      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true, fileUrl: true } },
     },
   });
   if (!thread) return { threadId: null, preview: null, unread: 0 };
@@ -223,5 +223,5 @@ export async function getUserAdminContact(
       ...(thread.userReadAt ? { createdAt: { gt: thread.userReadAt } } : {}),
     },
   });
-  return { threadId: thread.id, preview: thread.messages[0]?.content ?? null, unread };
+  return { threadId: thread.id, preview: thread.messages[0] ? (thread.messages[0].content || (thread.messages[0].fileUrl ? "📎 Fayl" : null)) : null, unread };
 }

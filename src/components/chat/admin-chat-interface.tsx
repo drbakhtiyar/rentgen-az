@@ -4,8 +4,9 @@ import * as React from "react";
 import Image from "next/image";
 import {
   Send, Loader2, ArrowLeft, Search, Pin, Users, Stethoscope, Building2,
-  Megaphone, MessageSquare, CheckCircle2,
+  Megaphone, MessageSquare, CheckCircle2, Paperclip, FileText,
 } from "lucide-react";
+import { upload } from "@vercel/blob/client";
 import {
   adminFetchThreadMessagesAction,
   adminSendToUserAction,
@@ -16,6 +17,10 @@ import type { ChatMessage } from "@/app/actions/chat";
 import type { AdminThreadItem, AdminSearchItem } from "@/lib/admin-chat";
 
 const POLL_MS = 4000;
+
+function isImageFile(name: string | null): boolean {
+  return !!name && /\.(jpe?g|png|webp|gif|svg)$/i.test(name);
+}
 
 type Group = { key: "ALL" | "DOCTORS" | "CENTERS"; label: string; icon: React.ReactNode };
 const GROUPS: Group[] = [
@@ -57,6 +62,8 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
   const [done, setDone] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<AdminSearchItem[] | null>(null);
+  const [uploading, setUploading] = React.useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
   const [searching, setSearching] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -122,13 +129,36 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
     setSending(true);
     setMessages((prev) => [
       ...prev,
-      { id: `tmp-${Date.now()}`, senderId: "admin", senderRole: "ADMIN", content: text, readAt: null, createdAt: new Date().toISOString(), mine: true },
+      { id: `tmp-${Date.now()}`, senderId: "admin", senderRole: "ADMIN", content: text, fileUrl: null, fileName: null, readAt: null, createdAt: new Date().toISOString(), mine: true },
     ]);
     const res = await adminSendToUserAction(active.userId, text);
     setSending(false);
     if (!res.ok) return setError(res.error);
     setActive((a) => (a ? { ...a, threadId: res.threadId } : a));
     load(res.threadId);
+  }
+
+  async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !active) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const blob = await upload(`chat/${file.name}`, file, { access: "public", handleUploadUrl: "/api/upload" });
+      setMessages((prev) => [
+        ...prev,
+        { id: `tmp-${Date.now()}`, senderId: "admin", senderRole: "ADMIN", content: "", fileUrl: blob.url, fileName: file.name, readAt: null, createdAt: new Date().toISOString(), mine: true },
+      ]);
+      const res = await adminSendToUserAction(active.userId, "", { url: blob.url, name: file.name });
+      if (!res.ok) return setError(res.error);
+      setActive((a) => (a ? { ...a, threadId: res.threadId } : a));
+      load(res.threadId);
+    } catch {
+      setError("Fayl yüklənmədi. Yenidən cəhd edin.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   }
 
   async function sendBroadcast(e: React.FormEvent) {
@@ -250,7 +280,18 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
               {messages.map((m) => (
                 <div key={m.id} className={"flex " + (m.mine ? "justify-end" : "justify-start")}>
                   <div className={"max-w-[80%] rounded-2xl px-3 py-2 text-sm " + (m.mine ? "bg-brand-600 text-white" : "bg-white text-ink-900 ring-1 ring-slate-200")}>
-                    <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                    {m.fileUrl &&
+                      (isImageFile(m.fileName) ? (
+                        <a href={m.fileUrl} target="_blank" rel="noopener noreferrer">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={m.fileUrl} alt={m.fileName ?? ""} className="mb-1 max-h-52 max-w-full rounded-lg" />
+                        </a>
+                      ) : (
+                        <a href={m.fileUrl} target="_blank" rel="noopener noreferrer" className={"mb-1 flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium " + (m.mine ? "bg-white/15 hover:bg-white/25" : "bg-slate-100 hover:bg-slate-200")}>
+                          <FileText className="h-4 w-4 shrink-0" /> <span className="truncate">{m.fileName ?? "fayl"}</span>
+                        </a>
+                      ))}
+                    {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                     <span className={"mt-0.5 block text-right text-[10px] " + (m.mine ? "text-white/70" : "text-slate-400")}>{hhmm(m.createdAt)}</span>
                   </div>
                 </div>
@@ -258,6 +299,10 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
             </div>
             {error && <p className="px-4 py-1 text-xs font-medium text-red-600">{error}</p>}
             <form onSubmit={sendToUser} className="flex items-center gap-2 border-t border-slate-100 p-3">
+              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={onPickFile} className="hidden" />
+              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading || sending} title="Fayl əlavə et" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-brand-600 disabled:opacity-50">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+              </button>
               <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Mesaj yazın…" className="min-w-0 flex-1 rounded-full border border-slate-200 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none" />
               <button type="submit" disabled={sending || !input.trim()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50">
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

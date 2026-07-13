@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search, Pin, LifeBuoy } from "lucide-react";
+import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search, Pin, LifeBuoy, Paperclip, FileText } from "lucide-react";
+import { upload } from "@vercel/blob/client";
 import {
   openConversationAction,
   sendMessageAction,
@@ -18,6 +19,11 @@ import { useLocale } from "@/components/locale-context";
 import { getPanelDict } from "@/lib/i18n-panel";
 
 const POLL_MS = 4000;
+
+/** True if the attachment is an image (show inline preview vs a download chip). */
+function isImageFile(name: string | null): boolean {
+  return !!name && /\.(jpe?g|png|webp|gif|svg)$/i.test(name);
+}
 
 function ChatAvatar({
   url,
@@ -67,6 +73,8 @@ export function ChatInterface({
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState("");
   const [sending, setSending] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
@@ -152,6 +160,8 @@ export function ChatInterface({
         senderId: "me",
         senderRole: meRole,
         content: text,
+        fileUrl: null,
+        fileName: null,
         readAt: null,
         createdAt: new Date().toISOString(),
         mine: true,
@@ -167,6 +177,48 @@ export function ChatInterface({
     }
     if (isAdmin) loadAdmin();
     else load(convId as string);
+  }
+
+  /** Attach a file: upload to blob storage, then send it as a message. */
+  async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !active) return;
+    const isAdmin = active.kind === "admin";
+    if (!isAdmin && !convId) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const blob = await upload(`chat/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `tmp-${Date.now()}`,
+          senderId: "me",
+          senderRole: meRole,
+          content: "",
+          fileUrl: blob.url,
+          fileName: file.name,
+          readAt: null,
+          createdAt: new Date().toISOString(),
+          mine: true,
+        },
+      ]);
+      const payload = { url: blob.url, name: file.name };
+      const res = isAdmin
+        ? await sendToAdminAction("", payload)
+        : await sendMessageAction(convId as string, "", payload);
+      if (!res.ok) setError(res.error);
+      else if (isAdmin) loadAdmin();
+      else load(convId as string);
+    } catch {
+      setError(ct.fileError);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   }
 
   return (
@@ -283,7 +335,31 @@ export function ChatInterface({
                         : "bg-white text-ink-900 ring-1 ring-slate-200")
                     }
                   >
-                    <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                    {m.fileUrl &&
+                      (isImageFile(m.fileName) ? (
+                        <a href={m.fileUrl} target="_blank" rel="noopener noreferrer">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={m.fileUrl}
+                            alt={m.fileName ?? ""}
+                            className="mb-1 max-h-52 max-w-full rounded-lg"
+                          />
+                        </a>
+                      ) : (
+                        <a
+                          href={m.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={
+                            "mb-1 flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium " +
+                            (m.mine ? "bg-white/15 hover:bg-white/25" : "bg-slate-100 hover:bg-slate-200")
+                          }
+                        >
+                          <FileText className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{m.fileName ?? "fayl"}</span>
+                        </a>
+                      ))}
+                    {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                     <span
                       className={
                         "mt-0.5 flex items-center justify-end gap-1 text-[10px] " +
@@ -306,6 +382,22 @@ export function ChatInterface({
             {error && <p className="px-4 py-1 text-xs font-medium text-red-600">{error}</p>}
 
             <form onSubmit={send} className="flex items-center gap-2 border-t border-slate-100 p-3">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={onPickFile}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading || sending || (active?.kind === "partner" && !convId)}
+                title={ct.attach}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-brand-600 disabled:opacity-50"
+              >
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+              </button>
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

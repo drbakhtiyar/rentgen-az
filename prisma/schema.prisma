@@ -132,6 +132,8 @@ model AdminMessage {
   thread    AdminThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
   fromAdmin Boolean // true = admin göndərib, false = user göndərib
   content   String
+  fileUrl   String? // əlavə edilmiş fayl (şəkil/PDF)
+  fileName  String? // faylın orijinal adı
   createdAt DateTime    @default(now())
 
   @@index([threadId, createdAt])
@@ -482,6 +484,8 @@ model Message {
   senderId       String // göndərənin User.id
   senderRole     String // CENTER | DOCTOR
   content        String
+  fileUrl        String? // əlavə edilmiş fayl (şəkil/PDF)
+  fileName       String? // faylın orijinal adı
   readAt         DateTime? // qarşı tərəf oxuyanda
   createdAt      DateTime     @default(now())
 

@@ -39,7 +39,7 @@ export async function getChatContacts(
           id: true,
           doctorId: true,
           lastMessageAt: true,
-          messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true } },
+          messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true, fileUrl: true } },
         },
       }),
     ]);
@@ -54,7 +54,7 @@ export async function getChatContacts(
         avatarUrl: p.doctor.photoUrl,
         conversationId: c?.id ?? null,
         lastMessageAt: c?.lastMessageAt ? c.lastMessageAt.toISOString() : null,
-        preview: c?.messages[0]?.content ?? null,
+        preview: c?.messages[0] ? (c.messages[0].content || (c.messages[0].fileUrl ? "📎 Fayl" : null)) : null,
         unread: c ? unread[c.id] ?? 0 : 0,
         kind: "partner" as const,
       };
@@ -73,7 +73,7 @@ export async function getChatContacts(
         id: true,
         centerId: true,
         lastMessageAt: true,
-        messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true } },
+        messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true, fileUrl: true } },
       },
     }),
   ]);
@@ -88,7 +88,7 @@ export async function getChatContacts(
       avatarUrl: p.center.logoUrl,
       conversationId: c?.id ?? null,
       lastMessageAt: c?.lastMessageAt ? c.lastMessageAt.toISOString() : null,
-      preview: c?.messages[0]?.content ?? null,
+      preview: c?.messages[0] ? (c.messages[0].content || (c.messages[0].fileUrl ? "📎 Fayl" : null)) : null,
       unread: c ? unread[c.id] ?? 0 : 0,
       kind: "partner" as const,
     };
