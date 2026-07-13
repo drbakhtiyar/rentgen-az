@@ -8,6 +8,8 @@ import {
   purgeFileAction,
   emptyTrashAction,
 } from "@/app/actions/rentgen-files";
+import { useLocale } from "@/components/locale-context";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 export type TrashItem = {
   id: string;
@@ -28,6 +30,7 @@ function formatBytes(n: number): string {
 /** Center-side trash bin: restore or permanently delete soft-deleted files. */
 export function TrashList({ items }: { items: TrashItem[] }) {
   const router = useRouter();
+  const t = getPanelDict(useLocale()).center;
   const [busy, setBusy] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -41,7 +44,7 @@ export function TrashList({ items }: { items: TrashItem[] }) {
   }
 
   async function purge(id: string) {
-    if (!confirm("Bu fayl həmişəlik silinəcək və bərpa oluna bilməyəcək. Davam edilsin?")) return;
+    if (!confirm(t.trConfirmPurge)) return;
     setError(null);
     setBusy(id);
     const res = await purgeFileAction(id);
@@ -51,7 +54,7 @@ export function TrashList({ items }: { items: TrashItem[] }) {
   }
 
   async function empty() {
-    if (!confirm("Zibil qutusu tamamilə boşaldılacaq. Bütün fayllar həmişəlik silinəcək. Davam edilsin?")) return;
+    if (!confirm(t.trConfirmEmpty)) return;
     setError(null);
     setBusy("__all__");
     const res = await emptyTrashAction();
@@ -61,13 +64,13 @@ export function TrashList({ items }: { items: TrashItem[] }) {
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-slate-400">Zibil qutusu boşdur.</p>;
+    return <p className="text-sm text-slate-400">{t.trEmpty}</p>;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-500">{items.length} fayl zibil qutusundadır</p>
+        <p className="text-xs text-slate-500">{items.length} {t.trCount}</p>
         <button
           type="button"
           onClick={empty}
@@ -75,7 +78,7 @@ export function TrashList({ items }: { items: TrashItem[] }) {
           className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
         >
           {busy === "__all__" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-          Zibili boşalt
+          {t.trEmptyBtn}
         </button>
       </div>
 
@@ -88,7 +91,7 @@ export function TrashList({ items }: { items: TrashItem[] }) {
             <div className="min-w-0 flex-1">
               <p className="truncate text-ink-800">{f.fileName}</p>
               <p className="text-xs text-slate-400">
-                {f.patientName} · {formatBytes(f.size)} · silinib: {f.deletedAtLabel}
+                {f.patientName} · {formatBytes(f.size)} · {t.trDeletedAt} {f.deletedAtLabel}
               </p>
             </div>
             {f.daysLeft !== null && (
@@ -101,7 +104,7 @@ export function TrashList({ items }: { items: TrashItem[] }) {
                 }
               >
                 <AlarmClock className="h-3 w-3" />
-                {f.daysLeft <= 0 ? "bu gün silinir" : `${f.daysLeft} gün qalıb`}
+                {f.daysLeft <= 0 ? t.trToday : `${f.daysLeft} ${t.trDaysLeft}`}
               </span>
             )}
             <button
@@ -111,14 +114,14 @@ export function TrashList({ items }: { items: TrashItem[] }) {
               className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
             >
               {busy === f.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
-              Bərpa et
+              {t.trRestore}
             </button>
             <button
               type="button"
               onClick={() => purge(f.id)}
               disabled={!!busy}
               className="shrink-0 rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-              title="Həmişəlik sil"
+              title={t.trPurgeTitle}
             >
               <Trash2 className="h-4 w-4" />
             </button>

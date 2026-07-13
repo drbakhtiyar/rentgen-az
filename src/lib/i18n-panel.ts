@@ -114,6 +114,45 @@ export type PanelDict = {
     homeLink: string;
     regTitle: string;
     regSubtitle: string;
+    trEmpty: string;
+    trCount: string;
+    trEmptyBtn: string;
+    trDeletedAt: string;
+    trToday: string;
+    trDaysLeft: string;
+    trRestore: string;
+    trPurgeTitle: string;
+    trConfirmPurge: string;
+    trConfirmEmpty: string;
+    svcPrice: string;
+    svcPricePlaceholder: string;
+    svcNote: string;
+    svcNoteOptional: string;
+    svcSave: string;
+    svcSaved: string;
+    svcPriceRequired: string;
+    svcUpload: string;
+    svcDropHint: string;
+    svcDeleteConfirmPerm: string;
+    svcDeleteConfirmTrash: string;
+    resultLink: string;
+    resultLinkHint: string;
+    resultSave: string;
+    resultOpen: string;
+    filesLabel: string;
+    downloadTitle: string;
+    deleteTitle: string;
+    noFilesYet: string;
+    walletEmpty: string;
+    walletTopup: string;
+    walletPlan: string;
+    walletRefund: string;
+    walletAdmin: string;
+    confirmContinue: string;
+    uploading: string;
+    deleting: string;
+    cancelConfirm: string;
+    cancelBtn: string;
   };
   patient: {
     greeting: string;
@@ -267,6 +306,45 @@ const az: PanelDict = {
     homeLink: "Ana səhifə",
     regTitle: "Mərkəz profilini yaradın",
     regSubtitle: "Məlumatları doldurun — admin təsdiqindən sonra mərkəziniz saytda görünəcək.",
+    trEmpty: "Zibil qutusu boşdur.",
+    trCount: "fayl zibil qutusundadır",
+    trEmptyBtn: "Zibili boşalt",
+    trDeletedAt: "silinib:",
+    trToday: "bu gün silinir",
+    trDaysLeft: "gün qalıb",
+    trRestore: "Bərpa et",
+    trPurgeTitle: "Həmişəlik sil",
+    trConfirmPurge: "Bu fayl həmişəlik silinəcək və bərpa oluna bilməyəcək. Davam edilsin?",
+    trConfirmEmpty: "Zibil qutusu tamamilə boşaldılacaq. Bütün fayllar həmişəlik silinəcək. Davam edilsin?",
+    svcPrice: "Qiymət (₼)",
+    svcPricePlaceholder: "Fiks qiymət",
+    svcNote: "Qeyd",
+    svcNoteOptional: "İstəyə bağlı",
+    svcSave: "Yadda saxla",
+    svcSaved: "Yadda saxlanıldı",
+    svcPriceRequired: "Seçdiyiniz hər xidmət üçün qiymət (₼) yazın.",
+    svcUpload: "Fayl yüklə",
+    svcDropHint: "Faylı bura sürüşdürün və ya yuxarıdakı düymə ilə seçin",
+    svcDeleteConfirmPerm: "Bu fayl həmişəlik silinəcək və bərpa oluna bilməyəcək. Davam edilsin?",
+    svcDeleteConfirmTrash: "Bu fayl zibil qutusuna atılacaq.",
+    resultLink: "Xarici link (istəyə bağlı)",
+    resultLinkHint: "Faylı birbaşa yükləmək əvəzinə xarici bulud linki də əlavə edə bilərsiniz.",
+    resultSave: "Yadda saxla",
+    resultOpen: "Aç",
+    filesLabel: "Rentgen faylları",
+    downloadTitle: "Endir",
+    deleteTitle: "Sil",
+    noFilesYet: "Hələ fayl yüklənməyib.",
+    walletEmpty: "Hələ heç bir hərəkət yoxdur.",
+    walletTopup: "Balans artırma",
+    walletPlan: "Paket alışı",
+    walletRefund: "Geri qaytarma",
+    walletAdmin: "Admin düzəlişi",
+    confirmContinue: "Davam edilsin?",
+    uploading: "Yüklənir",
+    deleting: "Silinir…",
+    cancelConfirm: "Müraciəti ləğv etmək istədiyinizə əminsiniz?",
+    cancelBtn: "Ləğv et",
   },
   patient: {
     greeting: "Salam",
@@ -420,6 +498,45 @@ const ru: PanelDict = {
     homeLink: "Главная",
     regTitle: "Создайте профиль центра",
     regSubtitle: "Заполните данные — после подтверждения администратором ваш центр появится на сайте.",
+    trEmpty: "Корзина пуста.",
+    trCount: "файлов в корзине",
+    trEmptyBtn: "Очистить корзину",
+    trDeletedAt: "удалён:",
+    trToday: "удаляется сегодня",
+    trDaysLeft: "дн. осталось",
+    trRestore: "Восстановить",
+    trPurgeTitle: "Удалить навсегда",
+    trConfirmPurge: "Этот файл будет удалён навсегда и не может быть восстановлен. Продолжить?",
+    trConfirmEmpty: "Корзина будет полностью очищена. Все файлы удалятся навсегда. Продолжить?",
+    svcPrice: "Цена (₼)",
+    svcPricePlaceholder: "Фикс. цена",
+    svcNote: "Примечание",
+    svcNoteOptional: "Необязательно",
+    svcSave: "Сохранить",
+    svcSaved: "Сохранено",
+    svcPriceRequired: "Укажите цену (₼) для каждой выбранной услуги.",
+    svcUpload: "Загрузить файл",
+    svcDropHint: "Перетащите файл сюда или выберите кнопкой выше",
+    svcDeleteConfirmPerm: "Этот файл будет удалён навсегда и не может быть восстановлен. Продолжить?",
+    svcDeleteConfirmTrash: "Файл будет перемещён в корзину.",
+    resultLink: "Внешняя ссылка (необязательно)",
+    resultLinkHint: "Вместо прямой загрузки файла можно добавить внешнюю облачную ссылку.",
+    resultSave: "Сохранить",
+    resultOpen: "Открыть",
+    filesLabel: "Файлы рентгена",
+    downloadTitle: "Скачать",
+    deleteTitle: "Удалить",
+    noFilesYet: "Файлы ещё не загружены.",
+    walletEmpty: "Операций пока нет.",
+    walletTopup: "Пополнение баланса",
+    walletPlan: "Покупка пакета",
+    walletRefund: "Возврат",
+    walletAdmin: "Корректировка админа",
+    confirmContinue: "Продолжить?",
+    uploading: "Загрузка",
+    deleting: "Удаление…",
+    cancelConfirm: "Вы уверены, что хотите отменить заявку?",
+    cancelBtn: "Отменить",
   },
   patient: {
     greeting: "Здравствуйте",

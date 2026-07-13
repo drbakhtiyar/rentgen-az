@@ -1,19 +1,21 @@
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { formatManat } from "@/lib/plans";
 import { formatDateAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 
 type Entry = { id: string; amount: number; type: string; note: string | null; createdAt: Date };
 
-const TYPE_LABEL: Record<string, string> = {
-  TOPUP: "Balans artırma",
-  PLAN: "Paket alışı",
-  REFUND: "Geri qaytarma",
-  ADMIN: "Admin düzəlişi",
-};
-
-export function WalletHistory({ entries }: { entries: Entry[] }) {
+export async function WalletHistory({ entries }: { entries: Entry[] }) {
+  const t = getPanelDict(await getLocale()).center;
+  const TYPE_LABEL: Record<string, string> = {
+    TOPUP: t.walletTopup,
+    PLAN: t.walletPlan,
+    REFUND: t.walletRefund,
+    ADMIN: t.walletAdmin,
+  };
   if (entries.length === 0) {
-    return <p className="text-sm text-slate-400">Hələ heç bir hərəkət yoxdur.</p>;
+    return <p className="text-sm text-slate-400">{t.walletEmpty}</p>;
   }
   return (
     <ul className="divide-y divide-slate-100">
