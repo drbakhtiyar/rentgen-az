@@ -9,6 +9,19 @@ import type { Locale } from "./i18n";
  */
 
 export type PanelDict = {
+  form: {
+    firstName: string;
+    firstNamePh: string;
+    lastName: string;
+    lastNamePh: string;
+    phoneLabel: string;
+    phoneHint: string;
+    cityDistrict: string;
+    select: string;
+    birthDate: string;
+    save: string;
+    saved: string;
+  };
   notif: {
     empty: string;
     emptyBody: string;
@@ -236,6 +249,19 @@ export type PanelDict = {
 };
 
 const az: PanelDict = {
+  form: {
+    firstName: "Ad",
+    firstNamePh: "Adınız",
+    lastName: "Soyad",
+    lastNamePh: "Soyadınız",
+    phoneLabel: "Telefon nömrəsi",
+    phoneHint: "Telefon nömrəsi dəyişdirilə bilməz (hesab identifikatoru).",
+    cityDistrict: "Şəhər / rayon",
+    select: "Seçin",
+    birthDate: "Doğum tarixi (istəyə bağlı)",
+    save: "Yadda saxla",
+    saved: "Yadda saxlanıldı",
+  },
   notif: {
     empty: "Bildiriş yoxdur",
     emptyBody: "Yeni pasiyent, fayl və ya mesaj olduqda burada görünəcək.",
@@ -463,6 +489,19 @@ const az: PanelDict = {
 };
 
 const ru: PanelDict = {
+  form: {
+    firstName: "Имя",
+    firstNamePh: "Ваше имя",
+    lastName: "Фамилия",
+    lastNamePh: "Ваша фамилия",
+    phoneLabel: "Номер телефона",
+    phoneHint: "Номер телефона нельзя изменить (идентификатор аккаунта).",
+    cityDistrict: "Город / район",
+    select: "Выберите",
+    birthDate: "Дата рождения (необязательно)",
+    save: "Сохранить",
+    saved: "Сохранено",
+  },
   notif: {
     empty: "Уведомлений нет",
     emptyBody: "Появятся здесь при новом пациенте, файле или сообщении.",
