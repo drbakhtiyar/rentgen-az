@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./db";
 import { centerLimits } from "./plans";
+import { doctorName } from "./utils";
 import type { Prisma } from "@/generated/prisma/client";
 
 /** Wraps a DB call so the UI degrades gracefully (e.g. before the DB is set up). */
@@ -352,6 +353,63 @@ export async function getIncompleteSignups(): Promise<IncompleteSignup[]> {
     }
     return out;
   }, [] as IncompleteSignup[]);
+}
+
+export type PartnershipDoctor = {
+  id: string;
+  name: string;
+  clinic: string | null;
+  status: string; // ACCEPTED | PENDING
+};
+export type CenterPartnerships = {
+  centerId: string;
+  centerName: string;
+  centerSlug: string;
+  city: string | null;
+  doctors: PartnershipDoctor[];
+};
+
+/**
+ * All center↔doctor partnerships, grouped by center (accepted first, then
+ * pending). For the admin overview of who collaborates with whom.
+ */
+export async function getCenterDoctorPartnerships(): Promise<CenterPartnerships[]> {
+  return safe(async () => {
+    const rows = await prisma.centerDoctor.findMany({
+      where: { status: { in: ["ACCEPTED", "PENDING"] } },
+      select: {
+        status: true,
+        center: { select: { id: true, name: true, slug: true, city: true } },
+        doctor: { select: { id: true, firstName: true, lastName: true, clinic: true } },
+      },
+      orderBy: [{ center: { name: "asc" } }, { status: "asc" }],
+    });
+    const byCenter = new Map<string, CenterPartnerships>();
+    for (const r of rows) {
+      let g = byCenter.get(r.center.id);
+      if (!g) {
+        g = {
+          centerId: r.center.id,
+          centerName: r.center.name,
+          centerSlug: r.center.slug,
+          city: r.center.city,
+          doctors: [],
+        };
+        byCenter.set(r.center.id, g);
+      }
+      g.doctors.push({
+        id: r.doctor.id,
+        name: doctorName(r.doctor.firstName, r.doctor.lastName),
+        clinic: r.doctor.clinic,
+        status: r.status,
+      });
+    }
+    // Accepted doctors first within each center.
+    for (const g of byCenter.values()) {
+      g.doctors.sort((a, b) => (a.status === "ACCEPTED" ? -1 : 1) - (b.status === "ACCEPTED" ? -1 : 1));
+    }
+    return [...byCenter.values()];
+  }, [] as CenterPartnerships[]);
 }
 
 export type CatalogService = Prisma.ServiceGetPayload<object>;

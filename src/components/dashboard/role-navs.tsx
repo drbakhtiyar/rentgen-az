@@ -17,6 +17,7 @@ import {
   Download,
   Trash2,
   UserPlus,
+  Handshake,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -60,6 +61,7 @@ export const adminNav: NavItem[] = [
   { label: "Müraciətlər", href: "/admin/muracietler", icon: <Inbox /> },
   { label: "Yarımçıq qeydiyyat", href: "/admin/yarimciq-qeydiyyat", icon: <UserPlus /> },
   { label: "Həkim göndərişləri", href: "/admin/gonderisler", icon: <Stethoscope /> },
+  { label: "Əməkdaşlıqlar", href: "/admin/emekdashliq", icon: <Handshake /> },
   { label: "Blog", href: "/admin/blog", icon: <FileText /> },
   { label: "Rəylər", href: "/admin/reyler", icon: <Star /> },
   { label: "Ödənişlər", href: "/admin/odenisler", icon: <Wallet /> },
