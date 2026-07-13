@@ -1,10 +1,13 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { notifyUser } from "@/lib/notifications";
 import { doctorName } from "@/lib/utils";
+import { b2Configured, presignUpload, presignDownload } from "@/lib/b2";
+import { CHAT_ALLOWED_TYPES, CHAT_MAX_SIZE, chatSafeName, isLegacyPublicUrl } from "@/lib/chat-files";
 
 export type ChatResult<T = unknown> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -13,7 +16,10 @@ export type ChatMessage = {
   senderId: string;
   senderRole: string;
   content: string;
-  fileUrl: string | null;
+  // The raw file reference (B2 key) is NEVER sent to the client. The client only
+  // learns a file exists (hasFile) + its name, and fetches a short-lived signed
+  // download URL via a gated action on demand.
+  hasFile: boolean;
   fileName: string | null;
   readAt: string | null;
   createdAt: string;
@@ -120,13 +126,17 @@ export async function openConversationAction(
 export async function sendMessageAction(
   conversationId: string,
   content: string,
-  file?: { url: string; name: string } | null,
+  file?: { key: string; name: string } | null,
 ): Promise<ChatResult<{ id: string }>> {
   const ctx = await assertParticipant(conversationId);
   if (!ctx) return { ok: false, error: "İcazə yoxdur." };
   const text = content.trim();
   if (!text && !file) return { ok: false, error: "Mesaj boşdur." };
   if (text.length > 4000) return { ok: false, error: "Mesaj çox uzundur." };
+  // The key must belong to this conversation (prevents cross-chat spoofing).
+  if (file && !file.key.startsWith(`chat/${conversationId}/`)) {
+    return { ok: false, error: "Yanlış fayl açarı." };
+  }
 
   try {
     const msg = await prisma.message.create({
@@ -135,7 +145,7 @@ export async function sendMessageAction(
         senderId: ctx.me.userId,
         senderRole: ctx.me.role,
         content: text,
-        fileUrl: file?.url ?? null,
+        fileUrl: file?.key ?? null, // stores the private B2 object key
         fileName: file?.name ?? null,
       },
       select: { id: true, createdAt: true },
@@ -184,11 +194,71 @@ export async function fetchMessagesAction(
     senderId: m.senderId,
     senderRole: m.senderRole,
     content: m.content,
-    fileUrl: m.fileUrl,
+    hasFile: !!m.fileUrl,
     fileName: m.fileName,
     readAt: m.readAt ? m.readAt.toISOString() : null,
     createdAt: m.createdAt.toISOString(),
     mine: m.senderId === ctx.me.userId,
   }));
   return { ok: true, messages };
+}
+
+/**
+ * Step 1: get a presigned PUT URL to upload a chat attachment to B2 (private).
+ * Only a participant of the conversation may upload; returns the object key to
+ * pass back with sendMessageAction.
+ */
+export async function requestChatUploadUrlAction(input: {
+  conversationId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+}): Promise<ChatResult<{ url: string; key: string }>> {
+  const ctx = await assertParticipant(input.conversationId);
+  if (!ctx) return { ok: false, error: "İcazə yoxdur." };
+  if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
+  if (!CHAT_ALLOWED_TYPES.has(input.contentType)) {
+    return { ok: false, error: "Bu fayl tipi qəbul edilmir (şəkil və ya PDF)." };
+  }
+  if (!Number.isFinite(input.size) || input.size <= 0 || input.size > CHAT_MAX_SIZE) {
+    return { ok: false, error: "Fayl ölçüsü 8 MB-dan çox olmamalıdır." };
+  }
+  const key = `chat/${input.conversationId}/${randomUUID()}-${chatSafeName(input.fileName)}`;
+  try {
+    const url = await presignUpload(key, input.contentType);
+    return { ok: true, url, key };
+  } catch {
+    return { ok: false, error: "Yükləmə linki yaradıla bilmədi." };
+  }
+}
+
+/** Short-lived signed download URL for a chat attachment — participants only. */
+export async function getChatFileUrlAction(
+  messageId: string,
+): Promise<ChatResult<{ url: string }>> {
+  const me = await meParticipant();
+  if (!me) return { ok: false, error: "İcazə yoxdur." };
+  const msg = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: {
+      fileUrl: true,
+      fileName: true,
+      conversation: { select: { centerId: true, doctorId: true } },
+    },
+  });
+  if (!msg?.fileUrl) return { ok: false, error: "Fayl tapılmadı." };
+  const c = msg.conversation;
+  const allowed =
+    (me.role === "CENTER" && c.centerId === me.profileId) ||
+    (me.role === "DOCTOR" && c.doctorId === me.profileId);
+  if (!allowed) return { ok: false, error: "Bu fayla girişiniz yoxdur." };
+
+  try {
+    // Legacy public-URL attachments (pre-B2) open directly.
+    if (isLegacyPublicUrl(msg.fileUrl)) return { ok: true, url: msg.fileUrl };
+    const url = await presignDownload(msg.fileUrl, msg.fileName ?? "fayl");
+    return { ok: true, url };
+  } catch {
+    return { ok: false, error: "Endirmə linki yaradıla bilmədi." };
+  }
 }

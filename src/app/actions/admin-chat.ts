@@ -1,9 +1,12 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireRole } from "@/lib/auth/rbac";
 import { searchAdminUsers, type AdminSearchItem } from "@/lib/admin-chat";
+import { b2Configured, presignUpload, presignDownload } from "@/lib/b2";
+import { CHAT_ALLOWED_TYPES, CHAT_MAX_SIZE, chatSafeName, isLegacyPublicUrl } from "@/lib/chat-files";
 import type { ChatMessage } from "./chat";
 
 export type AdminChatResult<T = unknown> =
@@ -19,12 +22,68 @@ function toMessages(
     senderId: m.fromAdmin ? "admin" : "user",
     senderRole: m.fromAdmin ? "ADMIN" : "USER",
     content: m.content,
-    fileUrl: m.fileUrl,
+    hasFile: !!m.fileUrl,
     fileName: m.fileName,
     readAt: null,
     createdAt: m.createdAt.toISOString(),
     mine: m.fromAdmin === mineWhenAdmin,
   }));
+}
+
+/** Presigned PUT URL to upload a file into an admin-support thread (private B2). */
+export async function requestAdminChatUploadUrlAction(input: {
+  targetUserId?: string; // required when the admin uploads to a user's thread
+  fileName: string;
+  contentType: string;
+  size: number;
+}): Promise<AdminChatResult<{ url: string; key: string }>> {
+  const me = await getCurrentUser();
+  if (!me) return { ok: false, error: "İcazə yoxdur." };
+  let threadId: string;
+  if (me.role === "ADMIN") {
+    if (!input.targetUserId) return { ok: false, error: "İstifadəçi seçilməyib." };
+    threadId = await ensureThread(input.targetUserId);
+  } else if (me.role === "DOCTOR" || me.role === "CENTER") {
+    threadId = await ensureThread(me.id);
+  } else {
+    return { ok: false, error: "İcazə yoxdur." };
+  }
+  if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
+  if (!CHAT_ALLOWED_TYPES.has(input.contentType)) {
+    return { ok: false, error: "Bu fayl tipi qəbul edilmir (şəkil və ya PDF)." };
+  }
+  if (!Number.isFinite(input.size) || input.size <= 0 || input.size > CHAT_MAX_SIZE) {
+    return { ok: false, error: "Fayl ölçüsü 8 MB-dan çox olmamalıdır." };
+  }
+  const key = `chat/admin/${threadId}/${randomUUID()}-${chatSafeName(input.fileName)}`;
+  try {
+    const url = await presignUpload(key, input.contentType);
+    return { ok: true, url, key };
+  } catch {
+    return { ok: false, error: "Yükləmə linki yaradıla bilmədi." };
+  }
+}
+
+/** Short-lived signed download URL for an admin-thread attachment (thread user or admin). */
+export async function getAdminChatFileUrlAction(
+  messageId: string,
+): Promise<AdminChatResult<{ url: string }>> {
+  const me = await getCurrentUser();
+  if (!me) return { ok: false, error: "İcazə yoxdur." };
+  const msg = await prisma.adminMessage.findUnique({
+    where: { id: messageId },
+    select: { fileUrl: true, fileName: true, thread: { select: { userId: true } } },
+  });
+  if (!msg?.fileUrl) return { ok: false, error: "Fayl tapılmadı." };
+  const allowed = me.role === "ADMIN" || msg.thread.userId === me.id;
+  if (!allowed) return { ok: false, error: "Bu fayla girişiniz yoxdur." };
+  try {
+    if (isLegacyPublicUrl(msg.fileUrl)) return { ok: true, url: msg.fileUrl };
+    const url = await presignDownload(msg.fileUrl, msg.fileName ?? "fayl");
+    return { ok: true, url };
+  } catch {
+    return { ok: false, error: "Endirmə linki yaradıla bilmədi." };
+  }
 }
 
 // ---- User side (doctor / center ↔ admin) ----
@@ -43,7 +102,7 @@ async function ensureThread(userId: string): Promise<string> {
 /** Current user (doctor/center) sends a message to admin. */
 export async function sendToAdminAction(
   content: string,
-  file?: { url: string; name: string } | null,
+  file?: { key: string; name: string } | null,
 ): Promise<AdminChatResult<{ id: string }>> {
   const me = await getCurrentUser();
   if (!me || (me.role !== "DOCTOR" && me.role !== "CENTER")) {
@@ -55,8 +114,11 @@ export async function sendToAdminAction(
 
   try {
     const threadId = await ensureThread(me.id);
+    if (file && !file.key.startsWith(`chat/admin/${threadId}/`)) {
+      return { ok: false, error: "Yanlış fayl açarı." };
+    }
     const msg = await prisma.adminMessage.create({
-      data: { threadId, fromAdmin: false, content: text, fileUrl: file?.url ?? null, fileName: file?.name ?? null },
+      data: { threadId, fromAdmin: false, content: text, fileUrl: file?.key ?? null, fileName: file?.name ?? null },
       select: { id: true, createdAt: true },
     });
     await prisma.adminThread.update({
@@ -98,7 +160,7 @@ export async function fetchAdminThreadMessagesAction(): Promise<
 export async function adminSendToUserAction(
   userId: string,
   content: string,
-  file?: { url: string; name: string } | null,
+  file?: { key: string; name: string } | null,
 ): Promise<AdminChatResult<{ threadId: string }>> {
   await requireRole("ADMIN");
   const text = content.trim();
@@ -107,8 +169,11 @@ export async function adminSendToUserAction(
   if (!user) return { ok: false, error: "İstifadəçi tapılmadı." };
 
   const threadId = await ensureThread(userId);
+  if (file && !file.key.startsWith(`chat/admin/${threadId}/`)) {
+    return { ok: false, error: "Yanlış fayl açarı." };
+  }
   const msg = await prisma.adminMessage.create({
-    data: { threadId, fromAdmin: true, content: text, fileUrl: file?.url ?? null, fileName: file?.name ?? null },
+    data: { threadId, fromAdmin: true, content: text, fileUrl: file?.key ?? null, fileName: file?.name ?? null },
     select: { createdAt: true },
   });
   await prisma.adminThread.update({

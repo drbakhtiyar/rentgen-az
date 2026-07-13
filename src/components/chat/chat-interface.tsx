@@ -3,27 +3,25 @@
 import * as React from "react";
 import Image from "next/image";
 import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search, Pin, LifeBuoy, Paperclip, FileText } from "lucide-react";
-import { upload } from "@vercel/blob/client";
 import {
   openConversationAction,
   sendMessageAction,
   fetchMessagesAction,
+  requestChatUploadUrlAction,
+  getChatFileUrlAction,
   type ChatMessage,
 } from "@/app/actions/chat";
 import {
   sendToAdminAction,
   fetchAdminThreadMessagesAction,
+  requestAdminChatUploadUrlAction,
+  getAdminChatFileUrlAction,
 } from "@/app/actions/admin-chat";
 import type { ChatContact } from "@/lib/chat";
 import { useLocale } from "@/components/locale-context";
 import { getPanelDict } from "@/lib/i18n-panel";
 
 const POLL_MS = 4000;
-
-/** True if the attachment is an image (show inline preview vs a download chip). */
-function isImageFile(name: string | null): boolean {
-  return !!name && /\.(jpe?g|png|webp|gif|svg)$/i.test(name);
-}
 
 function ChatAvatar({
   url,
@@ -160,7 +158,7 @@ export function ChatInterface({
         senderId: "me",
         senderRole: meRole,
         content: text,
-        fileUrl: null,
+        hasFile: false,
         fileName: null,
         readAt: null,
         createdAt: new Date().toISOString(),
@@ -179,7 +177,7 @@ export function ChatInterface({
     else load(convId as string);
   }
 
-  /** Attach a file: upload to blob storage, then send it as a message. */
+  /** Attach a file: upload to private B2 via a presigned URL, then send it. */
   async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !active) return;
@@ -188,10 +186,19 @@ export function ChatInterface({
     setError(null);
     setUploading(true);
     try {
-      const blob = await upload(`chat/${file.name}`, file, {
-        access: "public",
-        handleUploadUrl: "/api/upload",
-      });
+      const contentType = file.type || "application/octet-stream";
+      const signed = isAdmin
+        ? await requestAdminChatUploadUrlAction({ fileName: file.name, contentType, size: file.size })
+        : await requestChatUploadUrlAction({ conversationId: convId as string, fileName: file.name, contentType, size: file.size });
+      if (!signed.ok) {
+        setError(signed.error);
+        return;
+      }
+      const put = await fetch(signed.url, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
+      if (!put.ok) {
+        setError(ct.fileError);
+        return;
+      }
       setMessages((prev) => [
         ...prev,
         {
@@ -199,14 +206,14 @@ export function ChatInterface({
           senderId: "me",
           senderRole: meRole,
           content: "",
-          fileUrl: blob.url,
+          hasFile: true,
           fileName: file.name,
           readAt: null,
           createdAt: new Date().toISOString(),
           mine: true,
         },
       ]);
-      const payload = { url: blob.url, name: file.name };
+      const payload = { key: signed.key, name: file.name };
       const res = isAdmin
         ? await sendToAdminAction("", payload)
         : await sendMessageAction(convId as string, "", payload);
@@ -219,6 +226,17 @@ export function ChatInterface({
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
     }
+  }
+
+  /** Open a chat attachment via a short-lived, access-gated signed URL. */
+  async function openFile(messageId: string) {
+    if (messageId.startsWith("tmp-")) return; // optimistic, not persisted yet
+    const res =
+      active?.kind === "admin"
+        ? await getAdminChatFileUrlAction(messageId)
+        : await getChatFileUrlAction(messageId);
+    if (!res.ok) return setError(res.error);
+    window.open(res.url, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -335,30 +353,19 @@ export function ChatInterface({
                         : "bg-white text-ink-900 ring-1 ring-slate-200")
                     }
                   >
-                    {m.fileUrl &&
-                      (isImageFile(m.fileName) ? (
-                        <a href={m.fileUrl} target="_blank" rel="noopener noreferrer">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={m.fileUrl}
-                            alt={m.fileName ?? ""}
-                            className="mb-1 max-h-52 max-w-full rounded-lg"
-                          />
-                        </a>
-                      ) : (
-                        <a
-                          href={m.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={
-                            "mb-1 flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium " +
-                            (m.mine ? "bg-white/15 hover:bg-white/25" : "bg-slate-100 hover:bg-slate-200")
-                          }
-                        >
-                          <FileText className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{m.fileName ?? "fayl"}</span>
-                        </a>
-                      ))}
+                    {m.hasFile && (
+                      <button
+                        type="button"
+                        onClick={() => openFile(m.id)}
+                        className={
+                          "mb-1 flex max-w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium " +
+                          (m.mine ? "bg-white/15 hover:bg-white/25" : "bg-slate-100 hover:bg-slate-200")
+                        }
+                      >
+                        <FileText className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{m.fileName ?? "fayl"}</span>
+                      </button>
+                    )}
                     {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                     <span
                       className={

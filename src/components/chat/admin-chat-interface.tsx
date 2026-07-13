@@ -6,21 +6,18 @@ import {
   Send, Loader2, ArrowLeft, Search, Pin, Users, Stethoscope, Building2,
   Megaphone, MessageSquare, CheckCircle2, Paperclip, FileText,
 } from "lucide-react";
-import { upload } from "@vercel/blob/client";
 import {
   adminFetchThreadMessagesAction,
   adminSendToUserAction,
   adminBroadcastAction,
   adminSearchUsersAction,
+  requestAdminChatUploadUrlAction,
+  getAdminChatFileUrlAction,
 } from "@/app/actions/admin-chat";
 import type { ChatMessage } from "@/app/actions/chat";
 import type { AdminThreadItem, AdminSearchItem } from "@/lib/admin-chat";
 
 const POLL_MS = 4000;
-
-function isImageFile(name: string | null): boolean {
-  return !!name && /\.(jpe?g|png|webp|gif|svg)$/i.test(name);
-}
 
 type Group = { key: "ALL" | "DOCTORS" | "CENTERS"; label: string; icon: React.ReactNode };
 const GROUPS: Group[] = [
@@ -129,7 +126,7 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
     setSending(true);
     setMessages((prev) => [
       ...prev,
-      { id: `tmp-${Date.now()}`, senderId: "admin", senderRole: "ADMIN", content: text, fileUrl: null, fileName: null, readAt: null, createdAt: new Date().toISOString(), mine: true },
+      { id: `tmp-${Date.now()}`, senderId: "admin", senderRole: "ADMIN", content: text, hasFile: false, fileName: null, readAt: null, createdAt: new Date().toISOString(), mine: true },
     ]);
     const res = await adminSendToUserAction(active.userId, text);
     setSending(false);
@@ -144,12 +141,16 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
     setError(null);
     setUploading(true);
     try {
-      const blob = await upload(`chat/${file.name}`, file, { access: "public", handleUploadUrl: "/api/upload" });
+      const contentType = file.type || "application/octet-stream";
+      const signed = await requestAdminChatUploadUrlAction({ targetUserId: active.userId, fileName: file.name, contentType, size: file.size });
+      if (!signed.ok) return setError(signed.error);
+      const put = await fetch(signed.url, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
+      if (!put.ok) return setError("Fayl yüklənmədi. Yenidən cəhd edin.");
       setMessages((prev) => [
         ...prev,
-        { id: `tmp-${Date.now()}`, senderId: "admin", senderRole: "ADMIN", content: "", fileUrl: blob.url, fileName: file.name, readAt: null, createdAt: new Date().toISOString(), mine: true },
+        { id: `tmp-${Date.now()}`, senderId: "admin", senderRole: "ADMIN", content: "", hasFile: true, fileName: file.name, readAt: null, createdAt: new Date().toISOString(), mine: true },
       ]);
-      const res = await adminSendToUserAction(active.userId, "", { url: blob.url, name: file.name });
+      const res = await adminSendToUserAction(active.userId, "", { key: signed.key, name: file.name });
       if (!res.ok) return setError(res.error);
       setActive((a) => (a ? { ...a, threadId: res.threadId } : a));
       load(res.threadId);
@@ -159,6 +160,13 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
     }
+  }
+
+  async function openFile(messageId: string) {
+    if (messageId.startsWith("tmp-")) return;
+    const res = await getAdminChatFileUrlAction(messageId);
+    if (!res.ok) return setError(res.error);
+    window.open(res.url, "_blank", "noopener,noreferrer");
   }
 
   async function sendBroadcast(e: React.FormEvent) {
@@ -280,17 +288,11 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
               {messages.map((m) => (
                 <div key={m.id} className={"flex " + (m.mine ? "justify-end" : "justify-start")}>
                   <div className={"max-w-[80%] rounded-2xl px-3 py-2 text-sm " + (m.mine ? "bg-brand-600 text-white" : "bg-white text-ink-900 ring-1 ring-slate-200")}>
-                    {m.fileUrl &&
-                      (isImageFile(m.fileName) ? (
-                        <a href={m.fileUrl} target="_blank" rel="noopener noreferrer">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={m.fileUrl} alt={m.fileName ?? ""} className="mb-1 max-h-52 max-w-full rounded-lg" />
-                        </a>
-                      ) : (
-                        <a href={m.fileUrl} target="_blank" rel="noopener noreferrer" className={"mb-1 flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium " + (m.mine ? "bg-white/15 hover:bg-white/25" : "bg-slate-100 hover:bg-slate-200")}>
-                          <FileText className="h-4 w-4 shrink-0" /> <span className="truncate">{m.fileName ?? "fayl"}</span>
-                        </a>
-                      ))}
+                    {m.hasFile && (
+                      <button type="button" onClick={() => openFile(m.id)} className={"mb-1 flex max-w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium " + (m.mine ? "bg-white/15 hover:bg-white/25" : "bg-slate-100 hover:bg-slate-200")}>
+                        <FileText className="h-4 w-4 shrink-0" /> <span className="truncate">{m.fileName ?? "fayl"}</span>
+                      </button>
+                    )}
                     {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                     <span className={"mt-0.5 block text-right text-[10px] " + (m.mine ? "text-white/70" : "text-slate-400")}>{hhmm(m.createdAt)}</span>
                   </div>
