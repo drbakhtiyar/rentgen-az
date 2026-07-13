@@ -433,6 +433,9 @@ model DoctorProfile {
   internshipUrl   String? // internatura sənədi
   specialtyUrl    String? // uzmanlıq sənədi
   status          CenterStatus @default(PENDING)
+  // false = QR göndərişi ilə yaranan minimal qaralama profil (qeydiyyat tamamlanmayıb).
+  // Tam qeydiyyatdan (/hekim/qeydiyyat) sonra true olur.
+  onboarded       Boolean      @default(true)
   // İş yeri = sistemdə qeydiyyatlı mərkəz (mərkəz təsdiqindən sonra profildə link olur)
   workplaceCenterId String?
   workplaceCenter   CenterProfile? @relation("DoctorWorkplace", fields: [workplaceCenterId], references: [id], onDelete: SetNull)

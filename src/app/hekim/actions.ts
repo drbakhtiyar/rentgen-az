@@ -87,10 +87,12 @@ export async function saveDoctorProfileAction(input: {
     };
 
     if (existing) {
-      await prisma.doctorProfile.update({ where: { id: existing.id }, data });
+      // Completing registration marks the profile as fully onboarded (clears the
+      // QR-draft flag so it drops off the incomplete-signups list).
+      await prisma.doctorProfile.update({ where: { id: existing.id }, data: { ...data, onboarded: true } });
     } else {
       await prisma.doctorProfile.create({
-        data: { ...data, userId: user.id, status: "PENDING" },
+        data: { ...data, userId: user.id, status: "PENDING", onboarded: true },
       });
       // Alert the admin by SMS that a new doctor awaits approval.
       await alertAdminSms(

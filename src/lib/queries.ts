@@ -325,7 +325,7 @@ export async function getIncompleteSignups(): Promise<IncompleteSignup[]> {
           select: {
             phone: true,
             centerProfile: { select: { id: true } },
-            doctorProfile: { select: { id: true } },
+            doctorProfile: { select: { id: true, onboarded: true } },
             patientProfile: { select: { id: true } },
           },
         })
@@ -343,7 +343,8 @@ export async function getIncompleteSignups(): Promise<IncompleteSignup[]> {
       } else if (a.role === "CENTER") {
         completed = !!u.centerProfile;
       } else if (a.role === "DOCTOR") {
-        completed = !!u.doctorProfile;
+        // A QR-draft profile (onboarded=false) still counts as incomplete.
+        completed = !!u.doctorProfile && u.doctorProfile.onboarded !== false;
       } else {
         completed = !!u.patientProfile;
       }

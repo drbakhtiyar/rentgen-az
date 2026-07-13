@@ -51,6 +51,11 @@ export async function submitDoctorReferralAction(input: {
   code: string;
   note?: string;
   preferredDate?: string;
+  /** QR-originated referral: the center invited the doctor via its own QR. */
+  invited?: boolean;
+  /** For a first-time doctor with no profile yet (collected in the form). */
+  doctorFirstName?: string;
+  doctorLastName?: string;
 }): Promise<ReferralResult> {
   const user = await requireRole("DOCTOR");
   const phone = normalizePhone(input.phone);
@@ -71,20 +76,6 @@ export async function submitDoctorReferralAction(input: {
   if (!input.centerId) return { ok: false, error: "Mərkəz seçin." };
 
   try {
-    const doctor = await prisma.doctorProfile.findUnique({
-      where: { userId: user.id },
-      select: { id: true, status: true, firstName: true, lastName: true },
-    });
-    if (!doctor) return { ok: false, error: "Həkim profili tapılmadı." };
-
-    // The doctor must be an accepted partner of this center.
-    const partner = await prisma.centerDoctor.findUnique({
-      where: { centerId_doctorId: { centerId: input.centerId, doctorId: doctor.id } },
-      select: { status: true },
-    });
-    if (partner?.status !== "ACCEPTED") {
-      return { ok: false, error: "Yalnız partnyor mərkəzlərinizə göndəriş edə bilərsiniz." };
-    }
     const center = await prisma.centerProfile.findUnique({
       where: { id: input.centerId },
       select: { id: true, name: true, slug: true, phone: true, userId: true, plan: true },
@@ -92,6 +83,43 @@ export async function submitDoctorReferralAction(input: {
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
     if (!centerLimits(center.plan).receivesReferrals) {
       return { ok: false, error: "Bu mərkəz həkim yönləndirmələrini qəbul etmir (Gold/Platinum paket lazımdır)." };
+    }
+
+    let doctor = await prisma.doctorProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true, status: true, firstName: true, lastName: true, onboarded: true },
+    });
+
+    if (input.invited) {
+      // Invited via the center's QR: create a minimal draft profile if the doctor
+      // has none, and auto-establish the partnership (the center consented by
+      // handing out its QR). Approval is NOT required for invited referrals.
+      if (!doctor) {
+        const df = (input.doctorFirstName ?? "").trim();
+        const dl = (input.doctorLastName ?? "").trim();
+        if (df.length < 2 || dl.length < 2) {
+          return { ok: false, error: "Ad və soyadınızı yazın." };
+        }
+        doctor = await prisma.doctorProfile.create({
+          data: { userId: user.id, firstName: df, lastName: dl, status: "PENDING", onboarded: false },
+          select: { id: true, status: true, firstName: true, lastName: true, onboarded: true },
+        });
+      }
+      await prisma.centerDoctor.upsert({
+        where: { centerId_doctorId: { centerId: center.id, doctorId: doctor.id } },
+        create: { centerId: center.id, doctorId: doctor.id, status: "ACCEPTED" },
+        update: {},
+      });
+    } else {
+      if (!doctor) return { ok: false, error: "Həkim profili tapılmadı." };
+      // The doctor must be an accepted partner of this center.
+      const partner = await prisma.centerDoctor.findUnique({
+        where: { centerId_doctorId: { centerId: center.id, doctorId: doctor.id } },
+        select: { status: true },
+      });
+      if (partner?.status !== "ACCEPTED") {
+        return { ok: false, error: "Yalnız partnyor mərkəzlərinizə göndəriş edə bilərsiniz." };
+      }
     }
 
     // Verify the patient's OTP.
@@ -187,6 +215,18 @@ export async function submitDoctorReferralAction(input: {
       `Həkim ${first} ${last} pasiyentini yönləndirdi.`,
       "/merkez/pasiyentler",
     );
+
+    // A QR-invited doctor whose registration isn't finished — nudge the center
+    // to help them complete it (also visible in admin's incomplete-signups list).
+    if (input.invited && doctor && doctor.onboarded === false) {
+      await notifyUser(
+        center.userId,
+        "NEW_REQUEST",
+        "Yeni həkim sizə göndəriş etdi",
+        `${docName} sizə pasiyent göndərdi, amma qeydiyyatını hələ tamamlamayıb. Onunla əlaqə saxlayıb tamamlamağa kömək edə bilərsiniz.`,
+        "/merkez/hekimler",
+      ).catch(() => {});
+    }
 
     revalidatePath("/hekim");
     revalidatePath("/merkez");
