@@ -2,12 +2,14 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { Stethoscope, MailQuestion, MessageSquare, Megaphone } from "lucide-react";
+import QRCode from "qrcode";
+import { Stethoscope, MailQuestion, MessageSquare, Megaphone, QrCode, Download } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { BroadcastForm } from "@/components/dashboard/broadcast-form";
 import { centerLimits } from "@/lib/plans";
+import { SITE_URL } from "@/lib/env";
 import { Badge } from "@/components/ui/badge";
 import { RespondPartnerButtons, RespondWorkplaceButtons } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
@@ -59,10 +61,15 @@ export default async function CenterDoctorsPage() {
   const user = await requireRole("CENTER", "/merkez/hekimler");
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true, name: true, plan: true },
+    select: { id: true, name: true, slug: true, plan: true },
   });
   if (!center) redirect("/merkez/qeydiyyat");
   const canBroadcast = centerLimits(center.plan).broadcast;
+  const receivesReferrals = centerLimits(center.plan).receivesReferrals;
+  const referralQrUrl = `${SITE_URL}/rentgen-merkezleri/${center.slug}?ref=hekim`;
+  const referralQr = receivesReferrals
+    ? await QRCode.toDataURL(referralQrUrl, { width: 320, margin: 2 })
+    : null;
 
   const [pending, accepted, workplaceClaims] = await Promise.all([
     prisma.centerDoctor.findMany({
@@ -94,6 +101,48 @@ export default async function CenterDoctorsPage() {
 
   return (
     <DashboardShell title={pd.nav.hekimler} roleLabel={pd.center.roleLabel} userName={center.name} nav={centerNav}>
+      <div className="mb-5">
+        {referralQr ? (
+          <Panel
+            title={
+              <span className="flex items-center gap-2">
+                <QrCode className="h-4 w-4 text-brand-600" /> {pd.center.refQrTitle}
+              </span>
+            }
+          >
+            <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={referralQr}
+                alt={pd.center.refQrTitle}
+                className="h-40 w-40 shrink-0 rounded-xl ring-1 ring-slate-200"
+              />
+              <div className="min-w-0 flex-1 text-sm text-slate-600">
+                <p>{pd.center.refQrBody}</p>
+                <p className="mt-2 break-all text-xs text-slate-400">{referralQrUrl}</p>
+                <a
+                  href={referralQr}
+                  download={`rentgen-hekim-qr-${center.slug}.png`}
+                  className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+                >
+                  <Download className="h-4 w-4" /> {pd.center.refQrDownload}
+                </a>
+              </div>
+            </div>
+          </Panel>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center gap-3">
+              <QrCode className="h-5 w-5 shrink-0 text-slate-400" />
+              <p className="text-sm text-slate-600">{pd.center.refQrUpsell}</p>
+            </div>
+            <Link href="/merkez/paket" className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+              {pd.center.viewPackage}
+            </Link>
+          </div>
+        )}
+      </div>
+
       {canBroadcast ? (
         accepted.length > 0 && (
           <div className="mb-5">

@@ -14,10 +14,13 @@ export function LoginForm({
   initialRole,
   next,
   locale = DEFAULT_LOCALE,
+  lockRole = false,
 }: {
   initialRole: Role;
   next?: string;
   locale?: Locale;
+  /** Hide the role tabs and lock to initialRole (e.g. doctor-only QR entry). */
+  lockRole?: boolean;
 }) {
   const t = getDict(locale).auth;
   const router = useRouter();
@@ -91,6 +94,11 @@ export function LoginForm({
             {t.subtitle}
           </p>
 
+          {lockRole ? (
+            <div className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-brand-50 py-2.5 text-sm font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
+              {t.roleDoctor}
+            </div>
+          ) : (
           <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl bg-slate-100 p-1">
             {(
               [
@@ -113,6 +121,7 @@ export function LoginForm({
               </button>
             ))}
           </div>
+          )}
 
           <form onSubmit={submitPhone} className="mt-5 space-y-4">
             <Field

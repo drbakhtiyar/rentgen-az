@@ -23,7 +23,7 @@ export const metadata: Metadata = buildMetadata({
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ role?: string; next?: string }>;
+  searchParams: Promise<{ role?: string; next?: string; only?: string }>;
 }) {
   const user = await getCurrentUser();
   const sp = await searchParams;
@@ -34,6 +34,8 @@ export default async function LoginPage({
 
   const role =
     sp.role === "center" ? "CENTER" : sp.role === "doctor" ? "DOCTOR" : "PATIENT";
+  // Doctor-only entry (e.g. scanned a center's referral QR) — lock to the doctor tab.
+  const lockRole = sp.only === "doctor" && role === "DOCTOR";
 
   return (
     <div className="relative overflow-hidden bg-ink-950">
@@ -78,7 +80,7 @@ export default async function LoginPage({
         </div>
 
         <div className="mx-auto w-full max-w-md">
-          <LoginForm initialRole={role} next={sp.next} locale={locale} />
+          <LoginForm initialRole={role} next={sp.next} locale={locale} lockRole={lockRole} />
         </div>
       </Container>
     </div>

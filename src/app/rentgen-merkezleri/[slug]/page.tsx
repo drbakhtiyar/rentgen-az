@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import {
   MapPin,
@@ -17,6 +17,7 @@ import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { AppointmentForm } from "@/components/forms/appointment-form";
 import { DoctorReferralForm } from "@/components/forms/doctor-referral-form";
+import { ScrollToReferral } from "@/components/scroll-to-referral";
 import { Stars, RatingSummary } from "@/components/reviews/stars";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { JsonLd } from "@/components/ui/json-ld";
@@ -67,10 +68,14 @@ export async function generateMetadata({
 
 export default async function CenterDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ ref?: string }>;
 }) {
   const { slug } = await params;
+  const { ref } = await searchParams;
+  const invited = ref === "hekim"; // arrived via the center's doctor-referral QR
   const center = await getCenterBySlug(slug);
   if (!center) notFound();
 
@@ -88,6 +93,15 @@ export default async function CenterDetailPage({
   const rating = ratingsMap[center.id] ?? { avg: 0, count: 0 };
 
   const me = await getCurrentUser();
+
+  // QR entry ("Send a patient" QR): a doctor must be logged in. If not, send
+  // them to a doctor-only login that returns here afterwards.
+  if (invited && me?.role !== "DOCTOR") {
+    redirect(
+      `/giris?role=doctor&only=doctor&next=${encodeURIComponent(`/rentgen-merkezleri/${slug}?ref=hekim`)}`,
+    );
+  }
+
   const patientInfo =
     me?.role === "PATIENT" && me.patientProfile
       ? {
@@ -98,24 +112,34 @@ export default async function CenterDetailPage({
         }
       : null;
 
+  const receivesReferrals = centerLimits(center.plan).receivesReferrals;
+
   // A logged-in approved partner doctor gets the referral form (this center
   // pre-selected) instead of the patient appointment form.
-  const referralDoctor =
+  const approvedDoctor =
     me?.role === "DOCTOR" && me.doctorProfile?.status === "APPROVED"
       ? me.doctorProfile
       : null;
   let isPartnerDoctor = false;
-  if (referralDoctor) {
+  if (approvedDoctor) {
     const partner = await prisma.centerDoctor
       .findUnique({
-        where: { centerId_doctorId: { centerId: center.id, doctorId: referralDoctor.id } },
+        where: { centerId_doctorId: { centerId: center.id, doctorId: approvedDoctor.id } },
         select: { status: true },
       })
       .catch(() => null);
     isPartnerDoctor = partner?.status === "ACCEPTED";
   }
+  // Invited (QR) doctor: any logged-in doctor may refer regardless of
+  // partnership/approval — the center invited them via its own QR.
+  const invitedDoctor = invited && me?.role === "DOCTOR";
+  // The doctor profile to prefill the form from (may be null for a first-timer).
+  const referralDoctor = approvedDoctor ?? (invitedDoctor ? me?.doctorProfile ?? null : null);
   // Referral form only for centers whose plan accepts doctor referrals (Gold+).
-  const canRefer = isPartnerDoctor && centerLimits(center.plan).receivesReferrals;
+  const canRefer = receivesReferrals && (isPartnerDoctor || invitedDoctor);
+  // First-time QR doctor with no name yet — the form collects it once.
+  const needsDoctorName =
+    invitedDoctor && (!me?.doctorProfile?.firstName || !me?.doctorProfile?.lastName);
   // Reviews/rating only for centers whose plan includes them (Gold+).
   const showReviews = centerLimits(center.plan).reviews;
   let canReview = false;
@@ -503,7 +527,8 @@ export default async function CenterDetailPage({
             </div>
 
             {/* Sidebar — appointment form */}
-            <aside className="lg:sticky lg:top-20 lg:self-start">
+            <aside id="gonderis" className="scroll-mt-20 lg:sticky lg:top-20 lg:self-start">
+              {invitedDoctor && <ScrollToReferral />}
               <Card className="p-6">
                 <h2 className="font-display text-lg font-bold text-ink-900">
                   {canRefer ? dd.sendPatient : dd.sendRequest}
@@ -512,10 +537,12 @@ export default async function CenterDetailPage({
                   {canRefer ? dd.referHint : dd.requestDesc}
                 </p>
                 <div className="mt-4">
-                  {canRefer && referralDoctor ? (
+                  {canRefer ? (
                     <DoctorReferralForm
-                      doctorName={doctorName(referralDoctor.firstName, referralDoctor.lastName)}
-                      clinic={referralDoctor.clinic}
+                      doctorName={referralDoctor ? doctorName(referralDoctor.firstName, referralDoctor.lastName) : ""}
+                      clinic={referralDoctor?.clinic ?? null}
+                      invited={invitedDoctor}
+                      needsName={needsDoctorName}
                       centers={[{ id: center.id, name: center.name, city: center.city }]}
                       servicesByCenter={{
                         [center.id]: center.services.map((cs) => ({

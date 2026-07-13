@@ -155,6 +155,10 @@ export type PanelDict = {
     workplaceTitle: string;
     workplaceBody: string;
     pendingRequestsTitle: string;
+    refQrTitle: string;
+    refQrBody: string;
+    refQrDownload: string;
+    refQrUpsell: string;
     qrTitle: string;
     qrHow: string;
     qrHowBody: string;
@@ -476,6 +480,10 @@ const az: PanelDict = {
     workplaceTitle: "İş yeri təsdiqləri",
     workplaceBody: "Bu həkimlər sizi iş yeri kimi göstərib. Təsdiqləsəniz, həkimin profilində mərkəziniz link kimi görünəcək.",
     pendingRequestsTitle: "Gözləyən sorğular",
+    refQrTitle: "Həkim göndərişi üçün QR kod",
+    refQrBody: "Bu QR kodu həkimlərə verin. Həkim skan edəndə birbaşa mərkəzinizin səhifəsinə düşür və pasiyent göndəriş formu avtomatik dolur. Login olmayan həkim əvvəlcə nömrəsi ilə daxil olur — mərkəz və pasiyent onsuz da avtomatik seçilir. İlk göndəriş admin təsdiqi gözləmədən keçir.",
+    refQrDownload: "QR kodu yüklə",
+    refQrUpsell: "Həkim göndərişi QR kodu Gold və Platinum paketlərdə mövcuddur.",
     qrTitle: "Rəy toplamaq üçün QR kod",
     qrHow: "Necə işləyir?",
     qrHowBody: "Bu QR kodu çap edib registraturada yerləşdirin. Mərkəzinizdə rentgen çəkdirən pasiyent kodu skan edəndə mərkəziniz artıq seçilmiş halda rəy forması açılır — telefon təsdiqi (OTP) ilə rəy yazır.",
@@ -797,6 +805,10 @@ const ru: PanelDict = {
     workplaceTitle: "Подтверждения места работы",
     workplaceBody: "Эти врачи указали вас как место работы. Если подтвердите, ваш центр появится ссылкой в профиле врача.",
     pendingRequestsTitle: "Ожидающие запросы",
+    refQrTitle: "QR-код для направления от врача",
+    refQrBody: "Дайте этот QR-код врачам. При сканировании врач сразу попадает на страницу вашего центра, а форма направления пациента заполняется автоматически. Не вошедший врач сначала входит по номеру — центр и пациент всё равно выбираются автоматически. Первое направление проходит без подтверждения администратора.",
+    refQrDownload: "Скачать QR-код",
+    refQrUpsell: "QR-код направлений врачей доступен в пакетах Gold и Platinum.",
     qrTitle: "QR-код для сбора отзывов",
     qrHow: "Как это работает?",
     qrHowBody: "Распечатайте этот QR-код и разместите его на ресепшене. Когда пациент, сделавший рентген в вашем центре, отсканирует код, откроется форма отзыва с уже выбранным вашим центром — отзыв оставляется после подтверждения по телефону (OTP).",

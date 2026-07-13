@@ -23,6 +23,8 @@ export function DoctorReferralForm({
   hoursByCenter,
   lockedCenterId,
   locale = DEFAULT_LOCALE,
+  invited = false,
+  needsName = false,
 }: {
   doctorName: string;
   clinic: string | null;
@@ -32,6 +34,10 @@ export function DoctorReferralForm({
   /** When set, the center is fixed (e.g. on a center's own page). */
   lockedCenterId?: string;
   locale?: Locale;
+  /** QR-invited referral (relaxed gating on the server). */
+  invited?: boolean;
+  /** First-time QR doctor: collect the doctor's own name once. */
+  needsName?: boolean;
 }) {
   const t = getDict(locale).referral;
   const [step, setStep] = React.useState<"form" | "otp">("form");
@@ -44,6 +50,9 @@ export function DoctorReferralForm({
   const [serviceSlug, setServiceSlug] = React.useState("");
   const [firstName, setFirstName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
+  // The doctor's own name (only when a first-time QR doctor has no profile yet).
+  const [docFirst, setDocFirst] = React.useState("");
+  const [docLast, setDocLast] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [note, setNote] = React.useState("");
   const [date, setDate] = React.useState("");
@@ -62,6 +71,8 @@ export function DoctorReferralForm({
     e.preventDefault();
     setError(null);
     if (!centerId) return setError(t.errCenter);
+    if (needsName && (docFirst.trim().length < 2 || docLast.trim().length < 2))
+      return setError(t.errName);
     if (firstName.trim().length < 2 || lastName.trim().length < 2)
       return setError(t.errName);
     if (!phone.trim()) return setError(t.errPhone);
@@ -86,6 +97,9 @@ export function DoctorReferralForm({
         code: code.trim(),
         note: note.trim() || undefined,
         preferredDate: date && time ? `${date}T${time}:00+04:00` : undefined,
+        invited,
+        doctorFirstName: needsName ? docFirst.trim() : undefined,
+        doctorLastName: needsName ? docLast.trim() : undefined,
       });
       if (!res.ok) return setError(res.error ?? t.errGeneric);
       setDone(res.message ?? t.submitted);
@@ -150,10 +164,21 @@ export function DoctorReferralForm({
 
   return (
     <form onSubmit={requestOtp} className="space-y-4">
-      <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-        {t.doctorLabel}: <span className="font-semibold text-ink-800">{doctorName}</span>
-        {clinic ? ` · ${clinic}` : ""}
-      </p>
+      {needsName ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label={t.firstLabel} htmlFor="ref-docfirst" required>
+            <Input id="ref-docfirst" value={docFirst} onChange={(e) => setDocFirst(e.target.value)} placeholder={t.firstPh} required />
+          </Field>
+          <Field label={t.lastLabel} htmlFor="ref-doclast" required>
+            <Input id="ref-doclast" value={docLast} onChange={(e) => setDocLast(e.target.value)} placeholder={t.lastPh} required />
+          </Field>
+        </div>
+      ) : (
+        <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          {t.doctorLabel}: <span className="font-semibold text-ink-800">{doctorName}</span>
+          {clinic ? ` · ${clinic}` : ""}
+        </p>
+      )}
 
       <Field label={t.centerLabel} htmlFor="ref-center" required hint={lockedCenterId ? undefined : t.centerHintPartner}>
         {lockedCenterId ? (
