@@ -10,6 +10,8 @@ import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { FavoriteRemoveButton } from "@/components/favorite-remove-button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -32,12 +34,14 @@ export default async function FavoritesPage() {
     },
   });
 
+  const pd = getPanelDict(await getLocale());
+  const t = pd.patient;
   const name =
-    [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Pasiyent";
+    [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || pd.shell.rolePatient;
   const favorites = profile?.favoriteCenters ?? [];
 
   return (
-    <DashboardShell title="Seçilmiş mərkəzlər" roleLabel="Pasiyent" userName={name} nav={patientNav}>
+    <DashboardShell title={t.favoritesTitle} roleLabel={pd.shell.rolePatient} userName={name} nav={patientNav}>
       <Panel>
         {favorites.length > 0 ? (
           <div className="space-y-3">
@@ -73,11 +77,11 @@ export default async function FavoritesPage() {
         ) : (
           <EmptyState
             icon={<Heart />}
-            title="Seçilmiş mərkəz yoxdur"
-            description="Bəyəndiyiniz mərkəzləri seçilmişlərə əlavə edin və burada saxlayın."
+            title={t.favEmptyTitle}
+            description={t.favEmptyBody}
           >
             <ButtonLink href="/rentgen-merkezleri">
-              <Search className="h-4 w-4" /> Mərkəz axtar
+              <Search className="h-4 w-4" /> {t.findCenter}
             </ButtonLink>
           </EmptyState>
         )}

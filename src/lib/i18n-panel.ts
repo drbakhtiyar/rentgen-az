@@ -106,6 +106,28 @@ export type PanelDict = {
     regTitle: string;
     regSubtitle: string;
   };
+  patient: {
+    greeting: string;
+    profileIncomplete: string;
+    complete: string;
+    statRequests: string;
+    favoritesTitle: string;
+    statPhone: string;
+    historyTitle: string;
+    generalRequest: string;
+    preferredTime: string;
+    openResult: string;
+    reqEmptyTitle: string;
+    reqEmptyBody: string;
+    findCenter: string;
+    reviewableTitle: string;
+    updateReview: string;
+    quickLinks: string;
+    editProfile: string;
+    favEmptyTitle: string;
+    favEmptyBody: string;
+    notificationsTitle: string;
+  };
 };
 
 const az: PanelDict = {
@@ -206,6 +228,28 @@ const az: PanelDict = {
     regTitle: "Mərkəz profilini yaradın",
     regSubtitle: "Məlumatları doldurun — admin təsdiqindən sonra mərkəziniz saytda görünəcək.",
   },
+  patient: {
+    greeting: "Salam",
+    profileIncomplete: "Profilinizi tamamlayın — ad və soyadınızı əlavə edin.",
+    complete: "Tamamla",
+    statRequests: "Müraciətlər",
+    favoritesTitle: "Seçilmiş mərkəzlər",
+    statPhone: "Telefon",
+    historyTitle: "Müraciət tarixçəsi",
+    generalRequest: "Ümumi müraciət",
+    preferredTime: "Seçilmiş vaxt:",
+    openResult: "Rentgen nəticəsini aç / yüklə",
+    reqEmptyTitle: "Hələ müraciətiniz yoxdur",
+    reqEmptyBody: "Mərkəz axtarıb müraciət göndərdikdə burada görünəcək.",
+    findCenter: "Mərkəz axtar",
+    reviewableTitle: "Rəy yaza biləcəyiniz mərkəzlər",
+    updateReview: "Rəyinizi yeniləyə bilərsiniz",
+    quickLinks: "Tez keçidlər",
+    editProfile: "Profili redaktə et",
+    favEmptyTitle: "Seçilmiş mərkəz yoxdur",
+    favEmptyBody: "Bəyəndiyiniz mərkəzləri seçilmişlərə əlavə edin və burada saxlayın.",
+    notificationsTitle: "Bildirişlər",
+  },
 };
 
 const ru: PanelDict = {
@@ -305,6 +349,28 @@ const ru: PanelDict = {
     homeLink: "Главная",
     regTitle: "Создайте профиль центра",
     regSubtitle: "Заполните данные — после подтверждения администратором ваш центр появится на сайте.",
+  },
+  patient: {
+    greeting: "Здравствуйте",
+    profileIncomplete: "Заполните профиль — добавьте имя и фамилию.",
+    complete: "Заполнить",
+    statRequests: "Заявки",
+    favoritesTitle: "Избранные центры",
+    statPhone: "Телефон",
+    historyTitle: "История заявок",
+    generalRequest: "Общая заявка",
+    preferredTime: "Выбранное время:",
+    openResult: "Открыть / скачать результат рентгена",
+    reqEmptyTitle: "Заявок пока нет",
+    reqEmptyBody: "Когда вы найдёте центр и отправите заявку, она появится здесь.",
+    findCenter: "Найти центр",
+    reviewableTitle: "Центры, которым можно оставить отзыв",
+    updateReview: "Вы можете обновить свой отзыв",
+    quickLinks: "Быстрые ссылки",
+    editProfile: "Редактировать профиль",
+    favEmptyTitle: "Нет избранных центров",
+    favEmptyBody: "Добавляйте понравившиеся центры в избранное и храните их здесь.",
+    notificationsTitle: "Уведомления",
   },
 };
 

@@ -15,6 +15,8 @@ import { getReviewableCentersForPatient } from "@/lib/queries";
 import { parseHours } from "@/lib/hours";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateAz, formatDateTimeAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -52,35 +54,35 @@ export default async function PatientDashboardPage() {
     ? await getReviewableCentersForPatient(profile.id)
     : [];
 
+  const pd = getPanelDict(await getLocale());
+  const t = pd.patient;
   const name =
-    [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Pasiyent";
+    [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || pd.shell.rolePatient;
   const profileIncomplete = !profile?.firstName || !profile?.lastName;
 
   return (
-    <DashboardShell title={`Salam, ${name}`} roleLabel="Pasiyent" userName={name} nav={patientNav}>
+    <DashboardShell title={`${t.greeting}, ${name}`} roleLabel={pd.shell.rolePatient} userName={name} nav={patientNav}>
       {profileIncomplete && (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4">
           <div className="flex items-center gap-3">
             <User className="h-5 w-5 text-brand-600" />
-            <p className="text-sm text-brand-900">
-              Profilinizi tamamlayın — ad və soyadınızı əlavə edin.
-            </p>
+            <p className="text-sm text-brand-900">{t.profileIncomplete}</p>
           </div>
           <ButtonLink href="/kabinet/profil" size="sm" className="shrink-0">
-            Tamamla
+            {t.complete}
           </ButtonLink>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Müraciətlər" value={profile?._count.appointmentRequests ?? 0} icon={<Inbox />} />
-        <StatCard label="Seçilmiş mərkəzlər" value={profile?._count.favoriteCenters ?? 0} icon={<Heart />} tone="cyan" />
-        <StatCard label="Telefon" value={<span className="text-base">{formatPhoneDisplay(user.phone)}</span>} icon={<User />} tone="slate" />
+        <StatCard label={t.statRequests} value={profile?._count.appointmentRequests ?? 0} icon={<Inbox />} />
+        <StatCard label={t.favoritesTitle} value={profile?._count.favoriteCenters ?? 0} icon={<Heart />} tone="cyan" />
+        <StatCard label={t.statPhone} value={<span className="text-base">{formatPhoneDisplay(user.phone)}</span>} icon={<User />} tone="slate" />
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Panel title="Müraciət tarixçəsi">
+          <Panel title={t.historyTitle}>
             {requests.length > 0 ? (
               <div className="space-y-3">
                 {requests.map((r) => (
@@ -96,7 +98,7 @@ export default async function PatientDashboardPage() {
                               {r.center.name}
                             </Link>
                           ) : (
-                            "Ümumi müraciət"
+                            t.generalRequest
                           )}
                         </p>
                         <p className="text-sm text-slate-500">
@@ -105,7 +107,7 @@ export default async function PatientDashboardPage() {
                         </p>
                         {r.preferredDate && (
                           <p className="mt-1 text-xs font-semibold text-brand-700">
-                            Seçilmiş vaxt: {formatDateTimeAz(r.preferredDate)}
+                            {t.preferredTime} {formatDateTimeAz(r.preferredDate)}
                           </p>
                         )}
                       </div>
@@ -129,7 +131,7 @@ export default async function PatientDashboardPage() {
                         rel="noopener noreferrer"
                         className="mt-3 inline-flex items-center gap-2 rounded-xl bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 ring-1 ring-inset ring-brand-100 hover:bg-brand-100"
                       >
-                        <Download className="h-4 w-4" /> Rentgen nəticəsini aç / yüklə
+                        <Download className="h-4 w-4" /> {t.openResult}
                       </a>
                     )}
                     <RentgenDownloadList files={r.files} />
@@ -139,11 +141,11 @@ export default async function PatientDashboardPage() {
             ) : (
               <EmptyState
                 icon={<Inbox />}
-                title="Hələ müraciətiniz yoxdur"
-                description="Mərkəz axtarıb müraciət göndərdikdə burada görünəcək."
+                title={t.reqEmptyTitle}
+                description={t.reqEmptyBody}
               >
                 <ButtonLink href="/rentgen-merkezleri">
-                  <Search className="h-4 w-4" /> Mərkəz axtar
+                  <Search className="h-4 w-4" /> {t.findCenter}
                 </ButtonLink>
               </EmptyState>
             )}
@@ -152,7 +154,7 @@ export default async function PatientDashboardPage() {
 
         <div className="space-y-5">
           {reviewable.length > 0 && (
-            <Panel title="Rəy yaza biləcəyiniz mərkəzlər">
+            <Panel title={t.reviewableTitle}>
               <div className="space-y-5">
                 {reviewable.map((c) => (
                   <div key={c.id} className="rounded-xl border border-slate-100 p-4">
@@ -165,7 +167,7 @@ export default async function PatientDashboardPage() {
                       </Link>
                       {c.review && (
                         <span className="text-xs text-slate-400">
-                          Rəyinizi yeniləyə bilərsiniz
+                          {t.updateReview}
                         </span>
                       )}
                     </div>
@@ -194,11 +196,11 @@ export default async function PatientDashboardPage() {
             </Panel>
           )}
 
-          <Panel title="Tez keçidlər">
+          <Panel title={t.quickLinks}>
             <div className="space-y-2">
-              <QuickLink href="/rentgen-merkezleri" label="Mərkəz axtar" icon={<Search />} />
-              <QuickLink href="/kabinet/secilmisler" label="Seçilmiş mərkəzlər" icon={<Heart />} />
-              <QuickLink href="/kabinet/profil" label="Profili redaktə et" icon={<User />} />
+              <QuickLink href="/rentgen-merkezleri" label={t.findCenter} icon={<Search />} />
+              <QuickLink href="/kabinet/secilmisler" label={t.favoritesTitle} icon={<Heart />} />
+              <QuickLink href="/kabinet/profil" label={t.editProfile} icon={<User />} />
             </div>
           </Panel>
         </div>
