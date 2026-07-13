@@ -60,7 +60,7 @@ export async function purchasePlanFromWalletAction(
   }
 
   if (isCenter) {
-    await prisma.centerProfile.update({ where: { userId: user.id }, data: { plan, planUntil: until } });
+    await prisma.centerProfile.update({ where: { userId: user.id }, data: { plan, planUntil: until, planExpiredAt: null } });
     revalidatePath("/merkez");
     revalidatePath("/merkez/paket");
     revalidatePath("/rentgen-merkezleri");

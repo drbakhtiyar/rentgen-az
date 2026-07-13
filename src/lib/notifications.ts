@@ -18,7 +18,8 @@ export type NotifType =
   | "NEW_MESSAGE"
   | "CENTER_BROADCAST"
   | "PLAN_EXPIRING"
-  | "PLAN_EXPIRED";
+  | "PLAN_EXPIRED"
+  | "PLAN_DATA_WARNING";
 
 /** Create an in-app notification for a user (best-effort — never throws). */
 export async function notifyUser(

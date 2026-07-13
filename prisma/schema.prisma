@@ -199,6 +199,9 @@ model CenterProfile {
   status            CenterStatus @default(PENDING)
   plan              Plan         @default(FREE)
   planUntil         DateTime? // abunənin bitmə tarixi (ödəniş fazasında)
+  // Ödənişli plan bitib FREE-yə düşdüyü an. 3 ay ərzində yenilənməsə, saxlanan
+  // fayllar silinir. Yeniləmədə null olur.
+  planExpiredAt     DateTime?
   apiKey            String?      @unique // Platinum API girişi açarı
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
