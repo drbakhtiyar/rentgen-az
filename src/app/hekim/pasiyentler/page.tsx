@@ -12,6 +12,8 @@ import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list"
 import { prisma } from "@/lib/db";
 import { getActiveServices } from "@/lib/queries";
 import { requireRole } from "@/lib/auth/rbac";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { formatDateAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
@@ -119,18 +121,20 @@ export default async function DoctorPatientsPage({
 
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
+  const pd = getPanelDict(await getLocale());
+  const t = pd.doctor;
 
   return (
-    <DashboardShell title="Pasiyentlər" roleLabel="Həkim" userName={fullName} nav={doctorNav}>
+    <DashboardShell title={pd.nav.pasiyentler} roleLabel={pd.shell.roleDoctor} userName={fullName} nav={doctorNav}>
       <form className="mb-5 flex flex-wrap items-center gap-2">
         <Input
           name="q"
           defaultValue={query}
-          placeholder="Ad və ya telefon üzrə axtar"
+          placeholder={pd.center.searchPlaceholder}
           className="max-w-xs"
         />
         <Button type="submit">
-          <Search className="h-4 w-4" /> Axtar
+          <Search className="h-4 w-4" /> {pd.center.searchBtn}
         </Button>
       </form>
 
@@ -225,19 +229,15 @@ export default async function DoctorPatientsPage({
         <Panel>
           <EmptyState
             icon={<Users />}
-            title={query ? "Nəticə tapılmadı" : "Hələ pasiyent yoxdur"}
-            description={
-              query
-                ? "Axtarışa uyğun pasiyent yoxdur."
-                : "Pasiyentlər müraciət edərkən sizi seçəndə burada görünəcək."
-            }
+            title={query ? pd.center.noResultTitle : t.patientsEmptyTitle}
+            description={query ? pd.center.noResultBody : t.patientsEmptyBody}
           />
         </Panel>
       )}
 
       {myReferrals.length > 0 && (
         <div className="mt-6">
-          <Panel title="Sürətli göndərişlərim">
+          <Panel title={t.quickReferrals}>
             <ul className="divide-y divide-slate-100">
               {myReferrals.map((r) => (
                 <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">

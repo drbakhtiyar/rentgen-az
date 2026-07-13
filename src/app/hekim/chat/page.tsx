@@ -7,6 +7,8 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getChatContacts } from "@/lib/chat";
 import { doctorName } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -31,11 +33,12 @@ export default async function DoctorChatPage({
 
   const { with: initialWith } = await searchParams;
   const contacts = await getChatContacts("DOCTOR", doctor.id, user.id);
+  const pd = getPanelDict(await getLocale());
 
   return (
     <DashboardShell
-      title="Söhbətlər"
-      roleLabel="Həkim"
+      title={pd.nav.chat}
+      roleLabel={pd.shell.roleDoctor}
       userName={doctorName(doctor.firstName, doctor.lastName)}
       nav={doctorNav}
     >

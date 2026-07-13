@@ -7,6 +7,8 @@ import { NotificationList } from "@/components/dashboard/notification-list";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorName } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -31,14 +33,16 @@ export default async function DoctorNotificationsPage() {
     take: 100,
   });
 
+  const pd = getPanelDict(await getLocale());
+
   return (
     <DashboardShell
-      title="Bildirişlər"
-      roleLabel="Həkim"
+      title={pd.nav.bildirisler}
+      roleLabel={pd.shell.roleDoctor}
       userName={doctorName(doctor.firstName, doctor.lastName)}
       nav={doctorNav}
     >
-      <Panel title="Bildirişlər">
+      <Panel title={pd.nav.bildirisler}>
         <NotificationList items={items} />
       </Panel>
     </DashboardShell>

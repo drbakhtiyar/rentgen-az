@@ -11,6 +11,8 @@ import { getBalance } from "@/lib/wallet";
 import { getWalletHistory } from "@/lib/queries";
 import { DOCTOR_PLAN_PRICE } from "@/lib/plans";
 import { formatDateAz, doctorName } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 function daysUntil(d: Date | null): number | null {
@@ -38,10 +40,12 @@ export default async function DoctorBillingPage() {
     getWalletHistory(user.id),
   ]);
 
+  const pd = getPanelDict(await getLocale());
+
   return (
     <DashboardShell
-      title="Paket / Balans"
-      roleLabel="Həkim"
+      title={pd.nav.paket}
+      roleLabel={pd.shell.roleDoctor}
       userName={doctorName(doctor.firstName, doctor.lastName)}
       nav={doctorNav}
     >
@@ -53,7 +57,7 @@ export default async function DoctorBillingPage() {
         prices={DOCTOR_PLAN_PRICE}
       />
       <div className="mt-6">
-        <Panel title="Ödəniş və balans tarixçəsi">
+        <Panel title={pd.center.historyTitle}>
           <WalletHistory entries={history} />
         </Panel>
       </div>

@@ -20,6 +20,8 @@ import { doctorLimits } from "@/lib/plans";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, doctorName } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 
@@ -119,10 +121,13 @@ export default async function DoctorDashboardPage() {
     groups[i].items.push(r);
   }
 
+  const pd = getPanelDict(await getLocale());
+  const t = pd.doctor;
+
   return (
     <DashboardShell
-      title="İcmal"
-      roleLabel="Həkim"
+      title={pd.nav.icmal}
+      roleLabel={pd.shell.roleDoctor}
       userName={fullName}
       nav={doctorNav}
     >
@@ -138,32 +143,28 @@ export default async function DoctorDashboardPage() {
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
           <div>
             <p className="font-semibold">
-              {doctor.status === "DEACTIVATED"
-                ? "Profiliniz deaktiv edilib"
-                : "Profiliniz admin təsdiqini gözləyir"}
+              {doctor.status === "DEACTIVATED" ? t.deactivatedTitle : t.pendingTitle}
             </p>
-            <p className="mt-0.5">
-              Təsdiqlənənə qədər pasiyentlərin seçim siyahısında görünməyəcəksiniz.
-            </p>
+            <p className="mt-0.5">{t.pendingBody}</p>
           </div>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
-          label="Yönləndirmələr"
+          label={t.statReferrals}
           value={requests.length}
           icon={<Send />}
           tone="brand"
         />
         <StatCard
-          label="Pasiyentlər"
+          label={t.statPatients}
           value={uniquePatients}
           icon={<Users />}
           tone="cyan"
         />
         <StatCard
-          label="Mərkəzlər"
+          label={t.statCenters}
           value={uniqueCenters}
           icon={<Building2 />}
           tone="green"
@@ -182,13 +183,13 @@ export default async function DoctorDashboardPage() {
 
       <div className="mt-5">
         <Panel
-          title="Pasiyentlərim"
+          title={t.myPatients}
           action={
             <Link
               href="/hekim/pasiyentler"
               className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700"
             >
-              <Users className="h-4 w-4" /> Hamısı
+              <Users className="h-4 w-4" /> {t.all}
             </Link>
           }
         >
@@ -205,7 +206,7 @@ export default async function DoctorDashboardPage() {
                       {formatPhoneDisplay(g.phone)}
                     </span>
                     <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
-                      {g.items.length} müraciət
+                      {g.items.length} {t.requestsWord}
                     </span>
                   </div>
                   <ul className="mt-3 divide-y divide-slate-100">
@@ -248,7 +249,7 @@ export default async function DoctorDashboardPage() {
                               rel="noopener noreferrer"
                               className="mt-2 inline-flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100 hover:bg-brand-100"
                             >
-                              <Download className="h-3.5 w-3.5" /> Rentgen nəticəsini aç
+                              <Download className="h-3.5 w-3.5" /> {t.openResult}
                             </a>
                           )}
                           {isPartner && <RentgenDownloadList files={r.files} />}
@@ -256,7 +257,7 @@ export default async function DoctorDashboardPage() {
                             <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-100">
                               <span className="flex items-center gap-1.5">
                                 <Lock className="h-3.5 w-3.5" />
-                                Nəticəni görmək üçün bu mərkəzlə əməkdaşlıq sorğusu göndərin.
+                                {t.lockedResult}
                               </span>
                               <RequestPartnerButton centerId={r.centerId} status={partner} />
                             </div>
@@ -271,8 +272,8 @@ export default async function DoctorDashboardPage() {
           ) : (
             <EmptyState
               icon={<Users />}
-              title="Hələ yönləndirmə yoxdur"
-              description="Pasiyentlər müraciət edərkən sizi seçəndə burada görünəcək."
+              title={t.refEmptyTitle}
+              description={t.refEmptyBody}
             />
           )}
         </Panel>

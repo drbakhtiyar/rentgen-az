@@ -128,6 +128,28 @@ export type PanelDict = {
     favEmptyBody: string;
     notificationsTitle: string;
   };
+  doctor: {
+    deactivatedTitle: string;
+    pendingTitle: string;
+    pendingBody: string;
+    statReferrals: string;
+    statPatients: string;
+    statCenters: string;
+    myPatients: string;
+    all: string;
+    requestsWord: string;
+    openResult: string;
+    lockedResult: string;
+    refEmptyTitle: string;
+    refEmptyBody: string;
+    patientsEmptyTitle: string;
+    patientsEmptyBody: string;
+    quickReferrals: string;
+    centersIntro: string;
+    centersPanel: string;
+    centersEmptyTitle: string;
+    centersEmptyBody: string;
+  };
 };
 
 const az: PanelDict = {
@@ -250,6 +272,28 @@ const az: PanelDict = {
     favEmptyBody: "Bəyəndiyiniz mərkəzləri seçilmişlərə əlavə edin və burada saxlayın.",
     notificationsTitle: "Bildirişlər",
   },
+  doctor: {
+    deactivatedTitle: "Profiliniz deaktiv edilib",
+    pendingTitle: "Profiliniz admin təsdiqini gözləyir",
+    pendingBody: "Təsdiqlənənə qədər pasiyentlərin seçim siyahısında görünməyəcəksiniz.",
+    statReferrals: "Yönləndirmələr",
+    statPatients: "Pasiyentlər",
+    statCenters: "Mərkəzlər",
+    myPatients: "Pasiyentlərim",
+    all: "Hamısı",
+    requestsWord: "müraciət",
+    openResult: "Rentgen nəticəsini aç",
+    lockedResult: "Nəticəni görmək üçün bu mərkəzlə əməkdaşlıq sorğusu göndərin.",
+    refEmptyTitle: "Hələ yönləndirmə yoxdur",
+    refEmptyBody: "Pasiyentlər müraciət edərkən sizi seçəndə burada görünəcək.",
+    patientsEmptyTitle: "Hələ pasiyent yoxdur",
+    patientsEmptyBody: "Pasiyentlər müraciət edərkən sizi seçəndə burada görünəcək.",
+    quickReferrals: "Sürətli göndərişlərim",
+    centersIntro: "Mərkəzlərlə əməkdaşlıq qurun. Sorğunuz qəbul edildikdən sonra həmin mərkəzə yönləndirdiyiniz pasiyentlərin rentgen nəticələrini panelinizdə görə biləcəksiniz.",
+    centersPanel: "Mərkəzlər",
+    centersEmptyTitle: "Mərkəz yoxdur",
+    centersEmptyBody: "Təsdiqlənmiş mərkəz hələ yoxdur.",
+  },
 };
 
 const ru: PanelDict = {
@@ -371,6 +415,28 @@ const ru: PanelDict = {
     favEmptyTitle: "Нет избранных центров",
     favEmptyBody: "Добавляйте понравившиеся центры в избранное и храните их здесь.",
     notificationsTitle: "Уведомления",
+  },
+  doctor: {
+    deactivatedTitle: "Ваш профиль деактивирован",
+    pendingTitle: "Ваш профиль ожидает подтверждения администратора",
+    pendingBody: "Пока профиль не подтверждён, вы не будете видны в списке выбора пациентов.",
+    statReferrals: "Направления",
+    statPatients: "Пациенты",
+    statCenters: "Центры",
+    myPatients: "Мои пациенты",
+    all: "Все",
+    requestsWord: "заявок",
+    openResult: "Открыть результат рентгена",
+    lockedResult: "Чтобы увидеть результат, отправьте этому центру запрос на сотрудничество.",
+    refEmptyTitle: "Направлений пока нет",
+    refEmptyBody: "Появятся здесь, когда пациенты выберут вас при заявке.",
+    patientsEmptyTitle: "Пациентов пока нет",
+    patientsEmptyBody: "Появятся здесь, когда пациенты выберут вас при заявке.",
+    quickReferrals: "Мои быстрые направления",
+    centersIntro: "Налаживайте сотрудничество с центрами. После принятия вашего запроса вы сможете видеть результаты рентгена пациентов, направленных в этот центр, прямо в панели.",
+    centersPanel: "Центры",
+    centersEmptyTitle: "Центров нет",
+    centersEmptyBody: "Подтверждённых центров пока нет.",
   },
 };
 

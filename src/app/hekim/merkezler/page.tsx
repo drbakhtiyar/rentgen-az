@@ -8,6 +8,8 @@ import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { doctorName } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import type { PartnerStatus } from "@/generated/prisma/enums";
@@ -45,16 +47,16 @@ export default async function DoctorCentersPage() {
 
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
+  const pd = getPanelDict(await getLocale());
+  const t = pd.doctor;
 
   return (
-    <DashboardShell title="Partnyor mərkəzlər" roleLabel="Həkim" userName={fullName} nav={doctorNav}>
+    <DashboardShell title={pd.nav.merkezler} roleLabel={pd.shell.roleDoctor} userName={fullName} nav={doctorNav}>
       <div className="mb-5 rounded-2xl border border-brand-100 bg-brand-50/50 p-4 text-sm text-brand-900">
-        Mərkəzlərlə əməkdaşlıq qurun. Sorğunuz qəbul edildikdən sonra həmin
-        mərkəzə yönləndirdiyiniz pasiyentlərin rentgen nəticələrini panelinizdə
-        görə biləcəksiniz.
+        {t.centersIntro}
       </div>
 
-      <Panel title={`Mərkəzlər (${centers.length})`}>
+      <Panel title={`${t.centersPanel} (${centers.length})`}>
         {centers.length > 0 ? (
           <div className="space-y-2">
             {centers.map((c) => (
@@ -103,7 +105,7 @@ export default async function DoctorCentersPage() {
             ))}
           </div>
         ) : (
-          <EmptyState icon={<Building2 />} title="Mərkəz yoxdur" description="Təsdiqlənmiş mərkəz hələ yoxdur." />
+          <EmptyState icon={<Building2 />} title={t.centersEmptyTitle} description={t.centersEmptyBody} />
         )}
       </Panel>
     </DashboardShell>
