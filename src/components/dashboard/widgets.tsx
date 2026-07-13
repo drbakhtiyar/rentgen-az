@@ -59,24 +59,7 @@ export function EmptyState({
   );
 }
 
-const statusMap: Record<string, { label: string; cls: string }> = {
-  PENDING: { label: "Gözləmədə", cls: "bg-amber-50 text-amber-700 ring-amber-100" },
-  APPROVED: { label: "Təsdiqlənib", cls: "bg-emerald-50 text-emerald-700 ring-emerald-100" },
-  DEACTIVATED: { label: "Deaktiv", cls: "bg-slate-100 text-slate-600 ring-slate-200" },
-  NEW: { label: "Yeni", cls: "bg-brand-50 text-brand-700 ring-brand-100" },
-  CONTACTED: { label: "Əlaqə saxlanılıb", cls: "bg-cyan-50 text-cyan-700 ring-cyan-100" },
-  COMPLETED: { label: "Tamamlanıb", cls: "bg-emerald-50 text-emerald-700 ring-emerald-100" },
-  CANCELLED: { label: "Ləğv edilib", cls: "bg-red-50 text-red-700 ring-red-100" },
-};
-
-export function StatusBadge({ status }: { status: string }) {
-  const s = statusMap[status] ?? { label: status, cls: "bg-slate-100 text-slate-600 ring-slate-200" };
-  return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset", s.cls)}>
-      {s.label}
-    </span>
-  );
-}
+export { StatusBadge } from "./status-badge";
 
 export function Panel({
   title,

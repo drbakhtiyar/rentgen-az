@@ -9,6 +9,15 @@ import type { Locale } from "./i18n";
  */
 
 export type PanelDict = {
+  status: {
+    PENDING: string;
+    APPROVED: string;
+    DEACTIVATED: string;
+    NEW: string;
+    CONTACTED: string;
+    COMPLETED: string;
+    CANCELLED: string;
+  };
   nav: {
     icmal: string;
     chat: string;
@@ -153,6 +162,15 @@ export type PanelDict = {
 };
 
 const az: PanelDict = {
+  status: {
+    PENDING: "Gözləmədə",
+    APPROVED: "Təsdiqlənib",
+    DEACTIVATED: "Deaktiv",
+    NEW: "Yeni",
+    CONTACTED: "Əlaqə saxlanılıb",
+    COMPLETED: "Tamamlanıb",
+    CANCELLED: "Ləğv edilib",
+  },
   nav: {
     icmal: "İcmal",
     chat: "Söhbətlər",
@@ -297,6 +315,15 @@ const az: PanelDict = {
 };
 
 const ru: PanelDict = {
+  status: {
+    PENDING: "Ожидание",
+    APPROVED: "Подтверждён",
+    DEACTIVATED: "Неактивен",
+    NEW: "Новая",
+    CONTACTED: "Связались",
+    COMPLETED: "Завершено",
+    CANCELLED: "Отменено",
+  },
   nav: {
     icmal: "Обзор",
     chat: "Чаты",

@@ -7,6 +7,7 @@ import { unreadMessageCount } from "@/lib/chat";
 import { getUserAdminContact } from "@/lib/admin-chat";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
+import { LocaleProvider } from "@/components/locale-context";
 import { DashboardNav, type NavItem } from "./nav";
 import { RoleSwitcher } from "./role-switcher";
 
@@ -73,6 +74,7 @@ export async function DashboardShell({
   ).filter((r): r is "PATIENT" | "CENTER" | "DOCTOR" => r !== null);
 
   return (
+    <LocaleProvider locale={locale}>
     <div className="min-h-[calc(100vh-4rem)] bg-surface">
       <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Sidebar (desktop) */}
@@ -129,5 +131,6 @@ export async function DashboardShell({
         </div>
       </div>
     </div>
+    </LocaleProvider>
   );
 }

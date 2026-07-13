@@ -16,6 +16,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buildMetadata } from "@/lib/seo";
 import { CENTER_FEATURES, DOCTOR_FEATURES } from "@/content/plan-features";
+import { getLocale } from "@/lib/i18n-server";
+import type { Locale } from "@/lib/i18n";
 
 // Hidden internal draft — not linked in nav/footer, excluded from sitemap, noindex.
 export const metadata: Metadata = buildMetadata({
@@ -36,87 +38,86 @@ type Tier = {
   features: string[];
 };
 
-const centerTiers: Tier[] = [
-  {
-    name: "Free",
-    price: "0",
+const PT = {
+  az: {
+    eyebrow: "Daxili qaralama",
+    title: "İstifadə paketləri",
+    description:
+      "Mərkəzlər və həkimlər üçün paket qiymətləri və imkanları. Bu səhifə hələ saytda görünmür — yalnız daxili baxış üçündür.",
+    crumb: "Paketlər",
     period: "AZN / ay",
-    tagline: "Başlamaq üçün — platformada görün",
-    icon: <Sparkles className="h-5 w-5" />,
-    accent: "text-slate-600 bg-slate-100",
-    features: CENTER_FEATURES.az.FREE,
-      },
-  {
-    name: "Silver",
-    price: "39",
-    period: "AZN / ay",
-    tagline: "Aktiv mərkəzlər üçün",
-    icon: <Star className="h-5 w-5" />,
-    accent: "text-slate-700 bg-gradient-to-br from-slate-200 to-slate-100",
-    features: CENTER_FEATURES.az.SILVER,
-      },
-  {
-    name: "Gold",
-    price: "99",
-    period: "AZN / ay",
-    tagline: "Ən çox seçilən — görünürlük + storage",
-    icon: <Crown className="h-5 w-5" />,
-    accent: "text-amber-700 bg-gradient-to-br from-amber-200 to-amber-100",
-    popular: true,
-    features: CENTER_FEATURES.az.GOLD,
-      },
-  {
-    name: "Platinum",
-    price: "198",
-    period: "AZN / ay",
-    tagline: "Böyük mərkəzlər üçün maksimum",
-    icon: <Gem className="h-5 w-5" />,
-    accent: "text-cyan-700 bg-gradient-to-br from-cyan-200 to-cyan-100",
-    features: CENTER_FEATURES.az.PLATINUM,
-      },
-];
+    popular: "Ən populyar",
+    noteLabel: "Qeyd:",
+    note: "qiymətlər və imkanlar müzakirə mərhələsindədir (nümunə rəqəmlərdir). Ödəniş sistemi hələ aktiv deyil — Payriff müqaviləsi tamamlandıqdan sonra işə düşəcək. Əsas gəlir modeli: mərkəzlərə bulud storage satışı.",
+    centersHeading: "Rentgen mərkəzləri üçün",
+    centersStorage: "Storage dolduqca +blok alına və ya köhnə fayllar silinə bilər.",
+    doctorsHeading: "Həkimlər üçün",
+    doctorsStorage: "Həkim profili, yönləndirmə alətləri və pasiyent görüntüləri üçün storage.",
+    centerTag: {
+      FREE: "Başlamaq üçün — platformada görün",
+      SILVER: "Aktiv mərkəzlər üçün",
+      GOLD: "Ən çox seçilən — görünürlük + storage",
+      PLATINUM: "Böyük mərkəzlər üçün maksimum",
+    },
+    doctorTag: {
+      FREE: "Həkim profili və pasiyent yönləndirmə",
+      SILVER: "Profilini gücləndir",
+      GOLD: "Ən çox seçilən",
+      PLATINUM: "Maksimum görünürlük",
+    },
+  },
+  ru: {
+    eyebrow: "Внутренний черновик",
+    title: "Пакеты",
+    description:
+      "Цены и возможности пакетов для центров и врачей. Эта страница пока не видна на сайте — только для внутреннего просмотра.",
+    crumb: "Пакеты",
+    period: "AZN / мес.",
+    popular: "Самый популярный",
+    noteLabel: "Примечание:",
+    note: "цены и возможности на стадии обсуждения (примерные цифры). Платёжная система пока не активна — заработает после заключения договора с Payriff. Основная модель дохода: продажа облачного хранилища центрам.",
+    centersHeading: "Для рентген-центров",
+    centersStorage: "По мере заполнения хранилища можно докупить блок или удалить старые файлы.",
+    doctorsHeading: "Для врачей",
+    doctorsStorage: "Профиль врача, инструменты направления и хранилище для снимков пациентов.",
+    centerTag: {
+      FREE: "Для старта — присутствие на платформе",
+      SILVER: "Для активных центров",
+      GOLD: "Самый популярный — видимость + хранилище",
+      PLATINUM: "Максимум для крупных центров",
+    },
+    doctorTag: {
+      FREE: "Профиль врача и направление пациентов",
+      SILVER: "Усильте свой профиль",
+      GOLD: "Самый популярный",
+      PLATINUM: "Максимальная видимость",
+    },
+  },
+} as const;
 
-const doctorTiers: Tier[] = [
-  {
-    name: "Free",
-    price: "0",
-    period: "AZN / ay",
-    tagline: "Həkim profili və pasiyent yönləndirmə",
-    icon: <Sparkles className="h-5 w-5" />,
-    accent: "text-slate-600 bg-slate-100",
-    features: DOCTOR_FEATURES.az.FREE,
-      },
-  {
-    name: "Silver",
-    price: "19",
-    period: "AZN / ay",
-    tagline: "Profilini gücləndir",
-    icon: <Star className="h-5 w-5" />,
-    accent: "text-slate-700 bg-gradient-to-br from-slate-200 to-slate-100",
-    features: DOCTOR_FEATURES.az.SILVER,
-      },
-  {
-    name: "Gold",
-    price: "49",
-    period: "AZN / ay",
-    tagline: "Ən çox seçilən",
-    icon: <Crown className="h-5 w-5" />,
-    accent: "text-amber-700 bg-gradient-to-br from-amber-200 to-amber-100",
-    popular: true,
-    features: DOCTOR_FEATURES.az.GOLD,
-      },
-  {
-    name: "Platinum",
-    price: "99",
-    period: "AZN / ay",
-    tagline: "Maksimum görünürlük",
-    icon: <Gem className="h-5 w-5" />,
-    accent: "text-cyan-700 bg-gradient-to-br from-cyan-200 to-cyan-100",
-    features: DOCTOR_FEATURES.az.PLATINUM,
-      },
-];
+function buildCenterTiers(locale: Locale): Tier[] {
+  const t = PT[locale];
+  const f = CENTER_FEATURES[locale];
+  return [
+    { name: "Free", price: "0", period: t.period, tagline: t.centerTag.FREE, icon: <Sparkles className="h-5 w-5" />, accent: "text-slate-600 bg-slate-100", features: f.FREE },
+    { name: "Silver", price: "39", period: t.period, tagline: t.centerTag.SILVER, icon: <Star className="h-5 w-5" />, accent: "text-slate-700 bg-gradient-to-br from-slate-200 to-slate-100", features: f.SILVER },
+    { name: "Gold", price: "99", period: t.period, tagline: t.centerTag.GOLD, icon: <Crown className="h-5 w-5" />, accent: "text-amber-700 bg-gradient-to-br from-amber-200 to-amber-100", popular: true, features: f.GOLD },
+    { name: "Platinum", price: "198", period: t.period, tagline: t.centerTag.PLATINUM, icon: <Gem className="h-5 w-5" />, accent: "text-cyan-700 bg-gradient-to-br from-cyan-200 to-cyan-100", features: f.PLATINUM },
+  ];
+}
 
-function TierCard({ tier }: { tier: Tier }) {
+function buildDoctorTiers(locale: Locale): Tier[] {
+  const t = PT[locale];
+  const f = DOCTOR_FEATURES[locale];
+  return [
+    { name: "Free", price: "0", period: t.period, tagline: t.doctorTag.FREE, icon: <Sparkles className="h-5 w-5" />, accent: "text-slate-600 bg-slate-100", features: f.FREE },
+    { name: "Silver", price: "19", period: t.period, tagline: t.doctorTag.SILVER, icon: <Star className="h-5 w-5" />, accent: "text-slate-700 bg-gradient-to-br from-slate-200 to-slate-100", features: f.SILVER },
+    { name: "Gold", price: "49", period: t.period, tagline: t.doctorTag.GOLD, icon: <Crown className="h-5 w-5" />, accent: "text-amber-700 bg-gradient-to-br from-amber-200 to-amber-100", popular: true, features: f.GOLD },
+    { name: "Platinum", price: "99", period: t.period, tagline: t.doctorTag.PLATINUM, icon: <Gem className="h-5 w-5" />, accent: "text-cyan-700 bg-gradient-to-br from-cyan-200 to-cyan-100", features: f.PLATINUM },
+  ];
+}
+
+function TierCard({ tier, popularLabel }: { tier: Tier; popularLabel: string }) {
   return (
     <Card
       className={
@@ -127,7 +128,7 @@ function TierCard({ tier }: { tier: Tier }) {
     >
       {tier.popular && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge tone="amber">Ən populyar</Badge>
+          <Badge tone="amber">{popularLabel}</Badge>
         </span>
       )}
       <div className="p-5 sm:p-6">
@@ -157,14 +158,19 @@ function TierCard({ tier }: { tier: Tier }) {
   );
 }
 
-export default function PackagesPage() {
+export default async function PackagesPage() {
+  const locale = await getLocale();
+  const t = PT[locale];
+  const centerTiers = buildCenterTiers(locale);
+  const doctorTiers = buildDoctorTiers(locale);
+
   return (
     <>
       <PageHeader
-        eyebrow="Daxili qaralama"
-        title="İstifadə paketləri"
-        description="Mərkəzlər və həkimlər üçün paket qiymətləri və imkanları. Bu səhifə hələ saytda görünmür — yalnız daxili baxış üçündür."
-        breadcrumbs={[{ name: "Paketlər" }]}
+        eyebrow={t.eyebrow}
+        title={t.title}
+        description={t.description}
+        breadcrumbs={[{ name: t.crumb }]}
       />
 
       <Section>
@@ -172,9 +178,7 @@ export default function PackagesPage() {
           <div className="mx-auto mb-10 flex max-w-3xl items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <Info className="mt-0.5 h-5 w-5 shrink-0" />
             <p>
-              <strong>Qeyd:</strong> qiymətlər və imkanlar müzakirə mərhələsindədir (nümunə
-              rəqəmlərdir). Ödəniş sistemi hələ aktiv deyil — Payriff müqaviləsi tamamlandıqdan
-              sonra işə düşəcək. Əsas gəlir modeli: mərkəzlərə bulud storage satışı.
+              <strong>{t.noteLabel}</strong> {t.note}
             </p>
           </div>
 
@@ -182,30 +186,30 @@ export default function PackagesPage() {
           <div className="mb-3 flex items-center gap-2">
             <Building2 className="h-6 w-6 text-cyan-600" />
             <h2 className="font-display text-2xl font-bold text-ink-900">
-              Rentgen mərkəzləri üçün
+              {t.centersHeading}
             </h2>
           </div>
           <p className="mb-6 flex items-center gap-1.5 text-sm text-slate-500">
             <HardDrive className="h-4 w-4" />
-            Storage dolduqca +blok alına və ya köhnə fayllar silinə bilər.
+            {t.centersStorage}
           </p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {centerTiers.map((t) => (
-              <TierCard key={t.name} tier={t} />
+            {centerTiers.map((tier) => (
+              <TierCard key={tier.name} tier={tier} popularLabel={t.popular} />
             ))}
           </div>
 
           {/* --------- Həkimlər üçün --------- */}
           <div className="mb-3 mt-16 flex items-center gap-2">
             <Stethoscope className="h-6 w-6 text-cyan-600" />
-            <h2 className="font-display text-2xl font-bold text-ink-900">Həkimlər üçün</h2>
+            <h2 className="font-display text-2xl font-bold text-ink-900">{t.doctorsHeading}</h2>
           </div>
           <p className="mb-6 text-sm text-slate-500">
-            Həkim profili, yönləndirmə alətləri və pasiyent görüntüləri üçün storage.
+            {t.doctorsStorage}
           </p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {doctorTiers.map((t) => (
-              <TierCard key={t.name} tier={t} />
+            {doctorTiers.map((tier) => (
+              <TierCard key={tier.name} tier={tier} popularLabel={t.popular} />
             ))}
           </div>
         </Container>
