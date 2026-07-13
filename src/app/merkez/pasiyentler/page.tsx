@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { getActiveServices } from "@/lib/queries";
 import { trashRetentionDays } from "@/lib/plans";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
@@ -109,17 +111,20 @@ export default async function CenterPatientsPage({
     groups[i].items.push(r);
   }
 
+  const pd = getPanelDict(await getLocale());
+  const c = pd.center;
+
   return (
-    <DashboardShell title="Pasiyentlər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+    <DashboardShell title={pd.nav.pasiyentler} roleLabel={c.roleLabel} userName={center.name} nav={centerNav}>
       <form className="mb-5 flex flex-wrap items-center gap-2">
         <Input
           name="q"
           defaultValue={query}
-          placeholder="Ad və ya telefon üzrə axtar"
+          placeholder={c.searchPlaceholder}
           className="max-w-xs"
         />
         <Button type="submit">
-          <Search className="h-4 w-4" /> Axtar
+          <Search className="h-4 w-4" /> {c.searchBtn}
         </Button>
       </form>
 
@@ -159,7 +164,7 @@ export default async function CenterPatientsPage({
                     : null;
                   const svc = r.serviceSlug
                     ? serviceName.get(r.serviceSlug) ?? prettifySlug(r.serviceSlug)
-                    : "Ümumi müraciət";
+                    : c.generalRequest;
                   return (
                     <div key={r.id} className="rounded-xl border border-slate-100 p-3.5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -177,7 +182,7 @@ export default async function CenterPatientsPage({
                           </div>
                           {refDoctor && (
                             <span className="mt-1.5 flex items-center gap-1 text-xs text-slate-400">
-                              <Stethoscope className="h-3.5 w-3.5" /> Göndərən: {refDoctor}
+                              <Stethoscope className="h-3.5 w-3.5" /> {c.sentBy} {refDoctor}
                             </span>
                           )}
                           {r.note && <p className="mt-1.5 text-sm text-slate-600">{r.note}</p>}
@@ -208,12 +213,8 @@ export default async function CenterPatientsPage({
         <Panel>
           <EmptyState
             icon={<Users />}
-            title={query ? "Nəticə tapılmadı" : "Hələ pasiyent yoxdur"}
-            description={
-              query
-                ? "Axtarışa uyğun pasiyent yoxdur."
-                : "Pasiyentlər müraciət etdikcə burada görünəcək."
-            }
+            title={query ? c.noResultTitle : c.patientsEmptyTitle}
+            description={query ? c.noResultBody : c.patientsEmptyBody}
           />
         </Panel>
       )}

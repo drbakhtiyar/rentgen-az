@@ -6,6 +6,8 @@ import { Panel } from "@/components/dashboard/widgets";
 import { NotificationList } from "@/components/dashboard/notification-list";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -29,10 +31,11 @@ export default async function CenterNotificationsPage() {
     orderBy: { createdAt: "desc" },
     take: 100,
   });
+  const pd = getPanelDict(await getLocale());
 
   return (
-    <DashboardShell title="Bildirişlər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
-      <Panel title="Bildirişlər">
+    <DashboardShell title={pd.nav.bildirisler} roleLabel={pd.center.roleLabel} userName={center.name} nav={centerNav}>
+      <Panel title={pd.center.notificationsTitle}>
         <NotificationList items={items} />
       </Panel>
     </DashboardShell>

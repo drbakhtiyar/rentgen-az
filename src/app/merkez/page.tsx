@@ -25,6 +25,8 @@ import { PlanExpiryBanner } from "@/components/dashboard/plan-expiry-banner";
 import { centerLimits } from "@/lib/plans";
 import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 import { RequestStatusControl } from "./request-status-control";
 import { RequestResultForm } from "./request-result-form";
@@ -94,9 +96,11 @@ export default async function CenterDashboardPage() {
     "Mərkəz";
 
   const planDaysLeft = daysUntil(center.planUntil);
+  const pd = getPanelDict(await getLocale());
+  const c = pd.center;
 
   return (
-    <DashboardShell title="İcmal" roleLabel="Rentgen mərkəzi" userName={name} nav={centerNav}>
+    <DashboardShell title={pd.nav.icmal} roleLabel={c.roleLabel} userName={name} nav={centerNav}>
       {center.plan !== "FREE" && (
         <PlanExpiryBanner
           daysLeft={planDaysLeft}
@@ -109,16 +113,12 @@ export default async function CenterDashboardPage() {
           <div className="flex items-start gap-3">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
             <div>
-              <p className="font-semibold text-red-900">
-                Rentgenologiya lisenziyası yüklənməyib
-              </p>
-              <p className="text-sm text-red-800">
-                Profilinizin tam qeydiyyatı üçün rentgenologiya üzrə lisenziya sənədini yükləyin.
-              </p>
+              <p className="font-semibold text-red-900">{c.noLicenseTitle}</p>
+              <p className="text-sm text-red-800">{c.noLicenseBody}</p>
             </div>
           </div>
           <ButtonLink href="/merkez/profil" size="sm" className="shrink-0">
-            Lisenziya yüklə
+            {c.uploadLicense}
           </ButtonLink>
         </div>
       )}
@@ -128,24 +128,20 @@ export default async function CenterDashboardPage() {
           <Clock className="mt-0.5 h-5 w-5 text-amber-600" />
           <div>
             <p className="font-semibold text-amber-900">
-              {center.status === "PENDING"
-                ? "Profiliniz admin təsdiqini gözləyir"
-                : "Profiliniz deaktiv edilib"}
+              {center.status === "PENDING" ? c.pendingTitle : c.deactivatedTitle}
             </p>
             <p className="text-sm text-amber-800">
-              {center.status === "PENDING"
-                ? "Təsdiqdən sonra mərkəziniz axtarış nəticələrində görünəcək. Bu vaxt ərzində profil və xidmətləri tamamlaya bilərsiniz."
-                : "Yenidən aktivləşdirmə üçün adminlə əlaqə saxlayın."}
+              {center.status === "PENDING" ? c.pendingBody : c.deactivatedBody}
             </p>
           </div>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Status" value={<StatusBadge status={center.status} />} icon={<Building2 />} />
-        <StatCard label="Yeni müraciətlər" value={newCount} icon={<Inbox />} tone="amber" />
-        <StatCard label="Ümumi müraciətlər" value={center._count.appointmentRequests} icon={<Inbox />} tone="cyan" />
-        <StatCard label="Xidmətlər" value={center._count.services} icon={<ListChecks />} tone="green" />
+        <StatCard label={c.statStatus} value={<StatusBadge status={center.status} />} icon={<Building2 />} />
+        <StatCard label={c.statNew} value={newCount} icon={<Inbox />} tone="amber" />
+        <StatCard label={c.statTotal} value={center._count.appointmentRequests} icon={<Inbox />} tone="cyan" />
+        <StatCard label={c.statServices} value={center._count.services} icon={<ListChecks />} tone="green" />
       </div>
 
       <CenterAnalytics plan={center.plan} stats={stats} full={fullStats} />
@@ -164,12 +160,10 @@ export default async function CenterDashboardPage() {
         <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4">
           <div className="flex items-center gap-3">
             <AlertCircle className="h-5 w-5 text-brand-600" />
-            <p className="text-sm text-brand-900">
-              Hələ xidmət əlavə etməmisiniz. Pasiyentlərin sizi tapması üçün xidmət və qiymətləri əlavə edin.
-            </p>
+            <p className="text-sm text-brand-900">{c.noServicesBanner}</p>
           </div>
           <ButtonLink href="/merkez/xidmetler" size="sm" className="shrink-0">
-            Əlavə et
+            {c.add}
           </ButtonLink>
         </div>
       )}
@@ -177,13 +171,13 @@ export default async function CenterDashboardPage() {
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Panel
-            title="Son müraciətlər"
+            title={c.recentRequests}
             action={
               <Link
                 href="/merkez/pasiyentler"
                 className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700"
               >
-                <Users className="h-4 w-4" /> Bütün pasiyentlər
+                <Users className="h-4 w-4" /> {c.allPatients}
               </Link>
             }
           >
@@ -210,7 +204,7 @@ export default async function CenterDashboardPage() {
                         )}
                         {r.doctor && (
                           <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                            <Stethoscope className="h-3.5 w-3.5 text-slate-400" /> Göndərən həkim:{" "}
+                            <Stethoscope className="h-3.5 w-3.5 text-slate-400" /> {c.referringDoctor}{" "}
                             <span className="font-medium text-ink-700">
                               {doctorName(r.doctor.firstName, r.doctor.lastName)}
                             </span>
@@ -239,18 +233,18 @@ export default async function CenterDashboardPage() {
             ) : (
               <EmptyState
                 icon={<Inbox />}
-                title="Hələ müraciət yoxdur"
-                description="Pasiyent müraciətləri burada görünəcək."
+                title={c.noRequestsTitle}
+                description={c.noRequestsBody}
               />
             )}
           </Panel>
         </div>
 
         <div className="space-y-5">
-          <Panel title="Tez keçidlər">
+          <Panel title={c.quickLinks}>
             <div className="space-y-2">
-              <QuickLink href="/merkez/profil" label="Profili redaktə et" icon={<Building2 />} />
-              <QuickLink href="/merkez/xidmetler" label="Xidmət və qiymətlər" icon={<ListChecks />} />
+              <QuickLink href="/merkez/profil" label={c.editProfile} icon={<Building2 />} />
+              <QuickLink href="/merkez/xidmetler" label={c.servicesPrices} icon={<ListChecks />} />
             </div>
           </Panel>
         </div>

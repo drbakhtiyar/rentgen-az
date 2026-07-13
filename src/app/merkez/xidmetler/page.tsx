@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { CenterServicesManager, type ServiceRow } from "@/components/forms/center-services-manager";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -46,27 +48,25 @@ export default async function CenterServicesPage() {
     };
   });
 
+  const pd = getPanelDict(await getLocale());
+
   return (
     <DashboardShell
-      title="Xidmətlər və qiymətlər"
-      roleLabel="Rentgen mərkəzi"
+      title={pd.nav.xidmetler}
+      roleLabel={pd.center.roleLabel}
       userName={center.name}
       nav={centerNav}
     >
       <Card className="mb-5 p-5">
-        <p className="text-sm text-slate-600">
-          Mərkəzinizin göstərdiyi xidmətləri seçin və qiymətləri əlavə edin. Qiymət
-          aralığı üçün “yuxarı hədd” sahəsindən istifadə edin. Qiymət boş qalsa,
-          profildə “Qiymət üçün soruşun” göstəriləcək.
-        </p>
+        <p className="text-sm text-slate-600">{pd.center.svcHelp}</p>
       </Card>
 
       {rows.length > 0 ? (
         <CenterServicesManager initial={rows} />
       ) : (
         <EmptyState
-          title="Xidmət kataloqu boşdur"
-          description="Sistemdə xidmətlər hələ əlavə olunmayıb. Zəhmət olmasa adminlə əlaqə saxlayın (seed/migrasiya tələb oluna bilər)."
+          title={pd.center.svcEmptyTitle}
+          description={pd.center.svcEmptyBody}
         />
       )}
     </DashboardShell>

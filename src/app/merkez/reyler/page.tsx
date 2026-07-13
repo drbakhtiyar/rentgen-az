@@ -12,6 +12,8 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz } from "@/lib/utils";
 import { SITE_URL } from "@/lib/env";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -38,11 +40,12 @@ export default async function CenterReviewsPage() {
 
   const reviewUrl = `${SITE_URL}/rey/${center.slug}`;
   const qrDataUrl = await QRCode.toDataURL(reviewUrl, { width: 320, margin: 2 });
+  const pd = getPanelDict(await getLocale());
 
   return (
-    <DashboardShell title="Rəylər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+    <DashboardShell title={pd.nav.reyler} roleLabel={pd.center.roleLabel} userName={center.name} nav={centerNav}>
       <div className="mb-5">
-        <Panel title="Rəy toplamaq üçün QR kod">
+        <Panel title={pd.center.qrTitle}>
           <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -52,34 +55,29 @@ export default async function CenterReviewsPage() {
             />
             <div className="min-w-0 flex-1 text-sm text-slate-600">
               <p className="flex items-center gap-1.5 font-semibold text-ink-900">
-                <QrCode className="h-4 w-4 text-brand-600" /> Necə işləyir?
+                <QrCode className="h-4 w-4 text-brand-600" /> {pd.center.qrHow}
               </p>
-              <p className="mt-2">
-                Bu QR kodu çap edib registraturada yerləşdirin. Mərkəzinizdə
-                rentgen çəkdirən pasiyent kodu skan edəndə mərkəziniz artıq
-                seçilmiş halda rəy forması açılır — telefon təsdiqi (OTP) ilə rəy
-                yazır.
-              </p>
+              <p className="mt-2">{pd.center.qrHowBody}</p>
               <p className="mt-2 break-all text-xs text-slate-400">{reviewUrl}</p>
               <a
                 href={qrDataUrl}
                 download={`rentgen-qr-${center.slug}.png`}
                 className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
               >
-                <Download className="h-4 w-4" /> QR kodu yüklə
+                <Download className="h-4 w-4" /> {pd.center.qrDownload}
               </a>
             </div>
           </div>
         </Panel>
       </div>
 
-      <Panel title={`Pasiyent rəyləri (${reviews.length})`}>
+      <Panel title={`${pd.center.reviewsTitle} (${reviews.length})`}>
         {reviews.length > 0 ? (
           <div className="space-y-4">
             {reviews.map((r) => {
               const patientName =
                 [r.patient?.firstName, r.patient?.lastName].filter(Boolean).join(" ") ||
-                "Pasiyent";
+                pd.shell.rolePatient;
               return (
                 <div key={r.id} className="rounded-xl border border-slate-100 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -103,8 +101,8 @@ export default async function CenterReviewsPage() {
         ) : (
           <EmptyState
             icon={<Star />}
-            title="Hələ rəy yoxdur"
-            description="Xidmət aldığını təsdiqləyən pasiyentlər rəy yaza bilər."
+            title={pd.center.revEmptyTitle}
+            description={pd.center.revEmptyBody}
           />
         )}
       </Panel>

@@ -13,6 +13,8 @@ import { RespondPartnerButtons, RespondWorkplaceButtons } from "@/components/par
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { doctorName } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -88,12 +90,14 @@ export default async function CenterDoctorsPage() {
     }),
   ]);
 
+  const pd = getPanelDict(await getLocale());
+
   return (
-    <DashboardShell title="Partnyor həkimlər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+    <DashboardShell title={pd.nav.hekimler} roleLabel={pd.center.roleLabel} userName={center.name} nav={centerNav}>
       {canBroadcast ? (
         accepted.length > 0 && (
           <div className="mb-5">
-            <Panel title="Partnyor həkimlərə toplu mesaj">
+            <Panel title={pd.center.broadcastTitle}>
               <BroadcastForm />
             </Panel>
           </div>
@@ -102,12 +106,10 @@ export default async function CenterDoctorsPage() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center gap-3">
             <Megaphone className="h-5 w-5 shrink-0 text-slate-400" />
-            <p className="text-sm text-slate-600">
-              Partnyor həkimlərə <span className="font-semibold">toplu mesaj</span> Gold və Platinum paketlərdə mövcuddur.
-            </p>
+            <p className="text-sm text-slate-600">{pd.center.broadcastUpsell}</p>
           </div>
           <Link href="/merkez/paket" className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-            Paketə bax
+            {pd.center.viewPackage}
           </Link>
         </div>
       )}
@@ -116,14 +118,11 @@ export default async function CenterDoctorsPage() {
           <Panel
             title={
               <span className="flex items-center gap-2 text-amber-700">
-                <MailQuestion className="h-4 w-4" /> İş yeri təsdiqləri ({workplaceClaims.length})
+                <MailQuestion className="h-4 w-4" /> {pd.center.workplaceTitle} ({workplaceClaims.length})
               </span>
             }
           >
-            <p className="mb-3 text-sm text-slate-500">
-              Bu həkimlər sizi iş yeri kimi göstərib. Təsdiqləsəniz, həkimin profilində
-              mərkəziniz link kimi görünəcək.
-            </p>
+            <p className="mb-3 text-sm text-slate-500">{pd.center.workplaceBody}</p>
             <div className="space-y-3">
               {workplaceClaims.map((doc) => (
                 <div
@@ -151,7 +150,7 @@ export default async function CenterDoctorsPage() {
           <Panel
             title={
               <span className="flex items-center gap-2 text-amber-700">
-                <MailQuestion className="h-4 w-4" /> Gözləyən sorğular ({pending.length})
+                <MailQuestion className="h-4 w-4" /> {pd.center.pendingRequestsTitle} ({pending.length})
               </span>
             }
           >
@@ -188,7 +187,7 @@ export default async function CenterDoctorsPage() {
         </div>
       )}
 
-      <Panel title={`Partnyor həkimlər (${accepted.length})`}>
+      <Panel title={`${pd.center.doctorsTitle} (${accepted.length})`}>
         {accepted.length > 0 ? (
           <div className="space-y-2">
             {accepted.map((p) => (
@@ -215,9 +214,9 @@ export default async function CenterDoctorsPage() {
                     href={`/merkez/chat?with=${p.doctor.id}`}
                     className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700"
                   >
-                    <MessageSquare className="h-3.5 w-3.5" /> Mesaj
+                    <MessageSquare className="h-3.5 w-3.5" /> {pd.center.docMessage}
                   </Link>
-                  <Badge tone="green">Partnyor</Badge>
+                  <Badge tone="green">{pd.center.partner}</Badge>
                 </div>
               </div>
             ))}
@@ -225,8 +224,8 @@ export default async function CenterDoctorsPage() {
         ) : (
           <EmptyState
             icon={<Stethoscope />}
-            title="Hələ partnyor həkim yoxdur"
-            description="Həkimlər əməkdaşlıq sorğusu göndərdikdə burada görünəcək."
+            title={pd.center.docEmptyTitle}
+            description={pd.center.docEmptyBody}
           />
         )}
       </Panel>

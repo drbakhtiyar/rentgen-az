@@ -11,6 +11,8 @@ import { getBalance } from "@/lib/wallet";
 import { getWalletHistory } from "@/lib/queries";
 import { CENTER_PLAN_PRICE } from "@/lib/plans";
 import { formatDateAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 function daysUntil(d: Date | null): number | null {
@@ -37,11 +39,12 @@ export default async function CenterBillingPage() {
     getBalance(user.id),
     getWalletHistory(user.id),
   ]);
+  const pd = getPanelDict(await getLocale());
 
   return (
     <DashboardShell
-      title="Paket / Balans"
-      roleLabel="Rentgen mərkəzi"
+      title={pd.nav.paket}
+      roleLabel={pd.center.roleLabel}
       userName={center.name}
       nav={centerNav}
     >
@@ -53,7 +56,7 @@ export default async function CenterBillingPage() {
         prices={CENTER_PLAN_PRICE}
       />
       <div className="mt-6">
-        <Panel title="Ödəniş və balans tarixçəsi">
+        <Panel title={pd.center.historyTitle}>
           <WalletHistory entries={history} />
         </Panel>
       </div>

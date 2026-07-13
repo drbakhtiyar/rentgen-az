@@ -11,6 +11,8 @@ import { getCenterTrash } from "@/lib/queries";
 import { requireRole } from "@/lib/auth/rbac";
 import { trashRetentionDays, PLAN_LABEL } from "@/lib/plans";
 import { formatDateAz } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -35,42 +37,42 @@ export default async function CenterTrashPage() {
   if (!center) redirect("/merkez/qeydiyyat");
 
   const days = trashRetentionDays(center.plan);
+  const pd = getPanelDict(await getLocale());
+  const c = pd.center;
 
   // Plans without a trash bin (Free / Silver): show what the feature offers + upsell.
   if (days <= 0) {
     return (
       <DashboardShell
-        title="Zibil qutusu"
-        roleLabel="Rentgen mərkəzi"
+        title={pd.nav.zibil}
+        roleLabel={c.roleLabel}
         userName={center.name}
         nav={centerNav}
       >
-        <Panel title="Zibil qutusu — Gold və Platinum imkanı">
+        <Panel title={c.zbUpsellTitle}>
           <div className="flex flex-col items-start gap-4">
             <p className="text-sm leading-relaxed text-slate-600">
-              Hazırda <span className="font-semibold">{PLAN_LABEL[center.plan]}</span> paketindəsiniz.
-              Bu paketdə silinən rentgen faylı <span className="font-semibold text-red-600">dərhal həmişəlik silinir</span> və
-              bərpa oluna bilməz.
+              {c.zbCurrentPlan}: <span className="font-semibold">{PLAN_LABEL[center.plan]}</span>. {c.zbFreeInfo}
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
                 <p className="flex items-center gap-2 font-semibold text-amber-800">
                   <ShieldCheck className="h-4 w-4" /> Gold
                 </p>
-                <p className="mt-1 text-sm text-slate-600">Silinən fayllar <b>1 ay</b> zibil qutusunda saxlanılır və bərpa oluna bilər.</p>
+                <p className="mt-1 text-sm text-slate-600">{c.zbGoldLine}</p>
               </div>
               <div className="rounded-xl border border-cyan-200 bg-cyan-50/50 p-4">
                 <p className="flex items-center gap-2 font-semibold text-cyan-800">
                   <ShieldCheck className="h-4 w-4" /> Platinum
                 </p>
-                <p className="mt-1 text-sm text-slate-600">Silinən fayllar <b>3 ay</b> zibil qutusunda saxlanılır və bərpa oluna bilər.</p>
+                <p className="mt-1 text-sm text-slate-600">{c.zbPlatinumLine}</p>
               </div>
             </div>
             <Link
               href="/merkez/paket"
               className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
             >
-              Paketi yüksəlt <ArrowUpRight className="h-4 w-4" />
+              {c.zbUpgrade} <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
         </Panel>
@@ -93,22 +95,20 @@ export default async function CenterTrashPage() {
 
   return (
     <DashboardShell
-      title="Zibil qutusu"
-      roleLabel="Rentgen mərkəzi"
+      title={pd.nav.zibil}
+      roleLabel={c.roleLabel}
       userName={center.name}
       nav={centerNav}
     >
       <Panel
         title={
           <span className="flex items-center gap-2">
-            <Trash2 className="h-4 w-4 text-slate-400" /> Silinmiş fayllar
+            <Trash2 className="h-4 w-4 text-slate-400" /> {c.zbDeletedFiles}
           </span>
         }
       >
         <p className="mb-3 text-sm text-slate-500">
-          {PLAN_LABEL[center.plan]} paketində silinən fayllar{" "}
-          <span className="font-semibold text-ink-800">{retentionText(days)}</span> zibil qutusunda saxlanılır.
-          Bu müddət ərzində istənilən faylı bərpa edə bilərsiniz; müddət bitəndə fayl avtomatik həmişəlik silinir.
+          {PLAN_LABEL[center.plan]} · <span className="font-semibold text-ink-800">{retentionText(days)}</span>. {c.zbRetentionNote}
         </p>
         <TrashList items={items} />
       </Panel>

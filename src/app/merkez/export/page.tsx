@@ -10,6 +10,8 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { centerLimits } from "@/lib/plans";
 import { SITE_URL } from "@/lib/env";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -29,9 +31,10 @@ export default async function CenterExportPage() {
   if (!center) redirect("/merkez/qeydiyyat");
 
   const allowed = centerLimits(center.plan).apiExport;
+  const pd = getPanelDict(await getLocale());
 
   return (
-    <DashboardShell title="Export / API" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+    <DashboardShell title={pd.nav.export} roleLabel={pd.center.roleLabel} userName={center.name} nav={centerNav}>
       {!allowed ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-6">
           <div className="flex items-center gap-3">
@@ -39,31 +42,31 @@ export default async function CenterExportPage() {
               <Lock className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-ink-900">Export və API — Platinum funksiyası</p>
-              <p className="text-xs text-slate-500">Məlumat exportu və API girişi yalnız Platinum paketdə mövcuddur.</p>
+              <p className="text-sm font-semibold text-ink-900">{pd.center.expLockTitle}</p>
+              <p className="text-xs text-slate-500">{pd.center.expLockBody}</p>
             </div>
           </div>
           <Link href="/merkez/paket" className="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-            Platinum-a keç <ArrowUpRight className="h-4 w-4" />
+            {pd.center.toPlatinum} <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
       ) : (
         <div className="space-y-5">
-          <Panel title="Məlumat exportu (CSV)">
+          <Panel title={pd.center.expCsvTitle}>
             <p className="mb-4 text-sm text-slate-600">
-              Bütün pasiyent müraciətlərinizi Excel-uyğun CSV faylı kimi endirin.
+              {pd.center.expCsvBody}
             </p>
             <a
               href="/api/merkez/export"
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-ink-900 px-5 text-sm font-semibold text-white hover:bg-ink-800"
             >
-              <Download className="h-4 w-4" /> Müraciətləri endir (CSV)
+              <Download className="h-4 w-4" /> {pd.center.expCsvBtn}
             </a>
           </Panel>
 
-          <Panel title="API girişi">
+          <Panel title={pd.center.expApiTitle}>
             <p className="mb-4 text-sm text-slate-600">
-              Öz sisteminizi inteqrasiya etmək üçün API açarınız. Aşağıdakı ünvana sorğu göndərin:
+              {pd.center.expApiBody}
             </p>
             <code className="mb-4 block overflow-x-auto rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs text-slate-700">
               GET {SITE_URL}/api/v1/requests — header: Authorization: Bearer &lt;açar&gt;

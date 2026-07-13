@@ -6,6 +6,8 @@ import { ChatInterface } from "@/components/chat/chat-interface";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getChatContacts } from "@/lib/chat";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -30,9 +32,10 @@ export default async function CenterChatPage({
 
   const { with: initialWith } = await searchParams;
   const contacts = await getChatContacts("CENTER", center.id, user.id);
+  const pd = getPanelDict(await getLocale());
 
   return (
-    <DashboardShell title="Söhbətlər" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+    <DashboardShell title={pd.nav.chat} roleLabel={pd.center.roleLabel} userName={center.name} nav={centerNav}>
       <ChatInterface contacts={contacts} meRole="CENTER" initialWith={initialWith} />
     </DashboardShell>
   );

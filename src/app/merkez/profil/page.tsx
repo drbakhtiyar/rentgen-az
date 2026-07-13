@@ -7,6 +7,8 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { CITIES } from "@/lib/constants";
 import { parseHours } from "@/lib/hours";
+import { getLocale } from "@/lib/i18n-server";
+import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
 import { centerLimits } from "@/lib/plans";
 
@@ -26,9 +28,10 @@ export default async function CenterProfilePage() {
     where: { userId: user.id },
   });
   if (!center) redirect("/merkez/qeydiyyat");
+  const pd = getPanelDict(await getLocale());
 
   return (
-    <DashboardShell title="Profil" roleLabel="Rentgen mərkəzi" userName={center.name} nav={centerNav}>
+    <DashboardShell title={pd.nav.profil} roleLabel={pd.center.roleLabel} userName={center.name} nav={centerNav}>
       <CenterProfileForm
         cities={cityOptions}
         mode="edit"
