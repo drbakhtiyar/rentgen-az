@@ -31,7 +31,7 @@ export default async function CrmPatientsPage() {
   ]);
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav}>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-ink-900">Pasiyentlər</h1>

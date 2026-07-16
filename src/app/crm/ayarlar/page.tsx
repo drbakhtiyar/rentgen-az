@@ -24,7 +24,7 @@ export default async function CrmSettingsPage() {
   const holidays = await getCenterHolidays(center.id);
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav}>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <h1 className="mb-6 font-display text-2xl font-bold text-ink-900">Ayarlar</h1>
 
       <div className="space-y-6">

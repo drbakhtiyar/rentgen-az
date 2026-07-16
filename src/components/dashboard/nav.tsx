@@ -70,13 +70,13 @@ export function DashboardNav({
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-brand-50 text-brand-700"
                 : "text-slate-600 hover:bg-slate-50 hover:text-ink-900",
             )}
           >
-            {item.icon && <span className="[&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>}
+            {item.icon && <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>}
             {item.label}
             <Count n={badges?.[item.href] ?? 0} light={active} />
           </Link>

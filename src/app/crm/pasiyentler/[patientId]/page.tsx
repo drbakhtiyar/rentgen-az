@@ -47,7 +47,7 @@ export default async function CrmPatientDetailPage({
   const fullName = `${patient.firstName ?? ""} ${patient.lastName ?? ""}`.trim() || "Pasiyent";
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav}>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <Link
         href="/crm/pasiyentler"
         className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-brand-600"

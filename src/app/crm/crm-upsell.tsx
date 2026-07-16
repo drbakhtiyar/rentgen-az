@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 /** Shown when a non-Platinum center opens the CRM — upgrade prompt. */
 export function CrmUpsell({ centerName }: { centerName: string }) {
   return (
-    <DashboardShell title="CRM" roleLabel={centerName} userName={centerName} nav={crmNav}>
+    <DashboardShell title="CRM" roleLabel={centerName} userName={centerName} nav={crmNav} collapsible>
       <Card className="mx-auto max-w-2xl overflow-hidden p-8 text-center">
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-200 to-cyan-100 text-cyan-700">
           <Gem className="h-7 w-7" />

@@ -128,7 +128,7 @@ export default async function CrmCalendarPage({
     const monthName = `${AZ_MONTHS[Number(ymd.slice(5, 7)) - 1]} ${ymd.slice(0, 4)}`;
 
     return (
-      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav}>
+      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h1 className="font-display text-2xl font-bold text-ink-900">Təqvim</h1>
@@ -264,7 +264,7 @@ export default async function CrmCalendarPage({
   const actionsYmd = view === "week" ? (inWeek ? today : mondayOf(ymd)) : ymd;
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav}>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h1 className="font-display text-2xl font-bold text-ink-900">Təqvim</h1>

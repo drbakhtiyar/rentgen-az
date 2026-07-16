@@ -18,6 +18,7 @@ export async function DashboardShell({
   nav,
   navBadges,
   children,
+  collapsible = false,
 }: {
   title: string;
   roleLabel: string;
@@ -25,6 +26,9 @@ export async function DashboardShell({
   nav: NavItem[];
   navBadges?: Record<string, number>;
   children: React.ReactNode;
+  /** Icon-only sidebar that expands as an overlay on hover (used by the CRM
+   * so the calendar gets full width). */
+  collapsible?: boolean;
 }) {
   const me = await getCurrentUser();
   const locale = await getLocale();
@@ -78,8 +82,14 @@ export async function DashboardShell({
     <div className="min-h-[calc(100vh-4rem)] bg-surface">
       <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Sidebar (desktop) */}
-        <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="sticky top-20 rounded-2xl border border-slate-200 bg-white p-4">
+        <aside className={collapsible ? "hidden w-16 shrink-0 lg:block" : "hidden w-64 shrink-0 lg:block"}>
+          <div
+            className={
+              collapsible
+                ? "group sticky top-20 z-40 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 transition-[width] duration-200 hover:w-64 hover:shadow-xl"
+                : "sticky top-20 rounded-2xl border border-slate-200 bg-white p-4"
+            }
+          >
             <div className="flex items-center gap-2 px-2 pb-3">
               {avatarUrl ? (
                 <Image
@@ -92,19 +102,21 @@ export async function DashboardShell({
               ) : (
                 <Image src="/mark-square.png" alt="rentgen.az" width={32} height={32} className="h-8 w-8 rounded-lg" />
               )}
-              <div>
+              <div className={collapsible ? "hidden whitespace-nowrap group-hover:block" : ""}>
                 <p className="text-xs font-semibold text-ink-900">{roleLabel}</p>
                 <p className="max-w-[150px] truncate text-xs text-slate-500">{userName}</p>
               </div>
             </div>
             {me && availableRoles.length > 1 && (
-              <RoleSwitcher roles={availableRoles} current={me.role} locale={locale} />
+              <div className={collapsible ? "hidden group-hover:block" : ""}>
+                <RoleSwitcher roles={availableRoles} current={me.role} locale={locale} />
+              </div>
             )}
             <DashboardNav items={navItems} badges={mergedBadges} />
             <div className="mt-3 border-t border-slate-100 pt-3">
               <Link
                 href="/"
-                className="block rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50"
+                className={`rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 ${collapsible ? "hidden group-hover:block" : "block"}`}
               >
                 {pd.shell.backToSite}
               </Link>
