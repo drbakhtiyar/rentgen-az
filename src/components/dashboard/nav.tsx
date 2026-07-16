@@ -24,10 +24,13 @@ export function DashboardNav({
   items,
   mobile,
   badges,
+  collapsible,
 }: {
   items: NavItem[];
   mobile?: boolean;
   badges?: Record<string, number>;
+  /** Icon-only rail that reveals labels when the sidebar is hovered. */
+  collapsible?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -71,14 +74,17 @@ export function DashboardNav({
             href={item.href}
             className={cn(
               "flex items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              collapsible && "justify-center group-hover:justify-start",
               active
                 ? "bg-brand-50 text-brand-700"
                 : "text-slate-600 hover:bg-slate-50 hover:text-ink-900",
             )}
           >
             {item.icon && <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>}
-            {item.label}
-            <Count n={badges?.[item.href] ?? 0} light={active} />
+            <span className={collapsible ? "hidden group-hover:inline" : ""}>{item.label}</span>
+            <span className={collapsible ? "ml-auto hidden group-hover:inline-flex" : "contents"}>
+              <Count n={badges?.[item.href] ?? 0} light={active} />
+            </span>
           </Link>
         );
       })}

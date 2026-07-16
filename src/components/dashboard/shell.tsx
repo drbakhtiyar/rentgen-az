@@ -112,7 +112,7 @@ export async function DashboardShell({
                 <RoleSwitcher roles={availableRoles} current={me.role} locale={locale} />
               </div>
             )}
-            <DashboardNav items={navItems} badges={mergedBadges} />
+            <DashboardNav items={navItems} badges={mergedBadges} collapsible={collapsible} />
             <div className="mt-3 border-t border-slate-100 pt-3">
               <Link
                 href="/"
@@ -122,6 +122,7 @@ export async function DashboardShell({
               </Link>
               <LogoutButton
                 label={pd.shell.logout}
+                collapsible={collapsible}
                 className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
               />
             </div>
@@ -130,9 +131,12 @@ export async function DashboardShell({
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <div className="mb-5 flex items-center justify-between">
-            <h1 className="font-display text-2xl font-bold text-ink-900">{title}</h1>
-          </div>
+          {/* CRM pages render their own heading; skip the shell title to save space. */}
+          {!collapsible && (
+            <div className="mb-5 flex items-center justify-between">
+              <h1 className="font-display text-2xl font-bold text-ink-900">{title}</h1>
+            </div>
+          )}
 
           {/* Mobile nav */}
           <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
