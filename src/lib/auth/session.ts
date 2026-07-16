@@ -18,6 +18,11 @@ export {
   type SessionPayload,
 };
 
+// Share the session across the apex domain and subdomains (e.g. crm.rentgen.az)
+// so a center logged in on rentgen.az is also authenticated on the CRM subdomain.
+// Host-only in local dev (no domain), scoped to ".rentgen.az" in production.
+const COOKIE_DOMAIN = env.isProd ? ".rentgen.az" : undefined;
+
 export async function setSessionCookie(payload: SessionPayload) {
   const token = await createSessionToken(payload);
   const cookieStore = await cookies();
@@ -26,6 +31,7 @@ export async function setSessionCookie(payload: SessionPayload) {
     secure: env.isProd,
     sameSite: "lax",
     path: "/",
+    domain: COOKIE_DOMAIN,
     maxAge: SESSION_MAX_AGE_SECONDS,
   });
   // Apply the user's saved language preference, if any, so a returning user
@@ -49,7 +55,14 @@ export async function setSessionCookie(payload: SessionPayload) {
 
 export async function clearSessionCookie() {
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.set(SESSION_COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: env.isProd,
+    sameSite: "lax",
+    path: "/",
+    domain: COOKIE_DOMAIN,
+    maxAge: 0,
+  });
 }
 
 export async function getSessionFromCookies(): Promise<SessionPayload | null> {

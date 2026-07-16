@@ -18,6 +18,7 @@ import {
   Trash2,
   UserPlus,
   Handshake,
+  CalendarDays,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -33,6 +34,15 @@ export const centerNav: NavItem[] = [
   { label: "Paket / Balans", href: "/merkez/paket", icon: <Wallet />, navKey: "paket" },
   { label: "Zibil qutusu", href: "/merkez/zibil-qutusu", icon: <Trash2 />, navKey: "zibil" },
   { label: "Export / API", href: "/merkez/export", icon: <Download />, navKey: "export" },
+];
+
+// CRM subdomain (crm.rentgen.az) — center-only scheduling app.
+export const crmNav: NavItem[] = [
+  { label: "Bugün", href: "/crm", icon: <LayoutDashboard />, navKey: "crmToday" },
+  { label: "Təqvim", href: "/crm/teqvim", icon: <CalendarDays />, navKey: "crmCalendar" },
+  { label: "Pasiyentlər", href: "/crm/pasiyentler", icon: <Users />, navKey: "pasiyentler" },
+  { label: "Ayarlar", href: "/crm/ayarlar", icon: <Settings />, navKey: "crmSettings" },
+  { label: "Mərkəz paneli", href: "https://rentgen.az/merkez", icon: <Building2 />, navKey: "crmCenterPanel" },
 ];
 
 export const doctorNav: NavItem[] = [
