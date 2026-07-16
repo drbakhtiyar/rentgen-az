@@ -93,37 +93,49 @@ export async function getCenterServiceDurations(
 type Interval = { startMin: number; endMin: number };
 
 /** Occupied time ranges (minutes-of-day, Baku) for a center on a day. */
-async function getOccupiedIntervals(
+// Appointment intervals (each counts toward capacity) + block intervals (hard,
+// no patient can share them) for a center on a day.
+async function getOccupancy(
   centerId: string,
   ymd: string,
   fallbackDur: number,
-): Promise<Interval[]> {
+  excludeRequestId?: string,
+): Promise<{ appts: Interval[]; blocks: Interval[] }> {
   const { start, end } = bakuDayBounds(ymd);
-  const [rows, durations] = await Promise.all([
+  const [rows, durations, blockRows] = await Promise.all([
     prisma.appointmentRequest.findMany({
       where: {
         centerId,
         status: { in: OCCUPYING },
         preferredDate: { gte: start, lt: end },
+        ...(excludeRequestId ? { id: { not: excludeRequestId } } : {}),
       },
       select: { preferredDate: true, serviceSlug: true },
     }),
     getCenterServiceDurations(centerId),
+    prisma.centerTimeBlock.findMany({
+      where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
+      select: { startAt: true, endAt: true },
+    }),
   ]);
-  const out: Interval[] = [];
+  const appts: Interval[] = [];
   for (const r of rows) {
     if (!r.preferredDate) continue;
     const startMin = toMinutes(bakuSlotKey(r.preferredDate));
     const dur = (r.serviceSlug && durations[r.serviceSlug]) || fallbackDur;
-    out.push({ startMin, endMin: startMin + dur });
+    appts.push({ startMin, endMin: startMin + dur });
   }
-  return out;
+  const blocks: Interval[] = blockRows.map((b) => ({
+    startMin: toMinutes(bakuSlotKey(b.startAt)),
+    endMin: toMinutes(bakuSlotKey(b.endAt)),
+  }));
+  return { appts, blocks };
 }
 
 /**
  * Free start times ("HH:mm") for booking a service of `durationMin` on `ymd`.
  * Considers working hours, service duration (range must fit before closing),
- * capacity and existing bookings. Past times for today are excluded.
+ * capacity, existing bookings and time blocks. Past times for today excluded.
  */
 export async function getFreeStartsForService(
   center: SlotCenter,
@@ -142,15 +154,99 @@ export async function getFreeStartsForService(
   const grid = slotsForDate(week, ymd, step);
   if (grid.length === 0) return [];
   const cap = Math.max(1, center.slotCapacity || 1);
-  const occupied = await getOccupiedIntervals(centerId, ymd, step);
+  const { appts, blocks } = await getOccupancy(centerId, ymd, step);
   return grid.filter((t0) => {
     const t = toMinutes(t0);
     if (t + dur > closeMin) return false; // range must end before closing
-    const overlaps = occupied.filter(
-      (iv) => t < iv.endMin && t + dur > iv.startMin,
-    ).length;
+    if (blocks.some((iv) => t < iv.endMin && t + dur > iv.startMin)) return false;
+    const overlaps = appts.filter((iv) => t < iv.endMin && t + dur > iv.startMin).length;
     return overlaps < cap;
   });
+}
+
+/**
+ * Whether a [startMin, startMin+durationMin) range on `ymd` can accept another
+ * booking: within capacity, not on a time block. `excludeRequestId` lets an
+ * appointment be rescheduled without conflicting with itself.
+ */
+export async function isSlotAvailable(
+  center: SlotCenter,
+  centerId: string,
+  ymd: string,
+  startMin: number,
+  durationMin: number,
+  excludeRequestId?: string,
+): Promise<boolean> {
+  const dur = durationMin || DEFAULT_DURATION;
+  const cap = Math.max(1, center.slotCapacity || 1);
+  const step = center.slotMinutes || DEFAULT_DURATION;
+  const { appts, blocks } = await getOccupancy(centerId, ymd, step, excludeRequestId);
+  if (blocks.some((iv) => startMin < iv.endMin && startMin + dur > iv.startMin)) return false;
+  const overlaps = appts.filter((iv) => startMin < iv.endMin && startMin + dur > iv.startMin).length;
+  return overlaps < cap;
+}
+
+export type CrmTimeBlock = { id: string; startMin: number; endMin: number; reason: string | null };
+
+/** Time blocks for a center on a Baku day. */
+export async function getCenterTimeBlocks(centerId: string, ymd: string): Promise<CrmTimeBlock[]> {
+  const { start, end } = bakuDayBounds(ymd);
+  const rows = await prisma.centerTimeBlock.findMany({
+    where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
+    orderBy: { startAt: "asc" },
+  });
+  return rows.map((b) => ({
+    id: b.id,
+    startMin: toMinutes(bakuSlotKey(b.startAt)),
+    endMin: toMinutes(bakuSlotKey(b.endAt)),
+    reason: b.reason,
+  }));
+}
+
+/** Time blocks for a whole week, bucketed by Baku day. */
+export async function getCenterWeekTimeBlocks(
+  centerId: string,
+  mondayYmd: string,
+): Promise<Record<string, CrmTimeBlock[]>> {
+  const start = new Date(`${mondayYmd}T00:00:00+04:00`);
+  const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const rows = await prisma.centerTimeBlock.findMany({
+    where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
+    orderBy: { startAt: "asc" },
+  });
+  const out: Record<string, CrmTimeBlock[]> = {};
+  for (const b of rows) {
+    const key = bakuYmd(b.startAt);
+    (out[key] ??= []).push({
+      id: b.id,
+      startMin: toMinutes(bakuSlotKey(b.startAt)),
+      endMin: toMinutes(bakuSlotKey(b.endAt)),
+      reason: b.reason,
+    });
+  }
+  return out;
+}
+
+/** Appointment + block counts per Baku day for a date range [fromYmd, toYmd]. */
+export async function getCenterMonthCounts(
+  centerId: string,
+  fromYmd: string,
+  toYmd: string,
+): Promise<Record<string, number>> {
+  const start = new Date(`${fromYmd}T00:00:00+04:00`);
+  const end = new Date(`${toYmd}T00:00:00+04:00`);
+  end.setTime(end.getTime() + 24 * 60 * 60 * 1000);
+  const rows = await prisma.appointmentRequest.findMany({
+    where: { centerId, preferredDate: { gte: start, lt: end } },
+    select: { preferredDate: true },
+  });
+  const counts: Record<string, number> = {};
+  for (const r of rows) {
+    if (!r.preferredDate) continue;
+    const key = bakuYmd(r.preferredDate);
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
 }
 
 export type DayAppointment = {

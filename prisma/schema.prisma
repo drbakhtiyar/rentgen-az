@@ -221,9 +221,24 @@ model CenterProfile {
   doctorPartners      CenterDoctor[]
   conversations       Conversation[]
   workplaceDoctors    DoctorProfile[] @relation("DoctorWorkplace")
+  timeBlocks          CenterTimeBlock[]
 
   @@index([status])
   @@index([city])
+}
+
+// CRM: center-created unavailable time ranges (breaks, lunch, holidays). These
+// block slots the same way an appointment does (no patient attached).
+model CenterTimeBlock {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  startAt   DateTime
+  endAt     DateTime
+  reason    String?
+  createdAt DateTime      @default(now())
+
+  @@index([centerId, startAt])
 }
 
 model Service {

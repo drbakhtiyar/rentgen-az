@@ -1,37 +1,63 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Loader2, Plus, X, Trash2, Ban, ExternalLink } from "lucide-react";
+import {
+  addManualAppointmentAction,
+  updateAppointmentAction,
+  deleteAppointmentAction,
+  addTimeBlockAction,
+  deleteTimeBlockAction,
+} from "./actions";
 
 export type GridAppt = {
   id: string;
-  startMin: number; // minutes from midnight (Baku)
+  ymd: string;
+  startMin: number;
   durationMin: number;
   name: string;
+  phone: string;
+  serviceSlug: string | null;
   serviceName: string | null;
+  note: string | null;
   status: string;
   patientId: string | null;
 };
 
+export type GridBlock = { id: string; ymd: string; startMin: number; endMin: number; reason: string | null };
+
 export type GridDay = {
   ymd: string;
-  weekday: string; // "B.e"
-  dayNum: string; // "13"
+  weekday: string;
+  dayNum: string;
   isToday: boolean;
   appts: GridAppt[];
+  blocks: GridBlock[];
 };
+
+type Svc = { slug: string; name: string };
 
 const PX_PER_HOUR = 56;
 
-// Left accent + subtle fill per status (dark theme).
-const STATUS: Record<string, { bar: string; fill: string; dot: string }> = {
-  NEW: { bar: "bg-sky-400", fill: "bg-sky-500/10", dot: "bg-sky-400" },
-  CONTACTED: { bar: "bg-teal-400", fill: "bg-teal-500/10", dot: "bg-emerald-400" },
-  COMPLETED: { bar: "bg-emerald-400", fill: "bg-emerald-500/10", dot: "bg-emerald-400" },
-  CANCELLED: { bar: "bg-slate-500", fill: "bg-slate-500/10", dot: "bg-slate-500" },
+// Light status palette matching the site (StatusBadge).
+const STATUS: Record<string, { ring: string; fill: string; bar: string; dot: string }> = {
+  NEW: { ring: "ring-brand-200", fill: "bg-brand-50", bar: "bg-brand-500", dot: "bg-brand-500" },
+  CONTACTED: { ring: "ring-cyan-200", fill: "bg-cyan-50", bar: "bg-cyan-500", dot: "bg-cyan-500" },
+  COMPLETED: { ring: "ring-emerald-200", fill: "bg-emerald-50", bar: "bg-emerald-500", dot: "bg-emerald-500" },
+  CANCELLED: { ring: "ring-red-200", fill: "bg-red-50", bar: "bg-red-400", dot: "bg-red-400" },
 };
 
-/** Assign overlapping appointments to side-by-side lanes within a day. */
+const fieldCls =
+  "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none";
+
+function minToHM(min: number): string {
+  const h = String(Math.floor(min / 60)).padStart(2, "0");
+  const m = String(min % 60).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
 function packLanes(appts: GridAppt[]) {
   const sorted = [...appts].sort((a, b) => a.startMin - b.startMin);
   const laneEnds: number[] = [];
@@ -41,145 +67,419 @@ function packLanes(appts: GridAppt[]) {
     if (lane === -1) {
       lane = laneEnds.length;
       laneEnds.push(end);
-    } else {
-      laneEnds[lane] = end;
-    }
+    } else laneEnds[lane] = end;
     return { appt: a, lane };
   });
   return { placed, laneCount: Math.max(1, laneEnds.length) };
 }
 
-function DayColumn({
-  day,
-  startHour,
-  endHour,
-  nowMin,
-}: {
-  day: GridDay;
-  startHour: number;
-  endHour: number;
-  nowMin: number | null;
-}) {
-  const router = useRouter();
-  const total = (endHour - startHour) * 60;
-  const { placed, laneCount } = packLanes(day.appts);
-  const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
-
-  return (
-    <div className="relative border-l border-slate-800" style={{ height: total * (PX_PER_HOUR / 60) }}>
-      {/* hour gridlines */}
-      {hours.map((h) => (
-        <div
-          key={h}
-          className="border-b border-slate-800/70"
-          style={{ height: PX_PER_HOUR }}
-        />
-      ))}
-
-      {/* now line */}
-      {nowMin != null && nowMin >= startHour * 60 && nowMin <= endHour * 60 && (
-        <div
-          className="pointer-events-none absolute inset-x-0 z-20 flex items-center"
-          style={{ top: (nowMin - startHour * 60) * (PX_PER_HOUR / 60) }}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-          <span className="h-px flex-1 bg-rose-500/60" />
-        </div>
-      )}
-
-      {/* appointments */}
-      <div className="absolute inset-0">
-        {placed.map(({ appt, lane }) => {
-          const top = (appt.startMin - startHour * 60) * (PX_PER_HOUR / 60);
-          const height = Math.max(appt.durationMin, 22) * (PX_PER_HOUR / 60);
-          const w = 100 / laneCount;
-          const s = STATUS[appt.status] ?? STATUS.NEW;
-          const clickable = !!appt.patientId;
-          const hh = String(Math.floor(appt.startMin / 60)).padStart(2, "0");
-          const mm = String(appt.startMin % 60).padStart(2, "0");
-          return (
-            <div
-              key={appt.id}
-              onClick={clickable ? () => router.push(`/crm/pasiyentler/${appt.patientId}`) : undefined}
-              className={`absolute overflow-hidden rounded-md border border-slate-700/60 ${s.fill} px-2 py-1 text-left ${clickable ? "cursor-pointer hover:border-slate-500" : ""}`}
-              style={{ top, height, left: `calc(${lane * w}% + 4px)`, width: `calc(${w}% - 8px)` }}
-            >
-              <span className={`absolute inset-y-0 left-0 w-1 ${s.bar}`} />
-              <span className={`absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full ${s.dot}`} />
-              <div className="pl-1.5">
-                <div className="text-[11px] font-medium text-slate-400">
-                  {hh}:{mm}
-                </div>
-                <div className="truncate text-[13px] font-semibold text-slate-100">{appt.name}</div>
-                {appt.serviceName && height > 44 && (
-                  <div className="truncate text-[11px] text-slate-400">{appt.serviceName}</div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/** Dark time-grid calendar (day = 1 column, week = 7 columns). */
-export function CalendarGrid({
+export function CalendarClient({
   days,
   startHour,
   endHour,
   nowMin,
+  slotMinutes,
+  services,
+  defaultYmd,
 }: {
   days: GridDay[];
   startHour: number;
   endHour: number;
   nowMin: number | null;
+  slotMinutes: number;
+  services: Svc[];
+  defaultYmd: string;
 }) {
+  const [apptModal, setApptModal] = React.useState<
+    | { mode: "create"; ymd: string; time: string }
+    | { mode: "edit"; appt: GridAppt }
+    | null
+  >(null);
+  const [blockOpen, setBlockOpen] = React.useState(false);
+
   const total = (endHour - startHour) * 60;
   const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
 
-  return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-slate-200">
-      <div className="overflow-x-auto">
-        <div style={{ minWidth: days.length > 1 ? 900 : 420 }}>
-          {/* Header row */}
-          <div className="flex border-b border-slate-800">
-            <div className="w-14 shrink-0" />
-            <div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0,1fr))` }}>
-              {days.map((d) => (
-                <div
-                  key={d.ymd}
-                  className="border-l border-slate-800 px-2 py-2.5 text-center"
-                >
-                  <span className={`text-sm font-semibold ${d.isToday ? "text-teal-400" : "text-slate-300"}`}>
-                    {d.weekday} {d.dayNum}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+  function onColumnClick(ymd: string, e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const rawMin = startHour * 60 + (y / PX_PER_HOUR) * 60;
+    const snapped = Math.max(startHour * 60, Math.round(rawMin / slotMinutes) * slotMinutes);
+    setApptModal({ mode: "create", ymd, time: minToHM(snapped) });
+  }
 
-          {/* Body */}
-          <div className="flex">
-            {/* time gutter */}
-            <div className="w-14 shrink-0" style={{ height: total * (PX_PER_HOUR / 60) }}>
-              {hours.map((h) => (
-                <div key={h} className="relative" style={{ height: PX_PER_HOUR }}>
-                  <span className="absolute -top-2 right-2 text-[11px] text-slate-500">
-                    {String(h).padStart(2, "0")}:00
-                  </span>
-                </div>
-              ))}
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => setBlockOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+        >
+          <Ban className="h-4 w-4" /> Vaxt blokla
+        </button>
+        <button
+          type="button"
+          onClick={() => setApptModal({ mode: "create", ymd: defaultYmd, time: "" })}
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+        >
+          <Plus className="h-4 w-4" /> Yeni qəbul
+        </button>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="overflow-x-auto">
+          <div style={{ minWidth: days.length > 1 ? 900 : 460 }}>
+            {/* header */}
+            <div className="flex border-b border-slate-200">
+              <div className="w-14 shrink-0" />
+              <div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0,1fr))` }}>
+                {days.map((d) => (
+                  <div key={d.ymd} className="border-l border-slate-100 px-2 py-2.5 text-center">
+                    <span className={`text-sm font-semibold ${d.isToday ? "text-brand-600" : "text-slate-600"}`}>
+                      {d.weekday} {d.dayNum}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            {/* day columns */}
-            <div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0,1fr))` }}>
-              {days.map((d) => (
-                <DayColumn key={d.ymd} day={d} startHour={startHour} endHour={endHour} nowMin={d.isToday ? nowMin : null} />
-              ))}
+
+            {/* body */}
+            <div className="flex">
+              <div className="w-14 shrink-0" style={{ height: total * (PX_PER_HOUR / 60) }}>
+                {hours.map((h) => (
+                  <div key={h} className="relative" style={{ height: PX_PER_HOUR }}>
+                    <span className="absolute -top-2 right-2 text-[11px] text-slate-400">
+                      {String(h).padStart(2, "0")}:00
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0,1fr))` }}>
+                {days.map((d) => {
+                  const { placed, laneCount } = packLanes(d.appts);
+                  return (
+                    <div
+                      key={d.ymd}
+                      className={`relative cursor-pointer border-l border-slate-100 ${d.isToday ? "bg-brand-50/30" : ""}`}
+                      style={{ height: total * (PX_PER_HOUR / 60) }}
+                      onClick={(e) => onColumnClick(d.ymd, e)}
+                    >
+                      {hours.map((h) => (
+                        <div key={h} className="border-b border-slate-100" style={{ height: PX_PER_HOUR }} />
+                      ))}
+
+                      {/* time blocks */}
+                      {d.blocks.map((b) => {
+                        const top = (b.startMin - startHour * 60) * (PX_PER_HOUR / 60);
+                        const height = Math.max(b.endMin - b.startMin, 16) * (PX_PER_HOUR / 60);
+                        return (
+                          <div
+                            key={b.id}
+                            className="absolute inset-x-1 z-10 overflow-hidden rounded-md border border-slate-200 bg-[repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9_6px,#e2e8f0_6px,#e2e8f0_12px)] px-2 py-1"
+                            style={{ top, height }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="truncate text-[11px] font-semibold text-slate-500">
+                                {b.reason || "Bağlı"}
+                              </span>
+                              <DeleteBlockButton id={b.id} />
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* now line */}
+                      {d.isToday && nowMin != null && nowMin >= startHour * 60 && nowMin <= endHour * 60 && (
+                        <div
+                          className="pointer-events-none absolute inset-x-0 z-20 flex items-center"
+                          style={{ top: (nowMin - startHour * 60) * (PX_PER_HOUR / 60) }}
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                          <span className="h-px flex-1 bg-rose-500/60" />
+                        </div>
+                      )}
+
+                      {/* appointments */}
+                      <div className="absolute inset-0 z-10">
+                        {placed.map(({ appt, lane }) => {
+                          const top = (appt.startMin - startHour * 60) * (PX_PER_HOUR / 60);
+                          const height = Math.max(appt.durationMin, 22) * (PX_PER_HOUR / 60);
+                          const w = 100 / laneCount;
+                          const s = STATUS[appt.status] ?? STATUS.NEW;
+                          return (
+                            <div
+                              key={appt.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setApptModal({ mode: "edit", appt });
+                              }}
+                              className={`absolute cursor-pointer overflow-hidden rounded-md ring-1 ring-inset ${s.ring} ${s.fill} px-2 py-1 hover:shadow-sm`}
+                              style={{ top, height, left: `calc(${lane * w}% + 4px)`, width: `calc(${w}% - 8px)` }}
+                            >
+                              <span className={`absolute inset-y-0 left-0 w-1 ${s.bar}`} />
+                              <span className={`absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                              <div className="pl-1.5">
+                                <div className="text-[11px] font-medium text-slate-500">{minToHM(appt.startMin)}</div>
+                                <div className="truncate text-[13px] font-semibold text-ink-900">{appt.name}</div>
+                                {appt.serviceName && height > 44 && (
+                                  <div className="truncate text-[11px] text-slate-500">{appt.serviceName}</div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {apptModal && (
+        <AppointmentModal
+          key={apptModal.mode === "edit" ? apptModal.appt.id : "create"}
+          state={apptModal}
+          services={services}
+          onClose={() => setApptModal(null)}
+        />
+      )}
+      {blockOpen && <TimeBlockModal defaultYmd={defaultYmd} onClose={() => setBlockOpen(false)} />}
     </div>
+  );
+}
+
+function DeleteBlockButton({ id }: { id: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = React.useState(false);
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async (e) => {
+        e.stopPropagation();
+        if (!confirm("Bu bloku silmək?")) return;
+        setBusy(true);
+        await deleteTimeBlockAction(id);
+        router.refresh();
+      }}
+      className="shrink-0 rounded p-0.5 text-slate-400 hover:bg-white hover:text-red-600"
+      title="Bloku sil"
+    >
+      {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+    </button>
+  );
+}
+
+function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink-950/40 p-4 pt-16" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-display text-lg font-bold text-ink-900">{title}</h3>
+          <button type="button" onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-100">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function AppointmentModal({
+  state,
+  services,
+  onClose,
+}: {
+  state: { mode: "create"; ymd: string; time: string } | { mode: "edit"; appt: GridAppt };
+  services: Svc[];
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const edit = state.mode === "edit";
+  const appt = edit ? state.appt : null;
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [confirmed, setConfirmed] = React.useState(false);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    const common = {
+      name: String(fd.get("name") ?? ""),
+      phone: String(fd.get("phone") ?? ""),
+      serviceSlug: (fd.get("serviceSlug") as string) || null,
+      ymd: (fd.get("ymd") as string) || null,
+      time: (fd.get("time") as string) || null,
+      note: (fd.get("note") as string) || null,
+    };
+    const res = edit
+      ? await updateAppointmentAction({ id: appt!.id, ...common })
+      : await addManualAppointmentAction({ ...common, confirmed });
+    setBusy(false);
+    if (!res.ok) return setError(res.error);
+    onClose();
+    router.refresh();
+  }
+
+  async function onDelete() {
+    if (!appt || !confirm("Bu randevunu silmək?")) return;
+    setBusy(true);
+    setError(null);
+    const res = await deleteAppointmentAction(appt.id);
+    setBusy(false);
+    if (!res.ok) return setError(res.error);
+    onClose();
+    router.refresh();
+  }
+
+  return (
+    <ModalShell title={edit ? "Randevunu redaktə et" : "Yeni qəbul"} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Ad, soyad *</label>
+            <input name="name" required defaultValue={appt?.name ?? ""} className={fieldCls} placeholder="Pasiyentin adı" />
+          </div>
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Telefon *</label>
+            <input name="phone" required defaultValue={appt?.phone ?? ""} className={fieldCls} placeholder="050 000 00 00" />
+          </div>
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Xidmət</label>
+            <select name="serviceSlug" defaultValue={appt?.serviceSlug ?? ""} className={fieldCls}>
+              <option value="">— Seçilməyib —</option>
+              {services.map((s) => (
+                <option key={s.slug} value={s.slug}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Tarix</label>
+            <input name="ymd" type="date" defaultValue={edit ? appt!.ymd : state.ymd} className={fieldCls} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Saat</label>
+            <input
+              name="time"
+              type="time"
+              defaultValue={edit ? minToHM(appt!.startMin) : state.time}
+              className={fieldCls}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Qeyd</label>
+            <input name="note" defaultValue={appt?.note ?? ""} className={fieldCls} placeholder="İstəyə bağlı" />
+          </div>
+        </div>
+
+        {!edit && (
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
+            Təsdiqlənib (vaxt tam bağlanır)
+          </label>
+        )}
+
+        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Yadda saxla
+            </button>
+            {edit && appt!.patientId && (
+              <Link
+                href={`/crm/pasiyentler/${appt!.patientId}`}
+                className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-brand-600 hover:bg-brand-50"
+              >
+                Kart <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+            )}
+          </div>
+          {edit && (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={busy}
+              className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" /> Sil
+            </button>
+          )}
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+function TimeBlockModal({ defaultYmd, onClose }: { defaultYmd: string; onClose: () => void }) {
+  const router = useRouter();
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    const res = await addTimeBlockAction({
+      ymd: String(fd.get("ymd") ?? ""),
+      startTime: String(fd.get("startTime") ?? ""),
+      endTime: String(fd.get("endTime") ?? ""),
+      reason: (fd.get("reason") as string) || null,
+    });
+    setBusy(false);
+    if (!res.ok) return setError(res.error);
+    onClose();
+    router.refresh();
+  }
+
+  return (
+    <ModalShell title="Vaxt blokla" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-3">
+        <p className="text-sm text-slate-500">
+          Seçilmiş vaxt aralığı bağlanır — pasiyentlər ora yazıla bilməz (fasilə, nahar, tətil).
+        </p>
+        <div>
+          <label className="mb-1 block text-xs font-semibold text-slate-500">Tarix *</label>
+          <input name="ymd" type="date" required defaultValue={defaultYmd} className={fieldCls} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Başlanğıc *</label>
+            <input name="startTime" type="time" required className={fieldCls} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Bitmə *</label>
+            <input name="endTime" type="time" required className={fieldCls} />
+          </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold text-slate-500">Səbəb</label>
+          <input name="reason" className={fieldCls} placeholder="Nahar, tətil və s. (istəyə bağlı)" />
+        </div>
+        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+        <button
+          type="submit"
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />} Blokla
+        </button>
+      </form>
+    </ModalShell>
   );
 }
