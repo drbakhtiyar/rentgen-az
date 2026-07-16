@@ -28,6 +28,7 @@ export const centerNav: NavItem[] = [
   { label: "Bildirişlər", href: "/merkez/bildirisler", icon: <Bell />, navKey: "bildirisler" },
   { label: "Profil", href: "/merkez/profil", icon: <Building2 />, navKey: "profil" },
   { label: "Pasiyentlər", href: "/merkez/pasiyentler", icon: <Users />, navKey: "pasiyentler" },
+  { label: "CRM / Təqvim", href: "https://crm.rentgen.az", icon: <CalendarDays />, navKey: "crmLink" },
   { label: "Xidmətlər və qiymətlər", href: "/merkez/xidmetler", icon: <ListChecks />, navKey: "xidmetler" },
   { label: "Partnyor həkimlər", href: "/merkez/hekimler", icon: <Stethoscope />, navKey: "hekimler" },
   { label: "Rəylər", href: "/merkez/reyler", icon: <Star />, navKey: "reyler" },

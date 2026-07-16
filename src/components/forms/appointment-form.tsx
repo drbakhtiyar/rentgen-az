@@ -8,6 +8,7 @@ import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import {
   submitAppointmentAction,
   requestAppointmentOtpAction,
+  getCenterFreeSlotsAction,
 } from "@/app/actions/public";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
 import { DatePicker } from "@/components/forms/date-picker";
@@ -22,6 +23,7 @@ export function AppointmentForm({
   doctors,
   defaultService,
   hours,
+  slotBooking = false,
   patient,
   locale = DEFAULT_LOCALE,
   compact,
@@ -33,6 +35,8 @@ export function AppointmentForm({
   defaultService?: string;
   /** center's structured hours — enables date + time slot picking */
   hours?: WeeklyHours | null;
+  /** slot booking on → time options are real free slots (capacity + duration aware) */
+  slotBooking?: boolean;
   /** logged-in patient → name/phone are prefilled, phone is locked */
   patient?: { name: string; phone: string } | null;
   locale?: Locale;
@@ -44,6 +48,7 @@ export function AppointmentForm({
   const [error, setError] = React.useState<string | null>(null);
   const [date, setDate] = React.useState("");
   const [time, setTime] = React.useState("");
+  const [service, setService] = React.useState(defaultService ?? "");
   const [step, setStep] = React.useState<"form" | "otp">("form");
   const [code, setCode] = React.useState("");
   const [devCode, setDevCode] = React.useState<string | null>(null);
@@ -51,10 +56,34 @@ export function AppointmentForm({
   // Snapshot of the form values captured when moving to the OTP step.
   const pendingRef = React.useRef<Record<string, string>>({});
   const today = React.useMemo(() => bakuTodayYmd(), []);
-  const slots = React.useMemo(
+  // Plain hours slots (used when slot booking is off).
+  const localSlots = React.useMemo(
     () => (hours && date ? slotsForDate(hours, date) : []),
     [hours, date],
   );
+  // Slot booking on → fetch real free slots (capacity/duration/booking aware),
+  // re-fetching when the date or the chosen service (its duration) changes.
+  const [remoteSlots, setRemoteSlots] = React.useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = React.useState(false);
+  React.useEffect(() => {
+    if (!slotBooking || !centerId || !date) {
+      setRemoteSlots([]);
+      return;
+    }
+    let cancelled = false;
+    setSlotsLoading(true);
+    getCenterFreeSlotsAction({ centerId, ymd: date, serviceSlug: service || undefined })
+      .then((r) => {
+        if (!cancelled) setRemoteSlots(r.slots);
+      })
+      .finally(() => {
+        if (!cancelled) setSlotsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slotBooking, centerId, date, service]);
+  const slots = slotBooking ? remoteSlots : localSlots;
   // Logged-in patients skip OTP (phone already verified at login).
   const skipOtp = !!patient;
 
@@ -217,7 +246,15 @@ export function AppointmentForm({
         </Field>
       </div>
       <Field label={t.service} htmlFor="serviceSlug">
-        <Select id="serviceSlug" name="serviceSlug" defaultValue={defaultService ?? ""}>
+        <Select
+          id="serviceSlug"
+          name="serviceSlug"
+          value={service}
+          onChange={(e) => {
+            setService(e.target.value);
+            if (slotBooking) setTime("");
+          }}
+        >
           <option value="">{t.serviceOpt}</option>
           {services.map((s) => (
             <option key={s.value} value={s.value}>
@@ -258,10 +295,16 @@ export function AppointmentForm({
               name="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              disabled={!date || slots.length === 0}
+              disabled={!date || slotsLoading || slots.length === 0}
             >
               <option value="">
-                {!date ? t.pickDate : slots.length === 0 ? t.noSlots : t.pickTime}
+                {!date
+                  ? t.pickDate
+                  : slotsLoading
+                    ? t.pickTime
+                    : slots.length === 0
+                      ? t.noSlots
+                      : t.pickTime}
               </option>
               {slots.map((s) => (
                 <option key={s} value={s}>

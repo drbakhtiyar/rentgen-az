@@ -207,6 +207,8 @@ export type PanelDict = {
     trConfirmEmpty: string;
     svcPrice: string;
     svcPricePlaceholder: string;
+    svcDuration: string;
+    svcMinutes: string;
     svcNote: string;
     svcNoteOptional: string;
     svcSave: string;
@@ -532,6 +534,8 @@ const az: PanelDict = {
     trConfirmEmpty: "Zibil qutusu tamamilə boşaldılacaq. Bütün fayllar həmişəlik silinəcək. Davam edilsin?",
     svcPrice: "Qiymət (₼)",
     svcPricePlaceholder: "Fiks qiymət",
+    svcDuration: "Müddət",
+    svcMinutes: "dəq",
     svcNote: "Qeyd",
     svcNoteOptional: "İstəyə bağlı",
     svcSave: "Yadda saxla",
@@ -857,6 +861,8 @@ const ru: PanelDict = {
     trConfirmEmpty: "Корзина будет полностью очищена. Все файлы удалятся навсегда. Продолжить?",
     svcPrice: "Цена (₼)",
     svcPricePlaceholder: "Фикс. цена",
+    svcDuration: "Длит.",
+    svcMinutes: "мин",
     svcNote: "Примечание",
     svcNoteOptional: "Необязательно",
     svcSave: "Сохранить",

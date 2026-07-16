@@ -128,7 +128,7 @@ export async function saveCenterProfileAction(input: {
 }
 
 export async function saveCenterServicesAction(
-  services: { serviceId: string; enabled: boolean; price?: number | null; priceTo?: number | null; note?: string }[],
+  services: { serviceId: string; enabled: boolean; price?: number | null; priceTo?: number | null; durationMin?: number | null; note?: string }[],
 ): Promise<CenterActionResult> {
   const user = await requireRole("CENTER");
   try {
@@ -155,6 +155,7 @@ export async function saveCenterServicesAction(
                 serviceId: s.serviceId,
                 price: s.price ?? null,
                 priceTo: null, // fixed price only — ranges are no longer allowed
+                durationMin: Math.min(240, Math.max(5, Math.round(s.durationMin ?? 30))),
                 note: s.note || null,
               })),
               skipDuplicates: true,

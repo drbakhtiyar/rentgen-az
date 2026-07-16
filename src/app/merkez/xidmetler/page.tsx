@@ -44,6 +44,7 @@ export default async function CenterServicesPage() {
       enabled: Boolean(cs),
       price: cs?.price ?? null,
       priceTo: cs?.priceTo ?? null,
+      durationMin: cs?.durationMin ?? 30,
       note: cs?.note ?? "",
     };
   });

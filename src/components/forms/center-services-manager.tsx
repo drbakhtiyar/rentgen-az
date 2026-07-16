@@ -19,8 +19,12 @@ export type ServiceRow = {
   enabled: boolean;
   price?: number | null;
   priceTo?: number | null;
+  durationMin?: number | null;
   note?: string;
 };
+
+// Common service durations (minutes) for the CRM scheduler.
+const DURATION_OPTIONS = [10, 15, 20, 30, 45, 60, 90, 120];
 
 export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
   const t = getPanelDict(useLocale()).center;
@@ -49,6 +53,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
           enabled: r.enabled,
           price: r.price ?? null,
           priceTo: null, // fixed price only — no per-center range
+          durationMin: r.durationMin ?? 30,
           note: r.note,
         })),
       );
@@ -87,7 +92,7 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
             </div>
 
             {r.enabled && (
-              <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-[140px_1fr]">
+              <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-[130px_130px_1fr]">
                 <div>
                   <label className="mb-1 block text-xs text-slate-500">
                     {t.svcPrice} <span className="text-red-500">*</span>
@@ -109,6 +114,20 @@ export function CenterServicesManager({ initial }: { initial: ServiceRow[] }) {
                         : "",
                     )}
                   />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-slate-500">{t.svcDuration}</label>
+                  <select
+                    value={r.durationMin ?? 30}
+                    onChange={(e) => update(r.serviceId, { durationMin: Number(e.target.value) })}
+                    className="h-9 w-full rounded-lg border border-slate-200 px-2 text-sm focus:border-brand-400 focus:outline-none"
+                  >
+                    {DURATION_OPTIONS.map((m) => (
+                      <option key={m} value={m}>
+                        {m} {t.svcMinutes}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs text-slate-500">{t.svcNote}</label>

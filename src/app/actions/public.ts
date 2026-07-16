@@ -20,6 +20,7 @@ import {
 } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
 import { doctorName } from "@/lib/utils";
+import { getFreeStartsForService, getCenterServiceDurations } from "@/lib/crm";
 
 export type FormResult = {
   ok: boolean;
@@ -327,5 +328,34 @@ export async function submitWaitlistAction(input: {
     };
   } catch {
     return { ok: false, error: "Texniki xəta. Bir azdan yenidən cəhd edin. / Техническая ошибка." };
+  }
+}
+
+/**
+ * Free bookable start times for a center on a date, honoring slot booking
+ * (service duration, capacity, existing bookings). Returns [] when the center
+ * has slot booking disabled — the form then falls back to plain hours slots.
+ */
+export async function getCenterFreeSlotsAction(input: {
+  centerId: string;
+  ymd: string;
+  serviceSlug?: string;
+}): Promise<{ ok: boolean; slots: string[] }> {
+  try {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.ymd)) return { ok: false, slots: [] };
+    const center = await prisma.centerProfile.findUnique({
+      where: { id: input.centerId },
+      select: { hours: true, slotMinutes: true, slotCapacity: true, slotBookingEnabled: true },
+    });
+    if (!center || !center.slotBookingEnabled) return { ok: false, slots: [] };
+    let duration = center.slotMinutes;
+    if (input.serviceSlug) {
+      const durations = await getCenterServiceDurations(input.centerId);
+      duration = durations[input.serviceSlug] ?? center.slotMinutes;
+    }
+    const slots = await getFreeStartsForService(center, input.centerId, input.ymd, duration);
+    return { ok: true, slots };
+  } catch {
+    return { ok: false, slots: [] };
   }
 }
