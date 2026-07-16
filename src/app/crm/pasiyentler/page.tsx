@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Users, Phone, CheckCircle2, Clock } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { crmNav } from "@/components/dashboard/role-navs";
@@ -73,7 +74,16 @@ export default async function CrmPatientsPage() {
                   <tr key={p.key}>
                     <td className="py-2.5 pr-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-ink-900">{p.name}</span>
+                        {p.patientId ? (
+                          <Link
+                            href={`/crm/pasiyentler/${p.patientId}`}
+                            className="font-semibold text-ink-900 hover:text-brand-600 hover:underline"
+                          >
+                            {p.name}
+                          </Link>
+                        ) : (
+                          <span className="font-semibold text-ink-900">{p.name}</span>
+                        )}
                         {p.patientId ? (
                           <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
                             <CheckCircle2 className="h-2.5 w-2.5" /> sistemdə

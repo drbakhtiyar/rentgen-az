@@ -163,8 +163,19 @@ export type DayAppointment = {
   status: RequestStatus;
   note: string | null;
   doctorName: string | null;
+  doctorPhone: string | null;
   patientId: string | null;
 };
+
+// Include the referring doctor + their phone (via the doctor's user account),
+// so the center can see and call the physician who sent the patient.
+const DOCTOR_INCLUDE = {
+  select: {
+    firstName: true,
+    lastName: true,
+    user: { select: { phone: true } },
+  },
+} as const;
 
 /** Appointments for a center on a Baku day, ordered by time, with durations. */
 export async function getCenterDayAppointments(
@@ -175,7 +186,7 @@ export async function getCenterDayAppointments(
   const [rows, durations] = await Promise.all([
     prisma.appointmentRequest.findMany({
       where: { centerId, preferredDate: { gte: start, lt: end } },
-      include: { doctor: { select: { firstName: true, lastName: true } } },
+      include: { doctor: DOCTOR_INCLUDE },
       orderBy: { preferredDate: "asc" },
     }),
     getCenterServiceDurations(centerId),
@@ -190,6 +201,7 @@ export async function getCenterDayAppointments(
     status: r.status,
     note: r.note,
     doctorName: r.doctor ? `${r.doctor.firstName} ${r.doctor.lastName}`.trim() : null,
+    doctorPhone: r.doctor?.user?.phone ?? null,
     patientId: r.patientId,
   }));
 }
@@ -204,7 +216,7 @@ export async function getCenterWeekAppointments(
   const [rows, durations] = await Promise.all([
     prisma.appointmentRequest.findMany({
       where: { centerId, preferredDate: { gte: start, lt: end } },
-      include: { doctor: { select: { firstName: true, lastName: true } } },
+      include: { doctor: DOCTOR_INCLUDE },
       orderBy: { preferredDate: "asc" },
     }),
     getCenterServiceDurations(centerId),
@@ -226,6 +238,7 @@ export async function getCenterWeekAppointments(
       status: r.status,
       note: r.note,
       doctorName: r.doctor ? `${r.doctor.firstName} ${r.doctor.lastName}`.trim() : null,
+      doctorPhone: r.doctor?.user?.phone ?? null,
       patientId: r.patientId,
     });
   }
@@ -290,6 +303,63 @@ export async function getCenterPatients(centerId: string): Promise<CrmPatient[]>
   return Array.from(map.values()).sort(
     (a, b) => (b.lastVisit?.getTime() ?? 0) - (a.lastVisit?.getTime() ?? 0),
   );
+}
+
+export type CrmPatientFile = { id: string; fileName: string; size: number; createdAt: Date };
+export type CrmPatientAppointment = {
+  id: string;
+  createdAt: Date;
+  preferredDate: Date | null;
+  serviceSlug: string | null;
+  status: RequestStatus;
+  note: string | null;
+  doctorName: string | null;
+  doctorPhone: string | null;
+  files: CrmPatientFile[];
+};
+
+/**
+ * Full detail for an in-system patient at a center: identity + every
+ * appointment (with its rentgen files). Files are the SAME RentgenFile rows the
+ * center panel uses (keyed by requestId), so uploads sync both ways. Returns
+ * null if the patient isn't found.
+ */
+export async function getCrmPatientDetail(centerId: string, patientId: string) {
+  const patient = await prisma.patientProfile.findUnique({
+    where: { id: patientId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      city: true,
+      user: { select: { phone: true } },
+    },
+  });
+  if (!patient) return null;
+  const rows = await prisma.appointmentRequest.findMany({
+    where: { centerId, patientId },
+    include: {
+      doctor: DOCTOR_INCLUDE,
+      files: {
+        where: { deletedAt: null },
+        select: { id: true, fileName: true, size: true, createdAt: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  const appts: CrmPatientAppointment[] = rows.map((r) => ({
+    id: r.id,
+    createdAt: r.createdAt,
+    preferredDate: r.preferredDate,
+    serviceSlug: r.serviceSlug,
+    status: r.status,
+    note: r.note,
+    doctorName: r.doctor ? `${r.doctor.firstName} ${r.doctor.lastName}`.trim() : null,
+    doctorPhone: r.doctor?.user?.phone ?? null,
+    files: r.files,
+  }));
+  return { patient, appts };
 }
 
 /** Quick counters for the CRM overview. */

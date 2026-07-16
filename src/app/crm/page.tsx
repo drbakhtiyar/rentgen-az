@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, Clock, Users, Inbox, Phone, AlertCircle } from "lucide-react";
+import { CalendarDays, Clock, Users, Inbox, Phone, AlertCircle, Stethoscope } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { crmNav } from "@/components/dashboard/role-navs";
 import { StatCard, Panel, EmptyState, StatusBadge } from "@/components/dashboard/widgets";
@@ -92,7 +92,16 @@ export default async function CrmTodayPage() {
                         <Phone className="h-3 w-3" /> {formatPhoneDisplay(a.phone)}
                       </a>
                       {a.serviceSlug && <span>{svcName.get(a.serviceSlug) ?? a.serviceSlug}</span>}
-                      {a.doctorName && <span>Dr. {a.doctorName}</span>}
+                      {a.doctorName && (
+                        <span className="inline-flex items-center gap-1">
+                          <Stethoscope className="h-3 w-3" /> Dr. {a.doctorName}
+                          {a.doctorPhone && (
+                            <a href={`tel:${a.doctorPhone}`} className="text-brand-600 hover:underline">
+                              {formatPhoneDisplay(a.doctorPhone)}
+                            </a>
+                          )}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
