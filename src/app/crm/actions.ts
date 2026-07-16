@@ -160,6 +160,47 @@ export async function updateAppointmentAction(input: {
   return { ok: true };
 }
 
+/**
+ * Drag-reschedule: move an appointment to a new date/time. `agreed` reflects the
+ * "is the new time agreed with the patient?" prompt — yes → status CONTACTED
+ * (confirmed), no → NEW (unconfirmed). Terminal statuses (COMPLETED/CANCELLED)
+ * keep their status. Rejects a slot that is full or on a block.
+ */
+export async function rescheduleAppointmentAction(input: {
+  id: string;
+  ymd: string;
+  time: string;
+  agreed: boolean;
+}): Promise<CrmResult> {
+  const center = await currentCenter();
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const req = await prisma.appointmentRequest.findUnique({
+    where: { id: input.id },
+    select: { centerId: true, status: true, serviceSlug: true },
+  });
+  if (!req || req.centerId !== center.id) return { ok: false, error: "Randevu tapılmadı." };
+
+  const when = parseWhen(input.ymd, input.time);
+  if (!when) return { ok: false, error: "Vaxt düzgün deyil." };
+  const dur = await durationFor(center.id, req.serviceSlug, center.slotMinutes);
+  const free = await isSlotAvailable(center, center.id, input.ymd, when.startMin, dur, input.id);
+  if (!free) return { ok: false, error: CONFLICT };
+
+  const terminal = req.status === "COMPLETED" || req.status === "CANCELLED";
+  const status = terminal ? req.status : input.agreed ? "CONTACTED" : "NEW";
+
+  await prisma.appointmentRequest.update({
+    where: { id: input.id },
+    data: { preferredDate: when.date, status },
+  });
+
+  revalidatePath("/crm");
+  revalidatePath("/crm/teqvim");
+  revalidatePath("/crm/pasiyentler");
+  return { ok: true };
+}
+
 /** Delete an appointment. Blocked if it has rentgen files (would orphan B2). */
 export async function deleteAppointmentAction(id: string): Promise<CrmResult> {
   const center = await currentCenter();

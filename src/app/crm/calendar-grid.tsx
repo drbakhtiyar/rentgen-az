@@ -8,6 +8,7 @@ import {
   addManualAppointmentAction,
   updateAppointmentAction,
   deleteAppointmentAction,
+  rescheduleAppointmentAction,
   addTimeBlockAction,
   deleteTimeBlockAction,
 } from "./actions";
@@ -81,7 +82,6 @@ export function CalendarClient({
   nowMin,
   slotMinutes,
   services,
-  defaultYmd,
 }: {
   days: GridDay[];
   startHour: number;
@@ -89,45 +89,32 @@ export function CalendarClient({
   nowMin: number | null;
   slotMinutes: number;
   services: Svc[];
-  defaultYmd: string;
 }) {
   const [apptModal, setApptModal] = React.useState<
     | { mode: "create"; ymd: string; time: string }
     | { mode: "edit"; appt: GridAppt }
     | null
   >(null);
-  const [blockOpen, setBlockOpen] = React.useState(false);
+  const [reschedule, setReschedule] = React.useState<{ appt: GridAppt; ymd: string; time: string } | null>(null);
+  const dragApptRef = React.useRef<GridAppt | null>(null);
 
   const total = (endHour - startHour) * 60;
   const hours = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
 
-  function onColumnClick(ymd: string, e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const y = e.clientY - rect.top;
+  function timeAt(el: HTMLDivElement, clientY: number): string {
+    const rect = el.getBoundingClientRect();
+    const y = clientY - rect.top;
     const rawMin = startHour * 60 + (y / PX_PER_HOUR) * 60;
     const snapped = Math.max(startHour * 60, Math.round(rawMin / slotMinutes) * slotMinutes);
-    setApptModal({ mode: "create", ymd, time: minToHM(snapped) });
+    return minToHM(snapped);
+  }
+
+  function onColumnClick(ymd: string, e: React.MouseEvent<HTMLDivElement>) {
+    setApptModal({ mode: "create", ymd, time: timeAt(e.currentTarget, e.clientY) });
   }
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => setBlockOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-        >
-          <Ban className="h-4 w-4" /> Vaxt blokla
-        </button>
-        <button
-          type="button"
-          onClick={() => setApptModal({ mode: "create", ymd: defaultYmd, time: "" })}
-          className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-        >
-          <Plus className="h-4 w-4" /> Yeni qəbul
-        </button>
-      </div>
-
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="overflow-x-auto">
           <div style={{ minWidth: days.length > 1 ? 900 : 460 }}>
@@ -165,6 +152,16 @@ export function CalendarClient({
                       className={`relative cursor-pointer border-l border-slate-100 ${d.isToday ? "bg-brand-50/30" : ""}`}
                       style={{ height: total * (PX_PER_HOUR / 60) }}
                       onClick={(e) => onColumnClick(d.ymd, e)}
+                      onDragOver={(e) => {
+                        if (dragApptRef.current) e.preventDefault();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const appt = dragApptRef.current;
+                        dragApptRef.current = null;
+                        if (!appt) return;
+                        setReschedule({ appt, ymd: d.ymd, time: timeAt(e.currentTarget, e.clientY) });
+                      }}
                     >
                       {hours.map((h) => (
                         <div key={h} style={{ height: PX_PER_HOUR }}>
@@ -222,11 +219,19 @@ export function CalendarClient({
                           return (
                             <div
                               key={appt.id}
+                              draggable
+                              onDragStart={(e) => {
+                                dragApptRef.current = appt;
+                                e.dataTransfer.effectAllowed = "move";
+                              }}
+                              onDragEnd={() => {
+                                dragApptRef.current = null;
+                              }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setApptModal({ mode: "edit", appt });
                               }}
-                              className={`absolute cursor-pointer overflow-hidden rounded-md ring-1 ring-inset ${s.ring} ${s.fill} px-2 py-1 hover:shadow-sm`}
+                              className={`absolute cursor-grab overflow-hidden rounded-md ring-1 ring-inset ${s.ring} ${s.fill} px-2 py-1 hover:shadow-sm active:cursor-grabbing`}
                               style={{ top, height, left: `calc(${lane * w}% + 4px)`, width: `calc(${w}% - 8px)` }}
                             >
                               <span className={`absolute inset-y-0 left-0 w-1 ${s.bar}`} />
@@ -259,8 +264,117 @@ export function CalendarClient({
           onClose={() => setApptModal(null)}
         />
       )}
+      {reschedule && <RescheduleModal data={reschedule} onClose={() => setReschedule(null)} />}
+    </div>
+  );
+}
+
+/** Toolbar actions (Yeni qəbul + Vaxt blokla) — placed on the page title row. */
+export function CalendarActions({ services, defaultYmd }: { services: Svc[]; defaultYmd: string }) {
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [blockOpen, setBlockOpen] = React.useState(false);
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={() => setBlockOpen(true)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+      >
+        <Ban className="h-4 w-4" /> Vaxt blokla
+      </button>
+      <button
+        type="button"
+        onClick={() => setCreateOpen(true)}
+        className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+      >
+        <Plus className="h-4 w-4" /> Yeni qəbul
+      </button>
+      {createOpen && (
+        <AppointmentModal
+          state={{ mode: "create", ymd: defaultYmd, time: "" }}
+          services={services}
+          onClose={() => setCreateOpen(false)}
+        />
+      )}
       {blockOpen && <TimeBlockModal defaultYmd={defaultYmd} onClose={() => setBlockOpen(false)} />}
     </div>
+  );
+}
+
+function RescheduleModal({
+  data,
+  onClose,
+}: {
+  data: { appt: GridAppt; ymd: string; time: string };
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function apply(agreed: boolean) {
+    setBusy(true);
+    setError(null);
+    const res = await rescheduleAppointmentAction({
+      id: data.appt.id,
+      ymd: data.ymd,
+      time: data.time,
+      agreed,
+    });
+    setBusy(false);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    onClose();
+    router.refresh();
+  }
+
+  function cancel() {
+    onClose();
+    router.refresh(); // snap the block back to its original position
+  }
+
+  return (
+    <ModalShell title="Vaxtı dəyiş" onClose={cancel}>
+      <p className="text-sm text-slate-600">
+        <span className="font-semibold text-ink-900">{data.appt.name}</span> →{" "}
+        <span className="font-semibold text-brand-700">
+          {data.ymd}, {data.time}
+        </span>
+      </p>
+      <p className="mt-3 text-sm font-semibold text-ink-900">Yeni vaxt pasientlə razılaşdırılıb?</p>
+      <p className="mt-1 text-xs text-slate-500">
+        «Bəli» → randevu təsdiqlənmiş olur. «Xeyr» → təsdiqlənməmişə keçir.
+      </p>
+      {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => apply(true)}
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Bəli, razılaşdırılıb
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => apply(false)}
+          className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+        >
+          Xeyr
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={cancel}
+          className="rounded-full px-4 py-2 text-sm font-semibold text-slate-400 hover:bg-slate-100"
+        >
+          Ləğv
+        </button>
+      </div>
+    </ModalShell>
   );
 }
 

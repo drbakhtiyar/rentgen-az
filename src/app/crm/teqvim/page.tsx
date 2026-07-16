@@ -19,7 +19,7 @@ import { bakuTodayYmd, DAY_LABELS_AZ, DAY_KEYS, ymdToDayKey, parseHours, nowInBa
 import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
-import { CalendarClient, type GridDay, type GridAppt, type GridBlock } from "../calendar-grid";
+import { CalendarClient, CalendarActions, type GridDay, type GridAppt, type GridBlock } from "../calendar-grid";
 
 export const dynamic = "force-dynamic";
 
@@ -137,6 +137,7 @@ export default async function CrmCalendarPage({
               {toggle("month", "Ay")}
             </div>
           </div>
+          <CalendarActions services={serviceOptions} defaultYmd={ymd} />
         </div>
         <div className="mb-4 flex items-center gap-2">
           <Link href={`/crm/teqvim?view=month&d=${addMonths(ymd, -1)}`} className={btn}><ChevronLeft className="h-4 w-4" /></Link>
@@ -223,6 +224,8 @@ export default async function CrmCalendarPage({
   const navBase = view === "week" ? mondayOf(ymd) : ymd;
   const dateLabel =
     view === "week" ? `${mondayOf(ymd)} — ${shiftYmd(mondayOf(ymd), 6)}` : `${ymd} · ${DAY_LABELS_AZ[ymdToDayKey(ymd)]}`;
+  const inWeek = today >= mondayOf(ymd) && today <= shiftYmd(mondayOf(ymd), 6);
+  const actionsYmd = view === "week" ? (inWeek ? today : mondayOf(ymd)) : ymd;
 
   return (
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav}>
@@ -235,6 +238,7 @@ export default async function CrmCalendarPage({
             {toggle("month", "Ay")}
           </div>
         </div>
+        <CalendarActions services={serviceOptions} defaultYmd={actionsYmd} />
       </div>
 
       <div className="mb-4 flex items-center gap-2">
@@ -257,7 +261,6 @@ export default async function CrmCalendarPage({
         nowMin={nowMin}
         slotMinutes={center.slotMinutes}
         services={serviceOptions}
-        defaultYmd={view === "week" ? today >= mondayOf(ymd) && today <= shiftYmd(mondayOf(ymd), 6) ? today : mondayOf(ymd) : ymd}
       />
 
       <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-500">
