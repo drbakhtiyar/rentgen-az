@@ -52,6 +52,31 @@ export function bakuSlotKey(d: Date): string {
   }).format(d);
 }
 
+/** "YYYY-MM-DD" (Baku) for a Date. */
+export function bakuYmd(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Baku",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
+/** Shift a "YYYY-MM-DD" date by n days (timezone-safe). */
+export function shiftYmd(ymd: string, days: number): string {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
+}
+
+/** Monday (week start) of the week containing "YYYY-MM-DD". */
+export function mondayOf(ymd: string): string {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0=Sun..6=Sat
+  const back = dow === 0 ? 6 : dow - 1;
+  return shiftYmd(ymd, -back);
+}
+
 /** serviceSlug → durationMin for a center (from its CenterService rows). */
 export async function getCenterServiceDurations(
   centerId: string,
@@ -167,6 +192,44 @@ export async function getCenterDayAppointments(
     doctorName: r.doctor ? `${r.doctor.firstName} ${r.doctor.lastName}`.trim() : null,
     patientId: r.patientId,
   }));
+}
+
+/** Appointments for the 7-day week starting at `mondayYmd`, bucketed by day. */
+export async function getCenterWeekAppointments(
+  centerId: string,
+  mondayYmd: string,
+): Promise<{ ymd: string; appts: DayAppointment[] }[]> {
+  const start = new Date(`${mondayYmd}T00:00:00+04:00`);
+  const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const [rows, durations] = await Promise.all([
+    prisma.appointmentRequest.findMany({
+      where: { centerId, preferredDate: { gte: start, lt: end } },
+      include: { doctor: { select: { firstName: true, lastName: true } } },
+      orderBy: { preferredDate: "asc" },
+    }),
+    getCenterServiceDurations(centerId),
+  ]);
+  const days: { ymd: string; appts: DayAppointment[] }[] = [];
+  for (let i = 0; i < 7; i++) days.push({ ymd: shiftYmd(mondayYmd, i), appts: [] });
+  const byYmd = new Map(days.map((d) => [d.ymd, d]));
+  for (const r of rows) {
+    if (!r.preferredDate) continue;
+    const bucket = byYmd.get(bakuYmd(r.preferredDate));
+    if (!bucket) continue;
+    bucket.appts.push({
+      id: r.id,
+      time: bakuSlotKey(r.preferredDate),
+      durationMin: (r.serviceSlug && durations[r.serviceSlug]) || DEFAULT_DURATION,
+      name: r.name,
+      phone: r.phone,
+      serviceSlug: r.serviceSlug,
+      status: r.status,
+      note: r.note,
+      doctorName: r.doctor ? `${r.doctor.firstName} ${r.doctor.lastName}`.trim() : null,
+      patientId: r.patientId,
+    });
+  }
+  return days;
 }
 
 export type CrmPatient = {
