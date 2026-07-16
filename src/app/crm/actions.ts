@@ -7,12 +7,14 @@ import { normalizePhone } from "@/lib/phone";
 
 export type CrmResult = { ok: true } | { ok: false; error: string };
 
+// CRM is a Platinum-only feature. Returns the center only when it qualifies.
 async function currentCenter() {
   const user = await requireRole("CENTER");
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
-    select: { id: true },
+    select: { id: true, plan: true },
   });
+  if (!center || center.plan !== "PLATINUM") return null;
   return center;
 }
 

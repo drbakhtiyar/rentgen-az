@@ -6,6 +6,7 @@ import { Panel } from "@/components/dashboard/widgets";
 import { parseHours, formatHoursSummary } from "@/lib/hours";
 import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "../_lib";
+import { CrmUpsell } from "../crm-upsell";
 import { SlotSettingsForm } from "../slot-settings-form";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export const metadata: Metadata = buildMetadata({ title: "CRM — Ayarlar", path
 
 export default async function CrmSettingsPage() {
   const { center } = await requireCenter("/crm/ayarlar");
+  if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const hoursSummary = formatHoursSummary(parseHours(center.hours));
 
   return (

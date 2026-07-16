@@ -11,6 +11,7 @@ import { bakuTodayYmd } from "@/lib/hours";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "./_lib";
+import { CrmUpsell } from "./crm-upsell";
 import { ManualAppointmentForm } from "./manual-appointment-form";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export const metadata: Metadata = buildMetadata({ title: "CRM — Bugün", path:
 
 export default async function CrmTodayPage() {
   const { center } = await requireCenter("/crm");
+  if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const today = bakuTodayYmd();
   const [overview, appts, services] = await Promise.all([
     getCrmOverview(center.id, today),

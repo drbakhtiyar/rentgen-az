@@ -39,6 +39,7 @@ export const CENTER_FEATURES: Record<Locale, Record<Plan, string[]>> = {
     ],
     PLATINUM: [
       "Gold-dakı hər şey +",
+      "CRM — onlayn randevu təqvimi + pasiyent bazası (crm.rentgen.az)",
       "3 TB bulud storage (hər əlavə 1 TB +29 AZN)",
       "Şəhər / kateqoriya üzrə TOP #1 yerləşdirmə",
       "Limitsiz şəkil",
@@ -80,6 +81,7 @@ export const CENTER_FEATURES: Record<Locale, Record<Plan, string[]>> = {
     ],
     PLATINUM: [
       "Всё из Gold +",
+      "CRM — онлайн-календарь записи + база пациентов (crm.rentgen.az)",
       "3 ТБ облачного хранилища (каждый доп. 1 ТБ +29 AZN)",
       "ТОП #1 размещение по городу / категории",
       "Безлимит фото",

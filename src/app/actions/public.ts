@@ -345,9 +345,12 @@ export async function getCenterFreeSlotsAction(input: {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(input.ymd)) return { ok: false, slots: [] };
     const center = await prisma.centerProfile.findUnique({
       where: { id: input.centerId },
-      select: { hours: true, slotMinutes: true, slotCapacity: true, slotBookingEnabled: true },
+      select: { hours: true, slotMinutes: true, slotCapacity: true, slotBookingEnabled: true, plan: true },
     });
-    if (!center || !center.slotBookingEnabled) return { ok: false, slots: [] };
+    // Slot booking is a Platinum-only (CRM) feature.
+    if (!center || !center.slotBookingEnabled || center.plan !== "PLATINUM") {
+      return { ok: false, slots: [] };
+    }
     let duration = center.slotMinutes;
     if (input.serviceSlug) {
       const durations = await getCenterServiceDurations(input.centerId);

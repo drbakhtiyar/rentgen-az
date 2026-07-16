@@ -570,7 +570,7 @@ export default async function CenterDetailPage({
                         }`,
                       }))}
                       hours={week}
-                      slotBooking={center.slotBookingEnabled}
+                      slotBooking={center.slotBookingEnabled && center.plan === "PLATINUM"}
                       compact
                     />
                   )}

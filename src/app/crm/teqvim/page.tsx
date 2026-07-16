@@ -11,6 +11,7 @@ import { bakuTodayYmd, DAY_LABELS_AZ, ymdToDayKey } from "@/lib/hours";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "../_lib";
+import { CrmUpsell } from "../crm-upsell";
 import { ManualAppointmentForm } from "../manual-appointment-form";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ export default async function CrmCalendarPage({
   searchParams: Promise<{ d?: string }>;
 }) {
   const { center } = await requireCenter("/crm/teqvim");
+  if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const sp = await searchParams;
   const today = bakuTodayYmd();
   const ymd = sp.d && /^\d{4}-\d{2}-\d{2}$/.test(sp.d) ? sp.d : today;

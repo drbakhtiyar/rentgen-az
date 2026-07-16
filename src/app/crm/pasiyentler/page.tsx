@@ -10,6 +10,7 @@ import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "../_lib";
+import { CrmUpsell } from "../crm-upsell";
 import { ManualAppointmentForm } from "../manual-appointment-form";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default async function CrmPatientsPage() {
   const { center } = await requireCenter("/crm/pasiyentler");
+  if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const [patients, services] = await Promise.all([
     getCenterPatients(center.id),
     getActiveServices(),

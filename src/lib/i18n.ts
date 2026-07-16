@@ -21,6 +21,7 @@ type Dict = {
     doctors: string;
     forDoctors: string;
     forCenters: string;
+    pricing: string;
     blog: string;
     contact: string;
     faq: string;
@@ -447,6 +448,7 @@ const az: Dict = {
     doctors: "Həkimlər",
     forDoctors: "Həkimlər üçün",
     forCenters: "Mərkəzlər üçün",
+    pricing: "Paketlər",
     blog: "Blog",
     contact: "Əlaqə",
     faq: "FAQ",
@@ -954,6 +956,7 @@ const ru: Dict = {
     doctors: "Врачи",
     forDoctors: "Для врачей",
     forCenters: "Для центров",
+    pricing: "Тарифы",
     blog: "Блог",
     contact: "Контакты",
     faq: "Вопросы",

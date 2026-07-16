@@ -18,6 +18,7 @@ export async function SiteFooter() {
         { label: d.nav.services, href: "/xidmetler" },
         { label: d.nav.doctors, href: "/hekimler" },
         { label: d.nav.forCenters, href: "/merkezler-ucun" },
+        { label: d.nav.pricing, href: "/paketler" },
         { label: d.nav.blog, href: "/blog" },
       ],
     },
