@@ -39,7 +39,8 @@ export type GridDay = {
 
 type Svc = { slug: string; name: string };
 
-const PX_PER_HOUR = 56;
+const PX_PER_HOUR = 112; // taller rows so appointment text is readable
+const QUARTER = PX_PER_HOUR / 4; // 15-minute subdivisions
 
 // Light status palette matching the site (StatusBadge).
 const STATUS: Record<string, { ring: string; fill: string; bar: string; dot: string }> = {
@@ -166,7 +167,13 @@ export function CalendarClient({
                       onClick={(e) => onColumnClick(d.ymd, e)}
                     >
                       {hours.map((h) => (
-                        <div key={h} className="border-b border-slate-100" style={{ height: PX_PER_HOUR }} />
+                        <div key={h} style={{ height: PX_PER_HOUR }}>
+                          {/* 15-minute subdivisions: faint quarter lines, solid hour line */}
+                          <div className="border-b border-dashed border-slate-100/70" style={{ height: QUARTER }} />
+                          <div className="border-b border-slate-100/70" style={{ height: QUARTER }} />
+                          <div className="border-b border-dashed border-slate-100/70" style={{ height: QUARTER }} />
+                          <div className="border-b border-slate-100" style={{ height: QUARTER }} />
+                        </div>
                       ))}
 
                       {/* time blocks */}
