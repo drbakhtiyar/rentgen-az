@@ -209,6 +209,11 @@ model CenterProfile {
   slotBookingEnabled Boolean     @default(false)
   slotMinutes        Int         @default(30) // slot uzunluğu (dəqiqə)
   slotCapacity       Int         @default(1) // bir slotda maksimum pasiyent sayı
+  // Təkrarlanan nahar fasiləsi (CRM). Doldurularsa seçilmiş günlərdə bu aralıq
+  // avtomatik bloklanır — hər gün ayrıca blok yaratmağa ehtiyac qalmır.
+  lunchStart         String? // "HH:mm"
+  lunchEnd           String? // "HH:mm"
+  lunchDays          String[] @default([]) // ["mon","tue",...] — naharın tətbiq olunduğu günlər
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 

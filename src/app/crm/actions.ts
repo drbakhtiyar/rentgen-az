@@ -219,11 +219,17 @@ export async function deleteTimeBlockAction(id: string): Promise<CrmResult> {
   return { ok: true };
 }
 
-/** Update the center's CRM slot settings. */
+const DAY_SET = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+
+/** Update the center's CRM slot settings (incl. the recurring lunch break). */
 export async function updateSlotSettingsAction(input: {
   enabled: boolean;
   slotMinutes: number;
   slotCapacity: number;
+  lunchEnabled?: boolean;
+  lunchStart?: string | null;
+  lunchEnd?: string | null;
+  lunchDays?: string[];
 }): Promise<CrmResult> {
   const center = await currentCenter();
   if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
@@ -231,9 +237,25 @@ export async function updateSlotSettingsAction(input: {
   const slotMinutes = Math.min(240, Math.max(5, Math.round(input.slotMinutes || 30)));
   const slotCapacity = Math.min(50, Math.max(1, Math.round(input.slotCapacity || 1)));
 
+  // Lunch: only saved when enabled with a valid range + at least one day.
+  let lunchStart: string | null = null;
+  let lunchEnd: string | null = null;
+  let lunchDays: string[] = [];
+  if (input.lunchEnabled) {
+    const s = input.lunchStart ?? "";
+    const e = input.lunchEnd ?? "";
+    if (!HM.test(s) || !HM.test(e)) return { ok: false, error: "Nahar vaxtını düzgün daxil edin." };
+    if (toMin(e) <= toMin(s)) return { ok: false, error: "Nahar bitmə vaxtı başlanğıcdan sonra olmalıdır." };
+    const days = (input.lunchDays ?? []).filter((d) => DAY_SET.has(d));
+    if (days.length === 0) return { ok: false, error: "Ən azı bir gün seçin." };
+    lunchStart = s;
+    lunchEnd = e;
+    lunchDays = days;
+  }
+
   await prisma.centerProfile.update({
     where: { id: center.id },
-    data: { slotBookingEnabled: !!input.enabled, slotMinutes, slotCapacity },
+    data: { slotBookingEnabled: !!input.enabled, slotMinutes, slotCapacity, lunchStart, lunchEnd, lunchDays },
   });
 
   revalidatePath("/crm/ayarlar");

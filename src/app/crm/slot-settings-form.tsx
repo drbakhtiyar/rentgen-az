@@ -5,29 +5,63 @@ import { useRouter } from "next/navigation";
 import { Loader2, Check } from "lucide-react";
 import { updateSlotSettingsAction } from "./actions";
 
-/** Center CRM slot settings: enable online booking, grid step, capacity. */
+const DAYS: { key: string; label: string }[] = [
+  { key: "mon", label: "B.e" },
+  { key: "tue", label: "Ç.a" },
+  { key: "wed", label: "Ç" },
+  { key: "thu", label: "C.a" },
+  { key: "fri", label: "Cümə" },
+  { key: "sat", label: "Şənbə" },
+  { key: "sun", label: "Bazar" },
+];
+
+/** Center CRM slot settings: online booking, grid step, capacity, lunch break. */
 export function SlotSettingsForm({
   enabled,
   slotMinutes,
   slotCapacity,
+  lunchStart,
+  lunchEnd,
+  lunchDays,
 }: {
   enabled: boolean;
   slotMinutes: number;
   slotCapacity: number;
+  lunchStart: string | null;
+  lunchEnd: string | null;
+  lunchDays: string[];
 }) {
   const router = useRouter();
   const [on, setOn] = React.useState(enabled);
   const [step, setStep] = React.useState(slotMinutes);
   const [cap, setCap] = React.useState(slotCapacity);
+  const [lunchOn, setLunchOn] = React.useState(!!(lunchStart && lunchEnd && lunchDays.length));
+  const [lStart, setLStart] = React.useState(lunchStart ?? "13:00");
+  const [lEnd, setLEnd] = React.useState(lunchEnd ?? "14:00");
+  const [lDays, setLDays] = React.useState<string[]>(
+    lunchDays.length ? lunchDays : ["mon", "tue", "wed", "thu", "fri"],
+  );
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  function toggleDay(k: string) {
+    setLDays((d) => (d.includes(k) ? d.filter((x) => x !== k) : [...d, k]));
+  }
 
   async function save() {
     setBusy(true);
     setError(null);
     setSaved(false);
-    const res = await updateSlotSettingsAction({ enabled: on, slotMinutes: step, slotCapacity: cap });
+    const res = await updateSlotSettingsAction({
+      enabled: on,
+      slotMinutes: step,
+      slotCapacity: cap,
+      lunchEnabled: lunchOn,
+      lunchStart: lStart,
+      lunchEnd: lEnd,
+      lunchDays: lDays,
+    });
     setBusy(false);
     if (!res.ok) return setError(res.error);
     setSaved(true);
@@ -88,6 +122,54 @@ export function SlotSettingsForm({
             Bir vaxtda neçə pasiyent qəbul edə bilərsiniz.
           </p>
         </div>
+      </div>
+
+      {/* Recurring lunch break */}
+      <div className="rounded-xl border border-slate-200 p-4">
+        <label className="flex items-start gap-3">
+          <input type="checkbox" checked={lunchOn} onChange={(e) => setLunchOn(e.target.checked)} className="mt-1" />
+          <span>
+            <span className="font-semibold text-ink-900">Nahar fasiləsi</span>
+            <span className="block text-sm text-slate-500">
+              Fiks nahar vaxtı. Doldurularsa seçilmiş günlərdə bu aralıq avtomatik bloklanır —
+              hər gün ayrıca blok yaratmağa ehtiyac qalmır.
+            </span>
+          </span>
+        </label>
+
+        {lunchOn && (
+          <div className="mt-4 space-y-3 pl-7">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Başlanğıc</label>
+                <input type="time" value={lStart} onChange={(e) => setLStart(e.target.value)} className={field} />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Bitmə</label>
+                <input type="time" value={lEnd} onChange={(e) => setLEnd(e.target.value)} className={field} />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-slate-500">Günlər</label>
+              <div className="flex flex-wrap gap-1.5">
+                {DAYS.map((d) => (
+                  <button
+                    key={d.key}
+                    type="button"
+                    onClick={() => toggleDay(d.key)}
+                    className={`rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset transition-colors ${
+                      lDays.includes(d.key)
+                        ? "bg-brand-600 text-white ring-brand-600"
+                        : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {error && <p className="text-sm font-medium text-red-600">{error}</p>}

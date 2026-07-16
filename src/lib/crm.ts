@@ -93,8 +93,27 @@ export async function getCenterServiceDurations(
 type Interval = { startMin: number; endMin: number };
 
 /** Occupied time ranges (minutes-of-day, Baku) for a center on a day. */
+type LunchCfg = { lunchStart: string | null; lunchEnd: string | null; lunchDays: string[] };
+
+/** The recurring lunch interval for a given day, or null if it doesn't apply. */
+function lunchIntervalFor(lunch: LunchCfg | null, ymd: string): Interval | null {
+  if (!lunch?.lunchStart || !lunch.lunchEnd || !lunch.lunchDays?.length) return null;
+  if (!lunch.lunchDays.includes(ymdToDayKey(ymd))) return null;
+  const startMin = toMinutes(lunch.lunchStart);
+  const endMin = toMinutes(lunch.lunchEnd);
+  return endMin > startMin ? { startMin, endMin } : null;
+}
+
+async function getCenterLunch(centerId: string): Promise<LunchCfg> {
+  const c = await prisma.centerProfile.findUnique({
+    where: { id: centerId },
+    select: { lunchStart: true, lunchEnd: true, lunchDays: true },
+  });
+  return { lunchStart: c?.lunchStart ?? null, lunchEnd: c?.lunchEnd ?? null, lunchDays: c?.lunchDays ?? [] };
+}
+
 // Appointment intervals (each counts toward capacity) + block intervals (hard,
-// no patient can share them) for a center on a day.
+// no patient can share them: manual time blocks + the recurring lunch break).
 async function getOccupancy(
   centerId: string,
   ymd: string,
@@ -102,7 +121,7 @@ async function getOccupancy(
   excludeRequestId?: string,
 ): Promise<{ appts: Interval[]; blocks: Interval[] }> {
   const { start, end } = bakuDayBounds(ymd);
-  const [rows, durations, blockRows] = await Promise.all([
+  const [rows, durations, blockRows, lunch] = await Promise.all([
     prisma.appointmentRequest.findMany({
       where: {
         centerId,
@@ -117,6 +136,7 @@ async function getOccupancy(
       where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
       select: { startAt: true, endAt: true },
     }),
+    getCenterLunch(centerId),
   ]);
   const appts: Interval[] = [];
   for (const r of rows) {
@@ -129,6 +149,8 @@ async function getOccupancy(
     startMin: toMinutes(bakuSlotKey(b.startAt)),
     endMin: toMinutes(bakuSlotKey(b.endAt)),
   }));
+  const lunchIv = lunchIntervalFor(lunch, ymd);
+  if (lunchIv) blocks.push(lunchIv);
   return { appts, blocks };
 }
 
@@ -186,34 +208,50 @@ export async function isSlotAvailable(
   return overlaps < cap;
 }
 
-export type CrmTimeBlock = { id: string; startMin: number; endMin: number; reason: string | null };
+// `fixed` = recurring lunch block (managed in settings, not individually deletable).
+export type CrmTimeBlock = { id: string; startMin: number; endMin: number; reason: string | null; fixed?: boolean };
 
-/** Time blocks for a center on a Baku day. */
+function lunchBlock(lunch: LunchCfg | null, ymd: string): CrmTimeBlock | null {
+  const iv = lunchIntervalFor(lunch, ymd);
+  if (!iv) return null;
+  return { id: `lunch-${ymd}`, startMin: iv.startMin, endMin: iv.endMin, reason: "Nahar", fixed: true };
+}
+
+/** Time blocks for a center on a Baku day (manual + recurring lunch). */
 export async function getCenterTimeBlocks(centerId: string, ymd: string): Promise<CrmTimeBlock[]> {
   const { start, end } = bakuDayBounds(ymd);
-  const rows = await prisma.centerTimeBlock.findMany({
-    where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
-    orderBy: { startAt: "asc" },
-  });
-  return rows.map((b) => ({
+  const [rows, lunch] = await Promise.all([
+    prisma.centerTimeBlock.findMany({
+      where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
+      orderBy: { startAt: "asc" },
+    }),
+    getCenterLunch(centerId),
+  ]);
+  const out: CrmTimeBlock[] = rows.map((b) => ({
     id: b.id,
     startMin: toMinutes(bakuSlotKey(b.startAt)),
     endMin: toMinutes(bakuSlotKey(b.endAt)),
     reason: b.reason,
   }));
+  const lb = lunchBlock(lunch, ymd);
+  if (lb) out.push(lb);
+  return out;
 }
 
-/** Time blocks for a whole week, bucketed by Baku day. */
+/** Time blocks for a whole week, bucketed by Baku day (manual + recurring lunch). */
 export async function getCenterWeekTimeBlocks(
   centerId: string,
   mondayYmd: string,
 ): Promise<Record<string, CrmTimeBlock[]>> {
   const start = new Date(`${mondayYmd}T00:00:00+04:00`);
   const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const rows = await prisma.centerTimeBlock.findMany({
-    where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
-    orderBy: { startAt: "asc" },
-  });
+  const [rows, lunch] = await Promise.all([
+    prisma.centerTimeBlock.findMany({
+      where: { centerId, startAt: { lt: end }, endAt: { gt: start } },
+      orderBy: { startAt: "asc" },
+    }),
+    getCenterLunch(centerId),
+  ]);
   const out: Record<string, CrmTimeBlock[]> = {};
   for (const b of rows) {
     const key = bakuYmd(b.startAt);
@@ -223,6 +261,11 @@ export async function getCenterWeekTimeBlocks(
       endMin: toMinutes(bakuSlotKey(b.endAt)),
       reason: b.reason,
     });
+  }
+  for (let i = 0; i < 7; i++) {
+    const ymd = shiftYmd(mondayYmd, i);
+    const lb = lunchBlock(lunch, ymd);
+    if (lb) (out[ymd] ??= []).push(lb);
   }
   return out;
 }

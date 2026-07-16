@@ -26,7 +26,7 @@ export type GridAppt = {
   patientId: string | null;
 };
 
-export type GridBlock = { id: string; ymd: string; startMin: number; endMin: number; reason: string | null };
+export type GridBlock = { id: string; ymd: string; startMin: number; endMin: number; reason: string | null; fixed?: boolean };
 
 export type GridDay = {
   ymd: string;
@@ -191,7 +191,11 @@ export function CalendarClient({
                               <span className="truncate text-[11px] font-semibold text-slate-500">
                                 {b.reason || "Bağlı"}
                               </span>
-                              <DeleteBlockButton id={b.id} />
+                              {b.fixed ? (
+                                <span className="text-[10px] text-slate-400">sabit</span>
+                              ) : (
+                                <DeleteBlockButton id={b.id} />
+                              )}
                             </div>
                           </div>
                         );

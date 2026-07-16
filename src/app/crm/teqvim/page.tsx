@@ -61,7 +61,7 @@ function toGridAppt(a: DayAppointment, ymd: string, svcName: Map<string, string>
   };
 }
 function toGridBlocks(blocks: CrmTimeBlock[], ymd: string): GridBlock[] {
-  return blocks.map((b) => ({ id: b.id, ymd, startMin: b.startMin, endMin: b.endMin, reason: b.reason }));
+  return blocks.map((b) => ({ id: b.id, ymd, startMin: b.startMin, endMin: b.endMin, reason: b.reason, fixed: b.fixed }));
 }
 
 function hourRange(hoursJson: unknown, appts: GridAppt[], blocks: GridBlock[]) {

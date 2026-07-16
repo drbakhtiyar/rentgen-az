@@ -28,6 +28,9 @@ export default async function CrmSettingsPage() {
             enabled={center.slotBookingEnabled}
             slotMinutes={center.slotMinutes}
             slotCapacity={center.slotCapacity}
+            lunchStart={center.lunchStart}
+            lunchEnd={center.lunchEnd}
+            lunchDays={center.lunchDays}
           />
         </Panel>
 
