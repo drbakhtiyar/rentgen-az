@@ -223,6 +223,8 @@ export function CalendarClient({
                               onDragStart={(e) => {
                                 dragApptRef.current = appt;
                                 e.dataTransfer.effectAllowed = "move";
+                                // Required or some browsers (Firefox/Safari) never start the drag.
+                                e.dataTransfer.setData("text/plain", appt.id);
                               }}
                               onDragEnd={() => {
                                 dragApptRef.current = null;

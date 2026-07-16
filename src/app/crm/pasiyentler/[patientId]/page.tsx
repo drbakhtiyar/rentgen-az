@@ -6,6 +6,7 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { crmNav } from "@/components/dashboard/role-navs";
 import { Panel, StatusBadge } from "@/components/dashboard/widgets";
 import { RentgenFilesPanel } from "@/components/rentgen/rentgen-files-panel";
+import { RequestStatusControl } from "@/app/merkez/request-status-control";
 import { getActiveServices } from "@/lib/queries";
 import { getCrmPatientDetail } from "@/lib/crm";
 import { getFileDownloadLabels } from "@/lib/rentgen-status";
@@ -85,6 +86,7 @@ export default async function CrmPatientDetailPage({
                   </span>
                 )}
                 <StatusBadge status={a.status} />
+                <RequestStatusControl id={a.id} status={a.status} />
               </span>
             }
           >
@@ -101,12 +103,19 @@ export default async function CrmPatientDetailPage({
               </div>
             )}
             {a.note && <p className="mb-3 text-sm text-slate-600">{a.note}</p>}
-            {/* Same RentgenFile store as the center panel — uploads sync both ways. */}
-            <RentgenFilesPanel
-              requestId={a.id}
-              trashDays={trashDays}
-              files={a.files.map((f) => ({ ...f, downloadNote: downloadLabels[f.id] }))}
-            />
+            {/* Files only after the visit is completed — same rule as the center
+                panel. Same RentgenFile store (by requestId), so uploads sync. */}
+            {a.status === "COMPLETED" ? (
+              <RentgenFilesPanel
+                requestId={a.id}
+                trashDays={trashDays}
+                files={a.files.map((f) => ({ ...f, downloadNote: downloadLabels[f.id] }))}
+              />
+            ) : (
+              <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">
+                Fayl yükləmək üçün randevunu <span className="font-semibold">«Tamamlandı»</span> edin.
+              </p>
+            )}
           </Panel>
         ))}
       </div>
