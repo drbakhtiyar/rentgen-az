@@ -29,14 +29,18 @@ function priceLabel(min: number | null, max: number | null): string | null {
 export function ServicesExplorer({
   services,
   categories,
+  categoryLabels,
   labels,
 }: {
   services: ExplorerService[];
   categories: string[];
+  /** AZ category (filter key) → display label (RU when applicable). */
+  categoryLabels?: Record<string, string>;
   labels: { all: string; centerWord: string; more: string };
 }) {
   const [active, setActive] = React.useState<string | null>(null);
   const shown = active ? services.filter((s) => s.category === active) : services;
+  const catLabel = (c: string) => categoryLabels?.[c] ?? c;
 
   const chip = (key: string, label: string, isActive: boolean, onClick: () => void) => (
     <button
@@ -58,7 +62,7 @@ export function ServicesExplorer({
       {categories.length > 1 && (
         <div className="flex flex-wrap gap-2">
           {chip("__all__", labels.all, active === null, () => setActive(null))}
-          {categories.map((c) => chip(c, c, active === c, () => setActive(c)))}
+          {categories.map((c) => chip(c, catLabel(c), active === c, () => setActive(c)))}
         </div>
       )}
 

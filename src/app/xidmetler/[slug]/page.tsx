@@ -17,6 +17,7 @@ import {
   getRatingsForCenters,
 } from "@/lib/queries";
 import { getServiceContent } from "@/content/services";
+import { serviceNameRu, categoryRu } from "@/content/services-ru";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import {
@@ -41,7 +42,9 @@ export async function generateMetadata({
   const { slug } = await params;
   const service = await getServiceBySlug(slug);
   if (!service) return buildMetadata({ title: "Xidmət tapılmadı", noIndex: true });
-  const content = getServiceContent(slug, service.name, service.category ?? undefined);
+  const locale = await getLocale();
+  const name = locale === "ru" ? serviceNameRu(service.name) : service.name;
+  const content = getServiceContent(slug, name, service.category ?? undefined, locale);
   return buildMetadata({
     title: content.metaTitle.replace(/ \| .*$/, ""),
     description: content.metaDescription,
@@ -59,8 +62,12 @@ export default async function ServiceDetailPage({
   const service = await getServiceBySlug(slug);
   if (!service) notFound();
 
-  const shortName = service.shortName ?? service.name;
-  const content = getServiceContent(slug, service.name, service.category ?? undefined);
+  const locale = await getLocale();
+  const ru = locale === "ru";
+  const displayName = ru ? serviceNameRu(service.name) : service.name;
+  const shortName = ru ? displayName : (service.shortName ?? service.name);
+  const displayCategory = ru ? categoryRu(service.category) : (service.category ?? undefined);
+  const content = getServiceContent(slug, displayName, service.category ?? undefined, locale);
   const centersRaw = await getCentersForService(slug, 12);
   // Price comparison: cheapest first for this service (centers with no price go last).
   const priceOf = (c: (typeof centersRaw)[number]) =>
@@ -75,7 +82,6 @@ export default async function ServiceDetailPage({
   });
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const allServices = await getActiveServices();
-  const locale = await getLocale();
   const t = getDict(locale).serviceDetail;
   const related = allServices
     .filter((s) => s.slug !== slug && s.category === service.category)
@@ -86,21 +92,21 @@ export default async function ServiceDetailPage({
       <JsonLd
         data={[
           breadcrumbJsonLd([
-            { name: "Ana səhifə", path: "/" },
-            { name: "Xidmətlər", path: "/xidmetler" },
-            { name: service.name, path: `/xidmetler/${slug}` },
+            { name: ru ? "Главная" : "Ana səhifə", path: "/" },
+            { name: ru ? "Услуги" : "Xidmətlər", path: "/xidmetler" },
+            { name: displayName, path: `/xidmetler/${slug}` },
           ]),
-          serviceJsonLd({ name: service.name, slug, description: content.intro }),
+          serviceJsonLd({ name: displayName, slug, description: content.intro }),
           faqJsonLd(content.faq),
         ]}
       />
 
       <PageHeader
-        eyebrow={service.category ?? undefined}
-        title={service.name}
+        eyebrow={displayCategory || undefined}
+        title={displayName}
         description={content.intro}
         breadcrumbs={[
-          { name: "Xidmətlər", href: "/xidmetler" },
+          { name: ru ? "Услуги" : "Xidmətlər", href: "/xidmetler" },
           { name: shortName },
         ]}
       >
@@ -167,7 +173,7 @@ export default async function ServiceDetailPage({
                           href={`/xidmetler/${r.slug}`}
                           className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
                         >
-                          {r.shortName ?? r.name}
+                          {ru ? serviceNameRu(r.name) : (r.shortName ?? r.name)}
                           <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
                       </li>

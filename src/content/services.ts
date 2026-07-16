@@ -11,56 +11,105 @@ export type ServiceContent = {
   faq: { question: string; answer: string }[];
 };
 
+type Locale = "az" | "ru";
+
 /** Modality descriptor so auto-generated SEO copy is accurate per exam type. */
 type Modality = { word: string; long: string; radiation: string; prep: string };
+type ModalityL = { az: Modality; ru: Modality };
 
-function modalityFor(name: string, category?: string): Modality {
+function modalityFor(name: string, category: string | undefined, locale: Locale): Modality {
   const c = (category ?? "").toLowerCase();
   const n = name.toLowerCase();
+  const pick = (m: ModalityL) => m[locale];
   if (c.includes("mrt") || n.includes("mrt")) {
-    return {
-      word: "maqnit-rezonans tomoqrafiya (MRT)",
-      long: "güclü maqnit sahəsi ilə orqan və toxumaların yüksək dəqiqlikli görüntülənməsi",
-      radiation:
-        "MRT-də ionlaşdırıcı şüalanma yoxdur — görüntü maqnit sahəsi və radiotezlik dalğaları ilə alınır. Bədənində metal implant və ya kardiostimulyator olanlar həkimi əvvəlcədən məlumatlandırmalıdır.",
-      prep: "Bəzi MRT müayinələri ac qarına və ya kontrast maddə ilə aparıla bilər — mərkəz sizə əvvəlcədən təlimat verəcək.",
-    };
+    return pick({
+      az: {
+        word: "maqnit-rezonans tomoqrafiya (MRT)",
+        long: "güclü maqnit sahəsi ilə orqan və toxumaların yüksək dəqiqlikli görüntülənməsi",
+        radiation:
+          "MRT-də ionlaşdırıcı şüalanma yoxdur — görüntü maqnit sahəsi və radiotezlik dalğaları ilə alınır. Bədənində metal implant və ya kardiostimulyator olanlar həkimi əvvəlcədən məlumatlandırmalıdır.",
+        prep: "Bəzi MRT müayinələri ac qarına və ya kontrast maddə ilə aparıla bilər — mərkəz sizə əvvəlcədən təlimat verəcək.",
+      },
+      ru: {
+        word: "магнитно-резонансная томография (МРТ)",
+        long: "высокоточная визуализация органов и тканей с помощью сильного магнитного поля",
+        radiation:
+          "При МРТ нет ионизирующего излучения — изображение получают с помощью магнитного поля и радиоволн. При наличии металлических имплантов или кардиостимулятора заранее сообщите врачу.",
+        prep: "Некоторые МРТ проводятся натощак или с контрастом — центр даст вам инструкции заранее.",
+      },
+    });
   }
   if (c.includes("usm") || n.includes("usm") || n.includes("doppler")) {
-    return {
-      word: "ultrasəs müayinəsi (USM)",
-      long: "ultrasəs dalğaları ilə orqan və yumşaq toxumaların real vaxt rejimində görüntülənməsi",
-      radiation:
-        "USM tamamilə şüalanmasızdır və təhlükəsizdir — hamilələr və uşaqlar üçün də tətbiq olunur.",
-      prep: "Qarın USM-i çox vaxt ac qarına, kiçik çanaq USM-i isə dolu sidik kisəsi ilə aparılır — mərkəz dəqiq təlimat verəcək.",
-    };
+    return pick({
+      az: {
+        word: "ultrasəs müayinəsi (USM)",
+        long: "ultrasəs dalğaları ilə orqan və yumşaq toxumaların real vaxt rejimində görüntülənməsi",
+        radiation:
+          "USM tamamilə şüalanmasızdır və təhlükəsizdir — hamilələr və uşaqlar üçün də tətbiq olunur.",
+        prep: "Qarın USM-i çox vaxt ac qarına, kiçik çanaq USM-i isə dolu sidik kisəsi ilə aparılır — mərkəz dəqiq təlimat verəcək.",
+      },
+      ru: {
+        word: "ультразвуковое исследование (УЗИ)",
+        long: "визуализация органов и мягких тканей в реальном времени с помощью ультразвука",
+        radiation:
+          "УЗИ полностью без излучения и безопасно — применяется в том числе беременным и детям.",
+        prep: "УЗИ брюшной полости часто делают натощак, а малого таза — с наполненным мочевым пузырём; центр даст точные инструкции.",
+      },
+    });
   }
   if (c.includes("kt") || c.includes("kompüter") || n.includes(" kt") || n.includes("angioqraf")) {
-    return {
-      word: "kompüter tomoqrafiyası (KT)",
-      long: "rentgen şüaları ilə orqanların kəsik-kəsik, üçölçülü görüntülənməsi",
-      radiation:
-        "KT rentgen şüalarından istifadə edir; müasir aparatlarda doza optimallaşdırılır və müayinə yalnız klinik göstəriş olduqda təyin olunur.",
-      prep: "Kontrastlı KT ac qarına aparılır və böyrək göstəriciləri tələb oluna bilər — mərkəz sizi əvvəlcədən yönləndirəcək.",
-    };
+    return pick({
+      az: {
+        word: "kompüter tomoqrafiyası (KT)",
+        long: "rentgen şüaları ilə orqanların kəsik-kəsik, üçölçülü görüntülənməsi",
+        radiation:
+          "KT rentgen şüalarından istifadə edir; müasir aparatlarda doza optimallaşdırılır və müayinə yalnız klinik göstəriş olduqda təyin olunur.",
+        prep: "Kontrastlı KT ac qarına aparılır və böyrək göstəriciləri tələb oluna bilər — mərkəz sizi əvvəlcədən yönləndirəcək.",
+      },
+      ru: {
+        word: "компьютерная томография (КТ)",
+        long: "послойная, трёхмерная визуализация органов с помощью рентгеновских лучей",
+        radiation:
+          "КТ использует рентгеновские лучи; на современных аппаратах доза оптимизируется, а исследование назначается только по клиническим показаниям.",
+        prep: "КТ с контрастом проводится натощак и может потребовать показателей функции почек — центр направит вас заранее.",
+      },
+    });
   }
   if (c.includes("mammoqraf") || n.includes("mammoqraf") || n.includes("tomosintez")) {
-    return {
-      word: "mammoqrafiya",
-      long: "süd vəzilərinin aşağı dozalı rentgen görüntülənməsi",
-      radiation:
-        "Mammoqrafiyada doza çox aşağıdır; erkən diaqnostikanın faydası şüalanma riskini əhəmiyyətli dərəcədə üstələyir.",
-      prep: "Müayinə günü qoltuqaltı və döş nahiyəsinə deodorant, krem və ya pudra çəkməyin.",
-    };
+    return pick({
+      az: {
+        word: "mammoqrafiya",
+        long: "süd vəzilərinin aşağı dozalı rentgen görüntülənməsi",
+        radiation:
+          "Mammoqrafiyada doza çox aşağıdır; erkən diaqnostikanın faydası şüalanma riskini əhəmiyyətli dərəcədə üstələyir.",
+        prep: "Müayinə günü qoltuqaltı və döş nahiyəsinə deodorant, krem və ya pudra çəkməyin.",
+      },
+      ru: {
+        word: "маммография",
+        long: "низкодозовая рентгеновская визуализация молочных желёз",
+        radiation:
+          "При маммографии доза очень низкая; польза ранней диагностики значительно превышает риск облучения.",
+        prep: "В день исследования не наносите дезодорант, крем или пудру на область подмышек и груди.",
+      },
+    });
   }
   if (c.includes("densitometr") || n.includes("dexa") || n.includes("densitometr")) {
-    return {
-      word: "sümük densitometriyası (DEXA)",
-      long: "sümük mineral sıxlığının aşağı dozalı ölçülməsi",
-      radiation:
-        "DEXA-da şüalanma dozası adi rentgendən də azdır və müayinə tam ağrısızdır.",
-      prep: "Müayinədən əvvəl kalsium əlavələri qəbul etməyin və metal aksesuarları çıxarın.",
-    };
+    return pick({
+      az: {
+        word: "sümük densitometriyası (DEXA)",
+        long: "sümük mineral sıxlığının aşağı dozalı ölçülməsi",
+        radiation:
+          "DEXA-da şüalanma dozası adi rentgendən də azdır və müayinə tam ağrısızdır.",
+        prep: "Müayinədən əvvəl kalsium əlavələri qəbul etməyin və metal aksesuarları çıxarın.",
+      },
+      ru: {
+        word: "денситометрия костей (DEXA)",
+        long: "низкодозовое измерение минеральной плотности костей",
+        radiation:
+          "При DEXA доза облучения даже ниже, чем при обычном рентгене, а исследование полностью безболезненно.",
+        prep: "Перед исследованием не принимайте препараты кальция и снимите металлические аксессуары.",
+      },
+    });
   }
   if (
     c.includes("floroskop") ||
@@ -70,34 +119,103 @@ function modalityFor(name: string, category?: string): Modality {
     n.includes("venoqraf") ||
     n.includes("fistuloqraf")
   ) {
-    return {
-      word: "floroskopik (kontrastlı) müayinə",
-      long: "kontrast maddə ilə orqanların hərəkətdə, real vaxtda rentgen görüntülənməsi",
-      radiation:
-        "Floroskopiyada rentgen şüası istifadə olunur; doza nəzarət altındadır və müayinə mütəxəssis nəzarətində aparılır.",
-      prep: "Bir çox kontrastlı müayinə ac qarına aparılır — mərkəz sizə hazırlıq təlimatını verəcək.",
-    };
+    return pick({
+      az: {
+        word: "floroskopik (kontrastlı) müayinə",
+        long: "kontrast maddə ilə orqanların hərəkətdə, real vaxtda rentgen görüntülənməsi",
+        radiation:
+          "Floroskopiyada rentgen şüası istifadə olunur; doza nəzarət altındadır və müayinə mütəxəssis nəzarətində aparılır.",
+        prep: "Bir çox kontrastlı müayinə ac qarına aparılır — mərkəz sizə hazırlıq təlimatını verəcək.",
+      },
+      ru: {
+        word: "флюороскопическое (контрастное) исследование",
+        long: "рентгеновская визуализация органов в движении, в реальном времени, с контрастом",
+        radiation:
+          "При флюороскопии используется рентген; доза под контролем, исследование проводится под наблюдением специалиста.",
+        prep: "Многие контрастные исследования проводятся натощак — центр даст вам инструкции по подготовке.",
+      },
+    });
   }
   if (c === "dental") {
-    return {
-      word: "dental rentgen",
-      long: "diş və çənə strukturlarının rəqəmsal rentgen görüntülənməsi",
-      radiation:
-        "Dental rentgendə doza çox aşağıdır; müasir rəqəmsal aparatlarda şüalanma minimuma endirilir.",
-      prep: "Xüsusi hazırlıq tələb olunmur; müayinədən əvvəl metal aksesuarları çıxarmaq kifayətdir.",
-    };
+    return pick({
+      az: {
+        word: "dental rentgen",
+        long: "diş və çənə strukturlarının rəqəmsal rentgen görüntülənməsi",
+        radiation:
+          "Dental rentgendə doza çox aşağıdır; müasir rəqəmsal aparatlarda şüalanma minimuma endirilir.",
+        prep: "Xüsusi hazırlıq tələb olunmur; müayinədən əvvəl metal aksesuarları çıxarmaq kifayətdir.",
+      },
+      ru: {
+        word: "дентальный рентген",
+        long: "цифровая рентгеновская визуализация структур зубов и челюсти",
+        radiation:
+          "При дентальном рентгене доза очень низкая; на современных цифровых аппаратах облучение сведено к минимуму.",
+        prep: "Специальная подготовка не требуется; достаточно снять металлические аксессуары перед исследованием.",
+      },
+    });
   }
-  return {
-    word: "rentgen müayinəsi",
-    long: "sümük və toxumaların rəqəmsal rentgen görüntülənməsi",
-    radiation:
-      "Müasir rəqəmsal rentgen aparatlarında şüalanma dozası aşağı və nəzarət altındadır; müayinə yalnız klinik göstəriş olduqda təyin edilir.",
-    prep: "Adətən xüsusi hazırlıq tələb olunmur; müayinə nahiyəsindəki metal əşyaları çıxarmaq kifayətdir.",
-  };
+  return pick({
+    az: {
+      word: "rentgen müayinəsi",
+      long: "sümük və toxumaların rəqəmsal rentgen görüntülənməsi",
+      radiation:
+        "Müasir rəqəmsal rentgen aparatlarında şüalanma dozası aşağı və nəzarət altındadır; müayinə yalnız klinik göstəriş olduqda təyin edilir.",
+      prep: "Adətən xüsusi hazırlıq tələb olunmur; müayinə nahiyəsindəki metal əşyaları çıxarmaq kifayətdir.",
+    },
+    ru: {
+      word: "рентгеновское исследование",
+      long: "цифровая рентгеновская визуализация костей и тканей",
+      radiation:
+        "На современных цифровых рентген-аппаратах доза облучения низкая и под контролем; исследование назначается только по клиническим показаниям.",
+      prep: "Обычно специальной подготовки не требуется; достаточно снять металлические предметы в области исследования.",
+    },
+  });
 }
 
-const generic = (name: string, category?: string): ServiceContent => {
-  const m = modalityFor(name, category);
+const genericRu = (name: string, m: Modality): ServiceContent => ({
+  metaTitle: `${name} — цена и центры в Баку | Rentgen.az`,
+  metaDescription: `Проверенные центры в Баку, где можно сделать «${name}». Сравните цены, найдите адрес и контакты, запишитесь напрямую.`,
+  keywords: [name, `${name} Баку`, `${name} цена`, m.word, "Баку", "Rentgen.az"],
+  intro: `${name} — это метод: ${m.long}. Через Rentgen.az вы найдёте центры в Баку, где делают «${name}», сравните цены и свяжетесь напрямую.`,
+  sections: [
+    {
+      heading: `Что такое «${name}»?`,
+      body: `«${name}» — это вид исследования «${m.word}» для решения задачи: ${m.long}. Результаты помогают врачу поставить точный диагноз и спланировать лечение.`,
+    },
+    {
+      heading: `Цена «${name}» в Баку`,
+      body: `Цена зависит от центра и оборудования. На Rentgen.az вы можете сравнить цены центров, где делают «${name}», и выбрать подходящий вариант.`,
+    },
+    {
+      heading: "Подготовка и результаты",
+      body: m.prep,
+    },
+  ],
+  benefits: [
+    "Проверенные центры на одной платформе",
+    "Легко сравнить цены",
+    "Адрес, контакты и часы работы в одном месте",
+    "Возможность записаться напрямую",
+  ],
+  whenNeeded: [
+    "По клиническому направлению врача",
+    "Для оценки структур до или после лечения",
+    "Для диагностики при жалобах или травме",
+  ],
+  faq: [
+    { question: `«${name}» опасно?`, answer: m.radiation },
+    {
+      question: `Сколько стоит «${name}» в Баку?`,
+      answer:
+        "Цена зависит от выбранного центра. На Rentgen.az можно сравнить цены разных центров и выбрать оптимальный вариант.",
+    },
+    { question: `Нужна ли подготовка к «${name}»?`, answer: m.prep },
+  ],
+});
+
+const generic = (name: string, category: string | undefined, locale: Locale): ServiceContent => {
+  const m = modalityFor(name, category, locale);
+  if (locale === "ru") return genericRu(name, m);
   const low = name.toLowerCase();
   return {
     metaTitle: `${name} — Bakıda qiymət və mərkəzlər | Rentgen.az`,
@@ -418,6 +536,14 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
   },
 };
 
-export function getServiceContent(slug: string, name: string, category?: string): ServiceContent {
-  return SERVICE_CONTENT[slug] ?? generic(name, category);
+export function getServiceContent(
+  slug: string,
+  name: string,
+  category?: string,
+  locale: Locale = "az",
+): ServiceContent {
+  // Hand-written rich content is AZ-only; for RU we always use the
+  // locale-aware generic template (name is passed already translated).
+  if (locale === "ru") return generic(name, category, "ru");
+  return SERVICE_CONTENT[slug] ?? generic(name, category, "az");
 }

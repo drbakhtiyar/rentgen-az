@@ -9,6 +9,7 @@ import {
   getActiveServices,
   getServicePriceRanges,
 } from "@/lib/queries";
+import { serviceNameRu, categoryRu } from "@/content/services-ru";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
@@ -40,23 +41,29 @@ export default async function ServicesPage() {
   ]);
   const locale = await getLocale();
   const d = getDict(locale).services;
+  const ru = locale === "ru";
 
   // Show every service for SEO reach. Services offered by at least one approved
   // center come first (most-offered first); services no center offers yet still
   // appear (each has its own landing page) but after the offered ones. The sort
   // is stable, so within each group the catalog order (category grouping) holds.
   const explorerServices = services
-    .map((s) => ({
-      slug: s.slug,
-      name: s.name,
-      description: s.description,
-      icon: s.icon,
-      iconUrl: s.iconUrl,
-      category: s.category,
-      count: counts[s.slug] ?? 0,
-      priceMin: priceRanges[s.slug]?.min ?? null,
-      priceMax: priceRanges[s.slug]?.max ?? null,
-    }))
+    .map((s) => {
+      const name = ru ? serviceNameRu(s.name) : s.name;
+      return {
+        slug: s.slug,
+        name,
+        description: ru
+          ? `${name} — проверенные центры в Баку: цены, адреса и прямая связь.`
+          : s.description,
+        icon: s.icon,
+        iconUrl: s.iconUrl,
+        category: s.category, // AZ value = the filter key
+        count: counts[s.slug] ?? 0,
+        priceMin: priceRanges[s.slug]?.min ?? null,
+        priceMax: priceRanges[s.slug]?.max ?? null,
+      };
+    })
     .sort((a, b) => {
       const ha = a.count > 0 ? 1 : 0;
       const hb = b.count > 0 ? 1 : 0;
@@ -68,6 +75,9 @@ export default async function ServicesPage() {
   const categories = Array.from(
     new Set(services.map((s) => s.category).filter((c): c is string => Boolean(c))),
   );
+  // Display labels for the chips (RU when applicable); filtering still uses the AZ key.
+  const categoryLabels: Record<string, string> = {};
+  for (const c of categories) categoryLabels[c] = ru ? categoryRu(c) : c;
 
   return (
     <>
@@ -91,6 +101,7 @@ export default async function ServicesPage() {
             <ServicesExplorer
               services={explorerServices}
               categories={categories}
+              categoryLabels={categoryLabels}
               labels={{
                 all: locale === "ru" ? "Все" : "Hamısı",
                 centerWord: d.centerWord,
