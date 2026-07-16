@@ -23,6 +23,7 @@ export function SlotSettingsForm({
   lunchStart,
   lunchEnd,
   lunchDays,
+  openDays,
 }: {
   enabled: boolean;
   slotMinutes: number;
@@ -30,8 +31,10 @@ export function SlotSettingsForm({
   lunchStart: string | null;
   lunchEnd: string | null;
   lunchDays: string[];
+  openDays: string[]; // only working weekdays are offered for lunch
 }) {
   const router = useRouter();
+  const shownDays = DAYS.filter((d) => openDays.includes(d.key));
   const [on, setOn] = React.useState(enabled);
   const [step, setStep] = React.useState(slotMinutes);
   const [cap, setCap] = React.useState(slotCapacity);
@@ -39,7 +42,7 @@ export function SlotSettingsForm({
   const [lStart, setLStart] = React.useState(lunchStart ?? "13:00");
   const [lEnd, setLEnd] = React.useState(lunchEnd ?? "14:00");
   const [lDays, setLDays] = React.useState<string[]>(
-    lunchDays.length ? lunchDays : ["mon", "tue", "wed", "thu", "fri"],
+    lunchDays.length ? lunchDays.filter((d) => openDays.includes(d)) : openDays,
   );
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -152,7 +155,7 @@ export function SlotSettingsForm({
             <div>
               <label className="mb-1 block text-xs font-semibold text-slate-500">Günlər</label>
               <div className="flex flex-wrap gap-1.5">
-                {DAYS.map((d) => (
+                {shownDays.map((d) => (
                   <button
                     key={d.key}
                     type="button"

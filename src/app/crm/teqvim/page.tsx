@@ -8,6 +8,7 @@ import {
   getCenterWeekAppointments,
   getCenterTimeBlocks,
   getCenterWeekTimeBlocks,
+  getCenterHolidaysInRange,
   getCenterMonthCounts,
   shiftYmd,
   mondayOf,
@@ -183,34 +184,69 @@ export default async function CrmCalendarPage({
   }
 
   // ---- Day / Week views ----
+  const weekHours = parseHours(center.hours);
+  const isOpenDay = (day: string) => !!weekHours?.[ymdToDayKey(day)];
+  // A holiday covers the whole working day as a fixed block.
+  const holidayBlockFor = (day: string, reason: string | null): GridBlock | null => {
+    const dh = weekHours?.[ymdToDayKey(day)];
+    if (!dh) return null;
+    return {
+      id: `holiday-${day}`,
+      ymd: day,
+      startMin: toMin(dh.open),
+      endMin: toMin(dh.close),
+      reason: reason || "Qeyri iş günü",
+      fixed: true,
+    };
+  };
+
   let gridDays: GridDay[];
   if (view === "week") {
     const monday = mondayOf(ymd);
-    const [week, weekBlocks] = await Promise.all([
+    const sunday = shiftYmd(monday, 6);
+    const [week, weekBlocks, holidays] = await Promise.all([
       getCenterWeekAppointments(center.id, monday),
       getCenterWeekTimeBlocks(center.id, monday),
+      getCenterHolidaysInRange(center.id, monday, sunday),
     ]);
-    gridDays = week.map((d) => ({
-      ymd: d.ymd,
-      weekday: DAY_LABELS_AZ[ymdToDayKey(d.ymd)],
-      dayNum: d.ymd.slice(8),
-      isToday: d.ymd === today,
-      appts: d.appts.map((a) => toGridAppt(a, d.ymd, svcName)).filter((x): x is GridAppt => x != null),
-      blocks: toGridBlocks(weekBlocks[d.ymd] ?? [], d.ymd),
-    }));
+    gridDays = week
+      .filter((d) => isOpenDay(d.ymd)) // hide closed weekdays
+      .map((d) => {
+        const isHoliday = d.ymd in holidays;
+        const blocks = toGridBlocks(weekBlocks[d.ymd] ?? [], d.ymd);
+        const hb = isHoliday ? holidayBlockFor(d.ymd, holidays[d.ymd]) : null;
+        if (hb) blocks.push(hb);
+        return {
+          ymd: d.ymd,
+          weekday: DAY_LABELS_AZ[ymdToDayKey(d.ymd)],
+          dayNum: d.ymd.slice(8),
+          isToday: d.ymd === today,
+          appts: isHoliday
+            ? []
+            : d.appts.map((a) => toGridAppt(a, d.ymd, svcName)).filter((x): x is GridAppt => x != null),
+          blocks,
+        };
+      });
   } else {
-    const [appts, blocks] = await Promise.all([
+    const [appts, blocks, holidays] = await Promise.all([
       getCenterDayAppointments(center.id, ymd),
       getCenterTimeBlocks(center.id, ymd),
+      getCenterHolidaysInRange(center.id, ymd, ymd),
     ]);
+    const isHoliday = ymd in holidays;
+    const gblocks = toGridBlocks(blocks, ymd);
+    const hb = isHoliday ? holidayBlockFor(ymd, holidays[ymd]) : null;
+    if (hb) gblocks.push(hb);
     gridDays = [
       {
         ymd,
         weekday: DAY_LABELS_AZ[ymdToDayKey(ymd)],
         dayNum: ymd.slice(8),
         isToday: ymd === today,
-        appts: appts.map((a) => toGridAppt(a, ymd, svcName)).filter((x): x is GridAppt => x != null),
-        blocks: toGridBlocks(blocks, ymd),
+        appts: isHoliday
+          ? []
+          : appts.map((a) => toGridAppt(a, ymd, svcName)).filter((x): x is GridAppt => x != null),
+        blocks: gblocks,
       },
     ];
   }
@@ -254,14 +290,20 @@ export default async function CrmCalendarPage({
         <span className="ml-2 font-display text-sm font-bold text-ink-900">{dateLabel}</span>
       </div>
 
-      <CalendarClient
-        days={gridDays}
-        startHour={startHour}
-        endHour={endHour}
-        nowMin={nowMin}
-        slotMinutes={center.slotMinutes}
-        services={serviceOptions}
-      />
+      {view === "day" && !isOpenDay(ymd) ? (
+        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500">
+          Bu gün mərkəz bağlıdır (iş günü deyil).
+        </div>
+      ) : (
+        <CalendarClient
+          days={gridDays}
+          startHour={startHour}
+          endHour={endHour}
+          nowMin={nowMin}
+          slotMinutes={center.slotMinutes}
+          services={serviceOptions}
+        />
+      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-500">
         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-brand-500" /> Yeni</span>

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { Clock, ListChecks, ExternalLink } from "lucide-react";
+import { Clock, ListChecks, ExternalLink, CalendarOff } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { crmNav } from "@/components/dashboard/role-navs";
 import { Panel } from "@/components/dashboard/widgets";
-import { parseHours, formatHoursSummary } from "@/lib/hours";
+import { parseHours, formatHoursSummary, DAY_KEYS } from "@/lib/hours";
+import { getCenterHolidays } from "@/lib/crm";
 import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { SlotSettingsForm } from "../slot-settings-form";
+import { HolidaysManager } from "../holidays-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,10 @@ export const metadata: Metadata = buildMetadata({ title: "CRM — Ayarlar", path
 export default async function CrmSettingsPage() {
   const { center } = await requireCenter("/crm/ayarlar");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
-  const hoursSummary = formatHoursSummary(parseHours(center.hours));
+  const week = parseHours(center.hours);
+  const hoursSummary = formatHoursSummary(week);
+  const openDays = DAY_KEYS.filter((k) => week?.[k]); // only working weekdays
+  const holidays = await getCenterHolidays(center.id);
 
   return (
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav}>
@@ -31,7 +36,19 @@ export default async function CrmSettingsPage() {
             lunchStart={center.lunchStart}
             lunchEnd={center.lunchEnd}
             lunchDays={center.lunchDays}
+            openDays={openDays}
           />
+        </Panel>
+
+        <Panel title="Qeyri-iş günləri">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <CalendarOff className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <HolidaysManager initial={holidays} />
+            </div>
+          </div>
         </Panel>
 
         <Panel title="İş saatları">

@@ -121,7 +121,7 @@ async function getOccupancy(
   excludeRequestId?: string,
 ): Promise<{ appts: Interval[]; blocks: Interval[] }> {
   const { start, end } = bakuDayBounds(ymd);
-  const [rows, durations, blockRows, lunch] = await Promise.all([
+  const [rows, durations, blockRows, lunch, holiday] = await Promise.all([
     prisma.appointmentRequest.findMany({
       where: {
         centerId,
@@ -137,6 +137,7 @@ async function getOccupancy(
       select: { startAt: true, endAt: true },
     }),
     getCenterLunch(centerId),
+    prisma.centerHoliday.findFirst({ where: { centerId, date: ymd }, select: { id: true } }),
   ]);
   const appts: Interval[] = [];
   for (const r of rows) {
@@ -151,6 +152,7 @@ async function getOccupancy(
   }));
   const lunchIv = lunchIntervalFor(lunch, ymd);
   if (lunchIv) blocks.push(lunchIv);
+  if (holiday) blocks.push({ startMin: 0, endMin: 24 * 60 }); // whole day off
   return { appts, blocks };
 }
 
@@ -267,6 +269,33 @@ export async function getCenterWeekTimeBlocks(
     const lb = lunchBlock(lunch, ymd);
     if (lb) (out[ymd] ??= []).push(lb);
   }
+  return out;
+}
+
+export type CrmHoliday = { id: string; date: string; reason: string | null };
+
+/** All declared non-working days for a center (for the settings list). */
+export async function getCenterHolidays(centerId: string): Promise<CrmHoliday[]> {
+  const rows = await prisma.centerHoliday.findMany({
+    where: { centerId },
+    orderBy: { date: "asc" },
+    select: { id: true, date: true, reason: true },
+  });
+  return rows;
+}
+
+/** Holiday reasons keyed by "YYYY-MM-DD" within [fromYmd, toYmd] (inclusive). */
+export async function getCenterHolidaysInRange(
+  centerId: string,
+  fromYmd: string,
+  toYmd: string,
+): Promise<Record<string, string | null>> {
+  const rows = await prisma.centerHoliday.findMany({
+    where: { centerId, date: { gte: fromYmd, lte: toYmd } },
+    select: { date: true, reason: true },
+  });
+  const out: Record<string, string | null> = {};
+  for (const r of rows) out[r.date] = r.reason;
   return out;
 }
 

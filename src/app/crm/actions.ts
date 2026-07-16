@@ -262,6 +262,35 @@ export async function deleteTimeBlockAction(id: string): Promise<CrmResult> {
 
 const DAY_SET = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 
+/** Declare a non-working day (holiday / day off). The whole day gets blocked. */
+export async function addHolidayAction(input: { date: string; reason?: string | null }): Promise<CrmResult> {
+  const center = await currentCenter();
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  if (!YMD.test(input.date)) return { ok: false, error: "Tarixi düzgün seçin." };
+  try {
+    await prisma.centerHoliday.create({
+      data: { centerId: center.id, date: input.date, reason: input.reason?.trim() || null },
+    });
+  } catch {
+    return { ok: false, error: "Bu tarix artıq qeyri-iş günü kimi əlavə edilib." };
+  }
+  revalidatePath("/crm/ayarlar");
+  revalidatePath("/crm/teqvim");
+  return { ok: true };
+}
+
+/** Remove a non-working day. */
+export async function deleteHolidayAction(id: string): Promise<CrmResult> {
+  const center = await currentCenter();
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const h = await prisma.centerHoliday.findUnique({ where: { id }, select: { centerId: true } });
+  if (!h || h.centerId !== center.id) return { ok: false, error: "Tapılmadı." };
+  await prisma.centerHoliday.delete({ where: { id } });
+  revalidatePath("/crm/ayarlar");
+  revalidatePath("/crm/teqvim");
+  return { ok: true };
+}
+
 /** Update the center's CRM slot settings (incl. the recurring lunch break). */
 export async function updateSlotSettingsAction(input: {
   enabled: boolean;
