@@ -31,8 +31,13 @@ const ALLOWED_TYPES = new Set([
   "application/pdf",
   "application/zip",
   "application/x-zip-compressed",
+  "application/x-compressed",
+  "multipart/x-zip",
   "application/dicom",
-  "application/octet-stream", // .dcm / raw DICOM
+  "application/xml", // rentgen aparatının hesabat/metadata XML-i
+  "text/xml",
+  "text/plain", // .txt hesabat
+  "application/octet-stream", // .dcm / raw DICOM / naməlum
 ]);
 const MAX_SIZE = 2_000_000_000; // ~2 GB (fits Int)
 const GB = 1024 ** 3;

@@ -43,14 +43,30 @@ function formatDate(d?: string | Date): string {
 }
 
 function resolveType(file: File): string {
-  if (file.type) return file.type;
+  // Map by extension first — browsers report inconsistent MIME types for zip/
+  // xml/dicom (or none at all), so the extension is the reliable signal.
   const ext = file.name.split(".").pop()?.toLowerCase();
-  if (ext === "zip") return "application/zip";
-  if (ext === "dcm" || ext === "dicom") return "application/dicom";
-  if (ext === "pdf") return "application/pdf";
-  if (ext === "png") return "image/png";
-  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
-  return "application/octet-stream";
+  switch (ext) {
+    case "zip":
+      return "application/zip";
+    case "dcm":
+    case "dicom":
+      return "application/dicom";
+    case "pdf":
+      return "application/pdf";
+    case "png":
+      return "image/png";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "webp":
+      return "image/webp";
+    case "xml":
+      return "application/xml";
+    case "txt":
+      return "text/plain";
+  }
+  return file.type || "application/octet-stream";
 }
 
 /** PUT a blob to a presigned URL; resolves with the ETag response header. */
@@ -231,7 +247,7 @@ export function RentgenFilesPanel({
           ref={inputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/webp,application/pdf,application/zip,application/dicom,.dcm,.zip"
+          accept="image/jpeg,image/png,image/webp,application/pdf,application/zip,application/dicom,application/xml,text/xml,text/plain,.dcm,.zip,.xml,.txt"
           onChange={(e) => e.target.files && handleFiles(e.target.files)}
           className="hidden"
         />
@@ -256,7 +272,7 @@ export function RentgenFilesPanel({
       >
         {t.svcDropHint}
         <span className="block text-[11px] text-slate-400">
-          JPG, PNG, PDF, ZIP, DICOM · maks. 2 GB · CBCT üçün ZIP tövsiyə olunur
+          JPG, PNG, PDF, ZIP, DICOM, XML, TXT · maks. 2 GB · CBCT üçün ZIP tövsiyə olunur
         </span>
       </div>
 
