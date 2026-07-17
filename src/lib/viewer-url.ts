@@ -4,7 +4,7 @@
  * subdomain must be absolute (crm.* rewrites every path into /crm/*).
  */
 
-const VIEWABLE_EXT = new Set(["dcm", "dicom", "zip", "jpg", "jpeg", "png", "webp", "pdf"]);
+const VIEWABLE_EXT = new Set(["dcm", "dicom", "zip", "rar", "jpg", "jpeg", "png", "webp", "pdf"]);
 
 /** Can this file open in the in-browser viewer (DICOM/ZIP/image/PDF)? */
 export function isViewableFile(fileName: string): boolean {

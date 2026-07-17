@@ -274,9 +274,21 @@ function Viewport({
     });
   }
 
-  function onWheel(e: React.WheelEvent) {
-    setSlice(sliceIndex + (e.deltaY > 0 ? 1 : -1));
-  }
+  // Wheel = scroll through slices, WITHOUT scrolling the page. React's onWheel
+  // is passive (preventDefault ignored), so attach a native non-passive
+  // listener; a ref keeps it pointed at the latest slice.
+  const applyWheelRef = React.useRef<(dy: number) => void>(() => {});
+  applyWheelRef.current = (dy: number) => setSlice(sliceIndex + (dy > 0 ? 1 : -1));
+  React.useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      applyWheelRef.current(e.deltaY);
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
 
   // Crosshair positions (fractions) for the other two axes on this plane.
   const vFrac = plane === "axial" ? cross.ix / (vol.cols - 1) : plane === "coronal" ? cross.ix / (vol.cols - 1) : cross.iy / (vol.rows - 1);
@@ -302,7 +314,7 @@ function Viewport({
           )}
         </div>
       </div>
-      <div ref={boxRef} className="relative flex-1 overflow-auto" onWheel={onWheel}>
+      <div ref={boxRef} className="relative flex-1 touch-pan-y overflow-auto overscroll-contain">
         <div
           className="relative mx-auto cursor-crosshair"
           style={{ aspectRatio: `${aspect}`, width: `${zoom * 100}%`, maxWidth: zoom === 1 ? "100%" : undefined }}

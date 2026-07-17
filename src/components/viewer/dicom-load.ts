@@ -216,9 +216,11 @@ export async function loadDicom(
     bytes = new Uint8Array(await resp.arrayBuffer());
   }
 
-  // ---- unzip if it's a ZIP ----
+  // ---- decompress if it's an archive (ZIP or RAR) ----
   let files: Uint8Array[] = [bytes];
-  if (bytes.length > 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03) {
+  const isZip = bytes.length > 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03;
+  const isRar = bytes.length > 4 && bytes[0] === 0x52 && bytes[1] === 0x61 && bytes[2] === 0x72 && bytes[3] === 0x21;
+  if (isZip) {
     onPhase({ phase: "unzip" });
     const { unzip } = await import("fflate");
     const entries = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
@@ -228,6 +230,25 @@ export async function loadDicom(
       .filter(([name, data]) => data.length > 200 && !name.endsWith("/"))
       .map(([, data]) => data);
     if (files.length === 0) throw new Error("ZIP arxivi boşdur.");
+  } else if (isRar) {
+    onPhase({ phase: "unzip" });
+    const { createExtractorFromData } = await import("node-unrar-js");
+    const wasmBinary = await fetch("/unrar.wasm").then((r) => r.arrayBuffer());
+    // Pass a standalone ArrayBuffer (the fetched buffer may be a subarray view).
+    const data = bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+      ? (bytes.buffer as ArrayBuffer)
+      : (bytes.slice().buffer as ArrayBuffer);
+    const extractor = await createExtractorFromData({ data, wasmBinary });
+    const out: Uint8Array[] = [];
+    const { files: arcFiles } = extractor.extract();
+    for (const f of arcFiles) {
+      if (f.fileHeader.flags.directory) continue;
+      if (f.extraction && f.extraction.length > 200) out.push(f.extraction);
+    }
+    files = out;
+    if (files.length === 0) {
+      throw new Error("RAR arxivi boşdur və ya sıxılma metodu dəstəklənmir.");
+    }
   }
 
   // ---- parse ----
