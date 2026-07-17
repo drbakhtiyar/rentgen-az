@@ -547,7 +547,10 @@ export default async function CenterDetailPage({
                       servicesByCenter={{
                         [center.id]: center.services.map((cs) => ({
                           slug: cs.service.slug,
-                          name: cs.service.name,
+                          name:
+                            cs.price != null
+                              ? `${cs.service.name} — ${formatPrice(cs.price, cs.priceTo)}`
+                              : cs.service.name,
                         })),
                       }}
                       hoursByCenter={{ [center.id]: week }}
@@ -561,7 +564,11 @@ export default async function CenterDetailPage({
                       patient={patientInfo}
                       services={center.services.map((cs) => ({
                         value: cs.service.slug,
-                        label: cs.service.name,
+                        // Show the center's price next to each service name.
+                        label:
+                          cs.price != null
+                            ? `${cs.service.name} — ${formatPrice(cs.price, cs.priceTo)}`
+                            : cs.service.name,
                       }))}
                       doctors={doctors.map((d) => ({
                         value: d.id,
