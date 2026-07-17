@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/auth/rbac";
 import { normalizePhone } from "@/lib/phone";
 import { sendCenterSms, SMS_PACKAGES } from "@/lib/center-sms";
 import { alertAdminSms } from "@/lib/sms";
-import { isSlotAvailable } from "@/lib/crm";
+import { isSlotAvailable, getCenterPatients } from "@/lib/crm";
 
 export type CrmResult = { ok: true } | { ok: false; error: string };
 
@@ -344,6 +344,76 @@ export async function invitePatientAction(input: { phone: string; name?: string 
     return { ok: false, error: "noBalance" in res ? res.error : "SMS göndərilə bilmədi. Yenidən cəhd edin." };
   }
   return { ok: true };
+}
+
+export type CampaignAudience = "all" | "lapsed" | "insystem";
+const CAMPAIGN_LAPSED_DAYS = 90;
+const CAMPAIGN_MAX_RECIPIENTS = 500; // per blast — keeps the action within limits
+const CAMPAIGN_BATCH = 20; // concurrent sends per round
+
+export type CampaignResult =
+  | { ok: true; sent: number; failed: number; skipped: number; noBalance: boolean }
+  | { ok: false; error: string };
+
+/** Resolve a campaign audience to a deduped phone list. */
+function campaignRecipients(
+  patients: Awaited<ReturnType<typeof getCenterPatients>>,
+  audience: CampaignAudience,
+): { phone: string; name: string }[] {
+  const now = Date.now();
+  return patients
+    .filter((p) => {
+      if (audience === "insystem") return !!p.patientId;
+      if (audience === "lapsed") {
+        return (
+          !!p.lastVisit &&
+          !p.nextVisit &&
+          now - p.lastVisit.getTime() > CAMPAIGN_LAPSED_DAYS * 86400000
+        );
+      }
+      return true;
+    })
+    .map((p) => ({ phone: p.phone, name: p.name }));
+}
+
+/**
+ * SMS campaign (blast) to the center's patient base — paid from the SMS
+ * balance (1 credit per recipient). Stops as soon as the balance runs out.
+ */
+export async function sendCampaignAction(input: {
+  audience: CampaignAudience;
+  message: string;
+}): Promise<CampaignResult> {
+  const center = await currentCenter();
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const message = input.message?.trim();
+  if (!message) return { ok: false, error: "Mesaj mətni boşdur." };
+  if (message.length > 400) return { ok: false, error: "Mesaj çox uzundur (maks. 400 simvol)." };
+
+  const patients = await getCenterPatients(center.id);
+  let recipients = campaignRecipients(patients, input.audience);
+  if (recipients.length === 0) return { ok: false, error: "Bu auditoriyada pasiyent yoxdur." };
+  const skipped = Math.max(0, recipients.length - CAMPAIGN_MAX_RECIPIENTS);
+  recipients = recipients.slice(0, CAMPAIGN_MAX_RECIPIENTS);
+
+  let sent = 0;
+  let failed = 0;
+  let noBalance = false;
+  for (let i = 0; i < recipients.length && !noBalance; i += CAMPAIGN_BATCH) {
+    const batch = recipients.slice(i, i + CAMPAIGN_BATCH);
+    const results = await Promise.all(
+      batch.map((r) => sendCenterSms(center.id, r.phone, message, "campaign")),
+    );
+    for (const res of results) {
+      if (res.ok) sent++;
+      else if ("noBalance" in res) noBalance = true;
+      else failed++;
+    }
+  }
+
+  revalidatePath("/crm/sms");
+  return { ok: true, sent, failed, skipped, noBalance };
 }
 
 /** Order an SMS package: creates a PENDING order and alerts the admin. */

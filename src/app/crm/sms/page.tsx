@@ -4,12 +4,14 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { crmNav } from "@/components/dashboard/role-navs";
 import { StatCard, Panel } from "@/components/dashboard/widgets";
 import { getCenterSmsStats, SMS_PACKAGES } from "@/lib/center-sms";
+import { getCenterPatients } from "@/lib/crm";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { SmsOrderPanel } from "../sms-order-panel";
+import { CampaignPanel } from "../campaign-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +19,13 @@ export const metadata: Metadata = buildMetadata({ title: "CRM — SMS-lər", pat
 
 const KIND_LABELS: Record<string, string> = {
   reminder: "Xatırlatma / Çağırış",
+  campaign: "Kampaniya",
   other: "Dəvət / Digər",
   center_request: "Randevu bildirişi",
   patient_status: "Status bildirişi",
 };
+
+const LAPSED_DAYS = 90;
 
 const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Gözləyir", cls: "bg-amber-50 text-amber-700" },
@@ -31,8 +36,19 @@ const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
 export default async function CrmSmsPage() {
   const { center } = await requireCenter("/crm/sms");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
-  const stats = await getCenterSmsStats(center.id);
+  const [stats, patients] = await Promise.all([
+    getCenterSmsStats(center.id),
+    getCenterPatients(center.id),
+  ]);
   const hasPending = stats.orders.some((o) => o.status === "PENDING");
+  const now = Date.now();
+  const audienceCounts = {
+    all: patients.length,
+    lapsed: patients.filter(
+      (p) => p.lastVisit && !p.nextVisit && now - p.lastVisit.getTime() > LAPSED_DAYS * 86400000,
+    ).length,
+    insystem: patients.filter((p) => p.patientId).length,
+  };
 
   return (
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
@@ -59,6 +75,12 @@ export default async function CrmSmsPage() {
         <StatCard label="Qalıq balans" value={stats.balance} icon={<MessageSquare />} tone={stats.balance <= 20 ? "amber" : "brand"} />
         <StatCard label="Bu ay göndərilən" value={stats.sentMonth} icon={<Send />} tone="cyan" />
         <StatCard label="Ümumi göndərilən" value={stats.sentTotal} icon={<TrendingUp />} tone="green" />
+      </div>
+
+      <div className="mt-6">
+        <Panel title="Kampaniya (toplu SMS)">
+          <CampaignPanel counts={audienceCounts} balance={stats.balance} />
+        </Panel>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

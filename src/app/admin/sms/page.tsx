@@ -35,6 +35,8 @@ const KIND_LABEL: Record<string, string> = {
   otp: "OTP kodu",
   center_request: "Mərkəzə müraciət",
   patient_status: "Pasiyent statusu",
+  reminder: "CRM xatırlatma",
+  campaign: "CRM kampaniya",
   other: "Digər",
 };
 
