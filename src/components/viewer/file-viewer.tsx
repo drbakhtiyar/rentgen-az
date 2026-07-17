@@ -1,7 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Download, Maximize2, Minimize2, ZoomIn, ZoomOut, FlipVertical } from "lucide-react";
+import {
+  Loader2,
+  Download,
+  Maximize2,
+  Minimize2,
+  ZoomIn,
+  ZoomOut,
+  FlipVertical,
+  MousePointer2,
+  Ruler,
+  Triangle,
+  Hand,
+  Trash2,
+  Crosshair as Crosshair2,
+} from "lucide-react";
 import { loadDicom, type LoadedDicom, type DicomVolume, type LoadPhase } from "./dicom-load";
 
 /**
@@ -98,6 +112,75 @@ function BlobPreview({ url, fileName, mode }: { url: string; fileName: string; m
 /* ----------------------------- DICOM / MPR ----------------------------- */
 
 type Crosshair = { ix: number; iy: number; iz: number };
+
+/* ------------------------- measurement tools ------------------------- */
+
+type Plane = "axial" | "coronal" | "sagittal";
+type Tool = "nav" | "ruler" | "angle" | "hu" | "pan";
+type Pt = { fx: number; fy: number }; // fractions of the plane image [0..1]
+type Measure = {
+  id: string;
+  plane: Plane;
+  slice: number; // the fixed index this measurement lives on
+  type: "ruler" | "angle" | "hu";
+  pts: Pt[];
+  hu?: number;
+};
+
+/** Physical size + pixel size of a plane's rendered image. */
+function planeGeom(vol: DicomVolume, plane: Plane) {
+  const n = vol.slices.length;
+  if (plane === "axial") {
+    return { physW: vol.cols * vol.colSpacing, physH: vol.rows * vol.rowSpacing };
+  }
+  if (plane === "coronal") {
+    return { physW: vol.cols * vol.colSpacing, physH: n * vol.zSpacing };
+  }
+  return { physW: vol.rows * vol.rowSpacing, physH: n * vol.zSpacing };
+}
+
+/** Distance in mm between two fractional points on a plane. */
+function distMm(vol: DicomVolume, plane: Plane, a: Pt, b: Pt): number {
+  const g = planeGeom(vol, plane);
+  return Math.hypot((b.fx - a.fx) * g.physW, (b.fy - a.fy) * g.physH);
+}
+
+/** Angle in degrees at vertex b (a-b-c). */
+function angleDeg(vol: DicomVolume, plane: Plane, a: Pt, b: Pt, c: Pt): number {
+  const g = planeGeom(vol, plane);
+  const bax = (a.fx - b.fx) * g.physW;
+  const bay = (a.fy - b.fy) * g.physH;
+  const bcx = (c.fx - b.fx) * g.physW;
+  const bcy = (c.fy - b.fy) * g.physH;
+  const denom = Math.hypot(bax, bay) * Math.hypot(bcx, bcy) || 1;
+  const cos = Math.max(-1, Math.min(1, (bax * bcx + bay * bcy) / denom));
+  return (Math.acos(cos) * 180) / Math.PI;
+}
+
+/** Hounsfield value at a fractional point on a plane. */
+function sampleHU(vol: DicomVolume, plane: Plane, cross: Crosshair, topFirst: boolean, fx: number, fy: number): number {
+  const n = vol.slices.length;
+  const cl = (v: number, max: number) => Math.max(0, Math.min(max, v));
+  let raw: number;
+  if (plane === "axial") {
+    const ix = cl(Math.round(fx * (vol.cols - 1)), vol.cols - 1);
+    const iy = cl(Math.round(fy * (vol.rows - 1)), vol.rows - 1);
+    raw = vol.slices[cross.iz].data[iy * vol.cols + ix];
+  } else {
+    const zf = topFirst ? fy : 1 - fy;
+    const sliceIdx = cl(Math.round(zf * (n - 1)), n - 1);
+    if (plane === "coronal") {
+      const ix = cl(Math.round(fx * (vol.cols - 1)), vol.cols - 1);
+      raw = vol.slices[sliceIdx].data[cross.iy * vol.cols + ix];
+    } else {
+      const iy = cl(Math.round(fx * (vol.rows - 1)), vol.rows - 1);
+      raw = vol.slices[sliceIdx].data[iy * vol.cols + cross.ix];
+    }
+  }
+  return Math.round(raw * vol.slope + vol.intercept);
+}
+
+const sliceOf = (plane: Plane, c: Crosshair) => (plane === "axial" ? c.iz : plane === "coronal" ? c.iy : c.ix);
 
 function DicomView({ url, fileName, size }: { url: string; fileName: string; size: number }) {
   const [phase, setPhase] = React.useState<LoadPhase | null>(null);
@@ -211,6 +294,30 @@ function renderPlane(
 
 const PLANE_LABEL: Record<string, string> = { axial: "Aksial", coronal: "Koronal", sagittal: "Sagital" };
 
+/** Label for a measurement (mm / degrees / HU), positioned over the image. */
+function MeasureLabel({ vol, plane, m }: { vol: DicomVolume; plane: Plane; m: Measure }) {
+  let pos: Pt;
+  let text: string;
+  if (m.type === "ruler") {
+    pos = { fx: (m.pts[0].fx + m.pts[1].fx) / 2, fy: (m.pts[0].fy + m.pts[1].fy) / 2 };
+    text = `${distMm(vol, plane, m.pts[0], m.pts[1]).toFixed(1)} mm`;
+  } else if (m.type === "angle") {
+    pos = m.pts[1];
+    text = `${angleDeg(vol, plane, m.pts[0], m.pts[1], m.pts[2]).toFixed(1)}°`;
+  } else {
+    pos = m.pts[0];
+    text = `${m.hu} HU`;
+  }
+  return (
+    <span
+      className="absolute -translate-y-1/2 translate-x-2 whitespace-nowrap rounded bg-slate-900/85 px-1.5 py-0.5 text-[11px] font-semibold text-amber-300 ring-1 ring-slate-700"
+      style={{ left: `${pos.fx * 100}%`, top: `${pos.fy * 100}%` }}
+    >
+      {text}
+    </span>
+  );
+}
+
 function Viewport({
   vol,
   plane,
@@ -219,17 +326,25 @@ function Viewport({
   wc,
   ww,
   topFirst,
+  tool,
+  measures,
+  pending,
+  onMeasureClick,
   expanded,
   onToggleExpand,
   single,
 }: {
   vol: DicomVolume;
-  plane: "axial" | "coronal" | "sagittal";
+  plane: Plane;
   cross: Crosshair;
   setCross: React.Dispatch<React.SetStateAction<Crosshair>>;
   wc: number;
   ww: number;
   topFirst: boolean;
+  tool: Tool;
+  measures: Measure[];
+  pending: { plane: Plane; slice: number; pts: Pt[] } | null;
+  onMeasureClick: (plane: Plane, fx: number, fy: number) => void;
   expanded: boolean;
   onToggleExpand: () => void;
   single: boolean;
@@ -238,6 +353,7 @@ function Viewport({
   const boxRef = React.useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = React.useState(1);
   const n = vol.slices.length;
+  const curSlice = sliceOf(plane, cross);
 
   // Physical aspect ratio of the plane.
   const aspect =
@@ -261,11 +377,18 @@ function Viewport({
     );
   };
 
-  // Click → move the other two planes' crosshair.
+  // Click → move crosshair (nav) or add a measurement point (measure tools).
+  const draggedRef = React.useRef(false);
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (draggedRef.current) return; // a pan drag just ended — not a click
     const rect = e.currentTarget.getBoundingClientRect();
     const fx = (e.clientX - rect.left) / rect.width;
     const fy = (e.clientY - rect.top) / rect.height;
+    if (tool === "pan") return;
+    if (tool !== "nav") {
+      onMeasureClick(plane, fx, fy);
+      return;
+    }
     setCross((c) => {
       if (plane === "axial") {
         return { ...c, ix: Math.round(fx * (vol.cols - 1)), iy: Math.round(fy * (vol.rows - 1)) };
@@ -277,6 +400,35 @@ function Viewport({
       return { ...c, iy: Math.round(fx * (vol.rows - 1)), iz: Math.round(zf * (n - 1)) };
     });
   }
+
+  // Pan: drag to scroll the (zoomed) viewport.
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (tool !== "pan") return;
+    const box = boxRef.current;
+    if (!box) return;
+    draggedRef.current = false;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const sl = box.scrollLeft;
+    const st = box.scrollTop;
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      if (Math.abs(dx) + Math.abs(dy) > 3) draggedRef.current = true;
+      box.scrollLeft = sl - dx;
+      box.scrollTop = st - dy;
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  }
+
+  // Measurements visible on the current slice of this plane (+ the in-progress one).
+  const shown = measures.filter((m) => m.plane === plane && m.slice === curSlice);
+  const draft = pending && pending.plane === plane && pending.slice === curSlice ? pending.pts : null;
 
   // Wheel = scroll through slices, WITHOUT scrolling the page. React's onWheel
   // is passive (preventDefault ignored), so attach a native non-passive
@@ -321,15 +473,58 @@ function Viewport({
       </div>
       <div ref={boxRef} className="relative flex-1 touch-pan-y overflow-auto overscroll-contain">
         <div
-          className="relative mx-auto cursor-crosshair"
+          className={`relative mx-auto ${tool === "pan" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"}`}
           style={{ aspectRatio: `${aspect}`, width: `${zoom * 100}%`, maxWidth: zoom === 1 ? "100%" : undefined }}
           onClick={onClick}
+          onPointerDown={onPointerDown}
         >
           <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" style={{ imageRendering: zoom > 2 ? "pixelated" : "auto" }} />
           {!single && (
             <>
               <div className="pointer-events-none absolute inset-y-0 w-px bg-cyan-400/50" style={{ left: `${vFrac * 100}%` }} />
               <div className="pointer-events-none absolute inset-x-0 h-px bg-cyan-400/50" style={{ top: `${hFrac * 100}%` }} />
+            </>
+          )}
+
+          {/* Measurement overlay */}
+          {(shown.length > 0 || draft) && (
+            <>
+              <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {shown.map((m) => {
+                  if (m.type === "ruler") {
+                    const [a, b] = m.pts;
+                    return <line key={m.id} x1={a.fx * 100} y1={a.fy * 100} x2={b.fx * 100} y2={b.fy * 100} stroke="#facc15" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />;
+                  }
+                  if (m.type === "angle") {
+                    const [a, b, c] = m.pts;
+                    return (
+                      <g key={m.id} stroke="#facc15" strokeWidth={1.5} vectorEffect="non-scaling-stroke">
+                        <line x1={b.fx * 100} y1={b.fy * 100} x2={a.fx * 100} y2={a.fy * 100} />
+                        <line x1={b.fx * 100} y1={b.fy * 100} x2={c.fx * 100} y2={c.fy * 100} />
+                      </g>
+                    );
+                  }
+                  return null;
+                })}
+                {draft && draft.length === 2 && (
+                  <line x1={draft[0].fx * 100} y1={draft[0].fy * 100} x2={draft[1].fx * 100} y2={draft[1].fy * 100} stroke="#fde68a" strokeWidth={1} strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
+                )}
+              </svg>
+              <div className="pointer-events-none absolute inset-0">
+                {/* placed measurement dots + labels */}
+                {shown.map((m) => (
+                  <React.Fragment key={m.id}>
+                    {m.pts.map((p, i) => (
+                      <span key={i} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400 ring-1 ring-slate-900" style={{ left: `${p.fx * 100}%`, top: `${p.fy * 100}%` }} />
+                    ))}
+                    <MeasureLabel vol={vol} plane={plane} m={m} />
+                  </React.Fragment>
+                ))}
+                {/* in-progress dots */}
+                {draft?.map((p, i) => (
+                  <span key={`d${i}`} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-200 ring-1 ring-slate-900" style={{ left: `${p.fx * 100}%`, top: `${p.fy * 100}%` }} />
+                ))}
+              </div>
             </>
           )}
         </div>
@@ -359,6 +554,35 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
   const [flipV, setFlipV] = React.useState(false);
   const topFirst = vol.zTopFirst !== flipV; // auto orientation, user-overridable
   const [expanded, setExpanded] = React.useState<"axial" | "coronal" | "sagittal" | null>(null);
+
+  // Measurement tools.
+  const [tool, setTool] = React.useState<Tool>("nav");
+  const [measures, setMeasures] = React.useState<Measure[]>([]);
+  const [pending, setPending] = React.useState<{ plane: Plane; slice: number; pts: Pt[] } | null>(null);
+  const measureSeq = React.useRef(0);
+
+  function onMeasureClick(plane: Plane, fx: number, fy: number) {
+    if (tool === "nav" || tool === "pan") return;
+    const slice = sliceOf(plane, cross);
+    const need = tool === "angle" ? 3 : tool === "ruler" ? 2 : 1;
+    const base = pending && pending.plane === plane && pending.slice === slice ? pending.pts : [];
+    const pts = [...base, { fx, fy }];
+    if (pts.length >= need) {
+      const id = `m${measureSeq.current++}`;
+      const m: Measure =
+        tool === "hu"
+          ? { id, plane, slice, type: "hu", pts, hu: sampleHU(vol, plane, cross, topFirst, fx, fy) }
+          : { id, plane, slice, type: tool, pts };
+      setMeasures((ms) => [...ms, m]);
+      setPending(null);
+    } else {
+      setPending({ plane, slice, pts });
+    }
+  }
+  function clearMeasures() {
+    setMeasures([]);
+    setPending(null);
+  }
 
   const planes: ("axial" | "coronal" | "sagittal")[] = single
     ? ["axial"]
@@ -428,6 +652,52 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
         </div>
       </Toolbar>
 
+      {/* Measurement toolbar */}
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-4 py-1.5">
+        {([
+          ["nav", "Naviqasiya", MousePointer2],
+          ["ruler", "Xətkəş", Ruler],
+          ["hu", "HU sıxlıq", Crosshair2],
+          ["angle", "Bucaq", Triangle],
+          ["pan", "Pan", Hand],
+        ] as [Tool, string, typeof Ruler][]).map(([key, label, Icon]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => {
+              setTool(key);
+              setPending(null);
+            }}
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
+              tool === key ? "bg-cyan-600 text-white" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            <Icon className="h-3.5 w-3.5" /> {label}
+          </button>
+        ))}
+        {measures.length > 0 && (
+          <button
+            type="button"
+            onClick={clearMeasures}
+            className="ml-auto inline-flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:bg-red-900/50 hover:text-red-300"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Ölçüləri təmizlə ({measures.length})
+          </button>
+        )}
+      </div>
+
+      {tool !== "nav" && (
+        <p className="bg-cyan-500/10 px-4 py-1 text-center text-[11px] text-cyan-300">
+          {tool === "ruler"
+            ? "2 nöqtəyə klik → məsafə (mm)"
+            : tool === "angle"
+              ? "3 nöqtəyə klik → bucaq"
+              : tool === "hu"
+                ? "Nöqtəyə klik → sümük sıxlığı (HU)"
+                : "Böyüdüb şəkli sürüşdürün"}
+        </p>
+      )}
+
       {vol.downsampled && (
         <p className="bg-amber-500/10 px-4 py-1.5 text-center text-xs text-amber-400">
           Böyük seriya — yaddaşa qənaət üçün rezolyusiya 2 dəfə azaldılıb. Tam keyfiyyət üçün faylı endirin.
@@ -449,6 +719,10 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
             wc={wc}
             ww={ww}
             topFirst={topFirst}
+            tool={tool}
+            measures={measures}
+            pending={pending}
+            onMeasureClick={onMeasureClick}
             expanded={expanded === p}
             onToggleExpand={() => setExpanded((e) => (e === p ? null : p))}
             single={single}
