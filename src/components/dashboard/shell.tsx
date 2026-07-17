@@ -138,9 +138,13 @@ export async function DashboardShell({
             </div>
           )}
 
-          {/* Mobile nav */}
+          {/* Mobile nav (+ logout — the sidebar with it is desktop-only) */}
           <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
             <DashboardNav items={navItems} mobile badges={mergedBadges} />
+            <LogoutButton
+              label={pd.shell.logout}
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-200"
+            />
           </div>
 
           {children}
