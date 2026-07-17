@@ -385,7 +385,19 @@ function renderPlane(
   ctx.putImageData(img, 0, 0);
 }
 
-const PLANE_LABEL: Record<string, string> = { axial: "Aksial", coronal: "Koronal", sagittal: "Sagital" };
+const PLANE_LABEL: Record<Plane, string> = { axial: "Aksial (Z)", coronal: "Koronal (Y)", sagittal: "Sagital (X)" };
+// Axis colors (each plane has an identity colour; crosshair lines take the
+// colour of the plane they represent).
+const AX_COLOR = "#60a5fa"; // axial — blue
+const COR_COLOR = "#4ade80"; // coronal — green
+const SAG_COLOR = "#f87171"; // sagittal — red
+const PLANE_COLOR: Record<Plane, string> = { axial: AX_COLOR, coronal: COR_COLOR, sagittal: SAG_COLOR };
+// Anatomical edge labels per plane.
+const ORIENT: Record<Plane, { left: string; right: string; top: string; bottom: string }> = {
+  axial: { left: "R", right: "L", top: "A", bottom: "P" },
+  coronal: { left: "R", right: "L", top: "S", bottom: "I" },
+  sagittal: { left: "A", right: "P", top: "S", bottom: "I" },
+};
 
 function OverlayLabel({ pos, text, tone }: { pos: Pt; text: string; tone: "amber" | "sky" | "green" | "red" }) {
   const c = { amber: "text-amber-300", sky: "text-sky-300", green: "text-emerald-300", red: "text-red-300" }[tone];
@@ -673,11 +685,16 @@ function Viewport({
   const zFrac = cross.iz / Math.max(1, n - 1);
   const hFrac = plane === "axial" ? cross.iy / (vol.rows - 1) : topFirst ? zFrac : 1 - zFrac;
 
+  // Crosshair line colours: each line takes the colour of the plane it marks.
+  const vColor = plane === "sagittal" ? COR_COLOR : SAG_COLOR; // vertical → coronal/sagittal position
+  const hColor = plane === "axial" ? COR_COLOR : AX_COLOR; // horizontal → coronal/axial position
+  const or = ORIENT[plane];
+
   return (
-    <div className={`flex flex-col rounded-xl border border-slate-800 bg-slate-900 ${expanded ? "col-span-full" : ""}`}>
+    <div className={`flex min-h-0 flex-col rounded-xl border border-slate-800 bg-slate-900 ${expanded ? "col-span-full row-span-full" : ""}`}>
       <div className="flex items-center justify-between px-3 py-1.5">
-        <span className="text-xs font-semibold text-slate-300">
-          {PLANE_LABEL[plane]} · {sliceIndex + 1}/{sliceMax + 1}
+        <span className="text-xs font-bold" style={{ color: PLANE_COLOR[plane] }}>
+          {PLANE_LABEL[plane]} <span className="font-semibold text-slate-400">· {sliceIndex + 1}/{sliceMax + 1}</span>
         </span>
         <div className="flex items-center gap-1">
           <IconBtn onClick={() => setZoom((z) => Math.max(1, z / 1.25))} title="Kiçilt">
@@ -704,10 +721,15 @@ function Viewport({
           onPointerDown={onPointerDown}
         >
           <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" style={{ imageRendering: zoom > 2 ? "pixelated" : "auto" }} />
+          {/* orientation letters */}
+          <span className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-300/80">{or.left}</span>
+          <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-300/80">{or.right}</span>
+          <span className="pointer-events-none absolute left-1/2 top-0.5 -translate-x-1/2 text-[11px] font-bold text-slate-300/80">{or.top}</span>
+          <span className="pointer-events-none absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[11px] font-bold text-slate-300/80">{or.bottom}</span>
           {!single && (
             <>
-              <div className="pointer-events-none absolute inset-y-0 w-px bg-cyan-400/50" style={{ left: `${vFrac * 100}%` }} />
-              <div className="pointer-events-none absolute inset-x-0 h-px bg-cyan-400/50" style={{ top: `${hFrac * 100}%` }} />
+              <div className="pointer-events-none absolute inset-y-0 w-px" style={{ left: `${vFrac * 100}%`, backgroundColor: vColor, opacity: 0.6 }} />
+              <div className="pointer-events-none absolute inset-x-0 h-px" style={{ top: `${hFrac * 100}%`, backgroundColor: hColor, opacity: 0.6 }} />
             </>
           )}
 
@@ -725,6 +747,70 @@ function Viewport({
         onChange={(e) => setSlice(Number(e.target.value))}
         className="mx-3 my-2 accent-cyan-500"
       />
+    </div>
+  );
+}
+
+/** 4th quadrant: full-depth frontal MIP (project max through the whole A-P
+ * depth) — a pseudo-3D grayscale overview of the volume. Cheap stand-in for a
+ * shaded 3D render; the max-projection is computed once and only re-windowed. */
+function MipQuadrant({ vol, wc, ww, invert, topFirst }: { vol: DicomVolume; wc: number; ww: number; invert: boolean; topFirst: boolean }) {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const { cols, rows, slices } = vol;
+  const n = slices.length;
+
+  const proj = React.useMemo(() => {
+    const out = new Int16Array(n * cols);
+    for (let r = 0; r < n; r++) {
+      const d = slices[r].data;
+      const base = r * cols;
+      for (let x = 0; x < cols; x++) {
+        let m = -32768;
+        for (let y = 0; y < rows; y++) {
+          const v = d[y * cols + x];
+          if (v > m) m = v;
+        }
+        out[base + x] = m;
+      }
+    }
+    return out;
+  }, [vol]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  React.useEffect(() => {
+    const c = canvasRef.current;
+    if (!c) return;
+    c.width = cols;
+    c.height = n;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    const img = ctx.createImageData(cols, n);
+    const px = img.data;
+    const low = wc - ww / 2;
+    const k = 255 / ww;
+    let j = 0;
+    for (let r = 0; r < n; r++) {
+      const src = (topFirst ? r : n - 1 - r) * cols;
+      for (let x = 0; x < cols; x++) {
+        let g = (proj[src + x] * vol.slope + vol.intercept - low) * k;
+        g = g < 0 ? 0 : g > 255 ? 255 : g;
+        if (invert) g = 255 - g;
+        px[j] = g;
+        px[j + 1] = g;
+        px[j + 2] = g;
+        px[j + 3] = 255;
+        j += 4;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }, [proj, wc, ww, invert, topFirst, cols, n, vol.slope, vol.intercept]);
+
+  const aspect = (cols * vol.colSpacing) / (n * vol.zSpacing);
+  return (
+    <div className="flex min-h-0 flex-col rounded-xl border border-slate-800 bg-slate-900">
+      <div className="px-3 py-1.5 text-xs font-bold text-amber-300">Ümumi baxış (MIP)</div>
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-slate-950 p-1">
+        <canvas ref={canvasRef} className="max-h-full max-w-full object-contain" style={{ aspectRatio: `${aspect}` }} />
+      </div>
     </div>
   );
 }
@@ -791,11 +877,8 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
     setPending(null);
   }
 
-  const planes: ("axial" | "coronal" | "sagittal")[] = single
-    ? ["axial"]
-    : expanded
-      ? [expanded]
-      : ["axial", "coronal", "sagittal"];
+  // Reference dental layout: Coronal | Sagittal / Axial | 3D-MIP.
+  const planes: Plane[] = single ? ["axial"] : expanded ? [expanded] : ["coronal", "sagittal", "axial"];
 
   return (
     <div className="flex h-full flex-col">
@@ -976,7 +1059,7 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
 
       <div
         className={`grid flex-1 gap-2 overflow-hidden bg-slate-950 p-2 ${
-          planes.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-3"
+          single || expanded ? "grid-cols-1 grid-rows-1" : "grid-cols-1 md:grid-cols-2 md:grid-rows-2"
         }`}
       >
         {planes.map((p) => (
@@ -1000,6 +1083,8 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
             single={single}
           />
         ))}
+        {/* 4th quadrant — full-depth frontal MIP overview */}
+        {!single && !expanded && <MipQuadrant vol={vol} wc={wc} ww={ww} invert={invert} topFirst={topFirst} />}
       </div>
 
       <p className="bg-slate-950 px-4 pb-2 text-center text-[11px] text-slate-500">
