@@ -243,36 +243,40 @@ export default async function PackagesPage() {
 
       <Section>
         <Container>
-          {/* --------- Mərkəzlər üçün --------- */}
-          <div className="mb-3 flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-cyan-600" />
-            <h2 className="font-display text-2xl font-bold text-ink-900">
-              {t.centersHeading}
-            </h2>
-          </div>
-          <p className="mb-6 flex items-center gap-1.5 text-sm text-slate-500">
-            <HardDrive className="h-4 w-4" />
-            {t.centersStorage}
-          </p>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {centerTiers.map((tier) => (
-              <TierCard key={tier.name} tier={tier} popularLabel={t.popular} ctx={centerCtx} />
-            ))}
-          </div>
+          {/* Center packages — shown to everyone except a logged-in doctor. */}
+          {viewerRole !== "DOCTOR" && (
+            <>
+              <div className="mb-3 flex items-center gap-2">
+                <Building2 className="h-6 w-6 text-cyan-600" />
+                <h2 className="font-display text-2xl font-bold text-ink-900">{t.centersHeading}</h2>
+              </div>
+              <p className="mb-6 flex items-center gap-1.5 text-sm text-slate-500">
+                <HardDrive className="h-4 w-4" />
+                {t.centersStorage}
+              </p>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {centerTiers.map((tier) => (
+                  <TierCard key={tier.name} tier={tier} popularLabel={t.popular} ctx={centerCtx} />
+                ))}
+              </div>
+            </>
+          )}
 
-          {/* --------- Həkimlər üçün --------- */}
-          <div className="mb-3 mt-16 flex items-center gap-2">
-            <Stethoscope className="h-6 w-6 text-cyan-600" />
-            <h2 className="font-display text-2xl font-bold text-ink-900">{t.doctorsHeading}</h2>
-          </div>
-          <p className="mb-6 text-sm text-slate-500">
-            {t.doctorsStorage}
-          </p>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {doctorTiers.map((tier) => (
-              <TierCard key={tier.name} tier={tier} popularLabel={t.popular} ctx={doctorCtx} />
-            ))}
-          </div>
+          {/* Doctor packages — shown to everyone except a logged-in center. */}
+          {viewerRole !== "CENTER" && (
+            <>
+              <div className={`mb-3 flex items-center gap-2 ${viewerRole !== "DOCTOR" ? "mt-16" : ""}`}>
+                <Stethoscope className="h-6 w-6 text-cyan-600" />
+                <h2 className="font-display text-2xl font-bold text-ink-900">{t.doctorsHeading}</h2>
+              </div>
+              <p className="mb-6 text-sm text-slate-500">{t.doctorsStorage}</p>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {doctorTiers.map((tier) => (
+                  <TierCard key={tier.name} tier={tier} popularLabel={t.popular} ctx={doctorCtx} />
+                ))}
+              </div>
+            </>
+          )}
         </Container>
       </Section>
     </>
