@@ -166,10 +166,10 @@ export function DoctorReferralForm({
     <form onSubmit={requestOtp} className="space-y-4">
       {needsName ? (
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label={t.firstLabel} htmlFor="ref-docfirst" required>
+          <Field label={t.docFirstLabel} htmlFor="ref-docfirst" required>
             <Input id="ref-docfirst" value={docFirst} onChange={(e) => setDocFirst(e.target.value)} placeholder={t.firstPh} required />
           </Field>
-          <Field label={t.lastLabel} htmlFor="ref-doclast" required>
+          <Field label={t.docLastLabel} htmlFor="ref-doclast" required>
             <Input id="ref-doclast" value={docLast} onChange={(e) => setDocLast(e.target.value)} placeholder={t.lastPh} required />
           </Field>
         </div>

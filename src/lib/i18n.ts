@@ -403,6 +403,7 @@ type Dict = {
     centerLabel: string; centerHintPartner: string; centerFallback: string; centerPlaceholder: string;
     serviceLabel: string; servicePickCenter: string; serviceNone: string; servicePick: string;
     firstLabel: string; firstPh: string; lastLabel: string; lastPh: string;
+    docFirstLabel: string; docLastLabel: string;
     phoneLabel: string; phoneHint: string; phonePlaceholder: string;
     dateLabel: string; optional: string; pickCenterFirst: string;
     timeLabel: string; pickDateFirst: string; noTime: string; pickTime: string;
@@ -895,6 +896,8 @@ const az: Dict = {
     servicePickCenter: "İlk öncə mərkəzi seçin",
     serviceNone: "Bu mərkəzdə xidmət yoxdur",
     servicePick: "Müayinə seçin (istəyə bağlı)",
+    docFirstLabel: "Həkimin adı",
+    docLastLabel: "Həkimin soyadı",
     firstLabel: "Pasiyentin adı",
     firstPh: "Ad",
     lastLabel: "Pasiyentin soyadı",
@@ -1402,6 +1405,8 @@ const ru: Dict = {
     servicePickCenter: "Сначала выберите центр",
     serviceNone: "В этом центре нет услуг",
     servicePick: "Выберите обследование (необязательно)",
+    docFirstLabel: "Имя врача",
+    docLastLabel: "Фамилия врача",
     firstLabel: "Имя пациента",
     firstPh: "Имя",
     lastLabel: "Фамилия пациента",
