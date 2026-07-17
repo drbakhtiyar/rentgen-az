@@ -294,7 +294,7 @@ export function DoctorProfileForm({
               <img src={bannerUrl} alt="" className="h-28 w-full object-cover" />
             ) : (
               <div className="flex h-28 w-full items-center justify-center bg-slate-50 text-xs text-slate-400">
-                Banner yüklənməyib (tövsiyə: 1200×300)
+                Banner yüklənməyib (tövsiyə: 1920×500 — profil başlığının fonu olur)
               </div>
             )}
           </div>

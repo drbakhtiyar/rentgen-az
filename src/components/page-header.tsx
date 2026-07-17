@@ -32,15 +32,30 @@ export function PageHeader({
   description,
   breadcrumbs,
   children,
+  bgImageUrl,
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   breadcrumbs?: Crumb[];
   children?: React.ReactNode;
+  /** Branding banner as the hero backdrop (e.g. Platinum doctor banner);
+   * a left-side overlay keeps the title readable. */
+  bgImageUrl?: string;
 }) {
   return (
     <section className="relative overflow-hidden bg-ink-950 text-white">
+      {bgImageUrl && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bgImageUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-right"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/80 to-ink-950/25" />
+        </>
+      )}
       <div className="absolute inset-0 bg-grid-dark opacity-40" />
       <div className="glow absolute -left-20 -top-10 h-72 w-72 opacity-40" />
       <div className="glow-cyan absolute right-0 top-10 h-72 w-72 opacity-30" />

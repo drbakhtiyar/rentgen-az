@@ -89,6 +89,9 @@ export default async function DoctorProfilePage({
         eyebrow={t.profileEyebrow}
         title={name}
         breadcrumbs={[{ name: "Həkimlər", href: "/hekimler" }, { name }]}
+        bgImageUrl={
+          doctorLimits(doctor.plan).banner && doctor.bannerUrl ? doctor.bannerUrl : undefined
+        }
       >
         <div className="flex flex-wrap items-center gap-3">
           {verified && (
@@ -108,14 +111,7 @@ export default async function DoctorProfilePage({
         <Container>
           <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
             <div className="space-y-6">
-              <Card className="overflow-hidden p-6">
-                {/* Platinum branding banner */}
-                {doctorLimits(doctor.plan).banner && doctor.bannerUrl && (
-                  <div className="-mx-6 -mt-6 mb-5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={doctor.bannerUrl} alt="" className="h-36 w-full object-cover sm:h-44" />
-                  </div>
-                )}
+              <Card className="p-6">
                 <div className="flex items-start gap-4">
                   <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
                     {doctor.photoUrl ? (
