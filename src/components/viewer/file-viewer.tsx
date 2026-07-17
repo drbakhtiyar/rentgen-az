@@ -194,14 +194,16 @@ function renderPlane(
     const d = slices[cross.iz].data;
     for (let i = 0; i < d.length; i++) put(d[i]);
   } else if (plane === "coronal") {
+    // Row 0 (top) = first slice; z increases downward. (Slices are sorted by
+    // patient position so this keeps the reconstruction the right way up.)
     const rowOff = cross.iy * cols;
     for (let r = 0; r < n; r++) {
-      const d = slices[n - 1 - r].data; // superior at the top
+      const d = slices[r].data;
       for (let x = 0; x < cols; x++) put(d[rowOff + x]);
     }
   } else {
     for (let r = 0; r < n; r++) {
-      const d = slices[n - 1 - r].data;
+      const d = slices[r].data;
       for (let y = 0; y < rows; y++) put(d[y * cols + cross.ix]);
     }
   }
@@ -268,9 +270,9 @@ function Viewport({
         return { ...c, ix: Math.round(fx * (vol.cols - 1)), iy: Math.round(fy * (vol.rows - 1)) };
       }
       if (plane === "coronal") {
-        return { ...c, ix: Math.round(fx * (vol.cols - 1)), iz: Math.round((1 - fy) * (n - 1)) };
+        return { ...c, ix: Math.round(fx * (vol.cols - 1)), iz: Math.round(fy * (n - 1)) };
       }
-      return { ...c, iy: Math.round(fx * (vol.rows - 1)), iz: Math.round((1 - fy) * (n - 1)) };
+      return { ...c, iy: Math.round(fx * (vol.rows - 1)), iz: Math.round(fy * (n - 1)) };
     });
   }
 
@@ -292,7 +294,7 @@ function Viewport({
 
   // Crosshair positions (fractions) for the other two axes on this plane.
   const vFrac = plane === "axial" ? cross.ix / (vol.cols - 1) : plane === "coronal" ? cross.ix / (vol.cols - 1) : cross.iy / (vol.rows - 1);
-  const hFrac = plane === "axial" ? cross.iy / (vol.rows - 1) : 1 - cross.iz / Math.max(1, n - 1);
+  const hFrac = plane === "axial" ? cross.iy / (vol.rows - 1) : cross.iz / Math.max(1, n - 1);
 
   return (
     <div className={`flex flex-col rounded-xl border border-slate-800 bg-slate-900 ${expanded ? "col-span-full" : ""}`}>
