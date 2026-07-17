@@ -13,6 +13,9 @@ import { buildMetadata } from "@/lib/seo";
 import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { ManualAppointmentForm } from "../manual-appointment-form";
+import { RecallButton } from "../recall-button";
+
+const LAPSED_DAYS = 90; // no visit for 3 months → suggest a re-call
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +69,8 @@ export default async function CrmPatientsPage() {
                   <th className="pb-2 pr-3">Ziyarət</th>
                   <th className="pb-2 pr-3">Son</th>
                   <th className="pb-2 pr-3">Növbəti</th>
-                  <th className="pb-2">Status</th>
+                  <th className="pb-2 pr-3">Status</th>
+                  <th className="pb-2">Çağırış</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -103,6 +107,13 @@ export default async function CrmPatientsPage() {
                     <td className="py-2.5 pr-3 text-slate-600">{p.visits}</td>
                     <td className="py-2.5 pr-3 text-slate-500">
                       {p.lastVisit ? formatDateAz(p.lastVisit) : "—"}
+                      {p.lastVisit &&
+                        !p.nextVisit &&
+                        Date.now() - p.lastVisit.getTime() > LAPSED_DAYS * 86400000 && (
+                          <span className="ml-1.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                            gəlmir
+                          </span>
+                        )}
                     </td>
                     <td className="py-2.5 pr-3">
                       {p.nextVisit ? (
@@ -113,7 +124,10 @@ export default async function CrmPatientsPage() {
                         <span className="text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="py-2.5 text-xs text-slate-500">{p.lastStatus}</td>
+                    <td className="py-2.5 pr-3 text-xs text-slate-500">{p.lastStatus}</td>
+                    <td className="py-2.5">
+                      <RecallButton phone={p.phone} name={p.name} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { normalizePhone } from "@/lib/phone";
+import { sendSms } from "@/lib/sms";
 import { isSlotAvailable } from "@/lib/crm";
 
 export type CrmResult = { ok: true } | { ok: false; error: string };
@@ -288,6 +289,24 @@ export async function deleteHolidayAction(id: string): Promise<CrmResult> {
   await prisma.centerHoliday.delete({ where: { id } });
   revalidatePath("/crm/ayarlar");
   revalidatePath("/crm/teqvim");
+  return { ok: true };
+}
+
+/** Re-call: the center sends a "come back" SMS to a (usually lapsed) patient. */
+export async function sendRecallSmsAction(input: { phone: string; name?: string }): Promise<CrmResult> {
+  const center = await currentCenter();
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const phone = normalizePhone(input.phone ?? "");
+  if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
+
+  const profile = await prisma.centerProfile.findUnique({
+    where: { id: center.id },
+    select: { name: true },
+  });
+  const greeting = input.name?.trim() ? `Salam, ${input.name.trim()}! ` : "Salam! ";
+  const msg = `${greeting}${profile?.name ?? "Mərkəz"} sizi yenidən müayinəyə dəvət edir. Randevu üçün bizimlə əlaqə saxlayın.`;
+  const res = await sendSms(phone, msg, "reminder");
+  if (!res.ok) return { ok: false, error: "SMS göndərilə bilmədi. Yenidən cəhd edin." };
   return { ok: true };
 }
 
