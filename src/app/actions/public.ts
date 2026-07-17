@@ -21,6 +21,7 @@ import {
 import { notifyUser } from "@/lib/notifications";
 import { doctorName } from "@/lib/utils";
 import { getFreeStartsForService, getCenterServiceDurations } from "@/lib/crm";
+import { adoptGuestAppointments } from "@/lib/patient-link";
 
 export type FormResult = {
   ok: boolean;
@@ -185,6 +186,12 @@ export async function submitAppointmentAction(input: {
         patientId,
       },
     });
+
+    // Adopt any earlier guest/manual appointments with this phone into the
+    // patient's account (a center's hand-added patient becomes "in system").
+    if (patientId) {
+      await adoptGuestAppointments(phone, patientId).catch(() => {});
+    }
 
     // Backfill a logged-in patient's profile name if it was incomplete.
     if (loggedInPatient && (!loggedInPatient.firstName || !loggedInPatient.lastName)) {

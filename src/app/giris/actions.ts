@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { setSessionCookie, clearSessionCookie } from "@/lib/auth/session";
 import { dashboardPathForRole, getCurrentUser } from "@/lib/auth/rbac";
 import { requestOtpSchema, verifyOtpSchema } from "@/lib/validation";
+import { adoptGuestAppointments } from "@/lib/patient-link";
 import type { Role } from "@/generated/prisma/enums";
 
 export type ActionState = {
@@ -180,6 +181,12 @@ export async function verifyOtpAction(input: {
     }
 
     await setSessionCookie({ userId: user.id, role: selectedRole, phone: user.phone });
+
+    // A registering patient adopts their past guest/manual appointments (by
+    // phone) — so a center's manually-added patient becomes "in system".
+    if (selectedRole === "PATIENT" && user.patientProfile) {
+      await adoptGuestAppointments(user.phone, user.patientProfile.id).catch(() => {});
+    }
 
     // Where to send the user next (onboarding if the selected profile is missing)
     let redirectTo = dashboardPathForRole(selectedRole);

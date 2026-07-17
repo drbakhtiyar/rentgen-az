@@ -310,6 +310,37 @@ export async function sendRecallSmsAction(input: { phone: string; name?: string 
   return { ok: true };
 }
 
+/**
+ * Invite a manually-added (not-in-system) patient to register. Sends an SMS
+ * with a login link; when they sign in with this phone, their past guest
+ * appointments are adopted into the account (see adoptGuestAppointments).
+ */
+export async function invitePatientAction(input: { phone: string; name?: string }): Promise<CrmResult> {
+  const center = await currentCenter();
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const phone = normalizePhone(input.phone ?? "");
+  if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
+
+  // If already registered as a patient, no need to invite.
+  const existing = await prisma.user.findUnique({
+    where: { phone },
+    select: { patientProfile: { select: { id: true } } },
+  });
+  if (existing?.patientProfile) return { ok: false, error: "Bu pasiyent artıq sistemdədir." };
+
+  const profile = await prisma.centerProfile.findUnique({
+    where: { id: center.id },
+    select: { name: true },
+  });
+  const greeting = input.name?.trim() ? `Salam, ${input.name.trim()}! ` : "Salam! ";
+  const msg =
+    `${greeting}${profile?.name ?? "Mərkəz"} sizi rentgen.az-da qeydiyyatdan keçməyə dəvət edir. ` +
+    `Rentgen nəticələrinizə onlayn çıxış üçün nömrənizlə daxil olun: https://rentgen.az/giris?role=PATIENT`;
+  const res = await sendSms(phone, msg, "other");
+  if (!res.ok) return { ok: false, error: "SMS göndərilə bilmədi. Yenidən cəhd edin." };
+  return { ok: true };
+}
+
 /** Update the center's CRM slot settings (incl. the recurring lunch break). */
 export async function updateSlotSettingsAction(input: {
   enabled: boolean;

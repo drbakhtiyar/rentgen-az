@@ -14,6 +14,7 @@ import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { ManualAppointmentForm } from "../manual-appointment-form";
 import { RecallButton } from "../recall-button";
+import { InviteButton } from "../invite-button";
 
 const LAPSED_DAYS = 90; // no visit for 3 months → suggest a re-call
 
@@ -70,7 +71,7 @@ export default async function CrmPatientsPage() {
                   <th className="pb-2 pr-3">Son</th>
                   <th className="pb-2 pr-3">Növbəti</th>
                   <th className="pb-2 pr-3">Status</th>
-                  <th className="pb-2">Çağırış</th>
+                  <th className="pb-2">SMS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -126,7 +127,11 @@ export default async function CrmPatientsPage() {
                     </td>
                     <td className="py-2.5 pr-3 text-xs text-slate-500">{p.lastStatus}</td>
                     <td className="py-2.5">
-                      <RecallButton phone={p.phone} name={p.name} />
+                      {p.patientId ? (
+                        <RecallButton phone={p.phone} name={p.name} />
+                      ) : (
+                        <InviteButton phone={p.phone} name={p.name} />
+                      )}
                     </td>
                   </tr>
                 ))}
