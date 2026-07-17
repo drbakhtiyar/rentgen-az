@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import QRCode from "qrcode";
+import { brandedQrDataUrl } from "@/lib/qr";
 import { Star, Download, QrCode } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
@@ -39,7 +39,7 @@ export default async function CenterReviewsPage() {
   });
 
   const reviewUrl = `${SITE_URL}/rey/${center.slug}`;
-  const qrDataUrl = await QRCode.toDataURL(reviewUrl, { width: 320, margin: 2 });
+  const qrDataUrl = await brandedQrDataUrl(reviewUrl);
   const pd = getPanelDict(await getLocale());
 
   return (

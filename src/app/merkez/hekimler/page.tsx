@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import QRCode from "qrcode";
+import { brandedQrDataUrl } from "@/lib/qr";
 import { Stethoscope, MailQuestion, MessageSquare, Megaphone, QrCode, Download } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
@@ -67,9 +67,7 @@ export default async function CenterDoctorsPage() {
   const canBroadcast = centerLimits(center.plan).broadcast;
   const receivesReferrals = centerLimits(center.plan).receivesReferrals;
   const referralQrUrl = `${SITE_URL}/rentgen-merkezleri/${center.slug}?ref=hekim`;
-  const referralQr = receivesReferrals
-    ? await QRCode.toDataURL(referralQrUrl, { width: 320, margin: 2 })
-    : null;
+  const referralQr = receivesReferrals ? await brandedQrDataUrl(referralQrUrl) : null;
 
   const [pending, accepted, workplaceClaims] = await Promise.all([
     prisma.centerDoctor.findMany({
