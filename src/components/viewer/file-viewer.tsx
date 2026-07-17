@@ -14,6 +14,8 @@ import {
   Triangle,
   Hand,
   Trash2,
+  Bone,
+  Spline,
   Crosshair as Crosshair2,
 } from "lucide-react";
 import { loadDicom, type LoadedDicom, type DicomVolume, type LoadPhase } from "./dicom-load";
@@ -116,16 +118,23 @@ type Crosshair = { ix: number; iy: number; iz: number };
 /* ------------------------- measurement tools ------------------------- */
 
 type Plane = "axial" | "coronal" | "sagittal";
-type Tool = "nav" | "ruler" | "angle" | "hu" | "pan";
+type Tool = "nav" | "ruler" | "angle" | "hu" | "implant" | "nerve" | "pan";
 type Pt = { fx: number; fy: number }; // fractions of the plane image [0..1]
 type Measure = {
   id: string;
   plane: Plane;
   slice: number; // the fixed index this measurement lives on
-  type: "ruler" | "angle" | "hu";
+  type: "ruler" | "angle" | "hu" | "implant" | "nerve";
   pts: Pt[];
   hu?: number;
+  dia?: number; // implant diameter (mm)
+  len?: number; // implant length (mm)
 };
+
+// Common dental implant sizes (mm).
+const DIAMETERS = [3.3, 3.5, 3.75, 4.0, 4.5, 5.0];
+const LENGTHS = [6, 8, 10, 11.5, 13, 15];
+const NERVE_SAFETY_MM = 2; // min implant-apex ↔ nerve distance
 
 /** Physical size + pixel size of a plane's rendered image. */
 function planeGeom(vol: DicomVolume, plane: Plane) {
@@ -181,6 +190,64 @@ function sampleHU(vol: DicomVolume, plane: Plane, cross: Crosshair, topFirst: bo
 }
 
 const sliceOf = (plane: Plane, c: Crosshair) => (plane === "axial" ? c.iz : plane === "coronal" ? c.iy : c.ix);
+
+/* --- implant / nerve geometry (all in the plane's anisotropic mm space) --- */
+
+const toMm = (vol: DicomVolume, plane: Plane, p: Pt) => {
+  const g = planeGeom(vol, plane);
+  return { x: p.fx * g.physW, y: p.fy * g.physH };
+};
+const toFrac = (vol: DicomVolume, plane: Plane, x: number, y: number): Pt => {
+  const g = planeGeom(vol, plane);
+  return { fx: x / g.physW, fy: y / g.physH };
+};
+
+/** Implant body outline (4 corners) + apex from entry + direction points. */
+function implantGeom(vol: DicomVolume, plane: Plane, entry: Pt, dir: Pt, len: number, dia: number) {
+  const e = toMm(vol, plane, entry);
+  const d = toMm(vol, plane, dir);
+  let ux = d.x - e.x;
+  let uy = d.y - e.y;
+  const L = Math.hypot(ux, uy) || 1;
+  ux /= L;
+  uy /= L;
+  const apex = { x: e.x + ux * len, y: e.y + uy * len };
+  const px = -uy * (dia / 2);
+  const py = ux * (dia / 2);
+  const cm = [
+    { x: e.x + px, y: e.y + py },
+    { x: e.x - px, y: e.y - py },
+    { x: apex.x - px, y: apex.y - py },
+    { x: apex.x + px, y: apex.y + py },
+  ];
+  return {
+    corners: cm.map((c) => toFrac(vol, plane, c.x, c.y)),
+    apex,
+    apexFrac: toFrac(vol, plane, apex.x, apex.y),
+  };
+}
+
+/** Distance (mm) from point p to segment a-b. */
+function ptSegMm(p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const l2 = dx * dx + dy * dy;
+  let t = l2 ? ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+/** Shortest distance (mm) from an implant apex to any nerve on the same view. */
+function apexToNerves(vol: DicomVolume, plane: Plane, implant: Measure, nerves: Measure[]): number | null {
+  if (!implant.len || !implant.dia) return null;
+  const apex = implantGeom(vol, plane, implant.pts[0], implant.pts[1], implant.len, implant.dia).apex;
+  let min = Infinity;
+  for (const nv of nerves) {
+    const pts = nv.pts.map((p) => toMm(vol, plane, p));
+    for (let i = 0; i < pts.length - 1; i++) min = Math.min(min, ptSegMm(apex, pts[i], pts[i + 1]));
+  }
+  return Number.isFinite(min) ? min : null;
+}
 
 function DicomView({ url, fileName, size }: { url: string; fileName: string; size: number }) {
   const [phase, setPhase] = React.useState<LoadPhase | null>(null);
@@ -294,27 +361,93 @@ function renderPlane(
 
 const PLANE_LABEL: Record<string, string> = { axial: "Aksial", coronal: "Koronal", sagittal: "Sagital" };
 
-/** Label for a measurement (mm / degrees / HU), positioned over the image. */
-function MeasureLabel({ vol, plane, m }: { vol: DicomVolume; plane: Plane; m: Measure }) {
-  let pos: Pt;
-  let text: string;
-  if (m.type === "ruler") {
-    pos = { fx: (m.pts[0].fx + m.pts[1].fx) / 2, fy: (m.pts[0].fy + m.pts[1].fy) / 2 };
-    text = `${distMm(vol, plane, m.pts[0], m.pts[1]).toFixed(1)} mm`;
-  } else if (m.type === "angle") {
-    pos = m.pts[1];
-    text = `${angleDeg(vol, plane, m.pts[0], m.pts[1], m.pts[2]).toFixed(1)}°`;
-  } else {
-    pos = m.pts[0];
-    text = `${m.hu} HU`;
-  }
+function OverlayLabel({ pos, text, tone }: { pos: Pt; text: string; tone: "amber" | "sky" | "green" | "red" }) {
+  const c = { amber: "text-amber-300", sky: "text-sky-300", green: "text-emerald-300", red: "text-red-300" }[tone];
   return (
     <span
-      className="absolute -translate-y-1/2 translate-x-2 whitespace-nowrap rounded bg-slate-900/85 px-1.5 py-0.5 text-[11px] font-semibold text-amber-300 ring-1 ring-slate-700"
+      className={`absolute -translate-y-1/2 translate-x-2 whitespace-nowrap rounded bg-slate-900/85 px-1.5 py-0.5 text-[11px] font-semibold ring-1 ring-slate-700 ${c}`}
       style={{ left: `${pos.fx * 100}%`, top: `${pos.fy * 100}%` }}
     >
       {text}
     </span>
+  );
+}
+
+const dot = (p: Pt, i: number, cls: string) => (
+  <span key={i} className={`absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-1 ring-slate-900 ${cls}`} style={{ left: `${p.fx * 100}%`, top: `${p.fy * 100}%` }} />
+);
+
+/** Full measurement overlay for one plane: lines/polygons + dots + labels. */
+function MeasureOverlay({ vol, plane, shown, draft }: { vol: DicomVolume; plane: Plane; shown: Measure[]; draft: Pt[] | null }) {
+  const nerves = shown.filter((m) => m.type === "nerve");
+  return (
+    <>
+      <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {shown.map((m) => {
+          if (m.type === "ruler") {
+            const [a, b] = m.pts;
+            return <line key={m.id} x1={a.fx * 100} y1={a.fy * 100} x2={b.fx * 100} y2={b.fy * 100} stroke="#facc15" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />;
+          }
+          if (m.type === "angle") {
+            const [a, b, c] = m.pts;
+            return (
+              <g key={m.id} stroke="#facc15" strokeWidth={1.5} vectorEffect="non-scaling-stroke">
+                <line x1={b.fx * 100} y1={b.fy * 100} x2={a.fx * 100} y2={a.fy * 100} />
+                <line x1={b.fx * 100} y1={b.fy * 100} x2={c.fx * 100} y2={c.fy * 100} />
+              </g>
+            );
+          }
+          if (m.type === "nerve") {
+            return <polyline key={m.id} points={m.pts.map((p) => `${p.fx * 100},${p.fy * 100}`).join(" ")} fill="none" stroke="#34d399" strokeWidth={1.6} vectorEffect="non-scaling-stroke" />;
+          }
+          if (m.type === "implant") {
+            const g = implantGeom(vol, plane, m.pts[0], m.pts[1], m.len ?? 10, m.dia ?? 4);
+            return <polygon key={m.id} points={g.corners.map((c) => `${c.fx * 100},${c.fy * 100}`).join(" ")} fill="#38bdf8" fillOpacity={0.25} stroke="#38bdf8" strokeWidth={1.6} vectorEffect="non-scaling-stroke" />;
+          }
+          return null;
+        })}
+        {draft && draft.length >= 2 && (
+          <polyline points={draft.map((p) => `${p.fx * 100},${p.fy * 100}`).join(" ")} fill="none" stroke="#fde68a" strokeWidth={1} strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
+        )}
+      </svg>
+      <div className="pointer-events-none absolute inset-0">
+        {shown.map((m) => {
+          if (m.type === "implant") {
+            const g = implantGeom(vol, plane, m.pts[0], m.pts[1], m.len ?? 10, m.dia ?? 4);
+            const safe = apexToNerves(vol, plane, m, nerves);
+            return (
+              <React.Fragment key={m.id}>
+                {dot(m.pts[0], 0, "bg-sky-400")}
+                {dot(g.apexFrac, 1, "bg-sky-400")}
+                <OverlayLabel pos={m.pts[0]} text={`Ø${m.dia} × ${m.len} mm`} tone="sky" />
+                {safe != null && (
+                  <OverlayLabel pos={g.apexFrac} text={`Nervə: ${safe.toFixed(1)} mm`} tone={safe < NERVE_SAFETY_MM ? "red" : "green"} />
+                )}
+              </React.Fragment>
+            );
+          }
+          const dots = m.pts.map((p, i) => dot(p, i, m.type === "nerve" ? "bg-emerald-400" : "bg-amber-400"));
+          let label: React.ReactNode = null;
+          if (m.type === "ruler") {
+            const mid = { fx: (m.pts[0].fx + m.pts[1].fx) / 2, fy: (m.pts[0].fy + m.pts[1].fy) / 2 };
+            label = <OverlayLabel pos={mid} text={`${distMm(vol, plane, m.pts[0], m.pts[1]).toFixed(1)} mm`} tone="amber" />;
+          } else if (m.type === "angle") {
+            label = <OverlayLabel pos={m.pts[1]} text={`${angleDeg(vol, plane, m.pts[0], m.pts[1], m.pts[2]).toFixed(1)}°`} tone="amber" />;
+          } else if (m.type === "hu") {
+            label = <OverlayLabel pos={m.pts[0]} text={`${m.hu} HU`} tone="amber" />;
+          } else if (m.type === "nerve") {
+            label = <OverlayLabel pos={m.pts[0]} text="Nervə" tone="green" />;
+          }
+          return (
+            <React.Fragment key={m.id}>
+              {dots}
+              {label}
+            </React.Fragment>
+          );
+        })}
+        {draft?.map((p, i) => dot(p, i, "bg-amber-200"))}
+      </div>
+    </>
   );
 }
 
@@ -488,44 +621,7 @@ function Viewport({
 
           {/* Measurement overlay */}
           {(shown.length > 0 || draft) && (
-            <>
-              <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                {shown.map((m) => {
-                  if (m.type === "ruler") {
-                    const [a, b] = m.pts;
-                    return <line key={m.id} x1={a.fx * 100} y1={a.fy * 100} x2={b.fx * 100} y2={b.fy * 100} stroke="#facc15" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />;
-                  }
-                  if (m.type === "angle") {
-                    const [a, b, c] = m.pts;
-                    return (
-                      <g key={m.id} stroke="#facc15" strokeWidth={1.5} vectorEffect="non-scaling-stroke">
-                        <line x1={b.fx * 100} y1={b.fy * 100} x2={a.fx * 100} y2={a.fy * 100} />
-                        <line x1={b.fx * 100} y1={b.fy * 100} x2={c.fx * 100} y2={c.fy * 100} />
-                      </g>
-                    );
-                  }
-                  return null;
-                })}
-                {draft && draft.length === 2 && (
-                  <line x1={draft[0].fx * 100} y1={draft[0].fy * 100} x2={draft[1].fx * 100} y2={draft[1].fy * 100} stroke="#fde68a" strokeWidth={1} strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
-                )}
-              </svg>
-              <div className="pointer-events-none absolute inset-0">
-                {/* placed measurement dots + labels */}
-                {shown.map((m) => (
-                  <React.Fragment key={m.id}>
-                    {m.pts.map((p, i) => (
-                      <span key={i} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400 ring-1 ring-slate-900" style={{ left: `${p.fx * 100}%`, top: `${p.fy * 100}%` }} />
-                    ))}
-                    <MeasureLabel vol={vol} plane={plane} m={m} />
-                  </React.Fragment>
-                ))}
-                {/* in-progress dots */}
-                {draft?.map((p, i) => (
-                  <span key={`d${i}`} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-200 ring-1 ring-slate-900" style={{ left: `${p.fx * 100}%`, top: `${p.fy * 100}%` }} />
-                ))}
-              </div>
-            </>
+            <MeasureOverlay vol={vol} plane={plane} shown={shown} draft={draft} />
           )}
         </div>
       </div>
@@ -559,25 +655,41 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
   const [tool, setTool] = React.useState<Tool>("nav");
   const [measures, setMeasures] = React.useState<Measure[]>([]);
   const [pending, setPending] = React.useState<{ plane: Plane; slice: number; pts: Pt[] } | null>(null);
+  const [implantDia, setImplantDia] = React.useState(4.0);
+  const [implantLen, setImplantLen] = React.useState(10);
   const measureSeq = React.useRef(0);
+  const newId = () => `m${measureSeq.current++}`;
 
   function onMeasureClick(plane: Plane, fx: number, fy: number) {
     if (tool === "nav" || tool === "pan") return;
     const slice = sliceOf(plane, cross);
-    const need = tool === "angle" ? 3 : tool === "ruler" ? 2 : 1;
     const base = pending && pending.plane === plane && pending.slice === slice ? pending.pts : [];
     const pts = [...base, { fx, fy }];
+
+    // Nerve is an open polyline — finalized with the "Bitir" button, not by count.
+    if (tool === "nerve") {
+      setPending({ plane, slice, pts });
+      return;
+    }
+    const need = tool === "angle" ? 3 : tool === "ruler" || tool === "implant" ? 2 : 1;
     if (pts.length >= need) {
-      const id = `m${measureSeq.current++}`;
       const m: Measure =
         tool === "hu"
-          ? { id, plane, slice, type: "hu", pts, hu: sampleHU(vol, plane, cross, topFirst, fx, fy) }
-          : { id, plane, slice, type: tool, pts };
+          ? { id: newId(), plane, slice, type: "hu", pts, hu: sampleHU(vol, plane, cross, topFirst, fx, fy) }
+          : tool === "implant"
+            ? { id: newId(), plane, slice, type: "implant", pts, dia: implantDia, len: implantLen }
+            : { id: newId(), plane, slice, type: tool, pts };
       setMeasures((ms) => [...ms, m]);
       setPending(null);
     } else {
       setPending({ plane, slice, pts });
     }
+  }
+  function finishNerve() {
+    if (pending && pending.pts.length >= 2) {
+      setMeasures((ms) => [...ms, { id: newId(), plane: pending.plane, slice: pending.slice, type: "nerve", pts: pending.pts }]);
+    }
+    setPending(null);
   }
   function clearMeasures() {
     setMeasures([]);
@@ -659,6 +771,8 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
           ["ruler", "Xətkəş", Ruler],
           ["hu", "HU sıxlıq", Crosshair2],
           ["angle", "Bucaq", Triangle],
+          ["implant", "İmplant", Bone],
+          ["nerve", "Nervə", Spline],
           ["pan", "Pan", Hand],
         ] as [Tool, string, typeof Ruler][]).map(([key, label, Icon]) => (
           <button
@@ -675,13 +789,51 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
             <Icon className="h-3.5 w-3.5" /> {label}
           </button>
         ))}
+
+        {tool === "implant" && (
+          <span className="flex items-center gap-1.5">
+            <select
+              value={implantDia}
+              onChange={(e) => setImplantDia(Number(e.target.value))}
+              className="rounded-md bg-slate-800 px-1.5 py-1 text-xs font-semibold text-slate-200"
+            >
+              {DIAMETERS.map((d) => (
+                <option key={d} value={d}>
+                  Ø {d}
+                </option>
+              ))}
+            </select>
+            <span className="text-slate-500">×</span>
+            <select
+              value={implantLen}
+              onChange={(e) => setImplantLen(Number(e.target.value))}
+              className="rounded-md bg-slate-800 px-1.5 py-1 text-xs font-semibold text-slate-200"
+            >
+              {LENGTHS.map((l) => (
+                <option key={l} value={l}>
+                  {l} mm
+                </option>
+              ))}
+            </select>
+          </span>
+        )}
+        {tool === "nerve" && pending && pending.pts.length >= 2 && (
+          <button
+            type="button"
+            onClick={finishNerve}
+            className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-500"
+          >
+            Nervəni bitir ({pending.pts.length})
+          </button>
+        )}
+
         {measures.length > 0 && (
           <button
             type="button"
             onClick={clearMeasures}
             className="ml-auto inline-flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:bg-red-900/50 hover:text-red-300"
           >
-            <Trash2 className="h-3.5 w-3.5" /> Ölçüləri təmizlə ({measures.length})
+            <Trash2 className="h-3.5 w-3.5" /> Təmizlə ({measures.length})
           </button>
         )}
       </div>
@@ -694,7 +846,11 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
               ? "3 nöqtəyə klik → bucaq"
               : tool === "hu"
                 ? "Nöqtəyə klik → sümük sıxlığı (HU)"
-                : "Böyüdüb şəkli sürüşdürün"}
+                : tool === "implant"
+                  ? "Krestal nöqtəyə, sonra apikal istiqamətə klik → implant siluети (koronal/sagital tövsiyə)"
+                  : tool === "nerve"
+                    ? "Nervə kanalı boyu nöqtələr qoyun → «Nervəni bitir». İmplant apikasından məsafə göstərilir."
+                    : "Böyüdüb şəkli sürüşdürün"}
         </p>
       )}
 
