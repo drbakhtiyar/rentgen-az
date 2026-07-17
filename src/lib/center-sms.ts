@@ -14,9 +14,9 @@ export const NO_BALANCE_ERROR =
 
 /** SMS packages offered to centers (qty → AZN). */
 export const SMS_PACKAGES: { qty: number; price: number }[] = [
-  { qty: 100, price: 5 },
-  { qty: 500, price: 20 },
-  { qty: 1000, price: 35 },
+  { qty: 1000, price: 60 },
+  { qty: 5000, price: 280 },
+  { qty: 10000, price: 500 },
 ];
 
 export type CenterSendResult = SendSmsResult | { ok: false; error: string; noBalance: true };
