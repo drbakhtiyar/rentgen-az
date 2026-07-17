@@ -24,6 +24,8 @@ export function SlotSettingsForm({
   lunchEnd,
   lunchDays,
   openDays,
+  remindersEnabled,
+  reminderHours,
 }: {
   enabled: boolean;
   slotMinutes: number;
@@ -32,6 +34,8 @@ export function SlotSettingsForm({
   lunchEnd: string | null;
   lunchDays: string[];
   openDays: string[]; // only working weekdays are offered for lunch
+  remindersEnabled: boolean;
+  reminderHours: number;
 }) {
   const router = useRouter();
   const shownDays = DAYS.filter((d) => openDays.includes(d.key));
@@ -44,6 +48,8 @@ export function SlotSettingsForm({
   const [lDays, setLDays] = React.useState<string[]>(
     lunchDays.length ? lunchDays.filter((d) => openDays.includes(d)) : openDays,
   );
+  const [remOn, setRemOn] = React.useState(remindersEnabled);
+  const [remHours, setRemHours] = React.useState(reminderHours);
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -64,6 +70,8 @@ export function SlotSettingsForm({
       lunchStart: lStart,
       lunchEnd: lEnd,
       lunchDays: lDays,
+      remindersEnabled: remOn,
+      reminderHours: remHours,
     });
     setBusy(false);
     if (!res.ok) return setError(res.error);
@@ -170,6 +178,35 @@ export function SlotSettingsForm({
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Appointment reminders */}
+      <div className="rounded-xl border border-slate-200 p-4">
+        <label className="flex items-start gap-3">
+          <input type="checkbox" checked={remOn} onChange={(e) => setRemOn(e.target.checked)} className="mt-1" />
+          <span>
+            <span className="font-semibold text-ink-900">Randevu xatırlatması (SMS)</span>
+            <span className="block text-sm text-slate-500">
+              Aktiv olanda pasiyentə randevudan əvvəl avtomatik SMS xatırlatma göndərilir.
+            </span>
+          </span>
+        </label>
+        {remOn && (
+          <div className="mt-4 pl-7">
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Neçə saat əvvəl</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                max={168}
+                value={remHours}
+                onChange={(e) => setRemHours(Number(e.target.value))}
+                className={`${field} w-28`}
+              />
+              <span className="text-sm text-slate-500">saat əvvəl</span>
             </div>
           </div>
         )}

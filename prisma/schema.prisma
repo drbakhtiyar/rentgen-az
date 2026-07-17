@@ -214,6 +214,10 @@ model CenterProfile {
   lunchStart         String? // "HH:mm"
   lunchEnd           String? // "HH:mm"
   lunchDays          String[] @default([]) // ["mon","tue",...] — naharın tətbiq olunduğu günlər
+  // CRM: randevu xatırlatması. Aktiv olanda cron pasiyentə randevudan
+  // reminderHours saat əvvəl SMS xatırlatma göndərir (default söndürülü).
+  remindersEnabled   Boolean  @default(false)
+  reminderHours      Int      @default(24)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
@@ -343,12 +347,14 @@ model AppointmentRequest {
   patientUpdated Boolean        @default(false) // pasiyent vaxtı dəyişib — mərkəz yenidən əlaqə saxlamalı
   resultUrl      String? // rentgen faylının linki (köhnə: xarici link)
   resultAddedAt  DateTime?
+  reminderSentAt DateTime? // CRM randevu xatırlatma SMS-i göndərilib (dedup üçün)
   files          RentgenFile[]
   createdAt     DateTime        @default(now())
 
   @@index([centerId])
   @@index([doctorId])
   @@index([status])
+  @@index([preferredDate])
 }
 
 // Rentgen faylı (Backblaze B2-də saxlanılır; bazada yalnız metadata).

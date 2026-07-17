@@ -37,6 +37,8 @@ export default async function CrmSettingsPage() {
             lunchEnd={center.lunchEnd}
             lunchDays={center.lunchDays}
             openDays={openDays}
+            remindersEnabled={center.remindersEnabled}
+            reminderHours={center.reminderHours}
           />
         </Panel>
 

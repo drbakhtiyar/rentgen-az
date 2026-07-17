@@ -300,12 +300,15 @@ export async function updateSlotSettingsAction(input: {
   lunchStart?: string | null;
   lunchEnd?: string | null;
   lunchDays?: string[];
+  remindersEnabled?: boolean;
+  reminderHours?: number;
 }): Promise<CrmResult> {
   const center = await currentCenter();
   if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
   const slotMinutes = Math.min(240, Math.max(5, Math.round(input.slotMinutes || 30)));
   const slotCapacity = Math.min(50, Math.max(1, Math.round(input.slotCapacity || 1)));
+  const reminderHours = Math.min(168, Math.max(1, Math.round(input.reminderHours || 24)));
 
   // Lunch: only saved when enabled with a valid range + at least one day.
   let lunchStart: string | null = null;
@@ -325,7 +328,16 @@ export async function updateSlotSettingsAction(input: {
 
   await prisma.centerProfile.update({
     where: { id: center.id },
-    data: { slotBookingEnabled: !!input.enabled, slotMinutes, slotCapacity, lunchStart, lunchEnd, lunchDays },
+    data: {
+      slotBookingEnabled: !!input.enabled,
+      slotMinutes,
+      slotCapacity,
+      lunchStart,
+      lunchEnd,
+      lunchDays,
+      remindersEnabled: !!input.remindersEnabled,
+      reminderHours,
+    },
   });
 
   revalidatePath("/crm/ayarlar");
