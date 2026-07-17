@@ -78,7 +78,10 @@ export async function getOrderStatus(
       amount?: number;
     }> | null;
     if (data?.code === "00000") {
-      return { ok: true, paid: data.payload?.paymentStatus === "PAID", amountAzn: data.payload?.amount };
+      // Payriff v3 reports a successful payment as APPROVED (verified against
+      // a live order); accept PAID too for safety.
+      const st = data.payload?.paymentStatus;
+      return { ok: true, paid: st === "APPROVED" || st === "PAID", amountAzn: data.payload?.amount };
     }
     return { ok: false, paid: false };
   } catch {
