@@ -20,6 +20,7 @@ export type LoadPhase =
 export type DicomSlice = {
   data: Int16Array; // raw stored values (slope/intercept applied at render)
   pos: number; // position along the slice normal (sort key)
+  z: number | null; // patient-Z (superior+) for orienting reconstructions
 };
 
 export type DicomVolume = {
@@ -37,6 +38,7 @@ export type DicomVolume = {
   zSpacing: number; // mm
   downsampled: boolean;
   skipped: number; // non-DICOM / unsupported entries skipped
+  zTopFirst: boolean; // true → slices[0] is superior (render it at the top)
 };
 
 export type DicomRgbImage = {
@@ -81,7 +83,7 @@ type ParsedFile = {
   sliceThickness: number | null;
   spacingBetween: number | null;
   instance: number;
-  frames: { bytes: Uint8Array; pos: number | null }[];
+  frames: { bytes: Uint8Array; pos: number | null; z: number | null }[];
   bigEndian: boolean;
 };
 
@@ -107,12 +109,15 @@ function parseOne(dicomParser: typeof import("dicom-parser"), bytes: Uint8Array)
   const frameLen = rows * cols * (bits / 8) * samples;
   if (el.length < frameLen * nFrames) return null; // truncated / encapsulated
 
-  // Per-file slice position projected on the normal (for series sorting).
+  // Per-file slice position projected on the normal (for series sorting) +
+  // the patient-Z of the slice (to orient superior-up in reconstructions).
   const iop = ds.string("x00200037");
   const ipp = ds.string("x00200032");
   let pos: number | null = null;
+  let posZ: number | null = null;
   if (ipp) {
     const p = ipp.split("\\").map(parseFloat);
+    if (Number.isFinite(p[2])) posZ = p[2]; // LPS z increases toward superior
     if (iop) {
       const o = iop.split("\\").map(parseFloat);
       if (o.length === 6 && o.every(Number.isFinite)) {
@@ -133,6 +138,7 @@ function parseOne(dicomParser: typeof import("dicom-parser"), bytes: Uint8Array)
     frames.push({
       bytes: bytes.subarray(start, start + frameLen),
       pos: nFrames === 1 ? pos : null, // multi-frame: natural order
+      z: nFrames === 1 ? posZ : null,
     });
   }
 
@@ -306,10 +312,11 @@ export async function loadDicom(
 
   // ---- decode frames (ordered) ----
   best.sort((a, b) => a.instance - b.instance);
-  type Pending = { file: ParsedFile; bytes: Uint8Array; pos: number | null; order: number };
+  type Pending = { file: ParsedFile; bytes: Uint8Array; pos: number | null; z: number | null; order: number };
   const pending: Pending[] = [];
   let order = 0;
-  for (const f of best) for (const fr of f.frames) pending.push({ file: f, bytes: fr.bytes, pos: fr.pos, order: order++ });
+  for (const f of best)
+    for (const fr of f.frames) pending.push({ file: f, bytes: fr.bytes, pos: fr.pos, z: fr.z, order: order++ });
 
   const slices: DicomSlice[] = [];
   for (let i = 0; i < pending.length; i++) {
@@ -317,6 +324,7 @@ export async function loadDicom(
     slices.push({
       data: decodeFrame(p.file, p.bytes, downsample),
       pos: p.pos ?? p.order,
+      z: p.z,
     });
     if (i % 10 === 9) {
       onPhase({ phase: "parse", done: i + 1, total: pending.length });
@@ -324,6 +332,13 @@ export async function loadDicom(
     }
   }
   slices.sort((a, b) => a.pos - b.pos);
+
+  // Orient superior-up: after sorting by `pos`, decide whether index 0 is the
+  // superior end using patient-Z (LPS z increases toward the head).
+  const zFirst = slices[0]?.z;
+  const zLast = slices[slices.length - 1]?.z;
+  const zTopFirst =
+    zFirst != null && zLast != null && zFirst !== zLast ? zFirst > zLast : false;
 
   // ---- geometry ----
   const step = downsample ? 2 : 1;
@@ -380,5 +395,6 @@ export async function loadDicom(
     zSpacing,
     downsampled: downsample,
     skipped,
+    zTopFirst,
   };
 }

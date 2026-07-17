@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Download, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
+import { Loader2, Download, Maximize2, Minimize2, ZoomIn, ZoomOut, FlipVertical } from "lucide-react";
 import { loadDicom, type LoadedDicom, type DicomVolume, type LoadPhase } from "./dicom-load";
 
 /**
@@ -165,6 +165,7 @@ function renderPlane(
   cross: Crosshair,
   wc: number,
   ww: number,
+  topFirst: boolean, // slices[0] rendered at the top of coronal/sagittal
 ) {
   const { slices, rows, cols, slope, intercept, invert } = vol;
   const n = slices.length;
@@ -194,16 +195,14 @@ function renderPlane(
     const d = slices[cross.iz].data;
     for (let i = 0; i < d.length; i++) put(d[i]);
   } else if (plane === "coronal") {
-    // Row 0 (top) = first slice; z increases downward. (Slices are sorted by
-    // patient position so this keeps the reconstruction the right way up.)
     const rowOff = cross.iy * cols;
     for (let r = 0; r < n; r++) {
-      const d = slices[r].data;
+      const d = slices[topFirst ? r : n - 1 - r].data;
       for (let x = 0; x < cols; x++) put(d[rowOff + x]);
     }
   } else {
     for (let r = 0; r < n; r++) {
-      const d = slices[r].data;
+      const d = slices[topFirst ? r : n - 1 - r].data;
       for (let y = 0; y < rows; y++) put(d[y * cols + cross.ix]);
     }
   }
@@ -219,6 +218,7 @@ function Viewport({
   setCross,
   wc,
   ww,
+  topFirst,
   expanded,
   onToggleExpand,
   single,
@@ -229,6 +229,7 @@ function Viewport({
   setCross: React.Dispatch<React.SetStateAction<Crosshair>>;
   wc: number;
   ww: number;
+  topFirst: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
   single: boolean;
@@ -248,8 +249,8 @@ function Viewport({
 
   React.useEffect(() => {
     const c = canvasRef.current;
-    if (c) renderPlane(c, vol, plane, cross, wc, ww);
-  }, [vol, plane, wc, ww, plane === "axial" ? cross.iz : plane === "coronal" ? cross.iy : cross.ix]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (c) renderPlane(c, vol, plane, cross, wc, ww, topFirst);
+  }, [vol, plane, wc, ww, topFirst, plane === "axial" ? cross.iz : plane === "coronal" ? cross.iy : cross.ix]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sliceIndex = plane === "axial" ? cross.iz : plane === "coronal" ? cross.iy : cross.ix;
   const sliceMax = plane === "axial" ? n - 1 : plane === "coronal" ? vol.rows - 1 : vol.cols - 1;
@@ -269,10 +270,11 @@ function Viewport({
       if (plane === "axial") {
         return { ...c, ix: Math.round(fx * (vol.cols - 1)), iy: Math.round(fy * (vol.rows - 1)) };
       }
+      const zf = topFirst ? fy : 1 - fy; // vertical axis follows the render order
       if (plane === "coronal") {
-        return { ...c, ix: Math.round(fx * (vol.cols - 1)), iz: Math.round(fy * (n - 1)) };
+        return { ...c, ix: Math.round(fx * (vol.cols - 1)), iz: Math.round(zf * (n - 1)) };
       }
-      return { ...c, iy: Math.round(fx * (vol.rows - 1)), iz: Math.round(fy * (n - 1)) };
+      return { ...c, iy: Math.round(fx * (vol.rows - 1)), iz: Math.round(zf * (n - 1)) };
     });
   }
 
@@ -294,7 +296,8 @@ function Viewport({
 
   // Crosshair positions (fractions) for the other two axes on this plane.
   const vFrac = plane === "axial" ? cross.ix / (vol.cols - 1) : plane === "coronal" ? cross.ix / (vol.cols - 1) : cross.iy / (vol.rows - 1);
-  const hFrac = plane === "axial" ? cross.iy / (vol.rows - 1) : cross.iz / Math.max(1, n - 1);
+  const zFrac = cross.iz / Math.max(1, n - 1);
+  const hFrac = plane === "axial" ? cross.iy / (vol.rows - 1) : topFirst ? zFrac : 1 - zFrac;
 
   return (
     <div className={`flex flex-col rounded-xl border border-slate-800 bg-slate-900 ${expanded ? "col-span-full" : ""}`}>
@@ -353,6 +356,8 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
   });
   const [wc, setWc] = React.useState(Math.round(vol.wc));
   const [ww, setWw] = React.useState(Math.round(vol.ww));
+  const [flipV, setFlipV] = React.useState(false);
+  const topFirst = vol.zTopFirst !== flipV; // auto orientation, user-overridable
   const [expanded, setExpanded] = React.useState<"axial" | "coronal" | "sagittal" | null>(null);
 
   const planes: ("axial" | "coronal" | "sagittal")[] = single
@@ -388,6 +393,16 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
           >
             Auto
           </button>
+          {!single && (
+            <button
+              type="button"
+              onClick={() => setFlipV((v) => !v)}
+              title="Koronal/sagital görüntünü şaquli çevir"
+              className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700"
+            >
+              <FlipVertical className="h-3.5 w-3.5" /> Çevir
+            </button>
+          )}
           <label className="flex items-center gap-1 text-[11px] text-slate-400">
             C
             <input
@@ -433,6 +448,7 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
             setCross={setCross}
             wc={wc}
             ww={ww}
+            topFirst={topFirst}
             expanded={expanded === p}
             onToggleExpand={() => setExpanded((e) => (e === p ? null : p))}
             single={single}
