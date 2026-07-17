@@ -203,6 +203,9 @@ model CenterProfile {
   // fayllar silinir. Yeniləmədə null olur.
   planExpiredAt     DateTime?
   apiKey            String?      @unique // Platinum API girişi açarı
+  // Platinum: +1 TB storage blokları (hər blok 30 gün, OVERAGE_PER_TB_MINOR).
+  extraStorageTb    Int          @default(0)
+  extraStorageUntil DateTime? // blokların qüvvədə olma tarixi; keçibsə effektiv 0
   // CRM slot/randevu ayarları (crm.rentgen.az). slotBookingEnabled aktiv olanda
   // pasiyentlər saytda real boş slotları görüb birbaşa yazılır; əks halda köhnə
   // sərbəst-mətn randevu rejimi işləyir (default — mövcud mərkəzlər pozulmur).
@@ -513,6 +516,7 @@ model DoctorProfile {
   portfolio       String[]     @default([]) // iş nümunələri (Silver+ brendinq)
   city            String?
   photoUrl        String? // profil şəkli
+  bannerUrl       String? // Platinum brendinq banneri (public profildə)
   instagram       String?
   website         String?
   diplomaUrl      String?

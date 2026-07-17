@@ -19,6 +19,7 @@ export async function saveDoctorProfileAction(input: {
   portfolio?: string[];
   city?: string;
   photoUrl?: string;
+  bannerUrl?: string;
   instagram?: string;
   website?: string;
   diplomaUrl?: string;
@@ -76,6 +77,11 @@ export async function saveDoctorProfileAction(input: {
       portfolio: doctorLimits(existing?.plan ?? "FREE").portfolio ? (d.portfolio ?? []) : [],
       city: d.city || null,
       photoUrl: d.photoUrl || null,
+      // Banner is a Platinum perk; non-eligible plans keep whatever is stored
+      // (display is gated separately) instead of silently wiping it.
+      bannerUrl: doctorLimits(existing?.plan ?? "FREE").banner
+        ? d.bannerUrl || null
+        : (existing?.bannerUrl ?? null),
       instagram: d.instagram || null,
       website: d.website || null,
       diplomaUrl: d.diplomaUrl || null,

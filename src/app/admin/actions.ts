@@ -204,6 +204,7 @@ export async function adminUpdateDoctorAction(
     portfolio?: string[];
     city?: string;
     photoUrl?: string;
+    bannerUrl?: string;
     instagram?: string;
     website?: string;
     diplomaUrl?: string;
@@ -230,6 +231,7 @@ export async function adminUpdateDoctorAction(
         portfolio: d.portfolio ?? [],
         city: d.city || null,
         photoUrl: d.photoUrl || null,
+        bannerUrl: d.bannerUrl || null,
         instagram: d.instagram || null,
         website: d.website || null,
         diplomaUrl: d.diplomaUrl || null,

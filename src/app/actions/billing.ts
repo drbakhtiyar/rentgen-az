@@ -14,6 +14,10 @@ import {
   MIN_MONTHS,
   MAX_MONTHS,
   priceForMonths,
+  centerLimits,
+  effectiveExtraTb,
+  OVERAGE_PER_TB_MINOR,
+  formatManat,
 } from "@/lib/plans";
 import type { Plan } from "@/generated/prisma/client";
 
@@ -93,4 +97,45 @@ export async function startWalletTopupAction(amountMinor: number): Promise<Billi
   });
   if (!res.ok) return { ok: false, error: res.error };
   return { ok: true, paymentUrl: res.paymentUrl };
+}
+
+
+/**
+ * Buy a +1 TB storage block (Platinum centers only). Each block costs
+ * OVERAGE_PER_TB_MINOR and is valid for 30 days. Buying while blocks are
+ * active adds +1 TB to the pool (expiry unchanged); buying after expiry
+ * starts a fresh 30-day window with 1 TB.
+ */
+export async function buyExtraStorageAction(): Promise<BillingResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Giriş tələb olunur." };
+  if (user.role !== "CENTER" || !user.centerProfile) {
+    return { ok: false, error: "Yalnız mərkəzlər əlavə yaddaş ala bilər." };
+  }
+  const center = user.centerProfile;
+  if (!centerLimits(center.plan).storageOverage) {
+    return { ok: false, error: "Əlavə yaddaş yalnız Platinum paketdə mümkündür." };
+  }
+
+  const res = await debitWallet(
+    user.id,
+    OVERAGE_PER_TB_MINOR,
+    "STORAGE",
+    `+1 TB storage bloku — 30 gün (${formatManat(OVERAGE_PER_TB_MINOR)})`,
+  );
+  if (!res.ok) return { ok: false, error: "Balans kifayət etmir. Əvvəlcə balansı artırın." };
+
+  const active = effectiveExtraTb(center.extraStorageTb, center.extraStorageUntil);
+  const until =
+    active > 0 && center.extraStorageUntil
+      ? center.extraStorageUntil // pool stays on its current clock
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  await prisma.centerProfile.update({
+    where: { id: center.id },
+    data: { extraStorageTb: active + 1, extraStorageUntil: until },
+  });
+
+  revalidatePath("/merkez");
+  revalidatePath("/merkez/paket");
+  return { ok: true, message: "+1 TB əlavə olundu (30 gün)." };
 }

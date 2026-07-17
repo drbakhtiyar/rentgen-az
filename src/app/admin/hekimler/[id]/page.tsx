@@ -66,6 +66,7 @@ export default async function AdminEditDoctorPage({
           mode="edit"
           onSave={save}
           allowPortfolio={doctorLimits(doctor.plan).portfolio}
+          allowBanner={doctorLimits(doctor.plan).banner}
           defaults={{
             firstName: doctor.firstName ?? "",
             lastName: doctor.lastName ?? "",
@@ -74,6 +75,7 @@ export default async function AdminEditDoctorPage({
             portfolio: doctor.portfolio ?? [],
             city: doctor.city ?? "",
             photoUrl: doctor.photoUrl ?? "",
+            bannerUrl: doctor.bannerUrl ?? "",
             instagram: doctor.instagram ?? "",
             website: doctor.website ?? "",
             diplomaUrl: doctor.diplomaUrl ?? "",

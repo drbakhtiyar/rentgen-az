@@ -64,6 +64,7 @@ export default async function DoctorProfilePage() {
           centers={centerOptions}
           phone={user.phone}
           allowPortfolio={doctorLimits(profile.plan).portfolio}
+          allowBanner={doctorLimits(profile.plan).banner}
           defaults={{
             firstName: profile.firstName ?? "",
             lastName: profile.lastName ?? "",
@@ -72,6 +73,7 @@ export default async function DoctorProfilePage() {
             portfolio: profile.portfolio ?? [],
             city: profile.city ?? "",
             photoUrl: profile.photoUrl ?? "",
+            bannerUrl: profile.bannerUrl ?? "",
             instagram: profile.instagram ?? "",
             website: profile.website ?? "",
             diplomaUrl: profile.diplomaUrl ?? "",

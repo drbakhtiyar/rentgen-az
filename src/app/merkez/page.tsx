@@ -22,7 +22,7 @@ import { StorageUsage } from "@/components/dashboard/storage-usage";
 import { CenterAnalytics } from "@/components/dashboard/center-analytics";
 import { SupportCard } from "@/components/dashboard/support-card";
 import { PlanExpiryBanner } from "@/components/dashboard/plan-expiry-banner";
-import { centerLimits } from "@/lib/plans";
+import { centerLimits, effectiveExtraTb } from "@/lib/plans";
 import { getFileDownloadLabels } from "@/lib/rentgen-status";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
@@ -147,7 +147,11 @@ export default async function CenterDashboardPage() {
       <CenterAnalytics plan={center.plan} stats={stats} full={fullStats} />
 
       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[var(--shadow-soft)]">
-        <StorageUsage usedBytes={storageUsed} plan={center.plan} />
+        <StorageUsage
+          usedBytes={storageUsed}
+          plan={center.plan}
+          extraGb={effectiveExtraTb(center.extraStorageTb, center.extraStorageUntil) * 1024}
+        />
       </div>
 
       {centerLimits(center.plan).prioritySupport && (

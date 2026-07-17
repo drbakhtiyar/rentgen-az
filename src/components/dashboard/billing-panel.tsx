@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Loader2, Wallet, Star, Crown, Gem, AlertTriangle } from "lucide-react";
+import { CheckCircle2, Loader2, Wallet, Star, Crown, Gem, AlertTriangle, HardDrive } from "lucide-react";
 import {
   purchasePlanFromWalletAction,
   startWalletTopupAction,
+  buyExtraStorageAction,
 } from "@/app/actions/billing";
 import {
   formatManat,
@@ -33,12 +34,15 @@ export function BillingPanel({
   daysLeft,
   balance,
   prices,
+  extraStorage,
 }: {
   currentPlan: Plan;
   planUntil: string | null;
   daysLeft: number | null;
   balance: number;
   prices: Record<Plan, number>;
+  /** Platinum centers: active +1TB blocks + price (section hidden if absent). */
+  extraStorage?: { tb: number; until: string | null; priceMinor: number } | null;
 }) {
   const router = useRouter();
   const t = getPanelDict(useLocale()).center;
@@ -58,6 +62,17 @@ export function BillingPanel({
       const res = await purchasePlanFromWalletAction(plan, months);
       if (!res.ok) return setError(res.error ?? t.apiError);
       setMsg(res.message ?? t.payActivated);
+      router.refresh();
+    });
+  }
+
+  function buyStorage() {
+    setMsg(null);
+    setError(null);
+    startTransition(async () => {
+      const res = await buyExtraStorageAction();
+      if (!res.ok) return setError(res.error ?? t.apiError);
+      setMsg(res.message ?? "");
       router.refresh();
     });
   }
@@ -192,6 +207,37 @@ export function BillingPanel({
           );
         })}
       </div>
+
+      {/* +1 TB overage blocks (Platinum centers) */}
+      {extraStorage && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="flex items-center gap-1.5 font-display text-lg font-bold text-ink-900">
+                <HardDrive className="h-5 w-5 text-brand-600" /> Əlavə yaddaş
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                Hər blok: <span className="font-semibold text-ink-900">+1 TB · {formatManat(extraStorage.priceMinor)}</span> · 30 gün qüvvədə
+              </p>
+              {extraStorage.tb > 0 ? (
+                <p className="mt-1 text-sm font-medium text-emerald-700">
+                  Aktiv: +{extraStorage.tb} TB{extraStorage.until ? ` (${extraStorage.until}-ə kimi)` : ""}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-slate-400">Hazırda əlavə blok yoxdur.</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={buyStorage}
+              disabled={pending}
+              className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+            >
+              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null} +1 TB al
+            </button>
+          </div>
+        </div>
+      )}
 
       <p className="text-xs text-slate-400">{t.billingNote}</p>
     </div>

@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "./db";
 
-export type LedgerType = "TOPUP" | "PLAN" | "REFUND" | "ADMIN";
+export type LedgerType = "TOPUP" | "PLAN" | "STORAGE" | "REFUND" | "ADMIN";
 
 /** Ensure a wallet row exists for the user; returns it. */
 export async function getOrCreateWallet(userId: string) {

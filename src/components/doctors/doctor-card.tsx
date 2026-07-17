@@ -16,6 +16,7 @@ export type DoctorCardData = {
   photoUrl: string | null;
   diplomaUrl: string | null;
   certificateUrl: string | null;
+  plan?: string; // PLATINUM → highlighted card
 };
 
 export function DoctorCard({
@@ -29,9 +30,21 @@ export function DoctorCard({
   const verified = Boolean(doctor.diplomaUrl || doctor.certificateUrl);
   const specs = doctor.specializations.slice(0, 3);
   const extra = doctor.specializations.length - specs.length;
+  const premium = doctor.plan === "PLATINUM"; // "tam brendinq" — vurğulanmış kart
 
   return (
-    <Card className="group flex h-full flex-col p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[var(--shadow-glow)]">
+    <Card
+      className={`group relative flex h-full flex-col p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)] ${
+        premium
+          ? "border-cyan-200 ring-1 ring-inset ring-cyan-100 hover:border-cyan-300"
+          : "hover:border-brand-200"
+      }`}
+    >
+      {premium && (
+        <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-cyan-500 to-brand-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+          Premium
+        </span>
+      )}
       <div className="flex items-start gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
           {doctor.photoUrl ? (

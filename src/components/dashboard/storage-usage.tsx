@@ -14,10 +14,19 @@ function fmtLimit(gb: number): string {
   return gb >= 1024 ? `${gb / 1024} TB` : `${gb} GB`;
 }
 
-/** Center storage usage bar (used vs plan quota). */
-export function StorageUsage({ usedBytes, plan }: { usedBytes: number; plan: Plan }) {
+/** Center storage usage bar (used vs plan quota + active +1TB blocks). */
+export function StorageUsage({
+  usedBytes,
+  plan,
+  extraGb = 0,
+}: {
+  usedBytes: number;
+  plan: Plan;
+  /** Active +1TB overage blocks, in GB (Platinum). */
+  extraGb?: number;
+}) {
   const limits = centerLimits(plan);
-  const limitGb = limits.storageGb;
+  const limitGb = limits.storageGb + extraGb;
   const limitBytes = limitGb * GB;
   const pct = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
   const near = pct >= STORAGE_WARN_PCT;
@@ -43,6 +52,11 @@ export function StorageUsage({ usedBytes, plan }: { usedBytes: number; plan: Pla
       <p className="mt-2 text-sm text-slate-600">
         <span className="font-semibold text-ink-900">{fmtBytes(usedBytes)}</span> / {fmtLimit(limitGb)}{" "}
         <span className="text-slate-400">({pct}%)</span>
+        {extraGb > 0 && (
+          <span className="ml-1.5 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+            +{extraGb / 1024} TB blok
+          </span>
+        )}
       </p>
 
       {near && (

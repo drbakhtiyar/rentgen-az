@@ -11,6 +11,7 @@ export async function WalletHistory({ entries }: { entries: Entry[] }) {
   const TYPE_LABEL: Record<string, string> = {
     TOPUP: t.walletTopup,
     PLAN: t.walletPlan,
+    STORAGE: "+1 TB storage",
     REFUND: t.walletRefund,
     ADMIN: t.walletAdmin,
   };

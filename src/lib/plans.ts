@@ -97,15 +97,24 @@ export type DoctorPlanLimits = {
   profileStats: boolean;
   topPlacement: boolean;
   branding: boolean;
+  banner: boolean; // Platinum "tam brendinq" — profil banneri + vurğulanmış kart
   prioritySupport: boolean;
 };
 
 export const DOCTOR_PLAN_LIMITS: Record<Plan, DoctorPlanLimits> = {
-  FREE: { storageGb: 20, portfolio: false, profileStats: false, topPlacement: false, branding: false, prioritySupport: false },
-  SILVER: { storageGb: 100, portfolio: true, profileStats: true, topPlacement: false, branding: false, prioritySupport: false },
-  GOLD: { storageGb: 500, portfolio: true, profileStats: true, topPlacement: true, branding: true, prioritySupport: true },
-  PLATINUM: { storageGb: 1024, portfolio: true, profileStats: true, topPlacement: true, branding: true, prioritySupport: true },
+  FREE: { storageGb: 20, portfolio: false, profileStats: false, topPlacement: false, branding: false, banner: false, prioritySupport: false },
+  SILVER: { storageGb: 100, portfolio: true, profileStats: true, topPlacement: false, branding: false, banner: false, prioritySupport: false },
+  GOLD: { storageGb: 500, portfolio: true, profileStats: true, topPlacement: true, branding: true, banner: false, prioritySupport: true },
+  PLATINUM: { storageGb: 1024, portfolio: true, profileStats: true, topPlacement: true, branding: true, banner: true, prioritySupport: true },
 };
+
+/**
+ * Effective +1TB overage blocks: only while `until` is in the future.
+ * (Each purchased block lasts 30 days from purchase.)
+ */
+export function effectiveExtraTb(tb: number, until: Date | null | undefined): number {
+  return until && until.getTime() > Date.now() ? Math.max(0, tb) : 0;
+}
 
 /**
  * Silinən rentgen faylının zibil qutusunda qalma müddəti (gün).

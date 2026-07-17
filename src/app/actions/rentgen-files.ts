@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireRole } from "@/lib/auth/rbac";
 import { notifyUser } from "@/lib/notifications";
-import { centerLimits, trashRetentionDays } from "@/lib/plans";
+import { centerLimits, trashRetentionDays, effectiveExtraTb } from "@/lib/plans";
 import type { Plan } from "@/generated/prisma/client";
 import {
   b2Configured,
@@ -42,9 +42,15 @@ const ALLOWED_TYPES = new Set([
 const MAX_SIZE = 2_000_000_000; // ~2 GB (fits Int)
 const GB = 1024 ** 3;
 
-/** True if adding `addBytes` would exceed the center's plan storage quota. */
+/** True if adding `addBytes` would exceed the center's plan storage quota
+ * (base plan quota + active +1TB overage blocks). */
 async function wouldExceedQuota(centerId: string, plan: Plan, addBytes: number): Promise<boolean> {
-  const limitBytes = centerLimits(plan).storageGb * GB;
+  const c = await prisma.centerProfile.findUnique({
+    where: { id: centerId },
+    select: { extraStorageTb: true, extraStorageUntil: true },
+  });
+  const extraGb = effectiveExtraTb(c?.extraStorageTb ?? 0, c?.extraStorageUntil) * 1024;
+  const limitBytes = (centerLimits(plan).storageGb + extraGb) * GB;
   const agg = await prisma.rentgenFile.aggregate({
     _sum: { size: true },
     where: { request: { centerId }, deletedAt: null },

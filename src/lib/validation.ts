@@ -111,6 +111,7 @@ export const doctorProfileSchema = z.object({
   portfolio: z.array(z.string().trim().url()).max(12).optional(),
   city: z.string().trim().max(80).optional().or(z.literal("")),
   photoUrl: z.string().trim().max(500).optional().or(z.literal("")),
+  bannerUrl: z.string().trim().max(500).optional().or(z.literal("")),
   instagram: z.string().trim().max(200).optional().or(z.literal("")),
   website: optionalUrl,
   diplomaUrl: optionalUrl,
