@@ -11,6 +11,7 @@ import {
   requestReferralOtpAction,
   submitDoctorReferralAction,
 } from "@/app/hekimler-ucun/actions";
+import { getCenterFreeSlotsAction } from "@/app/actions/public";
 
 type CenterOpt = { id: string; name: string; city: string | null };
 type ServiceOpt = { slug: string; name: string };
@@ -62,10 +63,33 @@ export function DoctorReferralForm({
   const services = centerId ? servicesByCenter[centerId] ?? [] : [];
   const centerHours = centerId ? hoursByCenter[centerId] ?? null : null;
   const today = React.useMemo(() => bakuTodayYmd(), []);
-  const slots = React.useMemo(
+  const localSlots = React.useMemo(
     () => (centerHours && date ? slotsForDate(centerHours, date) : []),
     [centerHours, date],
   );
+  // Occupancy-aware slots: a time that already has a patient is not offered
+  // again, so a doctor can't book the next patient into the same slot.
+  const [remoteSlots, setRemoteSlots] = React.useState<string[]>([]);
+  const [remoteReady, setRemoteReady] = React.useState(false);
+  React.useEffect(() => {
+    if (!centerId || !date) {
+      setRemoteSlots([]);
+      setRemoteReady(false);
+      return;
+    }
+    let cancelled = false;
+    getCenterFreeSlotsAction({ centerId, ymd: date, serviceSlug: serviceSlug || undefined })
+      .then((r) => {
+        if (cancelled) return;
+        setRemoteSlots(r.slots);
+        setRemoteReady(r.ok);
+      })
+      .catch(() => !cancelled && setRemoteReady(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [centerId, date, serviceSlug]);
+  const slots = remoteReady ? remoteSlots : localSlots;
 
   function requestOtp(e: React.FormEvent) {
     e.preventDefault();
@@ -212,7 +236,10 @@ export function DoctorReferralForm({
         <Select
           id="ref-service"
           value={serviceSlug}
-          onChange={(e) => setServiceSlug(e.target.value)}
+          onChange={(e) => {
+            setServiceSlug(e.target.value);
+            setTime(""); // offered slots depend on the service's duration
+          }}
           disabled={!centerId}
         >
           <option value="">

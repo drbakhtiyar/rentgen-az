@@ -20,7 +20,7 @@ import {
 } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
 import { doctorName } from "@/lib/utils";
-import { getFreeStartsForService, getCenterServiceDurations } from "@/lib/crm";
+import { getFreeStartsForService, getCenterServiceDurations, isPreferredDateAvailable } from "@/lib/crm";
 import { adoptGuestAppointments } from "@/lib/patient-link";
 
 export type FormResult = {
@@ -171,6 +171,23 @@ export async function submitAppointmentAction(input: {
       const dt = new Date(data.preferredDate);
       if (!Number.isNaN(dt.getTime()) && dt.getTime() > Date.now() - 60 * 60 * 1000) {
         preferredDate = dt;
+      }
+    }
+
+    // Guard against double booking: if this exact time is already taken at the
+    // center, reject (the picker hides taken times, but a race/stale form can
+    // still submit one).
+    if (preferredDate && data.centerId) {
+      const free = await isPreferredDateAvailable(
+        data.centerId,
+        preferredDate,
+        data.serviceSlug || null,
+      ).catch(() => true);
+      if (!free) {
+        return {
+          ok: false,
+          error: "Seçdiyiniz vaxt artıq doludur. Zəhmət olmasa başqa vaxt seçin.",
+        };
       }
     }
 
@@ -352,12 +369,13 @@ export async function getCenterFreeSlotsAction(input: {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(input.ymd)) return { ok: false, slots: [] };
     const center = await prisma.centerProfile.findUnique({
       where: { id: input.centerId },
-      select: { hours: true, slotMinutes: true, slotCapacity: true, slotBookingEnabled: true, plan: true },
+      select: { hours: true, slotMinutes: true, slotCapacity: true },
     });
-    // Slot booking is a Platinum-only (CRM) feature.
-    if (!center || !center.slotBookingEnabled || center.plan !== "PLATINUM") {
-      return { ok: false, slots: [] };
-    }
+    // Any center with structured hours gets occupancy-aware slots so an
+    // already-booked time is never offered again (no double booking). The
+    // richer CRM slot features (lunch/blocks/holidays/capacity) still only
+    // matter for Platinum centers that configured them.
+    if (!center || !center.hours) return { ok: false, slots: [] };
     let duration = center.slotMinutes;
     if (input.serviceSlug) {
       const durations = await getCenterServiceDurations(input.centerId);

@@ -23,7 +23,6 @@ export function AppointmentForm({
   doctors,
   defaultService,
   hours,
-  slotBooking = false,
   patient,
   locale = DEFAULT_LOCALE,
   compact,
@@ -35,8 +34,6 @@ export function AppointmentForm({
   defaultService?: string;
   /** center's structured hours — enables date + time slot picking */
   hours?: WeeklyHours | null;
-  /** slot booking on → time options are real free slots (capacity + duration aware) */
-  slotBooking?: boolean;
   /** logged-in patient → name/phone are prefilled, phone is locked */
   patient?: { name: string; phone: string } | null;
   locale?: Locale;
@@ -56,34 +53,40 @@ export function AppointmentForm({
   // Snapshot of the form values captured when moving to the OTP step.
   const pendingRef = React.useRef<Record<string, string>>({});
   const today = React.useMemo(() => bakuTodayYmd(), []);
-  // Plain hours slots (used when slot booking is off).
+  // Plain hours slots (fallback when we can't reach the server).
   const localSlots = React.useMemo(
     () => (hours && date ? slotsForDate(hours, date) : []),
     [hours, date],
   );
-  // Slot booking on → fetch real free slots (capacity/duration/booking aware),
-  // re-fetching when the date or the chosen service (its duration) changes.
+  // Occupancy-aware slots from the server: already-booked times are never
+  // offered again (no double booking), for ANY center with structured hours.
+  // Re-fetches when the date or the chosen service (its duration) changes.
   const [remoteSlots, setRemoteSlots] = React.useState<string[]>([]);
+  const [remoteReady, setRemoteReady] = React.useState(false);
   const [slotsLoading, setSlotsLoading] = React.useState(false);
   React.useEffect(() => {
-    if (!slotBooking || !centerId || !date) {
+    if (!centerId || !date) {
       setRemoteSlots([]);
+      setRemoteReady(false);
       return;
     }
     let cancelled = false;
     setSlotsLoading(true);
     getCenterFreeSlotsAction({ centerId, ymd: date, serviceSlug: service || undefined })
       .then((r) => {
-        if (!cancelled) setRemoteSlots(r.slots);
+        if (cancelled) return;
+        setRemoteSlots(r.slots);
+        setRemoteReady(r.ok); // ok=false (no structured hours) → use local slots
       })
+      .catch(() => !cancelled && setRemoteReady(false))
       .finally(() => {
         if (!cancelled) setSlotsLoading(false);
       });
     return () => {
       cancelled = true;
     };
-  }, [slotBooking, centerId, date, service]);
-  const slots = slotBooking ? remoteSlots : localSlots;
+  }, [centerId, date, service]);
+  const slots = remoteReady ? remoteSlots : localSlots;
   // Logged-in patients skip OTP (phone already verified at login).
   const skipOtp = !!patient;
 
@@ -252,7 +255,7 @@ export function AppointmentForm({
           value={service}
           onChange={(e) => {
             setService(e.target.value);
-            if (slotBooking) setTime("");
+            setTime(""); // offered slots depend on the service's duration
           }}
         >
           <option value="">{t.serviceOpt}</option>

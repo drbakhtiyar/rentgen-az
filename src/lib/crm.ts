@@ -210,6 +210,30 @@ export async function isSlotAvailable(
   return overlaps < cap;
 }
 
+/**
+ * Server-side guard for a booking's exact preferredDate: returns false if that
+ * slot is already taken (capacity) or blocked. Used by the public + referral
+ * submit actions so a race / direct submit can't double-book a time. Centers
+ * without structured hours have no slot concept → always allowed.
+ */
+export async function isPreferredDateAvailable(
+  centerId: string,
+  preferredDate: Date,
+  serviceSlug: string | null,
+  excludeRequestId?: string,
+): Promise<boolean> {
+  const center = await prisma.centerProfile.findUnique({
+    where: { id: centerId },
+    select: { hours: true, slotMinutes: true, slotCapacity: true },
+  });
+  if (!center || !center.hours) return true;
+  const ymd = bakuYmd(preferredDate);
+  const startMin = toMinutes(bakuSlotKey(preferredDate));
+  const durations = serviceSlug ? await getCenterServiceDurations(centerId) : {};
+  const dur = (serviceSlug && durations[serviceSlug]) || center.slotMinutes;
+  return isSlotAvailable(center, centerId, ymd, startMin, dur, excludeRequestId);
+}
+
 // `fixed` = recurring lunch block (managed in settings, not individually deletable).
 export type CrmTimeBlock = { id: string; startMin: number; endMin: number; reason: string | null; fixed?: boolean };
 

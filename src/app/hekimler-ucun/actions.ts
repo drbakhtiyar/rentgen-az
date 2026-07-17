@@ -9,6 +9,7 @@ import { normalizePhone } from "@/lib/phone";
 import { requireRole } from "@/lib/auth/rbac";
 import { centerLimits } from "@/lib/plans";
 import { notifyNewAppointment, smsCenterBooking, smsPatientBooking } from "@/lib/notify";
+import { isPreferredDateAvailable } from "@/lib/crm";
 import { notifyUser } from "@/lib/notifications";
 import { doctorName } from "@/lib/utils";
 
@@ -83,6 +84,18 @@ export async function submitDoctorReferralAction(input: {
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
     if (!centerLimits(center.plan).receivesReferrals) {
       return { ok: false, error: "Bu mərkəz həkim yönləndirmələrini qəbul etmir (Gold/Platinum paket lazımdır)." };
+    }
+
+    // No double booking: reject if the chosen time is already taken.
+    if (preferredDate) {
+      const free = await isPreferredDateAvailable(
+        center.id,
+        preferredDate,
+        input.serviceSlug || null,
+      ).catch(() => true);
+      if (!free) {
+        return { ok: false, error: "Seçdiyiniz vaxt artıq doludur. Başqa vaxt seçin." };
+      }
     }
 
     let doctor = await prisma.doctorProfile.findUnique({
