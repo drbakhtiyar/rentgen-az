@@ -19,7 +19,7 @@ export async function brandedQrDataUrl(url: string): Promise<string> {
     type: "png",
   });
   const label = await sharp(Buffer.from(QR_LABEL_B64, "base64"))
-    .resize(190) // ~30% of the QR width, ~4% of its area
+    .resize(320) // ~50% of the QR width, ~7% of its area — still safe at level H
     .png()
     .toBuffer();
   const out = await sharp(qr)
