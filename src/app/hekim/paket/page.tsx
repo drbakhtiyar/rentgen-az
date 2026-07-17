@@ -10,6 +10,7 @@ import { requireRole } from "@/lib/auth/rbac";
 import { getBalance } from "@/lib/wallet";
 import { getWalletHistory } from "@/lib/queries";
 import { DOCTOR_PLAN_PRICE } from "@/lib/plans";
+import type { Plan } from "@/generated/prisma/client";
 import { formatDateAz, doctorName } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
@@ -28,8 +29,16 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-export default async function DoctorBillingPage() {
+const PURCHASABLE = new Set(["SILVER", "GOLD", "PLATINUM"]);
+
+export default async function DoctorBillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
   const user = await requireRole("DOCTOR", "/hekim/paket");
+  const sp = await searchParams;
+  const preselect = sp.plan && PURCHASABLE.has(sp.plan.toUpperCase()) ? (sp.plan.toUpperCase() as Plan) : null;
   const doctor = await prisma.doctorProfile.findUnique({
     where: { userId: user.id },
     select: { firstName: true, lastName: true, plan: true, planUntil: true },
@@ -55,6 +64,7 @@ export default async function DoctorBillingPage() {
         daysLeft={daysUntil(doctor.planUntil)}
         balance={balance}
         prices={DOCTOR_PLAN_PRICE}
+        preselect={preselect}
       />
       <div className="mt-6">
         <Panel title={pd.center.historyTitle}>

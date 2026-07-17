@@ -10,6 +10,7 @@ import { requireRole } from "@/lib/auth/rbac";
 import { getBalance } from "@/lib/wallet";
 import { getWalletHistory } from "@/lib/queries";
 import { CENTER_PLAN_PRICE, centerLimits, effectiveExtraTb, OVERAGE_PER_TB_MINOR } from "@/lib/plans";
+import type { Plan } from "@/generated/prisma/client";
 import { formatDateAz } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
@@ -28,8 +29,16 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-export default async function CenterBillingPage() {
+const PURCHASABLE = new Set(["SILVER", "GOLD", "PLATINUM"]);
+
+export default async function CenterBillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
   const user = await requireRole("CENTER", "/merkez/paket");
+  const sp = await searchParams;
+  const preselect = sp.plan && PURCHASABLE.has(sp.plan.toUpperCase()) ? (sp.plan.toUpperCase() as Plan) : null;
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
     select: { name: true, plan: true, planUntil: true, extraStorageTb: true, extraStorageUntil: true },
@@ -54,6 +63,7 @@ export default async function CenterBillingPage() {
         daysLeft={daysUntil(center.planUntil)}
         balance={balance}
         prices={CENTER_PLAN_PRICE}
+        preselect={preselect}
         extraStorage={
           centerLimits(center.plan).storageOverage
             ? {

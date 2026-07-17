@@ -35,6 +35,7 @@ export function BillingPanel({
   balance,
   prices,
   extraStorage,
+  preselect,
 }: {
   currentPlan: Plan;
   planUntil: string | null;
@@ -43,6 +44,8 @@ export function BillingPanel({
   prices: Record<Plan, number>;
   /** Platinum centers: active +1TB blocks + price (section hidden if absent). */
   extraStorage?: { tb: number; until: string | null; priceMinor: number } | null;
+  /** Plan preselected via ?plan= (highlighted + scrolled into view). */
+  preselect?: Plan | null;
 }) {
   const router = useRouter();
   const t = getPanelDict(useLocale()).center;
@@ -51,6 +54,14 @@ export function BillingPanel({
   const [error, setError] = React.useState<string | null>(null);
   const [topup, setTopup] = React.useState("10");
   const [months, setMonths] = React.useState(1);
+  const plansRef = React.useRef<HTMLDivElement>(null);
+
+  // Scroll to the plan grid when arriving from /paketler with a preselection.
+  React.useEffect(() => {
+    if (preselect && preselect !== "FREE") {
+      plansRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [preselect]);
 
   const discountPct = monthsDiscountPct(months);
   const expiringSoon = daysLeft != null && daysLeft <= 5 && currentPlan !== "FREE";
@@ -173,15 +184,22 @@ export function BillingPanel({
       </div>
 
       {/* Plan purchase */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div ref={plansRef} className="grid gap-4 sm:grid-cols-3">
         {TIERS.map(({ plan, icon }) => {
           const active = currentPlan === plan;
+          const picked = preselect === plan && !active;
           const total = priceForMonths(prices[plan], months);
           const full = prices[plan] * months;
           return (
             <div
               key={plan}
-              className={`rounded-2xl border p-5 ${active ? "border-brand-300 bg-brand-50/40" : "border-slate-200 bg-white"}`}
+              className={`rounded-2xl border p-5 ${
+                picked
+                  ? "border-brand-400 bg-white ring-2 ring-brand-400"
+                  : active
+                    ? "border-brand-300 bg-brand-50/40"
+                    : "border-slate-200 bg-white"
+              }`}
             >
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                 {icon}
