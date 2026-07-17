@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { normalizePhone } from "@/lib/phone";
-import { sendSms } from "@/lib/sms";
+import { sendCenterSms, SMS_PACKAGES } from "@/lib/center-sms";
+import { alertAdminSms } from "@/lib/sms";
 import { isSlotAvailable } from "@/lib/crm";
 
 export type CrmResult = { ok: true } | { ok: false; error: string };
@@ -305,8 +306,10 @@ export async function sendRecallSmsAction(input: { phone: string; name?: string 
   });
   const greeting = input.name?.trim() ? `Salam, ${input.name.trim()}! ` : "Salam! ";
   const msg = `${greeting}${profile?.name ?? "Mərkəz"} sizi yenidən müayinəyə dəvət edir. Randevu üçün bizimlə əlaqə saxlayın.`;
-  const res = await sendSms(phone, msg, "reminder");
-  if (!res.ok) return { ok: false, error: "SMS göndərilə bilmədi. Yenidən cəhd edin." };
+  const res = await sendCenterSms(center.id, phone, msg, "reminder");
+  if (!res.ok) {
+    return { ok: false, error: "noBalance" in res ? res.error : "SMS göndərilə bilmədi. Yenidən cəhd edin." };
+  }
   return { ok: true };
 }
 
@@ -336,8 +339,39 @@ export async function invitePatientAction(input: { phone: string; name?: string 
   const msg =
     `${greeting}${profile?.name ?? "Mərkəz"} sizi rentgen.az-da qeydiyyatdan keçməyə dəvət edir. ` +
     `Rentgen nəticələrinizə onlayn çıxış üçün nömrənizlə daxil olun: https://rentgen.az/giris?role=PATIENT`;
-  const res = await sendSms(phone, msg, "other");
-  if (!res.ok) return { ok: false, error: "SMS göndərilə bilmədi. Yenidən cəhd edin." };
+  const res = await sendCenterSms(center.id, phone, msg, "other");
+  if (!res.ok) {
+    return { ok: false, error: "noBalance" in res ? res.error : "SMS göndərilə bilmədi. Yenidən cəhd edin." };
+  }
+  return { ok: true };
+}
+
+/** Order an SMS package: creates a PENDING order and alerts the admin. */
+export async function createSmsOrderAction(qty: number): Promise<CrmResult> {
+  const center = await currentCenter();
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const pack = SMS_PACKAGES.find((p) => p.qty === qty);
+  if (!pack) return { ok: false, error: "Paket tapılmadı." };
+
+  // One open order at a time — keeps the manual payment flow unambiguous.
+  const open = await prisma.centerSmsOrder.findFirst({
+    where: { centerId: center.id, status: "PENDING" },
+    select: { id: true },
+  });
+  if (open) return { ok: false, error: "Gözləyən sifarişiniz var. Admin təsdiqindən sonra yenisini verə bilərsiniz." };
+
+  const profile = await prisma.centerProfile.findUnique({
+    where: { id: center.id },
+    select: { name: true },
+  });
+  await prisma.centerSmsOrder.create({
+    data: { centerId: center.id, qty: pack.qty, price: pack.price },
+  });
+  await alertAdminSms(
+    `rentgen.az: ${profile?.name ?? "Mərkəz"} ${pack.qty} SMS paketi sifariş etdi (${pack.price} AZN). Admin paneldə təsdiqləyin.`,
+  );
+
+  revalidatePath("/crm/sms");
   return { ok: true };
 }
 

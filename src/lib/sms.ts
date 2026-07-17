@@ -18,6 +18,8 @@ export async function sendSms(
   to: string,
   message: string,
   kind: SmsKind = "other",
+  /** CRM SMS-i olduqda — logda mərkəzə bağlamaq üçün. */
+  centerId?: string,
 ): Promise<SendSmsResult> {
   let result: SendSmsResult;
   switch (env.smsProvider) {
@@ -37,7 +39,7 @@ export async function sendSms(
       );
       result = { ok: true };
   }
-  await logSms(to, message, kind, result);
+  await logSms(to, message, kind, result, centerId);
   return result;
 }
 
@@ -60,6 +62,7 @@ async function logSms(
   message: string,
   kind: SmsKind,
   result: SendSmsResult,
+  centerId?: string,
 ): Promise<void> {
   try {
     // Mask the numeric OTP code so the admin log never exposes live codes.
@@ -72,6 +75,7 @@ async function logSms(
         ok: result.ok,
         error: result.error ?? null,
         provider: env.smsProvider,
+        centerId: centerId ?? null,
       },
     });
   } catch {

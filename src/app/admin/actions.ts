@@ -617,3 +617,70 @@ export async function adminCreditWalletAction(userId: string, formData: FormData
   revalidatePath("/admin/merkezler");
   revalidatePath("/admin/hekimler");
 }
+
+// ---------------------------------------------------------------------------
+// CRM SMS sifarişləri (mərkəzlərə SMS krediti satışı)
+
+/** Approve a center's SMS package order: mark PAID + credit the balance. */
+export async function approveSmsOrderAction(orderId: string): Promise<AdminResult> {
+  await requireRole("ADMIN");
+  const order = await prisma.centerSmsOrder.findUnique({
+    where: { id: orderId },
+    select: { id: true, centerId: true, qty: true, price: true, status: true, center: { select: { userId: true, name: true } } },
+  });
+  if (!order) return { ok: false, error: "Sifariş tapılmadı." };
+  if (order.status !== "PENDING") return { ok: false, error: "Sifariş artıq emal olunub." };
+
+  await prisma.centerSmsOrder.update({
+    where: { id: order.id },
+    data: { status: "PAID", paidAt: new Date() },
+  });
+  const { creditCenterSms } = await import("@/lib/center-sms");
+  await creditCenterSms(order.centerId, order.qty, "PURCHASE", `${order.qty} SMS paketi (${order.price} AZN)`);
+  await notifyUser(
+    order.center.userId,
+    "STATUS_UPDATE",
+    "SMS balansı yükləndi",
+    `${order.qty} SMS balansınıza əlavə olundu. CRM → SMS-lər bölməsində görə bilərsiniz.`,
+    "/crm/sms",
+  ).catch(() => {});
+
+  revalidatePath("/admin/sms");
+  return { ok: true, message: "Sifariş təsdiqləndi, balans yükləndi." };
+}
+
+/** Cancel a pending SMS order. */
+export async function cancelSmsOrderAction(orderId: string): Promise<AdminResult> {
+  await requireRole("ADMIN");
+  const order = await prisma.centerSmsOrder.findUnique({
+    where: { id: orderId },
+    select: { id: true, status: true },
+  });
+  if (!order) return { ok: false, error: "Sifariş tapılmadı." };
+  if (order.status !== "PENDING") return { ok: false, error: "Sifariş artıq emal olunub." };
+  await prisma.centerSmsOrder.update({ where: { id: order.id }, data: { status: "CANCELLED" } });
+  revalidatePath("/admin/sms");
+  return { ok: true, message: "Sifariş ləğv edildi." };
+}
+
+/** Manually add SMS credits to a center (gift/adjustment). */
+export async function grantCenterSmsAction(centerId: string, amount: number, note?: string): Promise<AdminResult> {
+  await requireRole("ADMIN");
+  const qty = Math.round(amount);
+  if (!Number.isFinite(qty) || qty <= 0 || qty > 100000) {
+    return { ok: false, error: "SMS sayı düzgün deyil." };
+  }
+  const center = await prisma.centerProfile.findUnique({ where: { id: centerId }, select: { id: true, userId: true } });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const { creditCenterSms } = await import("@/lib/center-sms");
+  await creditCenterSms(centerId, qty, "GRANT", note || "Admin yükləməsi");
+  await notifyUser(
+    center.userId,
+    "STATUS_UPDATE",
+    "SMS balansı yükləndi",
+    `${qty} SMS balansınıza əlavə olundu (hədiyyə).`,
+    "/crm/sms",
+  ).catch(() => {});
+  revalidatePath("/admin/sms");
+  return { ok: true, message: "Balans yükləndi." };
+}

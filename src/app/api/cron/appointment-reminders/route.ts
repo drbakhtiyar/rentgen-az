@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendSms } from "@/lib/sms";
+import { sendCenterSms } from "@/lib/center-sms";
 import { formatDateTimeAz } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +40,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       name: true,
       phone: true,
       preferredDate: true,
+      centerId: true,
       center: { select: { name: true, reminderHours: true } },
     },
     orderBy: { preferredDate: "asc" },
@@ -48,14 +49,21 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   let sent = 0;
   let failed = 0;
+  let noBalance = 0;
   for (const a of candidates) {
-    if (!a.preferredDate || !a.center) continue;
+    if (!a.preferredDate || !a.center || !a.centerId) continue;
     const hoursUntil = (a.preferredDate.getTime() - now.getTime()) / HOUR;
     if (hoursUntil > (a.center.reminderHours || 24)) continue; // not yet in window
 
     const when = formatDateTimeAz(a.preferredDate);
     const msg = `Salam! ${a.center.name} - randevunuz: ${when}. Xatırladırıq. Dəyişiklik üçün mərkəzlə əlaqə saxlayın.`;
-    const res = await sendSms(a.phone, msg, "reminder");
+    // Charged from the center's SMS balance. Out of credits → skip WITHOUT
+    // stamping, so the reminder still goes out if they top up in time.
+    const res = await sendCenterSms(a.centerId, a.phone, msg, "reminder");
+    if (!res.ok && "noBalance" in res) {
+      noBalance++;
+      continue;
+    }
     // Stamp regardless so a persistently failing number isn't retried forever.
     await prisma.appointmentRequest.update({
       where: { id: a.id },
@@ -65,5 +73,5 @@ export async function GET(request: Request): Promise<NextResponse> {
     else failed++;
   }
 
-  return NextResponse.json({ ok: true, considered: candidates.length, sent, failed });
+  return NextResponse.json({ ok: true, considered: candidates.length, sent, failed, noBalance });
 }

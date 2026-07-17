@@ -218,6 +218,9 @@ model CenterProfile {
   // reminderHours saat əvvəl SMS xatırlatma göndərir (default söndürülü).
   remindersEnabled   Boolean  @default(false)
   reminderHours      Int      @default(24)
+  // CRM SMS krediti: mərkəzin öz SMS-ləri (xatırlatma/çağırış/dəvət/kampaniya)
+  // bu balansdan düşür. Platforma SMS-ləri (OTP, randevu bildirişi) toxunmur.
+  smsBalance         Int      @default(0)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
@@ -232,9 +235,41 @@ model CenterProfile {
   workplaceDoctors    DoctorProfile[] @relation("DoctorWorkplace")
   timeBlocks          CenterTimeBlock[]
   holidays            CenterHoliday[]
+  smsCredits          CenterSmsCredit[]
+  smsOrders           CenterSmsOrder[]
 
   @@index([status])
   @@index([city])
+}
+
+// CRM SMS balans yüklənmələri (hədiyyə və ya alış). Xərclənmə ayrıca yazılmır —
+// hər göndəriş SmsLog-da (centerId ilə) qeyd olunur, balans smsBalance-dadır.
+model CenterSmsCredit {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  amount    Int // əlavə olunan SMS sayı
+  kind      String // "GRANT" (hədiyyə) | "PURCHASE" (alış)
+  note      String?
+  createdAt DateTime      @default(now())
+
+  @@index([centerId])
+}
+
+// CRM SMS paketi sifarişi. Mərkəz sifariş verir → admin ödənişi təsdiqləyəndə
+// balans yüklənir (Payriff qoşulana qədər manual axın).
+model CenterSmsOrder {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  qty       Int // SMS sayı
+  price     Int // AZN
+  status    String        @default("PENDING") // PENDING | PAID | CANCELLED
+  createdAt DateTime      @default(now())
+  paidAt    DateTime?
+
+  @@index([centerId])
+  @@index([status])
 }
 
 // CRM: center-declared non-working days (holidays / days off). The whole day is
@@ -429,15 +464,17 @@ model Review {
 model SmsLog {
   id        String   @id @default(cuid())
   phone     String
-  kind      String // "otp" | "center_request" | "patient_status" | "other"
+  kind      String // "otp" | "center_request" | "patient_status" | "reminder" | "other"
   text      String // göndərilən mətn (OTP kodu maskalanır)
   ok        Boolean
   error     String?
   provider  String // "lsim" | "dev" | ...
+  centerId  String? // CRM SMS-i — hansı mərkəzin balansından gedib
   createdAt DateTime @default(now())
 
   @@index([createdAt])
   @@index([kind])
+  @@index([centerId])
 }
 
 // OTP alan zaman seçilmiş qeydiyyat tipi. Yarımçıq qalan qeydiyyatları izləmək

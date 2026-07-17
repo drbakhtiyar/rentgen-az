@@ -15,6 +15,7 @@ import {
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { StatCard, EmptyState, Panel } from "@/components/dashboard/widgets";
 import { AdminSmsSender } from "@/components/admin/admin-sms-sender";
+import { SmsOrdersPanel } from "@/components/admin/sms-orders-panel";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getSmsBalance } from "@/lib/sms";
@@ -140,6 +141,19 @@ export default async function AdminSmsPage({
 
   const balance = await getSmsBalance();
 
+  // CRM SMS credit sales: pending package orders + centers for manual grants.
+  const [pendingOrders, crmCenters] = await Promise.all([
+    prisma.centerSmsOrder.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "asc" },
+      include: { center: { select: { name: true, phone: true } } },
+    }),
+    prisma.centerProfile.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, smsBalance: true },
+    }),
+  ]);
+
   // Resolve each log's recipient role once, then apply the role filter.
   const logsWithRole = logs.map((s) => ({ ...s, role: roleFor(s.kind, s.phone) }));
   const visibleLogs =
@@ -169,6 +183,23 @@ export default async function AdminSmsPage({
       <div className="mt-5">
         <Panel title="Yeni SMS göndər">
           <AdminSmsSender initialPhone={prefillPhone} />
+        </Panel>
+      </div>
+
+      <div className="mt-5">
+        <Panel title={`CRM SMS sifarişləri${pendingOrders.length ? ` (${pendingOrders.length} gözləyir)` : ""}`}>
+          <SmsOrdersPanel
+            orders={pendingOrders.map((o) => ({
+              id: o.id,
+              qty: o.qty,
+              price: o.price,
+              status: o.status,
+              createdAt: formatDateTimeAz(o.createdAt),
+              centerName: o.center.name,
+              centerPhone: formatPhoneDisplay(o.center.phone),
+            }))}
+            centers={crmCenters.map((c) => ({ id: c.id, name: c.name, balance: c.smsBalance }))}
+          />
         </Panel>
       </div>
 
