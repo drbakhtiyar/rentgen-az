@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Loader2, FileDown, Trash2, File as FileIcon } from "lucide-react";
+import { Upload, Loader2, FileDown, Trash2, File as FileIcon, Eye } from "lucide-react";
+import { isViewableFile, viewerUrl } from "@/lib/viewer-url";
 import {
   requestUploadUrlAction,
   confirmUploadAction,
@@ -303,6 +304,16 @@ export function RentgenFilesPanel({
                 {formatDate(f.createdAt)}
               </span>
               <span className="shrink-0 text-xs text-slate-400">{formatBytes(f.size)}</span>
+              {isViewableFile(f.fileName) && (
+                <button
+                  type="button"
+                  onClick={() => window.open(viewerUrl(f.id), "_blank", "noopener,noreferrer")}
+                  className="shrink-0 rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-brand-600"
+                  title="Brauzerdə bax"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => download(f.id)}
