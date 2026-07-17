@@ -19,6 +19,7 @@ import {
   Camera,
   Contrast,
   Layers,
+  Box,
   Crosshair as Crosshair2,
 } from "lucide-react";
 import { loadDicom, type LoadedDicom, type DicomVolume, type LoadPhase } from "./dicom-load";
@@ -751,70 +752,6 @@ function Viewport({
   );
 }
 
-/** 4th quadrant: full-depth frontal MIP (project max through the whole A-P
- * depth) — a pseudo-3D grayscale overview of the volume. Cheap stand-in for a
- * shaded 3D render; the max-projection is computed once and only re-windowed. */
-function MipQuadrant({ vol, wc, ww, invert, topFirst }: { vol: DicomVolume; wc: number; ww: number; invert: boolean; topFirst: boolean }) {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const { cols, rows, slices } = vol;
-  const n = slices.length;
-
-  const proj = React.useMemo(() => {
-    const out = new Int16Array(n * cols);
-    for (let r = 0; r < n; r++) {
-      const d = slices[r].data;
-      const base = r * cols;
-      for (let x = 0; x < cols; x++) {
-        let m = -32768;
-        for (let y = 0; y < rows; y++) {
-          const v = d[y * cols + x];
-          if (v > m) m = v;
-        }
-        out[base + x] = m;
-      }
-    }
-    return out;
-  }, [vol]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  React.useEffect(() => {
-    const c = canvasRef.current;
-    if (!c) return;
-    c.width = cols;
-    c.height = n;
-    const ctx = c.getContext("2d");
-    if (!ctx) return;
-    const img = ctx.createImageData(cols, n);
-    const px = img.data;
-    const low = wc - ww / 2;
-    const k = 255 / ww;
-    let j = 0;
-    for (let r = 0; r < n; r++) {
-      const src = (topFirst ? r : n - 1 - r) * cols;
-      for (let x = 0; x < cols; x++) {
-        let g = (proj[src + x] * vol.slope + vol.intercept - low) * k;
-        g = g < 0 ? 0 : g > 255 ? 255 : g;
-        if (invert) g = 255 - g;
-        px[j] = g;
-        px[j + 1] = g;
-        px[j + 2] = g;
-        px[j + 3] = 255;
-        j += 4;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-  }, [proj, wc, ww, invert, topFirst, cols, n, vol.slope, vol.intercept]);
-
-  const aspect = (cols * vol.colSpacing) / (n * vol.zSpacing);
-  return (
-    <div className="flex min-h-0 flex-col rounded-xl border border-slate-800 bg-slate-900">
-      <div className="px-3 py-1.5 text-xs font-bold text-amber-300">Ümumi baxış (MIP)</div>
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-slate-950 p-1">
-        <canvas ref={canvasRef} className="max-h-full max-w-full object-contain" style={{ aspectRatio: `${aspect}` }} />
-      </div>
-    </div>
-  );
-}
-
 function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string; url: string }) {
   const n = vol.slices.length;
   const single = n === 1;
@@ -1083,8 +1020,13 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
             single={single}
           />
         ))}
-        {/* 4th quadrant — full-depth frontal MIP overview */}
-        {!single && !expanded && <MipQuadrant vol={vol} wc={wc} ww={ww} invert={invert} topFirst={topFirst} />}
+        {/* 4th quadrant — placeholder (TODO: replace per new reference images) */}
+        {!single && !expanded && (
+          <div className="flex min-h-0 flex-col items-center justify-center rounded-xl border border-dashed border-slate-800 bg-slate-900/50 p-4 text-center">
+            <Box className="h-8 w-8 text-slate-600" />
+            <p className="mt-2 text-xs text-slate-500">Bu sahə hazırlanır</p>
+          </div>
+        )}
       </div>
 
       <p className="bg-slate-950 px-4 pb-2 text-center text-[11px] text-slate-500">
