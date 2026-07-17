@@ -16,6 +16,9 @@ import {
   Trash2,
   Bone,
   Spline,
+  Camera,
+  Contrast,
+  Layers,
   Crosshair as Crosshair2,
 } from "lucide-react";
 import { loadDicom, type LoadedDicom, type DicomVolume, type LoadPhase } from "./dicom-load";
@@ -316,8 +319,10 @@ function renderPlane(
   wc: number,
   ww: number,
   topFirst: boolean, // slices[0] rendered at the top of coronal/sagittal
+  invert: boolean,
+  slab: number, // MIP thickness (± slices/rows/cols); 0 = single slice
 ) {
-  const { slices, rows, cols, slope, intercept, invert } = vol;
+  const { slices, rows, cols, slope, intercept } = vol;
   const n = slices.length;
   const w = plane === "sagittal" ? rows : cols;
   const h = plane === "axial" ? rows : n;
@@ -342,18 +347,39 @@ function renderPlane(
   };
 
   if (plane === "axial") {
-    const d = slices[cross.iz].data;
-    for (let i = 0; i < d.length; i++) put(d[i]);
+    if (slab > 0) {
+      const lo = Math.max(0, cross.iz - slab);
+      const hi = Math.min(n - 1, cross.iz + slab);
+      for (let i = 0; i < rows * cols; i++) {
+        let m = -32768;
+        for (let z = lo; z <= hi; z++) m = Math.max(m, slices[z].data[i]);
+        put(m);
+      }
+    } else {
+      const d = slices[cross.iz].data;
+      for (let i = 0; i < d.length; i++) put(d[i]);
+    }
   } else if (plane === "coronal") {
-    const rowOff = cross.iy * cols;
+    const rLo = slab > 0 ? Math.max(0, cross.iy - slab) : cross.iy;
+    const rHi = slab > 0 ? Math.min(rows - 1, cross.iy + slab) : cross.iy;
     for (let r = 0; r < n; r++) {
       const d = slices[topFirst ? r : n - 1 - r].data;
-      for (let x = 0; x < cols; x++) put(d[rowOff + x]);
+      for (let x = 0; x < cols; x++) {
+        let m = d[cross.iy * cols + x];
+        for (let ry = rLo; ry <= rHi; ry++) m = Math.max(m, d[ry * cols + x]);
+        put(m);
+      }
     }
   } else {
+    const cLo = slab > 0 ? Math.max(0, cross.ix - slab) : cross.ix;
+    const cHi = slab > 0 ? Math.min(cols - 1, cross.ix + slab) : cross.ix;
     for (let r = 0; r < n; r++) {
       const d = slices[topFirst ? r : n - 1 - r].data;
-      for (let y = 0; y < rows; y++) put(d[y * cols + cross.ix]);
+      for (let y = 0; y < rows; y++) {
+        let m = d[y * cols + cross.ix];
+        for (let cx = cLo; cx <= cHi; cx++) m = Math.max(m, d[y * cols + cx]);
+        put(m);
+      }
     }
   }
   ctx.putImageData(img, 0, 0);
@@ -459,6 +485,8 @@ function Viewport({
   wc,
   ww,
   topFirst,
+  invert,
+  slab,
   tool,
   measures,
   pending,
@@ -474,6 +502,8 @@ function Viewport({
   wc: number;
   ww: number;
   topFirst: boolean;
+  invert: boolean;
+  slab: number;
   tool: Tool;
   measures: Measure[];
   pending: { plane: Plane; slice: number; pts: Pt[] } | null;
@@ -498,8 +528,8 @@ function Viewport({
 
   React.useEffect(() => {
     const c = canvasRef.current;
-    if (c) renderPlane(c, vol, plane, cross, wc, ww, topFirst);
-  }, [vol, plane, wc, ww, topFirst, plane === "axial" ? cross.iz : plane === "coronal" ? cross.iy : cross.ix]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (c) renderPlane(c, vol, plane, cross, wc, ww, topFirst, invert, slab);
+  }, [vol, plane, wc, ww, topFirst, invert, slab, plane === "axial" ? cross.iz : plane === "coronal" ? cross.iy : cross.ix]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sliceIndex = plane === "axial" ? cross.iz : plane === "coronal" ? cross.iy : cross.ix;
   const sliceMax = plane === "axial" ? n - 1 : plane === "coronal" ? vol.rows - 1 : vol.cols - 1;
@@ -563,6 +593,65 @@ function Viewport({
   const shown = measures.filter((m) => m.plane === plane && m.slice === curSlice);
   const draft = pending && pending.plane === plane && pending.slice === curSlice ? pending.pts : null;
 
+  // Screenshot: the rendered slice + measurement annotations → PNG download.
+  function exportImage() {
+    const src = canvasRef.current;
+    if (!src) return;
+    const W = src.width;
+    const H = src.height;
+    const out = document.createElement("canvas");
+    out.width = W;
+    out.height = H;
+    const ctx = out.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(src, 0, 0);
+    ctx.lineWidth = Math.max(1.5, W / 500);
+    ctx.font = `bold ${Math.max(12, Math.round(H / 42))}px sans-serif`;
+    const nerves = shown.filter((m) => m.type === "nerve");
+    const P = (p: Pt): [number, number] => [p.fx * W, p.fy * H];
+    const stroke = (pts: [number, number][], color: string, close = false) => {
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      if (close) ctx.closePath();
+      ctx.stroke();
+    };
+    const label = (p: Pt, text: string, color: string) => {
+      const [x, y] = P(p);
+      const w = ctx.measureText(text).width;
+      const fh = Math.max(12, Math.round(H / 42));
+      ctx.fillStyle = "rgba(15,23,42,0.85)";
+      ctx.fillRect(x + 6, y - fh, w + 8, fh + 6);
+      ctx.fillStyle = color;
+      ctx.fillText(text, x + 10, y + 2);
+    };
+    for (const m of shown) {
+      if (m.type === "ruler") {
+        stroke([P(m.pts[0]), P(m.pts[1])], "#facc15");
+        const mid = { fx: (m.pts[0].fx + m.pts[1].fx) / 2, fy: (m.pts[0].fy + m.pts[1].fy) / 2 };
+        label(mid, `${distMm(vol, plane, m.pts[0], m.pts[1]).toFixed(1)} mm`, "#fde047");
+      } else if (m.type === "angle") {
+        stroke([P(m.pts[0]), P(m.pts[1]), P(m.pts[2])], "#facc15");
+        label(m.pts[1], `${angleDeg(vol, plane, m.pts[0], m.pts[1], m.pts[2]).toFixed(1)}°`, "#fde047");
+      } else if (m.type === "hu") {
+        label(m.pts[0], `${m.hu} HU`, "#fde047");
+      } else if (m.type === "nerve") {
+        stroke(m.pts.map(P), "#34d399");
+        label(m.pts[0], "Nervə", "#6ee7b7");
+      } else if (m.type === "implant") {
+        const g = implantGeom(vol, plane, m.pts[0], m.pts[1], m.len ?? 10, m.dia ?? 4);
+        stroke(g.corners.map(P), "#38bdf8", true);
+        label(m.pts[0], `Ø${m.dia} × ${m.len} mm`, "#7dd3fc");
+        const safe = apexToNerves(vol, plane, m, nerves);
+        if (safe != null) label(g.apexFrac, `Nervə: ${safe.toFixed(1)} mm`, safe < NERVE_SAFETY_MM ? "#fca5a5" : "#6ee7b7");
+      }
+    }
+    const a = document.createElement("a");
+    a.href = out.toDataURL("image/png");
+    a.download = `${plane}-${sliceIndex + 1}.png`;
+    a.click();
+  }
+
   // Wheel = scroll through slices, WITHOUT scrolling the page. React's onWheel
   // is passive (preventDefault ignored), so attach a native non-passive
   // listener; a ref keeps it pointed at the latest slice.
@@ -596,6 +685,9 @@ function Viewport({
           </IconBtn>
           <IconBtn onClick={() => setZoom((z) => Math.min(6, z * 1.25))} title="Böyüt">
             <ZoomIn className="h-3.5 w-3.5" />
+          </IconBtn>
+          <IconBtn onClick={exportImage} title="Şəkil çıxar (PNG)">
+            <Camera className="h-3.5 w-3.5" />
           </IconBtn>
           {!single && (
             <IconBtn onClick={onToggleExpand} title={expanded ? "Kiçilt" : "Genişləndir"}>
@@ -649,6 +741,9 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
   const [ww, setWw] = React.useState(Math.round(vol.ww));
   const [flipV, setFlipV] = React.useState(false);
   const topFirst = vol.zTopFirst !== flipV; // auto orientation, user-overridable
+  const [invertUI, setInvertUI] = React.useState(false);
+  const invert = vol.invert !== invertUI;
+  const [slab, setSlab] = React.useState(0); // MIP thickness (± slices)
   const [expanded, setExpanded] = React.useState<"axial" | "coronal" | "sagittal" | null>(null);
 
   // Measurement tools.
@@ -738,6 +833,25 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
             >
               <FlipVertical className="h-3.5 w-3.5" /> Çevir
             </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setInvertUI((v) => !v)}
+            title="Rəngi tərsinə çevir"
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${invertUI ? "bg-cyan-600 text-white" : "bg-slate-800 text-slate-200 hover:bg-slate-700"}`}
+          >
+            <Contrast className="h-3.5 w-3.5" /> İnvert
+          </button>
+          {!single && (
+            <label className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-200">
+              <Layers className="h-3.5 w-3.5" />
+              <select value={slab} onChange={(e) => setSlab(Number(e.target.value))} className="bg-slate-800 text-slate-200 focus:outline-none">
+                <option value={0}>Slab: yox</option>
+                <option value={3}>MIP ±3</option>
+                <option value={6}>MIP ±6</option>
+                <option value={12}>MIP ±12</option>
+              </select>
+            </label>
           )}
           <label className="flex items-center gap-1 text-[11px] text-slate-400">
             C
@@ -875,6 +989,8 @@ function VolumeView({ vol, fileName, url }: { vol: DicomVolume; fileName: string
             wc={wc}
             ww={ww}
             topFirst={topFirst}
+            invert={invert}
+            slab={slab}
             tool={tool}
             measures={measures}
             pending={pending}
