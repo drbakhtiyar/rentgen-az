@@ -27,6 +27,8 @@ export function HeaderClient({
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const pathname = usePathname();
+  // Inside the CRM app the public site links are noise (also covers /crm/* on the main host).
+  const links = pathname === "/crm" || pathname.startsWith("/crm/") ? [] : nav;
   const close = React.useCallback(() => setOpen(false), []);
 
   React.useEffect(() => {
@@ -61,7 +63,7 @@ export function HeaderClient({
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {nav.map((item) => {
+          {links.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link
@@ -113,7 +115,7 @@ export function HeaderClient({
       {open && (
         <div className="border-t border-slate-200 bg-white lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
-            {nav.map((item) => (
+            {links.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

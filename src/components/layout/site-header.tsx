@@ -1,11 +1,14 @@
+import { headers } from "next/headers";
 import { getCurrentUser, dashboardPathForRole } from "@/lib/auth/rbac";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { HeaderClient } from "./header-client";
 
 export async function SiteHeader() {
-  const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
+  const [user, locale, hdrs] = await Promise.all([getCurrentUser(), getLocale(), headers()]);
   const d = getDict(locale);
+  // Public site links are noise inside the CRM app (crm.rentgen.az).
+  const isCrmHost = (hdrs.get("host") ?? "").toLowerCase().startsWith("crm.");
 
   const nav = [
     { label: d.nav.centers, href: "/rentgen-merkezleri" },
@@ -30,5 +33,5 @@ export async function SiteHeader() {
       }
     : null;
 
-  return <HeaderClient nav={nav} session={sessionInfo} locale={locale} cta={d.cta} />;
+  return <HeaderClient nav={isCrmHost ? [] : nav} session={sessionInfo} locale={locale} cta={d.cta} />;
 }
