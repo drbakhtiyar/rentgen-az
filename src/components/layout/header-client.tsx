@@ -27,8 +27,10 @@ export function HeaderClient({
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const pathname = usePathname();
-  // Inside the CRM app the public site links are noise (also covers /crm/* on the main host).
-  const links = pathname === "/crm" || pathname.startsWith("/crm/") ? [] : nav;
+  // Inside the CRM app the public site links and account button are noise
+  // (empty nav = crm.* host; the path check covers /crm/* on the main host).
+  const isCrm = nav.length === 0 || pathname === "/crm" || pathname.startsWith("/crm/");
+  const links = isCrm ? [] : nav;
   const close = React.useCallback(() => setOpen(false), []);
 
   React.useEffect(() => {
@@ -84,7 +86,7 @@ export function HeaderClient({
 
         <div className="hidden items-center gap-2 lg:flex">
           <LocaleToggle locale={locale} />
-          {session ? (
+          {isCrm ? null : session ? (
             <ButtonLink href={session.dashboard} size="sm" variant="primary">
               <LayoutDashboard className="h-4 w-4" />
               {session.name}
@@ -101,18 +103,24 @@ export function HeaderClient({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-ink-800 lg:hidden"
-          aria-label="Menyu"
-          aria-expanded={open}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        {isCrm ? (
+          <div className="lg:hidden">
+            <LocaleToggle locale={locale} />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-ink-800 lg:hidden"
+            aria-label="Menyu"
+            aria-expanded={open}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        )}
       </div>
 
-      {open && (
+      {open && !isCrm && (
         <div className="border-t border-slate-200 bg-white lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
             {links.map((item) => (
