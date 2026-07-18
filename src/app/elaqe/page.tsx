@@ -74,26 +74,28 @@ export default async function ContactPage() {
               <h2 className="font-display text-xl font-bold text-ink-900">
                 {c.infoTitle}
               </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
+              {/* 2-up compact grid on phones — the stacked full-width cards made
+                  the page very long to scroll. */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {contactItems.map((item) => {
                   const Icon = item.icon;
                   const content = (
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                        <Icon className="h-5 w-5" />
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 sm:h-10 sm:w-10">
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </span>
-                      <div>
-                        <div className="text-sm font-medium text-slate-500">
+                      <div className="min-w-0">
+                        <div className="text-xs font-medium text-slate-500 sm:text-sm">
                           {item.title}
                         </div>
-                        <div className="font-medium text-ink-900">
+                        <div className="break-words text-sm font-medium text-ink-900 sm:text-base">
                           {item.value}
                         </div>
                       </div>
                     </div>
                   );
                   return (
-                    <Card key={item.title} className="p-5">
+                    <Card key={item.title} className="p-3 sm:p-5">
                       {item.href ? (
                         <a href={item.href} className="block hover:opacity-80">
                           {content}
@@ -105,17 +107,19 @@ export default async function ContactPage() {
                   );
                 })}
               </div>
-              <Card className="p-5">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600">
-                    <MessageCircle className="h-5 w-5" />
+              <Card className="p-3 sm:p-5">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600 sm:h-10 sm:w-10">
+                    <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   </span>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-slate-500">
-                      WhatsApp
-                    </div>
-                    <div className="mb-3 font-medium text-ink-900">
-                      {c.whatsappDesc}
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium text-slate-500 sm:text-sm">
+                        WhatsApp
+                      </div>
+                      <div className="text-sm font-medium text-ink-900 sm:text-base">
+                        {c.whatsappDesc}
+                      </div>
                     </div>
                     <ButtonLink
                       href="https://wa.me/994500000000"
