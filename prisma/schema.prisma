@@ -16,6 +16,7 @@ enum Role {
   PATIENT
   CENTER
   DOCTOR
+  ASSISTANT
   ADMIN
 }
 
@@ -59,6 +60,7 @@ model User {
   lastLoginAt DateTime?
 
   patientProfile PatientProfile?
+  assistantOf    CenterAssistant?
   centerProfile  CenterProfile?
   doctorProfile  DoctorProfile?
   adminLogs      AdminActionLog[] @relation("AdminUser")
@@ -238,6 +240,7 @@ model CenterProfile {
   workplaceDoctors    DoctorProfile[] @relation("DoctorWorkplace")
   timeBlocks          CenterTimeBlock[]
   holidays            CenterHoliday[]
+  assistants          CenterAssistant[]
   smsCredits          CenterSmsCredit[]
   smsOrders           CenterSmsOrder[]
 
@@ -277,6 +280,23 @@ model CenterSmsOrder {
 
 // CRM: center-declared non-working days (holidays / days off). The whole day is
 // blocked — no slots, no bookings. Managed as a list in CRM settings.
+// CRM: mərkəz asistenti — mərkəz adından CRM-də gündəlik iş görür (randevu,
+// pasiyent, fayl). Heç bir public səhifədə görünmür; Ayarlar/ödənişlər yalnız
+// sahibə açıqdır. Giriş: crm.rentgen.az/giris (yalnız nömrə + OTP).
+model CenterAssistant {
+  id        String        @id @default(cuid())
+  centerId  String
+  center    CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  userId    String        @unique
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+
+  @@index([centerId])
+}
+
 model CenterHoliday {
   id        String        @id @default(cuid())
   centerId  String

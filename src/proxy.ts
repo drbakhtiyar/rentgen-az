@@ -5,12 +5,12 @@ import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/jwt";
 
 // Role-gated app prefixes on the main site. Fine-grained checks are re-done in
 // pages/actions; this is coarse protection. Order doesn't matter (exact prefix).
-const PROTECTED: [prefix: string, role: Role][] = [
-  ["/admin", "ADMIN"],
-  ["/merkez", "CENTER"],
-  ["/crm", "CENTER"],
-  ["/hekim", "DOCTOR"],
-  ["/kabinet", "PATIENT"],
+const PROTECTED: [prefix: string, roles: Role[]][] = [
+  ["/admin", ["ADMIN"]],
+  ["/merkez", ["CENTER"]],
+  ["/crm", ["CENTER", "ASSISTANT"]],
+  ["/hekim", ["DOCTOR"]],
+  ["/kabinet", ["PATIENT"]],
 ];
 
 function isUnder(pathname: string, prefix: string): boolean {
@@ -26,14 +26,16 @@ export async function proxy(request: NextRequest) {
   const session = token ? await verifySessionToken(token) : null;
 
   // --- CRM subdomain (crm.rentgen.az) → serve the /crm app ---------------
-  // Center-only. Every path on this host maps to /crm/*.
+  // Center owners + their assistants. Every path on this host maps to /crm/*.
   if (isCrm) {
-    if (!session || session.role !== "CENTER") {
-      // The session cookie is scoped to .rentgen.az, so after logging in on the
-      // main site the CRM is authenticated automatically.
-      const loginUrl = new URL("https://rentgen.az/giris");
-      loginUrl.searchParams.set("next", "https://crm.rentgen.az" + pathname);
-      return NextResponse.redirect(loginUrl);
+    const allowed = session && (session.role === "CENTER" || session.role === "ASSISTANT");
+    const isLogin = pathname === "/giris" || pathname === "/crm/giris";
+    if (!allowed && !isLogin) {
+      // Phone-only CRM login (no role tabs) — the system works out who it is.
+      return NextResponse.redirect(new URL("https://crm.rentgen.az/giris"));
+    }
+    if (allowed && isLogin) {
+      return NextResponse.redirect(new URL("https://crm.rentgen.az/teqvim"));
     }
     if (pathname.startsWith("/crm")) return NextResponse.next();
     const url = request.nextUrl.clone();
@@ -42,14 +44,16 @@ export async function proxy(request: NextRequest) {
   }
 
   // --- Main site (rentgen.az) — only gate protected prefixes -------------
-  for (const [prefix, role] of PROTECTED) {
+  // The CRM login page itself is public (phone-only OTP form).
+  if (isUnder(pathname, "/crm/giris")) return NextResponse.next();
+  for (const [prefix, roles] of PROTECTED) {
     if (!isUnder(pathname, prefix)) continue;
     if (!session) {
       const loginUrl = new URL("/giris", request.url);
       loginUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(loginUrl);
     }
-    if (session.role !== role) {
+    if (!roles.includes(session.role)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     break;

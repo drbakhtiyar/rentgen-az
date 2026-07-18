@@ -5,6 +5,7 @@ import { crmNav } from "@/components/dashboard/role-navs";
 import { Panel } from "@/components/dashboard/widgets";
 import { parseHours, formatHoursSummary, DAY_KEYS } from "@/lib/hours";
 import { getCenterHolidays } from "@/lib/crm";
+import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getCrmDict } from "@/lib/i18n-crm";
@@ -12,15 +13,36 @@ import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { SlotSettingsForm } from "../slot-settings-form";
 import { HolidaysManager } from "../holidays-manager";
+import { AssistantsManager } from "../assistants-manager";
+import { formatPhoneDisplay } from "@/lib/phone";
+import { UserCog } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({ title: "CRM — Ayarlar", path: "/crm/ayarlar", noIndex: true });
 
 export default async function CrmSettingsPage() {
-  const { center } = await requireCenter("/crm/ayarlar");
+  const { center, isOwner } = await requireCenter("/crm/ayarlar");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const t = getCrmDict(await getLocale());
+
+  // Settings (incl. assistants) are owner-only; assistants see a note.
+  if (!isOwner) {
+    return (
+      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+        <h1 className="mb-6 font-display text-2xl font-bold text-ink-900">{t.settings.title}</h1>
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+          {t.assistants.ownerOnly}
+        </div>
+      </DashboardShell>
+    );
+  }
+
+  const assistants = await prisma.centerAssistant.findMany({
+    where: { centerId: center.id },
+    orderBy: { createdAt: "asc" },
+    include: { user: { select: { phone: true } } },
+  });
   const week = parseHours(center.hours);
   const hoursSummary = formatHoursSummary(week);
   const openDays = DAY_KEYS.filter((k) => week?.[k]); // only working weekdays
@@ -43,6 +65,25 @@ export default async function CrmSettingsPage() {
             remindersEnabled={center.remindersEnabled}
             reminderHours={center.reminderHours}
           />
+        </Panel>
+
+        <Panel title={t.assistants.title}>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+              <UserCog className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <AssistantsManager
+                initial={assistants.map((a) => ({
+                  id: a.id,
+                  firstName: a.firstName,
+                  lastName: a.lastName,
+                  phone: formatPhoneDisplay(a.user.phone),
+                  active: a.active,
+                }))}
+              />
+            </div>
+          </div>
         </Panel>
 
         <Panel title={t.settings.holidaysTitle}>

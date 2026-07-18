@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireRole } from "@/lib/auth/rbac";
+import { getActingCenter } from "@/lib/auth/acting";
 import { notifyUser } from "@/lib/notifications";
 import { centerLimits, trashRetentionDays, effectiveExtraTb } from "@/lib/plans";
 import type { Plan } from "@/generated/prisma/client";
@@ -137,7 +138,10 @@ export async function requestUploadUrlAction(input: {
   contentType: string;
   size: number;
 }): Promise<FileResult<{ url: string; key: string }>> {
-  const user = await requireRole("CENTER");
+  // Owner or an active assistant (assistants upload scans day-to-day).
+  const acting = await getActingCenter();
+  if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
+  const user = { id: acting.userId };
   if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
 
   if (!ALLOWED_TYPES.has(input.contentType)) {
@@ -147,11 +151,7 @@ export async function requestUploadUrlAction(input: {
     return { ok: false, error: "Fayl ölçüsü 2 GB-dan çox olmamalıdır." };
   }
 
-  const center = await prisma.centerProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true, plan: true },
-  });
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const center = { id: acting.center.id, plan: acting.center.plan };
 
   const req = await prisma.appointmentRequest.findUnique({
     where: { id: input.requestId },
@@ -184,7 +184,10 @@ export async function startMultipartUploadAction(input: {
   contentType: string;
   size: number;
 }): Promise<FileResult<{ key: string; uploadId: string; partSize: number; urls: string[] }>> {
-  const user = await requireRole("CENTER");
+  // Owner or an active assistant (assistants upload scans day-to-day).
+  const acting = await getActingCenter();
+  if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
+  const user = { id: acting.userId };
   if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
   if (!ALLOWED_TYPES.has(input.contentType)) {
     return { ok: false, error: "Bu fayl tipi qəbul edilmir (JPG, PNG, PDF, ZIP, DICOM)." };
@@ -193,11 +196,7 @@ export async function startMultipartUploadAction(input: {
     return { ok: false, error: "Fayl ölçüsü 2 GB-dan çox olmamalıdır." };
   }
 
-  const center = await prisma.centerProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true, plan: true },
-  });
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const center = { id: acting.center.id, plan: acting.center.plan };
   const req = await prisma.appointmentRequest.findUnique({
     where: { id: input.requestId },
     select: { id: true, centerId: true },
@@ -228,12 +227,11 @@ export async function completeMultipartUploadAction(input: {
   size: number;
   contentType: string;
 }): Promise<FileResult<{ fileId: string }>> {
-  const user = await requireRole("CENTER");
-  const center = await prisma.centerProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true },
-  });
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  // Owner or an active assistant (assistants upload scans day-to-day).
+  const acting = await getActingCenter();
+  if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
+  const user = { id: acting.userId };
+  const center = { id: acting.center.id, plan: acting.center.plan };
   const req = await prisma.appointmentRequest.findUnique({
     where: { id: input.requestId },
     select: { id: true, centerId: true },
@@ -297,12 +295,11 @@ export async function confirmUploadAction(input: {
   size: number;
   contentType: string;
 }): Promise<FileResult<{ fileId: string }>> {
-  const user = await requireRole("CENTER");
-  const center = await prisma.centerProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true },
-  });
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  // Owner or an active assistant (assistants upload scans day-to-day).
+  const acting = await getActingCenter();
+  if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
+  const user = { id: acting.userId };
+  const center = { id: acting.center.id, plan: acting.center.plan };
 
   const req = await prisma.appointmentRequest.findUnique({
     where: { id: input.requestId },
@@ -377,6 +374,13 @@ export async function getDownloadUrlAction(
     allowed = true;
   } else if (me.role === "CENTER" && me.centerProfile) {
     allowed = r.centerId === me.centerProfile.id;
+  } else if (me.role === "ASSISTANT") {
+    // An active assistant may open the files of their own center's requests.
+    const link = await prisma.centerAssistant.findUnique({
+      where: { userId: me.id },
+      select: { centerId: true, active: true },
+    });
+    allowed = !!link?.active && r.centerId === link.centerId;
   } else if (me.role === "PATIENT" && me.patientProfile) {
     allowed = r.patientId === me.patientProfile.id;
   } else if (me.role === "DOCTOR" && me.doctorProfile) {
@@ -421,12 +425,11 @@ export async function getDownloadUrlAction(
 export async function deleteFileAction(
   fileId: string,
 ): Promise<FileResult<{ trashed: boolean; retentionDays: number }>> {
-  const user = await requireRole("CENTER");
-  const center = await prisma.centerProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true, plan: true },
-  });
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  // Owner or an active assistant (assistants upload scans day-to-day).
+  const acting = await getActingCenter();
+  if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
+  const user = { id: acting.userId };
+  const center = { id: acting.center.id, plan: acting.center.plan };
 
   const file = await prisma.rentgenFile.findUnique({
     where: { id: fileId },

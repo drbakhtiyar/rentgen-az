@@ -3,9 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { getActingCenter } from "@/lib/auth/acting";
 import { normalizePhone } from "@/lib/phone";
 import { sendCenterSms, creditCenterSms, SMS_PACKAGES, ADMIN_SMS_RESERVE } from "@/lib/center-sms";
-import { alertAdminSms, getSmsBalance } from "@/lib/sms";
+import { alertAdminSms, getSmsBalance, sendOtpSms } from "@/lib/sms";
+import { createOtp, verifyOtp } from "@/lib/otp";
+import { env } from "@/lib/env";
 import { debitWallet } from "@/lib/wallet";
 import { isSlotAvailable, getCenterPatients } from "@/lib/crm";
 
@@ -13,16 +16,16 @@ export type CrmResult = { ok: true } | { ok: false; error: string };
 
 type SlotCenter = { id: string; hours: unknown; slotMinutes: number; slotCapacity: number };
 
-// CRM is a Platinum-only feature. Returns the center (with slot config) only
-// when it qualifies.
-async function currentCenter(): Promise<SlotCenter | null> {
-  const user = await requireRole("CENTER");
-  const center = await prisma.centerProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true, plan: true, hours: true, slotMinutes: true, slotCapacity: true },
-  });
-  if (!center || center.plan !== "PLATINUM") return null;
-  return { id: center.id, hours: center.hours, slotMinutes: center.slotMinutes, slotCapacity: center.slotCapacity };
+const OWNER_ONLY = "Bu əməliyyatı yalnız mərkəz sahibi edə bilər.";
+
+// CRM is a Platinum-only feature. The acting party is the owner or an active
+// assistant; `requireOwner` gates settings/money operations to the owner.
+async function currentCenter(requireOwner = false): Promise<(SlotCenter & { isOwner: boolean }) | null> {
+  const acting = await getActingCenter();
+  if (!acting || acting.center.plan !== "PLATINUM") return null;
+  if (requireOwner && !acting.isOwner) return null;
+  const c = acting.center;
+  return { id: c.id, hours: c.hours, slotMinutes: c.slotMinutes, slotCapacity: c.slotCapacity, isOwner: acting.isOwner };
 }
 
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
@@ -267,8 +270,8 @@ const DAY_SET = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 
 /** Declare a non-working day (holiday / day off). The whole day gets blocked. */
 export async function addHolidayAction(input: { date: string; reason?: string | null }): Promise<CrmResult> {
-  const center = await currentCenter();
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
   if (!YMD.test(input.date)) return { ok: false, error: "Tarixi düzgün seçin." };
   try {
     await prisma.centerHoliday.create({
@@ -284,8 +287,8 @@ export async function addHolidayAction(input: { date: string; reason?: string | 
 
 /** Remove a non-working day. */
 export async function deleteHolidayAction(id: string): Promise<CrmResult> {
-  const center = await currentCenter();
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
   const h = await prisma.centerHoliday.findUnique({ where: { id }, select: { centerId: true } });
   if (!h || h.centerId !== center.id) return { ok: false, error: "Tapılmadı." };
   await prisma.centerHoliday.delete({ where: { id } });
@@ -385,8 +388,8 @@ export async function sendCampaignAction(input: {
   audience: CampaignAudience;
   message: string;
 }): Promise<CampaignResult> {
-  const center = await currentCenter();
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
 
   const message = input.message?.trim();
   if (!message) return { ok: false, error: "Mesaj mətni boşdur." };
@@ -474,8 +477,8 @@ export async function updateSlotSettingsAction(input: {
   remindersEnabled?: boolean;
   reminderHours?: number;
 }): Promise<CrmResult> {
-  const center = await currentCenter();
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
 
   const slotMinutes = Math.min(240, Math.max(5, Math.round(input.slotMinutes || 30)));
   const slotCapacity = Math.min(50, Math.max(1, Math.round(input.slotCapacity || 1)));
@@ -513,5 +516,102 @@ export async function updateSlotSettingsAction(input: {
 
   revalidatePath("/crm/ayarlar");
   revalidatePath("/crm/teqvim");
+  return { ok: true };
+}
+
+
+// ------------------------- Assistants (owner-only) -------------------------
+
+export type AssistantResult = { ok: boolean; error?: string; devCode?: string };
+
+/**
+ * Step 1 of adding an assistant: validate the phone and send an OTP to it.
+ * The assistant is typically next to the owner and reads the code out loud —
+ * confirming they really own that number.
+ */
+export async function startAddAssistantAction(input: {
+  firstName: string;
+  lastName: string;
+  phone: string;
+}): Promise<AssistantResult> {
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
+  if (input.firstName.trim().length < 2 || input.lastName.trim().length < 2) {
+    return { ok: false, error: "Asistentin adı və soyadı tələb olunur." };
+  }
+  const phone = normalizePhone(input.phone);
+  if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
+
+  const existing = await prisma.user.findUnique({
+    where: { phone },
+    select: {
+      role: true,
+      centerProfile: { select: { id: true } },
+      assistantOf: { select: { centerId: true } },
+    },
+  });
+  if (existing?.centerProfile || existing?.role === "ADMIN") {
+    return { ok: false, error: "Bu nömrə mərkəz/admin hesabına bağlıdır — asistent ola bilməz." };
+  }
+  if (existing?.assistantOf && existing.assistantOf.centerId !== center.id) {
+    return { ok: false, error: "Bu nömrə artıq başqa mərkəzin asistentidir." };
+  }
+
+  const r = await createOtp(phone);
+  if (!r.ok) return { ok: false, error: r.error };
+  const sms = await sendOtpSms(phone, r.code);
+  if (!sms.ok) return { ok: false, error: "SMS göndərilə bilmədi. Yenidən cəhd edin." };
+  return { ok: true, devCode: env.smsProvider === "dev" ? r.code : undefined };
+}
+
+/** Step 2: verify the OTP and create/activate the assistant. */
+export async function confirmAddAssistantAction(input: {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  code: string;
+}): Promise<AssistantResult> {
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
+  const phone = normalizePhone(input.phone);
+  if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
+  const v = await verifyOtp(phone, input.code.trim());
+  if (!v.ok) return { ok: false, error: v.error };
+
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName.trim();
+  const user =
+    (await prisma.user.findUnique({ where: { phone }, select: { id: true } })) ??
+    (await prisma.user.create({ data: { phone, role: "ASSISTANT" }, select: { id: true } }));
+
+  await prisma.centerAssistant.upsert({
+    where: { userId: user.id },
+    create: { userId: user.id, centerId: center.id, firstName, lastName },
+    update: { firstName, lastName, active: true },
+  });
+
+  revalidatePath("/crm/ayarlar");
+  return { ok: true };
+}
+
+/** Activate / deactivate an assistant (deactivated ones can't log in). */
+export async function setAssistantActiveAction(id: string, active: boolean): Promise<CrmResult> {
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
+  const link = await prisma.centerAssistant.findUnique({ where: { id }, select: { centerId: true } });
+  if (!link || link.centerId !== center.id) return { ok: false, error: "Asistent tapılmadı." };
+  await prisma.centerAssistant.update({ where: { id }, data: { active } });
+  revalidatePath("/crm/ayarlar");
+  return { ok: true };
+}
+
+/** Remove an assistant entirely (their login stops working immediately). */
+export async function removeAssistantAction(id: string): Promise<CrmResult> {
+  const center = await currentCenter(true);
+  if (!center) return { ok: false, error: OWNER_ONLY };
+  const link = await prisma.centerAssistant.findUnique({ where: { id }, select: { centerId: true } });
+  if (!link || link.centerId !== center.id) return { ok: false, error: "Asistent tapılmadı." };
+  await prisma.centerAssistant.delete({ where: { id } });
+  revalidatePath("/crm/ayarlar");
   return { ok: true };
 }

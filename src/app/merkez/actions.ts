@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/rbac";
+import { getActingCenter } from "@/lib/auth/acting";
 import { alertAdminSms } from "@/lib/sms";
 import { centerProfileSchema } from "@/lib/validation";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
@@ -236,12 +237,12 @@ export async function updateRequestStatusAction(
   requestId: string,
   status: RequestStatus,
 ): Promise<CenterActionResult> {
-  const user = await requireRole("CENTER");
+  // Owner or an active assistant (assistants work the CRM day-to-day).
+  const acting = await getActingCenter();
   try {
-    const center = await prisma.centerProfile.findUnique({
-      where: { userId: user.id },
-      select: { id: true, name: true, slug: true, plan: true },
-    });
+    const center = acting
+      ? { id: acting.center.id, name: acting.center.name, slug: acting.center.slug, plan: acting.center.plan }
+      : null;
     if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
 
     const req = await prisma.appointmentRequest.findUnique({

@@ -168,6 +168,14 @@ export type CrmDict = {
     orderPending: string; orderPaid: string; orderCancelled: string;
     gift: string; purchase: string; noOps: string; noSms: string;
   };
+  assistants: {
+    title: string; desc: string; empty: string;
+    addBtn: string; first: string; last: string; phone: string;
+    sendCode: string; codeLabel: string; confirmBtn: string; back: string;
+    otpSentPre: string; otpSentPost: string;
+    activeOn: string; activeOff: string; removeConfirm: string;
+    ownerOnly: string; loginHint: string;
+  };
 };
 
 const az: CrmDict = {
@@ -341,6 +349,17 @@ const az: CrmDict = {
     orderPending: "Gözləyir", orderPaid: "Ödənilib", orderCancelled: "Ləğv edilib",
     gift: "hədiyyə", purchase: "alış", noOps: "Hələ əməliyyat yoxdur.", noSms: "Hələ SMS göndərilməyib.",
   },
+  assistants: {
+    title: "Asistentlər",
+    desc: "Asistentlər mərkəzin adından CRM-də gündəlik iş görür (randevu, pasiyent, fayl). Saytın heç bir yerində görünmürlər; Ayarlar və ödənişlər onlara bağlıdır.",
+    empty: "Hələ asistent əlavə edilməyib.",
+    addBtn: "Asistent əlavə et", first: "Ad", last: "Soyad", phone: "Telefon",
+    sendCode: "Kod göndər", codeLabel: "Təsdiq kodu", confirmBtn: "Təsdiqlə", back: "Geri",
+    otpSentPre: "Təsdiq kodu ", otpSentPost: " nömrəsinə göndərildi — asistent kodu sizə desin.",
+    activeOn: "Aktiv", activeOff: "Deaktiv", removeConfirm: "Asistent silinsin? Girişi dərhal dayanacaq.",
+    ownerOnly: "Bu bölmə yalnız mərkəz sahibinə açıqdır.",
+    loginHint: "Asistent crm.rentgen.az ünvanına daxil olub yalnız öz nömrəsi ilə (OTP) giriş edir.",
+  },
 };
 
 const ru: CrmDict = {
@@ -513,6 +532,17 @@ const ru: CrmDict = {
     sentOk: "Отправлено", sentFail: "Не доставлено",
     orderPending: "Ожидает", orderPaid: "Оплачено", orderCancelled: "Отменено",
     gift: "подарок", purchase: "покупка", noOps: "Операций пока нет.", noSms: "SMS ещё не отправлялись.",
+  },
+  assistants: {
+    title: "Ассистенты",
+    desc: "Ассистенты работают в CRM от имени центра (записи, пациенты, файлы). Они нигде не видны на сайте; настройки и платежи им недоступны.",
+    empty: "Ассистентов пока нет.",
+    addBtn: "Добавить ассистента", first: "Имя", last: "Фамилия", phone: "Телефон",
+    sendCode: "Отправить код", codeLabel: "Код подтверждения", confirmBtn: "Подтвердить", back: "Назад",
+    otpSentPre: "Код отправлен на ", otpSentPost: " — пусть ассистент продиктует его вам.",
+    activeOn: "Активен", activeOff: "Отключён", removeConfirm: "Удалить ассистента? Доступ прекратится сразу.",
+    ownerOnly: "Раздел доступен только владельцу центра.",
+    loginHint: "Ассистент заходит на crm.rentgen.az и входит только по своему номеру (OTP).",
   },
 };
 

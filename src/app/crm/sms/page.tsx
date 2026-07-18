@@ -32,7 +32,7 @@ const ORDER_CLS: Record<string, string> = {
 };
 
 export default async function CrmSmsPage() {
-  const { center } = await requireCenter("/crm/sms");
+  const { center, isOwner } = await requireCenter("/crm/sms");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const t = getCrmDict(await getLocale());
   const KIND_LABELS: Record<string, string> = {
@@ -90,19 +90,27 @@ export default async function CrmSmsPage() {
         <StatCard label={t.sms.statTotal} value={stats.sentTotal} icon={<TrendingUp />} tone="green" />
       </div>
 
-      <div className="mt-6">
-        <Panel title={t.sms.campaignTitle}>
-          <CampaignPanel counts={audienceCounts} balance={stats.balance} />
-        </Panel>
-      </div>
+      {isOwner && (
+        <div className="mt-6">
+          <Panel title={t.sms.campaignTitle}>
+            <CampaignPanel counts={audienceCounts} balance={stats.balance} />
+          </Panel>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Panel title={t.sms.buyTitle}>
-          <SmsOrderPanel packages={SMS_PACKAGES} walletBalanceMinor={walletBalance} maxBuyable={maxBuyable} />
-          <p className="mt-3 text-xs text-slate-400">
-            {t.sms.buyNote}
-          </p>
-        </Panel>
+        {isOwner ? (
+          <Panel title={t.sms.buyTitle}>
+            <SmsOrderPanel packages={SMS_PACKAGES} walletBalanceMinor={walletBalance} maxBuyable={maxBuyable} />
+            <p className="mt-3 text-xs text-slate-400">
+              {t.sms.buyNote}
+            </p>
+          </Panel>
+        ) : (
+          <Panel title={t.sms.buyTitle}>
+            <p className="text-sm text-slate-500">{t.assistants.ownerOnly}</p>
+          </Panel>
+        )}
 
         <Panel title={t.sms.historyTitle}>
           {stats.credits.length === 0 && stats.orders.length === 0 ? (

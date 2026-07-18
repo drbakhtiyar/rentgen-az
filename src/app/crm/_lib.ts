@@ -1,12 +1,14 @@
 import "server-only";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/db";
-import { requireRole } from "@/lib/auth/rbac";
+import { getActingCenter } from "@/lib/auth/acting";
 
-/** Require a logged-in CENTER and return its profile. Redirects otherwise. */
+/**
+ * Require a session acting for a center (the owner OR an active assistant)
+ * and return its profile. `isOwner` gates settings/billing surfaces.
+ * Redirects to the CRM login otherwise.
+ */
 export async function requireCenter(returnTo: string) {
-  const user = await requireRole("CENTER", returnTo);
-  const center = await prisma.centerProfile.findUnique({ where: { userId: user.id } });
-  if (!center) redirect("/merkez/qeydiyyat");
-  return { user, center };
+  const acting = await getActingCenter();
+  if (!acting) redirect(`/crm/giris?next=${encodeURIComponent(returnTo)}`);
+  return { userId: acting.userId, center: acting.center, isOwner: acting.isOwner };
 }
