@@ -299,10 +299,9 @@ export async function updateRequestStatusAction(
     }
     // CANCELLED: notify the patient by SMS.
     if (status === "CANCELLED") {
-      await smsPatientStatusChange(req.phone, {
-        status,
-        centerName: center.name,
-      }).catch(() => {});
+      await smsPatientStatusChange(req.phone, { status, centerName: center.name }, center.id).catch(
+        () => {},
+      );
     }
     // Notify the referring doctor when their referred patient advances.
     if (req.doctorId && req.doctor?.userId && status !== "NEW") {
@@ -365,7 +364,7 @@ export async function setRequestResultAction(
 
     // Notify only when a link is first added.
     if (firstTime) {
-      await smsPatientResultReady(req.phone, center.name).catch(() => {});
+      await smsPatientResultReady(req.phone, center.name, center.id).catch(() => {});
       // Notify the referring doctor only if they are a partner of this center.
       if (req.doctorId) {
         const partner = await prisma.centerDoctor.findUnique({
@@ -378,7 +377,7 @@ export async function setRequestResultAction(
             select: { user: { select: { phone: true } } },
           });
           if (doc?.user.phone) {
-            await smsDoctorResultReady(doc.user.phone, req.name).catch(() => {});
+            await smsDoctorResultReady(doc.user.phone, req.name, center.id).catch(() => {});
           }
         }
       }

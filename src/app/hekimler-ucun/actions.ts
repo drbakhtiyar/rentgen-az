@@ -205,21 +205,29 @@ export async function submitDoctorReferralAction(input: {
       : null;
     // Booking summary SMS (date/time included if the doctor picked one).
     if (center.phone) {
-      await smsCenterBooking(center.phone, {
+      await smsCenterBooking(
+        center.phone,
+        {
+          patientName: patientFullName,
+          patientPhone: phone,
+          doctorName: docName,
+          dateTime: preferredDate,
+          serviceName: svc?.name ?? null,
+        },
+        center.id,
+      ).catch(() => {});
+    }
+    await smsPatientBooking(
+      phone,
+      {
         patientName: patientFullName,
-        patientPhone: phone,
         doctorName: docName,
         dateTime: preferredDate,
         serviceName: svc?.name ?? null,
-      }).catch(() => {});
-    }
-    await smsPatientBooking(phone, {
-      patientName: patientFullName,
-      doctorName: docName,
-      dateTime: preferredDate,
-      serviceName: svc?.name ?? null,
-      centerPhone: center.phone,
-    }).catch(() => {});
+        centerPhone: center.phone,
+      },
+      center.id,
+    ).catch(() => {});
     // In-app notification for the center.
     await notifyUser(
       center.userId,

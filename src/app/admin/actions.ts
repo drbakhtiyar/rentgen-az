@@ -343,13 +343,14 @@ export async function setRequestStatusAdminAction(
     const req = await prisma.appointmentRequest.update({
       where: { id: requestId },
       data: { status },
-      select: { phone: true, center: { select: { name: true } } },
+      select: { phone: true, centerId: true, center: { select: { name: true } } },
     });
     await logAction(admin.id, `request:${status}`, "AppointmentRequest", requestId);
-    await smsPatientStatusChange(req.phone, {
-      status,
-      centerName: req.center?.name ?? null,
-    }).catch(() => {});
+    await smsPatientStatusChange(
+      req.phone,
+      { status, centerName: req.center?.name ?? null },
+      req.centerId,
+    ).catch(() => {});
     revalidatePath("/admin/muracietler");
     return { ok: true };
   } catch {

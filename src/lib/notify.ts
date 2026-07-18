@@ -2,9 +2,29 @@ import "server-only";
 import { sendNotificationEmail } from "./email";
 import { sendSms } from "./sms";
 import { toGsmAscii } from "./sms";
+import { sendCenterSms } from "./center-sms";
+import type { SmsKind } from "./sms";
 import { formatPhoneDisplay } from "./phone";
 import { SITE_URL } from "./env";
 import type { RequestStatus } from "@/generated/prisma/enums";
+
+/**
+ * Center-serving operational SMSes are charged to the center's SMS balance
+ * (centerId given); without a center (e.g. a general booking) the platform
+ * pays. Out of credits → the SMS is skipped (in-app notifications remain).
+ */
+async function sendChargedSms(
+  centerId: string | null | undefined,
+  to: string,
+  msg: string,
+  kind: SmsKind,
+): Promise<void> {
+  if (centerId) {
+    await sendCenterSms(centerId, to, msg, kind).catch(() => {});
+  } else {
+    await sendSms(to, msg, kind).catch(() => {});
+  }
+}
 
 /** SMS the center when a doctor requests a collaboration/partnership. */
 export async function smsCenterPartnerRequest(
@@ -20,20 +40,22 @@ export async function smsCenterPartnerRequest(
 export async function smsPatientResultReady(
   patientPhone: string,
   centerName: string,
+  centerId?: string | null,
 ): Promise<void> {
   const name = toGsmAscii(centerName).slice(0, 40);
   const msg = `${name} merkezinde rentgen neticeniz hazirdir. Kabinet: rentgen.az/kabinet`;
-  await sendSms(patientPhone, msg, "other").catch(() => {});
+  await sendChargedSms(centerId, patientPhone, msg, "other");
 }
 
 /** SMS the partner doctor when a referred patient's result is ready. */
 export async function smsDoctorResultReady(
   doctorPhone: string,
   patientName: string,
+  centerId?: string | null,
 ): Promise<void> {
   const name = toGsmAscii(patientName).slice(0, 30);
   const msg = `pasiyentiniz ${name} rentgen cekdirdi, netice hazirdir. Panel: rentgen.az/hekim`;
-  await sendSms(doctorPhone, msg, "other").catch(() => {});
+  await sendChargedSms(centerId, doctorPhone, msg, "other");
 }
 
 /** DD.MM.YYYY, HH:MM in Baku time. */
@@ -68,6 +90,7 @@ export async function smsPatientBooking(
     serviceName?: string | null;
     centerPhone?: string | null;
   },
+  centerId?: string | null,
 ): Promise<void> {
   const msg = bookingBody("Sizin randevunuz qeyde alindi", [
     opts.patientName,
@@ -76,7 +99,7 @@ export async function smsPatientBooking(
     opts.serviceName,
     opts.centerPhone ? formatPhoneDisplay(opts.centerPhone) : null,
   ]);
-  await sendSms(patientPhone, msg, "other").catch(() => {});
+  await sendChargedSms(centerId, patientPhone, msg, "other");
 }
 
 /** SMS the center about a new booking (with the patient's phone). */
@@ -89,6 +112,7 @@ export async function smsCenterBooking(
     dateTime?: Date | null;
     serviceName?: string | null;
   },
+  centerId?: string | null,
 ): Promise<void> {
   const msg = bookingBody("Yeni qeyd var", [
     opts.patientName,
@@ -97,7 +121,7 @@ export async function smsCenterBooking(
     opts.dateTime ? fmtBookingDateTime(opts.dateTime) : null,
     opts.serviceName,
   ]);
-  await sendSms(centerPhone, msg, "center_request").catch(() => {});
+  await sendChargedSms(centerId, centerPhone, msg, "center_request");
 }
 
 const STATUS_LABEL_AZ: Record<RequestStatus, string> = {
@@ -111,10 +135,11 @@ const STATUS_LABEL_AZ: Record<RequestStatus, string> = {
 export async function smsPatientStatusChange(
   patientPhone: string,
   opts: { status: RequestStatus; centerName?: string | null },
+  centerId?: string | null,
 ): Promise<void> {
   const where = opts.centerName ? ` — ${opts.centerName}` : "";
   const msg = `müraciətinizin statusu yeniləndi: «${STATUS_LABEL_AZ[opts.status]}»${where}.`;
-  await sendSms(patientPhone, msg, "patient_status").catch(() => {});
+  await sendChargedSms(centerId, patientPhone, msg, "patient_status");
 }
 
 /** Fired when a patient submits an appointment request. */

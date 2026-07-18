@@ -232,7 +232,7 @@ export async function submitAppointmentAction(input: {
       ? await prisma.centerProfile
           .findUnique({
             where: { id: data.centerId },
-            select: { name: true, slug: true, phone: true, userId: true },
+            select: { id: true, name: true, slug: true, phone: true, userId: true },
           })
           .catch(() => null)
       : null;
@@ -263,22 +263,30 @@ export async function submitAppointmentAction(input: {
 
     // Booking summary SMS to the center (with the patient's phone).
     if (center?.phone) {
-      await smsCenterBooking(center.phone, {
+      await smsCenterBooking(
+        center.phone,
+        {
+          patientName: data.name,
+          patientPhone: phone,
+          doctorName: docName,
+          dateTime: preferredDate,
+          serviceName,
+        },
+        center.id,
+      ).catch(() => {});
+    }
+    // Booking summary SMS to the patient (with the center's phone).
+    await smsPatientBooking(
+      phone,
+      {
         patientName: data.name,
-        patientPhone: phone,
         doctorName: docName,
         dateTime: preferredDate,
         serviceName,
-      }).catch(() => {});
-    }
-    // Booking summary SMS to the patient (with the center's phone).
-    await smsPatientBooking(phone, {
-      patientName: data.name,
-      doctorName: docName,
-      dateTime: preferredDate,
-      serviceName,
-      centerPhone: center?.phone,
-    }).catch(() => {});
+        centerPhone: center?.phone,
+      },
+      center?.id,
+    ).catch(() => {});
     // In-app notification for the center.
     await notifyUser(
       center?.userId,
