@@ -38,6 +38,7 @@ export type CrmDict = {
     title: string;
     day: string;
     week: string;
+    threeDay: string;
     month: string;
     todayBtn: string;
     thisMonth: string;
@@ -210,6 +211,7 @@ const az: CrmDict = {
     title: "Təqvim",
     day: "Gün",
     week: "Həftə",
+      threeDay: "3 gün",
     month: "Ay",
     todayBtn: "Bu gün",
     thisMonth: "Bu ay",
@@ -394,6 +396,7 @@ const ru: CrmDict = {
     title: "Календарь",
     day: "День",
     week: "Неделя",
+      threeDay: "3 дня",
     month: "Месяц",
     todayBtn: "Сегодня",
     thisMonth: "Этот месяц",

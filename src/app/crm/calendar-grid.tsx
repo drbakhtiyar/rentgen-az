@@ -120,7 +120,7 @@ export function CalendarClient({
     <div>
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="overflow-x-auto">
-          <div style={{ minWidth: days.length > 1 ? 900 : 460 }}>
+          <div style={{ minWidth: days.length > 3 ? 900 : days.length === 1 ? 460 : undefined }}>
             {/* header */}
             <div className="flex border-b border-slate-200">
               <div className="w-14 shrink-0" />

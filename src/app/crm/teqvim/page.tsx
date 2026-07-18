@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
@@ -105,7 +106,15 @@ export default async function CrmCalendarPage({
   const sp = await searchParams;
   const today = bakuTodayYmd();
   const ymd = sp.d && /^\d{4}-\d{2}-\d{2}$/.test(sp.d) ? sp.d : today;
-  const view = sp.view === "day" ? "day" : sp.view === "month" ? "month" : "week"; // default: week
+  // Phones default to the 3-day view — a 7-column week forces horizontal scroll there.
+  const ua = (await headers()).get("user-agent") ?? "";
+  const isMobileUA = /Mobi|Android|iPhone|iPad/i.test(ua);
+  const view =
+    sp.view === "day" ? "day"
+    : sp.view === "month" ? "month"
+    : sp.view === "3d" ? "3d"
+    : sp.view === "week" ? "week"
+    : isMobileUA ? "3d" : "week";
 
   const t = getCrmDict(await getLocale());
   const services = await getActiveServices();
@@ -137,6 +146,7 @@ export default async function CrmCalendarPage({
             <h1 className="font-display text-2xl font-bold text-ink-900">{t.calendar.title}</h1>
             <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5">
               {toggle("day", t.calendar.day)}
+              <span className="lg:hidden">{toggle("3d", t.calendar.threeDay)}</span>
               {toggle("week", t.calendar.week)}
               {toggle("month", t.calendar.month)}
             </div>
@@ -204,7 +214,35 @@ export default async function CrmCalendarPage({
   };
 
   let gridDays: GridDay[];
-  if (view === "week") {
+  if (view === "3d") {
+    const days3 = [ymd, shiftYmd(ymd, 1), shiftYmd(ymd, 2)];
+    const holidays = await getCenterHolidaysInRange(center.id, days3[0], days3[2]);
+    const perDay = await Promise.all(
+      days3.map(async (d) => ({
+        ymd: d,
+        appts: await getCenterDayAppointments(center.id, d),
+        blocks: await getCenterTimeBlocks(center.id, d),
+      })),
+    );
+    gridDays = perDay
+      .filter((d) => isOpenDay(d.ymd)) // hide closed weekdays
+      .map((d) => {
+        const isHoliday = d.ymd in holidays;
+        const blocks = toGridBlocks(d.blocks, d.ymd);
+        const hb = isHoliday ? holidayBlockFor(d.ymd, holidays[d.ymd]) : null;
+        if (hb) blocks.push(hb);
+        return {
+          ymd: d.ymd,
+          weekday: DAY_LABELS_AZ[ymdToDayKey(d.ymd)],
+          dayNum: d.ymd.slice(8),
+          isToday: d.ymd === today,
+          appts: isHoliday
+            ? []
+            : d.appts.map((a) => toGridAppt(a, d.ymd, svcName)).filter((x): x is GridAppt => x != null),
+          blocks,
+        };
+      });
+  } else if (view === "week") {
     const monday = mondayOf(ymd);
     const sunday = shiftYmd(monday, 6);
     const [week, weekBlocks, holidays] = await Promise.all([
@@ -259,12 +297,18 @@ export default async function CrmCalendarPage({
   const { startHour, endHour } = hourRange(center.hours, allAppts, allBlocks);
   const nowMin = nowInBaku().minutes;
 
-  const step = view === "week" ? 7 : 1;
+  const step = view === "week" ? 7 : view === "3d" ? 3 : 1;
   const navBase = view === "week" ? mondayOf(ymd) : ymd;
   const dateLabel =
-    view === "week" ? `${mondayOf(ymd)} — ${shiftYmd(mondayOf(ymd), 6)}` : `${ymd} · ${DAY_LABELS_AZ[ymdToDayKey(ymd)]}`;
-  const inWeek = today >= mondayOf(ymd) && today <= shiftYmd(mondayOf(ymd), 6);
-  const actionsYmd = view === "week" ? (inWeek ? today : mondayOf(ymd)) : ymd;
+    view === "week"
+      ? `${mondayOf(ymd)} — ${shiftYmd(mondayOf(ymd), 6)}`
+      : view === "3d"
+        ? `${ymd} — ${shiftYmd(ymd, 2)}`
+        : `${ymd} · ${DAY_LABELS_AZ[ymdToDayKey(ymd)]}`;
+  const rangeEnd = view === "week" ? shiftYmd(mondayOf(ymd), 6) : view === "3d" ? shiftYmd(ymd, 2) : ymd;
+  const rangeStart = view === "week" ? mondayOf(ymd) : ymd;
+  const inRange = today >= rangeStart && today <= rangeEnd;
+  const actionsYmd = view === "day" ? ymd : inRange ? today : rangeStart;
 
   return (
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
@@ -273,6 +317,7 @@ export default async function CrmCalendarPage({
           <h1 className="font-display text-2xl font-bold text-ink-900">{t.calendar.title}</h1>
           <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5">
             {toggle("day", t.calendar.day)}
+            <span className="lg:hidden">{toggle("3d", t.calendar.threeDay)}</span>
             {toggle("week", t.calendar.week)}
             {toggle("month", t.calendar.month)}
           </div>
@@ -293,7 +338,7 @@ export default async function CrmCalendarPage({
         <span className="ml-2 font-display text-sm font-bold text-ink-900">{dateLabel}</span>
       </div>
 
-      {view === "day" && !isOpenDay(ymd) ? (
+      {(view === "day" && !isOpenDay(ymd)) || gridDays.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500">
           {t.calendar.closedDay}
         </div>
