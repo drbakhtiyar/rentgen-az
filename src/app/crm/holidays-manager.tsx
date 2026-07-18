@@ -4,6 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, X, CalendarOff } from "lucide-react";
 import { addHolidayAction, deleteHolidayAction } from "./actions";
+import { useLocale } from "@/components/locale-context";
+import { getCrmDict } from "@/lib/i18n-crm";
 
 type Holiday = { id: string; date: string; reason: string | null };
 
@@ -12,6 +14,7 @@ const field = "rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border
 /** Manage non-working days (holidays): list + add + delete. */
 export function HolidaysManager({ initial }: { initial: Holiday[] }) {
   const router = useRouter();
+  const t = getCrmDict(useLocale());
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -39,8 +42,7 @@ export function HolidaysManager({ initial }: { initial: Holiday[] }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-500">
-        Bayram və digər qeyri-iş günləri. Əlavə edilən gün təqvimdə tam bağlanır — pasiyentlər
-        həmin günə yazıla bilməz.
+        {t.holidays.desc}
       </p>
 
       {initial.length > 0 ? (
@@ -55,7 +57,7 @@ export function HolidaysManager({ initial }: { initial: Holiday[] }) {
                 onClick={() => remove(h.id)}
                 disabled={busy}
                 className="ml-auto rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                title="Sil"
+                title={t.common.del}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -63,24 +65,24 @@ export function HolidaysManager({ initial }: { initial: Holiday[] }) {
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-slate-400">Hələ qeyri-iş günü əlavə edilməyib.</p>
+        <p className="text-sm text-slate-400">{t.holidays.empty}</p>
       )}
 
       <form onSubmit={add} className="flex flex-wrap items-end gap-2">
         <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-500">Tarix</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-500">{t.holidays.dateLabel}</label>
           <input name="date" type="date" required className={field} />
         </div>
         <div className="flex-1">
-          <label className="mb-1 block text-xs font-semibold text-slate-500">Səbəb</label>
-          <input name="reason" className={`${field} w-full`} placeholder="Bayram, təmir və s. (istəyə bağlı)" />
+          <label className="mb-1 block text-xs font-semibold text-slate-500">{t.holidays.reasonLabel}</label>
+          <input name="reason" className={`${field} w-full`} placeholder={t.holidays.reasonPh} />
         </div>
         <button
           type="submit"
           disabled={busy}
           className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Əlavə et
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {t.holidays.add}
         </button>
       </form>
       {error && <p className="text-sm font-medium text-red-600">{error}</p>}

@@ -112,6 +112,62 @@ export type CrmDict = {
     goPlatinum: string;
     viewPackages: string;
   };
+  forms: {
+    nameLabel: string; namePh: string;
+    phoneLabel: string; phonePh: string;
+    serviceLabel: string; serviceNone: string;
+    dateLabel: string; timeLabel: string;
+    noteLabel: string; notePh: string;
+    confirmedNote: string;
+    newTitle: string; editTitle: string;
+    add: string; card: string;
+    delConfirm: string; delFilesFirst: string;
+  };
+  block: {
+    title: string; desc: string;
+    start: string; end: string;
+    reasonLabel: string; reasonPh: string;
+    submit: string; closed: string; fixed: string; delConfirm: string;
+  };
+  resched: {
+    title: string; question: string; hint: string;
+    yes: string; no: string; cancel: string;
+  };
+  slotForm: {
+    toggleTitle: string; toggleDesc: string;
+    stepLabel: string; stepHint: string;
+    capLabel: string; capHint: string;
+    lunchTitle: string; lunchDesc: string;
+    start: string; end: string; daysLabel: string;
+    days: [string, string, string, string, string, string, string];
+    remTitle: string; remDesc: string; hoursBefore: string; hoursWord: string;
+    saved: string;
+  };
+  holidays: {
+    desc: string; empty: string;
+    dateLabel: string; reasonLabel: string; reasonPh: string; add: string;
+  };
+  smsBuy: {
+    balanceLabel: string; topup: string;
+    stockPre: string; stockPost: string;
+    smsWord: string; buy: string; outOfStock: string; noMoney: string;
+    donePost: string; confirmPre: string; confirmPost: string;
+  };
+  campaign: {
+    audAll: string; audAllHint: string;
+    audLapsed: string; audLapsedHint: string;
+    audSys: string; audSysHint: string;
+    ph: string; counterNote: string; recip: string; balance: string;
+    lowPre: string; lowMid: string;
+    send: string; sent: string; failed: string; left: string; stopped: string;
+  };
+  labels: {
+    kindReminder: string; kindCampaign: string; kindOther: string;
+    kindCenterReq: string; kindPatientStatus: string;
+    sentOk: string; sentFail: string;
+    orderPending: string; orderPaid: string; orderCancelled: string;
+    gift: string; purchase: string; noOps: string; noSms: string;
+  };
 };
 
 const az: CrmDict = {
@@ -220,6 +276,71 @@ const az: CrmDict = {
     goPlatinum: "Platinum-a keç",
     viewPackages: "Paketlərə bax",
   },
+  forms: {
+    nameLabel: "Ad, soyad *", namePh: "Pasiyentin adı",
+    phoneLabel: "Telefon *", phonePh: "050 000 00 00",
+    serviceLabel: "Xidmət", serviceNone: "— Seçilməyib —",
+    dateLabel: "Tarix", timeLabel: "Saat",
+    noteLabel: "Qeyd", notePh: "İstəyə bağlı",
+    confirmedNote: "Təsdiqlənib (vaxt tam bağlanır)",
+    newTitle: "Yeni qəbul", editTitle: "Randevunu redaktə et",
+    add: "Əlavə et", card: "Kart",
+    delConfirm: "Bu randevunu silmək?", delFilesFirst: "Bu randevuda fayllar var. Əvvəlcə faylları silin.",
+  },
+  block: {
+    title: "Vaxt blokla", desc: "Seçilmiş vaxt aralığı bağlanır — pasiyentlər ora yazıla bilməz (fasilə, nahar, tətil).",
+    start: "Başlanğıc *", end: "Bitmə *",
+    reasonLabel: "Səbəb", reasonPh: "Nahar, tətil və s. (istəyə bağlı)",
+    submit: "Blokla", closed: "Bağlı", fixed: "sabit", delConfirm: "Bu bloku silmək?",
+  },
+  resched: {
+    title: "Vaxtı dəyiş", question: "Yeni vaxt pasientlə razılaşdırılıb?",
+    hint: "«Bəli» → randevu təsdiqlənmiş olur. «Xeyr» → təsdiqlənməmişə keçir.",
+    yes: "Bəli, razılaşdırılıb", no: "Xeyr", cancel: "Ləğv",
+  },
+  slotForm: {
+    toggleTitle: "Onlayn slot rezervasiyası",
+    toggleDesc: "Aktiv olanda pasiyentlər saytda mərkəzinizin real boş vaxtlarını görüb birbaşa yazılır. Söndürülsə, köhnə sərbəst vaxt rejimi işləyir.",
+    stepLabel: "Slot addımı (dəqiqə)", stepHint: "Cədvəldə vaxtların hansı addımla göstərildiyi (məs. 30 dəq).",
+    capLabel: "Eyni vaxtda tutum (kabinet/aparat sayı)", capHint: "Bir vaxtda neçə pasiyent qəbul edə bilərsiniz.",
+    lunchTitle: "Nahar fasiləsi",
+    lunchDesc: "Fiks nahar vaxtı. Doldurularsa seçilmiş günlərdə bu aralıq avtomatik bloklanır — hər gün ayrıca blok yaratmağa ehtiyac qalmır.",
+    start: "Başlanğıc", end: "Bitmə", daysLabel: "Günlər",
+    days: ["B.e", "Ç.a", "Ç", "C.a", "Cümə", "Şənbə", "Bazar"],
+    remTitle: "Randevu xatırlatması (SMS)",
+    remDesc: "Aktiv olanda pasiyentə randevudan əvvəl avtomatik SMS xatırlatma göndərilir.",
+    hoursBefore: "Neçə saat əvvəl", hoursWord: "saat əvvəl",
+    saved: "Saxlanıldı",
+  },
+  holidays: {
+    desc: "Bayram və digər qeyri-iş günləri. Əlavə edilən gün təqvimdə tam bağlanır — pasiyentlər həmin günə yazıla bilməz.",
+    empty: "Hələ qeyri-iş günü əlavə edilməyib.",
+    dateLabel: "Tarix", reasonLabel: "Səbəb", reasonPh: "Bayram, təmir və s. (istəyə bağlı)", add: "Əlavə et",
+  },
+  smsBuy: {
+    balanceLabel: "Balansınız:", topup: "Balans artır →",
+    stockPre: "Hazırda stokda maksimum ", stockPost: " SMS almaq mümkündür — stok tezliklə artırılacaq.",
+    smsWord: "SMS", buy: "Al", outOfStock: "Stokda yoxdur", noMoney: "Balans kifayət etmir",
+    donePost: " SMS balansınıza əlavə olundu.",
+    confirmPre: " SMS paketi alınsın? Balansdan ", confirmPost: " ₼ çıxılacaq.",
+  },
+  campaign: {
+    audAll: "Bütün pasiyentlər", audAllHint: "bazadakı hər kəs",
+    audLapsed: "Gəlməyənlər", audLapsedHint: "90+ gün aktivliyi olmayan",
+    audSys: "Sistemdə olanlar", audSysHint: "qeydiyyatlı pasiyentlər",
+    ph: "Kampaniya mətni — məs.: Bu həftə panoramik rentgen 20% endirimlə! Randevu üçün zəng edin.",
+    counterNote: "uzun mətn operator tərəfdə bir neçə SMS kimi hesablana bilər",
+    recip: "Alıcı:", balance: "Balans:",
+    lowPre: "Balans auditoriyadan azdır — göndəriş balans bitəndə dayanacaq (", lowMid: "/",
+    send: "Kampaniyanı göndər", sent: "Göndərildi:", failed: "alınmadı:", left: "limit səbəbiylə qaldı:", stopped: "balans bitdiyi üçün dayandı",
+  },
+  labels: {
+    kindReminder: "Xatırlatma / Çağırış", kindCampaign: "Kampaniya", kindOther: "Dəvət / Digər",
+    kindCenterReq: "Randevu bildirişi", kindPatientStatus: "Status bildirişi",
+    sentOk: "Göndərildi", sentFail: "Alınmadı",
+    orderPending: "Gözləyir", orderPaid: "Ödənilib", orderCancelled: "Ləğv edilib",
+    gift: "hədiyyə", purchase: "alış", noOps: "Hələ əməliyyat yoxdur.", noSms: "Hələ SMS göndərilməyib.",
+  },
 };
 
 const ru: CrmDict = {
@@ -327,6 +448,71 @@ const ru: CrmDict = {
     f3: "Онлайн-бронирование слотов",
     goPlatinum: "Перейти на Platinum",
     viewPackages: "Смотреть пакеты",
+  },
+  forms: {
+    nameLabel: "Имя, фамилия *", namePh: "Имя пациента",
+    phoneLabel: "Телефон *", phonePh: "050 000 00 00",
+    serviceLabel: "Услуга", serviceNone: "— Не выбрано —",
+    dateLabel: "Дата", timeLabel: "Время",
+    noteLabel: "Заметка", notePh: "По желанию",
+    confirmedNote: "Подтверждено (время закрепляется)",
+    newTitle: "Новая запись", editTitle: "Редактировать запись",
+    add: "Добавить", card: "Карта",
+    delConfirm: "Удалить эту запись?", delFilesFirst: "У записи есть файлы. Сначала удалите файлы.",
+  },
+  block: {
+    title: "Заблокировать время", desc: "Выбранный интервал закрывается — пациенты не смогут записаться (перерыв, обед, отпуск).",
+    start: "Начало *", end: "Конец *",
+    reasonLabel: "Причина", reasonPh: "Обед, отпуск и т.п. (по желанию)",
+    submit: "Заблокировать", closed: "Закрыто", fixed: "фикс.", delConfirm: "Удалить этот блок?",
+  },
+  resched: {
+    title: "Изменить время", question: "Новое время согласовано с пациентом?",
+    hint: "«Да» → запись подтверждена. «Нет» → переходит в неподтверждённые.",
+    yes: "Да, согласовано", no: "Нет", cancel: "Отмена",
+  },
+  slotForm: {
+    toggleTitle: "Онлайн-бронирование слотов",
+    toggleDesc: "Когда включено, пациенты видят реальное свободное время центра на сайте и записываются напрямую. Если выключено — работает прежний свободный режим.",
+    stepLabel: "Шаг слота (минуты)", stepHint: "С каким шагом показывается время в расписании (напр. 30 мин).",
+    capLabel: "Вместимость (кабинеты/аппараты)", capHint: "Сколько пациентов можно принять одновременно.",
+    lunchTitle: "Обеденный перерыв",
+    lunchDesc: "Фиксированное время обеда. Если задано, интервал автоматически блокируется в выбранные дни — не нужно создавать блок каждый день.",
+    start: "Начало", end: "Конец", daysLabel: "Дни",
+    days: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+    remTitle: "Напоминание о записи (SMS)",
+    remDesc: "Когда включено, пациенту автоматически отправляется SMS-напоминание перед записью.",
+    hoursBefore: "За сколько часов", hoursWord: "часов до",
+    saved: "Сохранено",
+  },
+  holidays: {
+    desc: "Праздники и другие нерабочие дни. Добавленный день полностью закрывается в календаре — пациенты не смогут записаться.",
+    empty: "Нерабочих дней пока нет.",
+    dateLabel: "Дата", reasonLabel: "Причина", reasonPh: "Праздник, ремонт и т.п. (по желанию)", add: "Добавить",
+  },
+  smsBuy: {
+    balanceLabel: "Ваш баланс:", topup: "Пополнить →",
+    stockPre: "Сейчас в наличии максимум ", stockPost: " SMS — запас скоро пополнится.",
+    smsWord: "SMS", buy: "Купить", outOfStock: "Нет в наличии", noMoney: "Недостаточно баланса",
+    donePost: " SMS зачислены на ваш баланс.",
+    confirmPre: " SMS — купить пакет? С баланса спишется ", confirmPost: " ₼.",
+  },
+  campaign: {
+    audAll: "Все пациенты", audAllHint: "все из базы",
+    audLapsed: "Не приходят", audLapsedHint: "нет активности 90+ дней",
+    audSys: "В системе", audSysHint: "зарегистрированные пациенты",
+    ph: "Текст кампании — напр.: На этой неделе панорамный рентген со скидкой 20%! Звоните для записи.",
+    counterNote: "длинный текст может тарифицироваться оператором как несколько SMS",
+    recip: "Получатели:", balance: "Баланс:",
+    lowPre: "Баланс меньше аудитории — отправка остановится, когда баланс закончится (", lowMid: "/",
+    send: "Отправить кампанию", sent: "Отправлено:", failed: "не доставлено:", left: "осталось из-за лимита:", stopped: "остановлено — баланс исчерпан",
+  },
+  labels: {
+    kindReminder: "Напоминание / Приглашение", kindCampaign: "Кампания", kindOther: "Инвайт / Другое",
+    kindCenterReq: "Уведомление о записи", kindPatientStatus: "Смена статуса",
+    sentOk: "Отправлено", sentFail: "Не доставлено",
+    orderPending: "Ожидает", orderPaid: "Оплачено", orderCancelled: "Отменено",
+    gift: "подарок", purchase: "покупка", noOps: "Операций пока нет.", noSms: "SMS ещё не отправлялись.",
   },
 };
 

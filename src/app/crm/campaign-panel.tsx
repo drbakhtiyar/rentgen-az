@@ -4,18 +4,22 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Megaphone, CheckCircle2 } from "lucide-react";
 import { sendCampaignAction, type CampaignAudience } from "./actions";
+import { useLocale } from "@/components/locale-context";
+import { getCrmDict } from "@/lib/i18n-crm";
 
 type Counts = { all: number; lapsed: number; insystem: number };
 
-const AUDIENCES: { key: CampaignAudience; label: string; hint: string }[] = [
-  { key: "all", label: "Bütün pasiyentlər", hint: "bazadakı hər kəs" },
-  { key: "lapsed", label: "Gəlməyənlər", hint: "90+ gün aktivliyi olmayan" },
-  { key: "insystem", label: "Sistemdə olanlar", hint: "qeydiyyatlı pasiyentlər" },
-];
+
 
 /** SMS campaign composer: pick an audience, write the text, send from balance. */
 export function CampaignPanel({ counts, balance }: { counts: Counts; balance: number }) {
   const router = useRouter();
+  const t = getCrmDict(useLocale());
+  const AUDIENCES: { key: CampaignAudience; label: string; hint: string }[] = [
+    { key: "all", label: t.campaign.audAll, hint: t.campaign.audAllHint },
+    { key: "lapsed", label: t.campaign.audLapsed, hint: t.campaign.audLapsedHint },
+    { key: "insystem", label: t.campaign.audSys, hint: t.campaign.audSysHint },
+  ];
   const [audience, setAudience] = React.useState<CampaignAudience>("all");
   const [message, setMessage] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -39,10 +43,10 @@ export function CampaignPanel({ counts, balance }: { counts: Counts; balance: nu
     const res = await sendCampaignAction({ audience, message });
     setBusy(false);
     if (!res.ok) return setError(res.error);
-    let text = `Göndərildi: ${res.sent}`;
-    if (res.failed > 0) text += ` · alınmadı: ${res.failed}`;
-    if (res.skipped > 0) text += ` · limit səbəbiylə qaldı: ${res.skipped}`;
-    if (res.noBalance) text += " · balans bitdiyi üçün dayandı";
+    let text = `${t.campaign.sent} ${res.sent}`;
+    if (res.failed > 0) text += ` · ${t.campaign.failed} ${res.failed}`;
+    if (res.skipped > 0) text += ` · ${t.campaign.left} ${res.skipped}`;
+    if (res.noBalance) text += ` · ${t.campaign.stopped}`;
     setResult(text);
     setMessage("");
     router.refresh();
@@ -76,13 +80,13 @@ export function CampaignPanel({ counts, balance }: { counts: Counts; balance: nu
           onChange={(e) => setMessage(e.target.value)}
           maxLength={400}
           rows={3}
-          placeholder="Kampaniya mətni — məs.: Bu həftə panoramik rentgen 20% endirimlə! Randevu üçün zəng edin."
+          placeholder={t.campaign.ph}
           className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
         />
         <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
-          <span>{message.length}/400 · uzun mətn operator tərəfdə bir neçə SMS kimi hesablana bilər</span>
+          <span>{message.length}/400 · {t.campaign.counterNote}</span>
           <span>
-            Alıcı: <span className="font-semibold text-slate-600">{recipients}</span> · Balans:{" "}
+            {t.campaign.recip} <span className="font-semibold text-slate-600">{recipients}</span> · {t.campaign.balance}{" "}
             <span className={`font-semibold ${balance < recipients ? "text-amber-600" : "text-slate-600"}`}>
               {balance}
             </span>
@@ -92,7 +96,7 @@ export function CampaignPanel({ counts, balance }: { counts: Counts; balance: nu
 
       {balance < recipients && balance > 0 && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          Balans auditoriyadan azdır — göndəriş balans bitəndə dayanacaq ({balance}/{recipients}).
+          {t.campaign.lowPre}{balance}{t.campaign.lowMid}{recipients}).
         </p>
       )}
 
@@ -110,7 +114,7 @@ export function CampaignPanel({ counts, balance }: { counts: Counts; balance: nu
         className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Megaphone className="h-4 w-4" />}
-        Kampaniyanı göndər
+        {t.campaign.send}
       </button>
     </div>
   );

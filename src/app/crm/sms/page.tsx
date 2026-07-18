@@ -21,26 +21,32 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({ title: "CRM — SMS-lər", path: "/crm/sms", noIndex: true });
 
-const KIND_LABELS: Record<string, string> = {
-  reminder: "Xatırlatma / Çağırış",
-  campaign: "Kampaniya",
-  other: "Dəvət / Digər",
-  center_request: "Randevu bildirişi",
-  patient_status: "Status bildirişi",
-};
+
 
 const LAPSED_DAYS = 90;
 
-const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
-  PENDING: { label: "Gözləyir", cls: "bg-amber-50 text-amber-700" },
-  PAID: { label: "Ödənilib", cls: "bg-emerald-50 text-emerald-700" },
-  CANCELLED: { label: "Ləğv edilib", cls: "bg-slate-100 text-slate-500" },
+const ORDER_CLS: Record<string, string> = {
+  PENDING: "bg-amber-50 text-amber-700",
+  PAID: "bg-emerald-50 text-emerald-700",
+  CANCELLED: "bg-slate-100 text-slate-500",
 };
 
 export default async function CrmSmsPage() {
   const { center } = await requireCenter("/crm/sms");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const t = getCrmDict(await getLocale());
+  const KIND_LABELS: Record<string, string> = {
+    reminder: t.labels.kindReminder,
+    campaign: t.labels.kindCampaign,
+    other: t.labels.kindOther,
+    center_request: t.labels.kindCenterReq,
+    patient_status: t.labels.kindPatientStatus,
+  };
+  const ORDER_LABELS: Record<string, string> = {
+    PENDING: t.labels.orderPending,
+    PAID: t.labels.orderPaid,
+    CANCELLED: t.labels.orderCancelled,
+  };
   const [stats, patients, walletBalance, pool] = await Promise.all([
     getCenterSmsStats(center.id),
     getCenterPatients(center.id),
@@ -100,7 +106,7 @@ export default async function CrmSmsPage() {
 
         <Panel title={t.sms.historyTitle}>
           {stats.credits.length === 0 && stats.orders.length === 0 ? (
-            <p className="text-sm text-slate-400">Hələ əməliyyat yoxdur.</p>
+            <p className="text-sm text-slate-400">{t.labels.noOps}</p>
           ) : (
             <ul className="divide-y divide-slate-100 text-sm">
               {stats.orders
@@ -109,8 +115,8 @@ export default async function CrmSmsPage() {
                   <li key={o.id} className="flex items-center gap-2 py-2">
                     <ShoppingCart className="h-4 w-4 shrink-0 text-slate-400" />
                     <span className="text-ink-900">{o.qty} SMS paketi · {o.price} ₼</span>
-                    <span className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-semibold ${ORDER_STATUS[o.status]?.cls ?? ""}`}>
-                      {ORDER_STATUS[o.status]?.label ?? o.status}
+                    <span className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-semibold ${ORDER_CLS[o.status] ?? ""}`}>
+                      {ORDER_LABELS[o.status] ?? o.status}
                     </span>
                   </li>
                 ))}
@@ -122,7 +128,7 @@ export default async function CrmSmsPage() {
                     <ShoppingCart className="h-4 w-4 shrink-0 text-brand-500" />
                   )}
                   <span className="text-ink-900">
-                    +{c.amount} SMS {c.kind === "GRANT" ? "· hədiyyə" : "· alış"}
+                    +{c.amount} SMS {c.kind === "GRANT" ? `· ${t.labels.gift}` : `· ${t.labels.purchase}`}
                     {c.note ? <span className="text-slate-400"> — {c.note}</span> : null}
                   </span>
                   <span className="ml-auto text-xs text-slate-400">{formatDateTimeAz(c.createdAt)}</span>
@@ -136,7 +142,7 @@ export default async function CrmSmsPage() {
       <div className="mt-6">
         <Panel title={t.sms.logTitle}>
           {stats.recent.length === 0 ? (
-            <p className="text-sm text-slate-400">Hələ SMS göndərilməyib.</p>
+            <p className="text-sm text-slate-400">{t.labels.noSms}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">

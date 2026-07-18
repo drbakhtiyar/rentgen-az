@@ -4,6 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Check } from "lucide-react";
 import { updateSlotSettingsAction } from "./actions";
+import { useLocale } from "@/components/locale-context";
+import { getCrmDict } from "@/lib/i18n-crm";
 
 const DAYS: { key: string; label: string }[] = [
   { key: "mon", label: "B.e" },
@@ -38,6 +40,9 @@ export function SlotSettingsForm({
   reminderHours: number;
 }) {
   const router = useRouter();
+  const t = getCrmDict(useLocale());
+  const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+  const dayLabel = (key: string) => t.slotForm.days[DAY_KEYS.indexOf(key as (typeof DAY_KEYS)[number])] ?? key;
   const shownDays = DAYS.filter((d) => openDays.includes(d.key));
   const [on, setOn] = React.useState(enabled);
   const [step, setStep] = React.useState(slotMinutes);
@@ -91,18 +96,15 @@ export function SlotSettingsForm({
           className="mt-1"
         />
         <span>
-          <span className="font-semibold text-ink-900">Onlayn slot rezervasiyası</span>
-          <span className="block text-sm text-slate-500">
-            Aktiv olanda pasiyentlər saytda mərkəzinizin real boş vaxtlarını görüb birbaşa
-            yazılır. Söndürülsə, köhnə sərbəst vaxt rejimi işləyir.
-          </span>
+          <span className="font-semibold text-ink-900">{t.slotForm.toggleTitle}</span>
+          <span className="block text-sm text-slate-500">{t.slotForm.toggleDesc}</span>
         </span>
       </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-xs font-semibold text-slate-500">
-            Slot addımı (dəqiqə)
+            {t.slotForm.stepLabel}
           </label>
           <input
             type="number"
@@ -114,12 +116,12 @@ export function SlotSettingsForm({
             className={field}
           />
           <p className="mt-1 text-xs text-slate-400">
-            Cədvəldə vaxtların hansı addımla göstərildiyi (məs. 30 dəq).
+            {t.slotForm.stepHint}
           </p>
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold text-slate-500">
-            Eyni vaxtda tutum (kabinet/aparat sayı)
+            {t.slotForm.capLabel}
           </label>
           <input
             type="number"
@@ -130,7 +132,7 @@ export function SlotSettingsForm({
             className={field}
           />
           <p className="mt-1 text-xs text-slate-400">
-            Bir vaxtda neçə pasiyent qəbul edə bilərsiniz.
+            {t.slotForm.capHint}
           </p>
         </div>
       </div>
@@ -140,11 +142,8 @@ export function SlotSettingsForm({
         <label className="flex items-start gap-3">
           <input type="checkbox" checked={lunchOn} onChange={(e) => setLunchOn(e.target.checked)} className="mt-1" />
           <span>
-            <span className="font-semibold text-ink-900">Nahar fasiləsi</span>
-            <span className="block text-sm text-slate-500">
-              Fiks nahar vaxtı. Doldurularsa seçilmiş günlərdə bu aralıq avtomatik bloklanır —
-              hər gün ayrıca blok yaratmağa ehtiyac qalmır.
-            </span>
+            <span className="font-semibold text-ink-900">{t.slotForm.lunchTitle}</span>
+            <span className="block text-sm text-slate-500">{t.slotForm.lunchDesc}</span>
           </span>
         </label>
 
@@ -152,16 +151,16 @@ export function SlotSettingsForm({
           <div className="mt-4 space-y-3 pl-7">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-500">Başlanğıc</label>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">{t.slotForm.start}</label>
                 <input type="time" value={lStart} onChange={(e) => setLStart(e.target.value)} className={field} />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-500">Bitmə</label>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">{t.slotForm.end}</label>
                 <input type="time" value={lEnd} onChange={(e) => setLEnd(e.target.value)} className={field} />
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-500">Günlər</label>
+              <label className="mb-1 block text-xs font-semibold text-slate-500">{t.slotForm.daysLabel}</label>
               <div className="flex flex-wrap gap-1.5">
                 {shownDays.map((d) => (
                   <button
@@ -174,7 +173,7 @@ export function SlotSettingsForm({
                         : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"
                     }`}
                   >
-                    {d.label}
+                    {dayLabel(d.key)}
                   </button>
                 ))}
               </div>
@@ -188,15 +187,13 @@ export function SlotSettingsForm({
         <label className="flex items-start gap-3">
           <input type="checkbox" checked={remOn} onChange={(e) => setRemOn(e.target.checked)} className="mt-1" />
           <span>
-            <span className="font-semibold text-ink-900">Randevu xatırlatması (SMS)</span>
-            <span className="block text-sm text-slate-500">
-              Aktiv olanda pasiyentə randevudan əvvəl avtomatik SMS xatırlatma göndərilir.
-            </span>
+            <span className="font-semibold text-ink-900">{t.slotForm.remTitle}</span>
+            <span className="block text-sm text-slate-500">{t.slotForm.remDesc}</span>
           </span>
         </label>
         {remOn && (
           <div className="mt-4 pl-7">
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Neçə saat əvvəl</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">{t.slotForm.hoursBefore}</label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -206,7 +203,7 @@ export function SlotSettingsForm({
                 onChange={(e) => setRemHours(Number(e.target.value))}
                 className={`${field} w-28`}
               />
-              <span className="text-sm text-slate-500">saat əvvəl</span>
+              <span className="text-sm text-slate-500">{t.slotForm.hoursWord}</span>
             </div>
           </div>
         )}
@@ -220,9 +217,9 @@ export function SlotSettingsForm({
           disabled={busy}
           className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Yadda saxla
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} {t.common.save}
         </button>
-        {saved && <span className="text-sm font-medium text-emerald-600">Saxlanıldı</span>}
+        {saved && <span className="text-sm font-medium text-emerald-600">{t.slotForm.saved}</span>}
       </div>
     </div>
   );
