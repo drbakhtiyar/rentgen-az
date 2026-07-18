@@ -14,6 +14,8 @@ import { trashRetentionDays } from "@/lib/plans";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateTimeAz, formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getCrmDict } from "@/lib/i18n-crm";
 import { requireCenter } from "../../_lib";
 import { CrmUpsell } from "../../crm-upsell";
 
@@ -32,6 +34,7 @@ export default async function CrmPatientDetailPage({
 }) {
   const { center } = await requireCenter("/crm/pasiyentler");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
+  const t = getCrmDict(await getLocale());
   const { patientId } = await params;
 
   const [detail, services] = await Promise.all([
@@ -52,7 +55,7 @@ export default async function CrmPatientDetailPage({
         href="/crm/pasiyentler"
         className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-brand-600"
       >
-        <ChevronLeft className="h-4 w-4" /> Pasiyentlər
+        <ChevronLeft className="h-4 w-4" /> {t.patients.backToList}
       </Link>
 
       {/* Patient header */}
@@ -60,7 +63,7 @@ export default async function CrmPatientDetailPage({
         <div className="flex items-center gap-2">
           <h1 className="font-display text-2xl font-bold text-ink-900">{fullName}</h1>
           <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-            <CheckCircle2 className="h-3 w-3" /> sistemdə
+            <CheckCircle2 className="h-3 w-3" /> {t.common.inSystem}
           </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
@@ -68,7 +71,7 @@ export default async function CrmPatientDetailPage({
             <Phone className="h-3.5 w-3.5" /> {formatPhoneDisplay(patient.user?.phone ?? "")}
           </a>
           {patient.city && <span>{patient.city}</span>}
-          <span>{appts.length} randevu</span>
+          <span>{appts.length} {t.patients.visitWord}</span>
         </div>
       </div>
 
@@ -93,7 +96,7 @@ export default async function CrmPatientDetailPage({
             {a.doctorName && (
               <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
                 <Stethoscope className="h-4 w-4 text-cyan-600" />
-                <span className="text-slate-500">Göndərən həkim:</span>
+                <span className="text-slate-500">{t.patients.referringDoctor}</span>
                 <span className="font-semibold text-ink-900">Dr. {a.doctorName}</span>
                 {a.doctorPhone && (
                   <a href={`tel:${a.doctorPhone}`} className="inline-flex items-center gap-1 text-brand-600 hover:underline">
@@ -113,7 +116,7 @@ export default async function CrmPatientDetailPage({
               />
             ) : (
               <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">
-                Fayl yükləmək üçün randevunu <span className="font-semibold">«Tamamlandı»</span> edin.
+                {t.patients.fileGate}
               </p>
             )}
           </Panel>

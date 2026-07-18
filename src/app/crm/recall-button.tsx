@@ -3,9 +3,12 @@
 import * as React from "react";
 import { Loader2, Send, Check } from "lucide-react";
 import { sendRecallSmsAction } from "./actions";
+import { useLocale } from "@/components/locale-context";
+import { getCrmDict } from "@/lib/i18n-crm";
 
 /** Send a "come back" SMS to a patient (re-call). */
 export function RecallButton({ phone, name }: { phone: string; name: string }) {
+  const t = getCrmDict(useLocale());
   const [state, setState] = React.useState<"idle" | "busy" | "done" | "error">("idle");
 
   async function send() {
@@ -35,7 +38,7 @@ export function RecallButton({ phone, name }: { phone: string; name: string }) {
       ) : (
         <Send className="h-3 w-3" />
       )}
-      {state === "done" ? "Göndərildi" : "Çağır"}
+      {state === "done" ? t.patients.recallDone : t.patients.recall}
     </button>
   );
 }

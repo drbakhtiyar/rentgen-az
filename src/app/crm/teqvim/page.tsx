@@ -18,6 +18,8 @@ import {
 import { getActiveServices } from "@/lib/queries";
 import { bakuTodayYmd, DAY_LABELS_AZ, DAY_KEYS, ymdToDayKey, parseHours, nowInBaku } from "@/lib/hours";
 import { buildMetadata } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getCrmDict } from "@/lib/i18n-crm";
 import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { CalendarClient, CalendarActions, type GridDay, type GridAppt, type GridBlock } from "../calendar-grid";
@@ -105,6 +107,7 @@ export default async function CrmCalendarPage({
   const ymd = sp.d && /^\d{4}-\d{2}-\d{2}$/.test(sp.d) ? sp.d : today;
   const view = sp.view === "day" ? "day" : sp.view === "month" ? "month" : "week"; // default: week
 
+  const t = getCrmDict(await getLocale());
   const services = await getActiveServices();
   const svcName = new Map(services.map((s) => [s.slug, s.name]));
   const serviceOptions = services.map((s) => ({ slug: s.slug, name: s.name }));
@@ -131,18 +134,18 @@ export default async function CrmCalendarPage({
       <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl font-bold text-ink-900">Təqvim</h1>
+            <h1 className="font-display text-2xl font-bold text-ink-900">{t.calendar.title}</h1>
             <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5">
-              {toggle("day", "Gün")}
-              {toggle("week", "Həftə")}
-              {toggle("month", "Ay")}
+              {toggle("day", t.calendar.day)}
+              {toggle("week", t.calendar.week)}
+              {toggle("month", t.calendar.month)}
             </div>
           </div>
           <CalendarActions services={serviceOptions} defaultYmd={ymd} />
         </div>
         <div className="mb-4 flex items-center gap-2">
           <Link href={`/crm/teqvim?view=month&d=${addMonths(ymd, -1)}`} className={btn}><ChevronLeft className="h-4 w-4" /></Link>
-          <Link href="/crm/teqvim?view=month" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Bu ay</Link>
+          <Link href="/crm/teqvim?view=month" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">{t.calendar.thisMonth}</Link>
           <Link href={`/crm/teqvim?view=month&d=${addMonths(ymd, 1)}`} className={btn}><ChevronRight className="h-4 w-4" /></Link>
           <span className="ml-2 font-display text-sm font-bold text-ink-900">{monthName}</span>
         </div>
@@ -171,7 +174,7 @@ export default async function CrmCalendarPage({
                   </div>
                   {count > 0 && (
                     <span className="mt-2 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
-                      {count} randevu
+                      {count} {t.calendar.apptWord}
                     </span>
                   )}
                 </Link>
@@ -267,24 +270,24 @@ export default async function CrmCalendarPage({
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl font-bold text-ink-900">Təqvim</h1>
+          <h1 className="font-display text-2xl font-bold text-ink-900">{t.calendar.title}</h1>
           <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5">
-            {toggle("day", "Gün")}
-            {toggle("week", "Həftə")}
-            {toggle("month", "Ay")}
+            {toggle("day", t.calendar.day)}
+            {toggle("week", t.calendar.week)}
+            {toggle("month", t.calendar.month)}
           </div>
         </div>
         <CalendarActions services={serviceOptions} defaultYmd={actionsYmd} />
       </div>
 
       <div className="mb-4 flex items-center gap-2">
-        <Link href={`/crm/teqvim?view=${view}&d=${shiftYmd(navBase, -step)}`} className={btn} aria-label="Əvvəlki">
+        <Link href={`/crm/teqvim?view=${view}&d=${shiftYmd(navBase, -step)}`} className={btn} aria-label={t.calendar.prev}>
           <ChevronLeft className="h-4 w-4" />
         </Link>
         <Link href={`/crm/teqvim?view=${view}`} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-          Bu gün
+          {t.calendar.todayBtn}
         </Link>
-        <Link href={`/crm/teqvim?view=${view}&d=${shiftYmd(navBase, step)}`} className={btn} aria-label="Növbəti">
+        <Link href={`/crm/teqvim?view=${view}&d=${shiftYmd(navBase, step)}`} className={btn} aria-label={t.calendar.next}>
           <ChevronRight className="h-4 w-4" />
         </Link>
         <span className="ml-2 font-display text-sm font-bold text-ink-900">{dateLabel}</span>
@@ -292,7 +295,7 @@ export default async function CrmCalendarPage({
 
       {view === "day" && !isOpenDay(ymd) ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500">
-          Bu gün mərkəz bağlıdır (iş günü deyil).
+          {t.calendar.closedDay}
         </div>
       ) : (
         <CalendarClient
@@ -306,10 +309,10 @@ export default async function CrmCalendarPage({
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-500">
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-brand-500" /> Yeni</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-cyan-500" /> Təsdiqli</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" /> Tamamlanıb</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400" /> Ləğv</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-brand-500" /> {t.calendar.legendNew}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-cyan-500" /> {t.calendar.legendConfirmed}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" /> {t.calendar.legendCompleted}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-400" /> {t.calendar.legendCancelled}</span>
       </div>
     </DashboardShell>
   );

@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, X, Trash2, Ban, ExternalLink } from "lucide-react";
+import { useLocale } from "@/components/locale-context";
+import { getCrmDict } from "@/lib/i18n-crm";
 import {
   addManualAppointmentAction,
   updateAppointmentAction,
@@ -273,6 +275,7 @@ export function CalendarClient({
 
 /** Toolbar actions (Yeni qəbul + Vaxt blokla) — placed on the page title row. */
 export function CalendarActions({ services, defaultYmd }: { services: Svc[]; defaultYmd: string }) {
+  const t = getCrmDict(useLocale());
   const [createOpen, setCreateOpen] = React.useState(false);
   const [blockOpen, setBlockOpen] = React.useState(false);
   return (
@@ -282,14 +285,14 @@ export function CalendarActions({ services, defaultYmd }: { services: Svc[]; def
         onClick={() => setBlockOpen(true)}
         className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
       >
-        <Ban className="h-4 w-4" /> Vaxt blokla
+        <Ban className="h-4 w-4" /> {t.calendar.blockTime}
       </button>
       <button
         type="button"
         onClick={() => setCreateOpen(true)}
         className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
       >
-        <Plus className="h-4 w-4" /> Yeni qəbul
+        <Plus className="h-4 w-4" /> {t.calendar.newAppt}
       </button>
       {createOpen && (
         <AppointmentModal

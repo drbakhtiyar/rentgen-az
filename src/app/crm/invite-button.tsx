@@ -3,9 +3,12 @@
 import * as React from "react";
 import { Loader2, UserPlus, Check } from "lucide-react";
 import { invitePatientAction } from "./actions";
+import { useLocale } from "@/components/locale-context";
+import { getCrmDict } from "@/lib/i18n-crm";
 
 /** Invite a not-in-system patient to register (SMS with a login link). */
 export function InviteButton({ phone, name }: { phone: string; name: string }) {
+  const t = getCrmDict(useLocale());
   const [state, setState] = React.useState<"idle" | "busy" | "done" | "error">("idle");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -43,7 +46,7 @@ export function InviteButton({ phone, name }: { phone: string; name: string }) {
         ) : (
           <UserPlus className="h-3 w-3" />
         )}
-        {state === "done" ? "Dəvət olundu" : "Dəvət et"}
+        {state === "done" ? t.patients.inviteDone : t.patients.invite}
       </button>
       {error && <span className="mt-0.5 text-[10px] text-red-600">{error}</span>}
     </span>

@@ -10,6 +10,8 @@ import { getCenterPatients } from "@/lib/crm";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getCrmDict } from "@/lib/i18n-crm";
 import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { SmsOrderPanel } from "../sms-order-panel";
@@ -38,6 +40,7 @@ const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
 export default async function CrmSmsPage() {
   const { center } = await requireCenter("/crm/sms");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
+  const t = getCrmDict(await getLocale());
   const [stats, patients, walletBalance, pool] = await Promise.all([
     getCenterSmsStats(center.id),
     getCenterPatients(center.id),
@@ -57,9 +60,9 @@ export default async function CrmSmsPage() {
   return (
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink-900">SMS-lər</h1>
+        <h1 className="font-display text-2xl font-bold text-ink-900">{t.sms.title}</h1>
         <p className="text-sm text-slate-500">
-          Xatırlatma, çağırış və dəvət SMS-ləri balansınızdan gedir · göndərən adı:{" "}
+          {t.sms.subtitle}{" "}
           <span className="font-semibold text-ink-900">rentgen.az</span>
         </p>
       </div>
@@ -69,34 +72,33 @@ export default async function CrmSmsPage() {
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             {stats.balance === 0
-              ? "SMS balansınız bitib — xatırlatma və çağırış SMS-ləri göndərilmir. Paket alın."
-              : `SMS balansınız azalır (${stats.balance} qalıb). Fasiləsiz işləmək üçün yeni paket alın.`}
+              ? t.sms.lowZero
+              : `${t.sms.lowPre}${stats.balance}${t.sms.lowPost}`}
           </span>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Qalıq balans" value={stats.balance} icon={<MessageSquare />} tone={stats.balance <= CENTER_SMS_WARN_AT ? "amber" : "brand"} />
-        <StatCard label="Bu ay göndərilən" value={stats.sentMonth} icon={<Send />} tone="cyan" />
-        <StatCard label="Ümumi göndərilən" value={stats.sentTotal} icon={<TrendingUp />} tone="green" />
+        <StatCard label={t.sms.statBalance} value={stats.balance} icon={<MessageSquare />} tone={stats.balance <= CENTER_SMS_WARN_AT ? "amber" : "brand"} />
+        <StatCard label={t.sms.statMonth} value={stats.sentMonth} icon={<Send />} tone="cyan" />
+        <StatCard label={t.sms.statTotal} value={stats.sentTotal} icon={<TrendingUp />} tone="green" />
       </div>
 
       <div className="mt-6">
-        <Panel title="Kampaniya (toplu SMS)">
+        <Panel title={t.sms.campaignTitle}>
           <CampaignPanel counts={audienceCounts} balance={stats.balance} />
         </Panel>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Panel title="SMS paketi al">
+        <Panel title={t.sms.buyTitle}>
           <SmsOrderPanel packages={SMS_PACKAGES} walletBalanceMinor={walletBalance} maxBuyable={maxBuyable} />
           <p className="mt-3 text-xs text-slate-400">
-            Ödəniş balansınızdan çıxılır və SMS-lər dərhal yüklənir. Balansı Paket / Balans
-            səhifəsindən (Payriff ilə) artıra bilərsiniz.
+            {t.sms.buyNote}
           </p>
         </Panel>
 
-        <Panel title="Balans tarixçəsi">
+        <Panel title={t.sms.historyTitle}>
           {stats.credits.length === 0 && stats.orders.length === 0 ? (
             <p className="text-sm text-slate-400">Hələ əməliyyat yoxdur.</p>
           ) : (
@@ -132,7 +134,7 @@ export default async function CrmSmsPage() {
       </div>
 
       <div className="mt-6">
-        <Panel title="Göndərilən SMS-lər (son 50)">
+        <Panel title={t.sms.logTitle}>
           {stats.recent.length === 0 ? (
             <p className="text-sm text-slate-400">Hələ SMS göndərilməyib.</p>
           ) : (
