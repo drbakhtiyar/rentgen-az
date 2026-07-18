@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { DoctorCard } from "@/components/doctors/doctor-card";
+import { SuggestInput } from "@/components/forms/suggest-input";
 import { getApprovedDoctors, getDoctorFacets } from "@/lib/queries";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
@@ -117,25 +118,29 @@ export default async function DoctorsPage({
             </div>
           </div>
 
-          <form method="get" className="mb-8 mt-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1fr_auto_auto_auto]">
+          <form method="get" className="mb-8 mt-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1.2fr_1fr_1fr_auto]">
             <input
               name="q"
               defaultValue={sp.q ?? ""}
               placeholder={ru ? "Ad, soyad və ya klinika" : "Ad, soyad və ya klinika"}
               className="h-11 rounded-xl border border-slate-200 px-3 text-sm"
             />
-            <select name="spec" defaultValue={sp.spec ?? ""} className="h-11 rounded-xl border border-slate-200 px-3 text-sm">
-              <option value="">{ru ? "Все специализации" : "Bütün ixtisaslar"}</option>
-              {specOptions.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <select name="city" defaultValue={sp.city ?? ""} className="h-11 rounded-xl border border-slate-200 px-3 text-sm">
-              <option value="">{ru ? "Все города" : "Bütün şəhərlər"}</option>
-              {cityOptions.map((c) => (
-                <option key={c.name} value={c.name}>{c.name}</option>
-              ))}
-            </select>
+            <SuggestInput
+              name="spec"
+              options={specOptions.map((s) => ({ value: s, label: s }))}
+              placeholder={ru ? "Все специализации" : "Bütün ixtisaslar"}
+              typeHint={ru ? "Начните вводить — минимум 3 буквы" : "Yazmağa başlayın — ən azı 3 hərf"}
+              noMatches={ru ? "Совпадений не найдено" : "Uyğun variant tapılmadı"}
+              initial={sp.spec ? { value: sp.spec, label: sp.spec } : null}
+            />
+            <SuggestInput
+              name="city"
+              options={cityOptions.map((c) => ({ value: c.name, label: c.name }))}
+              placeholder={ru ? "Все города" : "Bütün şəhərlər"}
+              typeHint={ru ? "Начните вводить — минимум 3 буквы" : "Yazmağa başlayın — ən azı 3 hərf"}
+              noMatches={ru ? "Совпадений не найдено" : "Uyğun variant tapılmadı"}
+              initial={sp.city ? { value: sp.city, label: sp.city } : null}
+            />
             <button type="submit" className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700">
               <Search className="h-4 w-4" /> {ru ? "Поиск" : "Axtar"}
             </button>
