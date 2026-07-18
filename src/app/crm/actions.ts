@@ -556,6 +556,13 @@ export async function startAddAssistantAction(input: {
   if (existing?.assistantOf && existing.assistantOf.centerId !== center.id) {
     return { ok: false, error: "Bu nömrə artıq başqa mərkəzin asistentidir." };
   }
+  // One assistant per center (re-verifying the same phone is allowed).
+  const others = await prisma.centerAssistant.count({
+    where: { centerId: center.id, user: { phone: { not: phone } } },
+  });
+  if (others > 0) {
+    return { ok: false, error: "Hər mərkəzə maksimum 1 asistent əlavə etmək olar." };
+  }
 
   const r = await createOtp(phone);
   if (!r.ok) return { ok: false, error: r.error };
@@ -577,6 +584,12 @@ export async function confirmAddAssistantAction(input: {
   if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
   const v = await verifyOtp(phone, input.code.trim());
   if (!v.ok) return { ok: false, error: v.error };
+  const others = await prisma.centerAssistant.count({
+    where: { centerId: center.id, user: { phone: { not: phone } } },
+  });
+  if (others > 0) {
+    return { ok: false, error: "Hər mərkəzə maksimum 1 asistent əlavə etmək olar." };
+  }
 
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();

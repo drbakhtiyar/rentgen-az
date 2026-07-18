@@ -175,7 +175,7 @@ export type CrmDict = {
     sendCode: string; codeLabel: string; confirmBtn: string; back: string;
     otpSentPre: string; otpSentPost: string;
     activeOn: string; activeOff: string; removeConfirm: string;
-    ownerOnly: string; loginHint: string;
+    ownerOnly: string; loginHint: string; limitNote: string;
   };
 };
 
@@ -211,7 +211,7 @@ const az: CrmDict = {
     title: "Təqvim",
     day: "Gün",
     week: "Həftə",
-      threeDay: "3 gün",
+    threeDay: "3 gün",
     month: "Ay",
     todayBtn: "Bu gün",
     thisMonth: "Bu ay",
@@ -361,6 +361,7 @@ const az: CrmDict = {
     activeOn: "Aktiv", activeOff: "Deaktiv", removeConfirm: "Asistent silinsin? Girişi dərhal dayanacaq.",
     ownerOnly: "Bu bölmə yalnız mərkəz sahibinə açıqdır.",
     loginHint: "Asistent crm.rentgen.az ünvanına daxil olub yalnız öz nömrəsi ilə (OTP) giriş edir.",
+    limitNote: "Hər mərkəzə maksimum 1 asistent əlavə etmək olar.",
   },
 };
 
@@ -396,7 +397,7 @@ const ru: CrmDict = {
     title: "Календарь",
     day: "День",
     week: "Неделя",
-      threeDay: "3 дня",
+    threeDay: "3 дня",
     month: "Месяц",
     todayBtn: "Сегодня",
     thisMonth: "Этот месяц",
@@ -546,6 +547,7 @@ const ru: CrmDict = {
     activeOn: "Активен", activeOff: "Отключён", removeConfirm: "Удалить ассистента? Доступ прекратится сразу.",
     ownerOnly: "Раздел доступен только владельцу центра.",
     loginHint: "Ассистент заходит на crm.rentgen.az и входит только по своему номеру (OTP).",
+    limitNote: "На каждый центр можно добавить максимум 1 ассистента.",
   },
 };
 

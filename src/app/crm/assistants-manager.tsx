@@ -110,15 +110,18 @@ export function AssistantsManager({ initial }: { initial: Assistant[] }) {
         <p className="text-sm text-slate-400">{t.empty}</p>
       )}
 
-      {step === "list" && (
-        <button
-          type="button"
-          onClick={() => setStep("form")}
-          className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-        >
-          <Plus className="h-4 w-4" /> {t.addBtn}
-        </button>
-      )}
+      {step === "list" &&
+        (initial.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => setStep("form")}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+          >
+            <Plus className="h-4 w-4" /> {t.addBtn}
+          </button>
+        ) : (
+          <p className="text-xs text-slate-400">{t.limitNote}</p>
+        ))}
 
       {step === "form" && (
         <form onSubmit={sendCode} className="space-y-3 rounded-xl border border-slate-200 p-4">
