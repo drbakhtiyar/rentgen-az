@@ -101,6 +101,12 @@ export type PanelDict = {
     bildirisler: string;
     profil: string;
     pasiyentler: string;
+    crmToday: string;
+    crmCalendar: string;
+    crmSms: string;
+    crmSettings: string;
+    crmCenterPanel: string;
+    crmLink: string;
     xidmetler: string;
     hekimler: string;
     reyler: string;
@@ -428,6 +434,12 @@ const az: PanelDict = {
     bildirisler: "Bildirişlər",
     profil: "Profil",
     pasiyentler: "Pasiyentlər",
+    crmToday: "Bugün",
+    crmCalendar: "Təqvim",
+    crmSms: "SMS-lər",
+    crmSettings: "Ayarlar",
+    crmCenterPanel: "Mərkəz paneli",
+    crmLink: "CRM / Təqvim",
     xidmetler: "Xidmətlər və qiymətlər",
     hekimler: "Partnyor həkimlər",
     reyler: "Rəylər",
@@ -755,6 +767,12 @@ const ru: PanelDict = {
     bildirisler: "Уведомления",
     profil: "Профиль",
     pasiyentler: "Пациенты",
+    crmToday: "Сегодня",
+    crmCalendar: "Календарь",
+    crmSms: "SMS",
+    crmSettings: "Настройки",
+    crmCenterPanel: "Панель центра",
+    crmLink: "CRM / Календарь",
     xidmetler: "Услуги и цены",
     hekimler: "Врачи-партнёры",
     reyler: "Отзывы",

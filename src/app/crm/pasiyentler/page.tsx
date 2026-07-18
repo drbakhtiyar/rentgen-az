@@ -10,6 +10,8 @@ import { bakuTodayYmd } from "@/lib/hours";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getCrmDict } from "@/lib/i18n-crm";
 import { requireCenter } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { ManualAppointmentForm } from "../manual-appointment-form";
@@ -29,6 +31,7 @@ export const metadata: Metadata = buildMetadata({
 export default async function CrmPatientsPage() {
   const { center } = await requireCenter("/crm/pasiyentler");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
+  const t = getCrmDict(await getLocale());
   const [patients, services] = await Promise.all([
     getCenterPatients(center.id),
     getActiveServices(),
@@ -38,8 +41,8 @@ export default async function CrmPatientsPage() {
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink-900">Pasiyentlər</h1>
-          <p className="text-sm text-slate-500">{patients.length} pasiyent</p>
+          <h1 className="font-display text-2xl font-bold text-ink-900">{t.patients.title}</h1>
+          <p className="text-sm text-slate-500">{patients.length} {t.patients.countWord}</p>
         </div>
         <ManualAppointmentForm
           services={services.map((s) => ({ slug: s.slug, name: s.name }))}
@@ -48,30 +51,28 @@ export default async function CrmPatientsPage() {
       </div>
 
       <div className="mb-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
-        <span className="font-semibold text-slate-600">Qeyd:</span> Sistemdə qeydiyyatdan keçmiş
-        pasiyentlərin kartına rentgen faylları yükləmək və saytın tam imkanlarından istifadə etmək
-        olar. Əl ilə əlavə edilmiş (sistemdə olmayan) pasiyentlərə fayl yüklənmir.
+        {t.patients.note}
       </div>
 
-      <Panel title="Pasiyent bazası">
+      <Panel title={t.patients.baseTitle}>
         {patients.length === 0 ? (
           <EmptyState
             icon={<Users />}
-            title="Hələ pasiyent yoxdur"
-            description="Əl ilə pasiyent əlavə edin və ya pasiyentlər saytdan yazıldıqca burada toplanacaq."
+            title={t.patients.emptyTitle}
+            description={t.patients.emptyDesc}
           />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-xs font-semibold text-slate-400">
-                  <th className="pb-2 pr-3">Ad</th>
-                  <th className="pb-2 pr-3">Telefon</th>
-                  <th className="pb-2 pr-3">Ziyarət</th>
-                  <th className="pb-2 pr-3">Son</th>
-                  <th className="pb-2 pr-3">Növbəti</th>
-                  <th className="pb-2 pr-3">Status</th>
-                  <th className="pb-2">SMS</th>
+                  <th className="pb-2 pr-3">{t.patients.thName}</th>
+                  <th className="pb-2 pr-3">{t.patients.thPhone}</th>
+                  <th className="pb-2 pr-3">{t.patients.thVisits}</th>
+                  <th className="pb-2 pr-3">{t.patients.thLast}</th>
+                  <th className="pb-2 pr-3">{t.patients.thNext}</th>
+                  <th className="pb-2 pr-3">{t.patients.thStatus}</th>
+                  <th className="pb-2">{t.patients.thSms}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -91,11 +92,11 @@ export default async function CrmPatientsPage() {
                         )}
                         {p.patientId ? (
                           <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
-                            <CheckCircle2 className="h-2.5 w-2.5" /> sistemdə
+                            <CheckCircle2 className="h-2.5 w-2.5" /> {t.common.inSystem}
                           </span>
                         ) : (
                           <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
-                            sistemdə deyil
+                            {t.common.notInSystem}
                           </span>
                         )}
                       </div>
@@ -112,7 +113,7 @@ export default async function CrmPatientsPage() {
                         !p.nextVisit &&
                         Date.now() - p.lastVisit.getTime() > LAPSED_DAYS * 86400000 && (
                           <span className="ml-1.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                            gəlmir
+                            {t.patients.lapsed}
                           </span>
                         )}
                     </td>

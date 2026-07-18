@@ -10,6 +10,8 @@ import { getCrmOverview, getCenterDayAppointments } from "@/lib/crm";
 import { bakuTodayYmd } from "@/lib/hours";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
+import { getLocale } from "@/lib/i18n-server";
+import { getCrmDict } from "@/lib/i18n-crm";
 import { requireCenter } from "./_lib";
 import { CrmUpsell } from "./crm-upsell";
 import { ManualAppointmentForm } from "./manual-appointment-form";
@@ -21,6 +23,7 @@ export const metadata: Metadata = buildMetadata({ title: "CRM — Bugün", path:
 export default async function CrmTodayPage() {
   const { center } = await requireCenter("/crm");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
+  const t = getCrmDict(await getLocale());
   const today = bakuTodayYmd();
   const [overview, appts, services] = await Promise.all([
     getCrmOverview(center.id, today),
@@ -33,7 +36,7 @@ export default async function CrmTodayPage() {
     <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink-900">Bugün</h1>
+          <h1 className="font-display text-2xl font-bold text-ink-900">{t.today.title}</h1>
           <p className="text-sm text-slate-500">{today}</p>
         </div>
         <ManualAppointmentForm
@@ -50,9 +53,9 @@ export default async function CrmTodayPage() {
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             {center.smsBalance === 0
-              ? "SMS balansınız bitib — xatırlatma və çağırış SMS-ləri göndərilmir."
-              : `SMS balansınız azalır (${center.smsBalance} qalıb).`}{" "}
-            <span className="font-semibold underline">SMS-lər bölməsindən paket alın.</span>
+              ? t.today.smsOut
+              : `${t.today.smsLowPre}${center.smsBalance}${t.today.smsLowPost}`}{" "}
+            <span className="font-semibold underline">{t.today.smsBuyLink}</span>
           </span>
         </Link>
       )}
@@ -64,26 +67,27 @@ export default async function CrmTodayPage() {
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
-            Onlayn slot rezervasiyası söndürülüb. Pasiyentlərin saytda real boş vaxtlarınızı görüb
-            birbaşa yazılması üçün <span className="font-semibold underline">Ayarlar</span>-dan aktiv edin.
+            {t.today.slotOffPre}
+            <span className="font-semibold underline">{t.today.slotOffLink}</span>
+            {t.today.slotOffPost}
           </span>
         </Link>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Bugünkü randevular" value={overview.todayCount} icon={<CalendarDays />} />
-        <StatCard label="Gələcək randevular" value={overview.upcomingCount} icon={<Clock />} tone="cyan" />
-        <StatCard label="Yeni (təsdiq gözləyir)" value={overview.newCount} icon={<Inbox />} tone="amber" />
-        <StatCard label="Ümumi pasiyent" value={overview.totalPatients} icon={<Users />} tone="slate" />
+        <StatCard label={t.today.statToday} value={overview.todayCount} icon={<CalendarDays />} />
+        <StatCard label={t.today.statUpcoming} value={overview.upcomingCount} icon={<Clock />} tone="cyan" />
+        <StatCard label={t.today.statNew} value={overview.newCount} icon={<Inbox />} tone="amber" />
+        <StatCard label={t.today.statPatients} value={overview.totalPatients} icon={<Users />} tone="slate" />
       </div>
 
       <div className="mt-6">
-        <Panel title="Bugünkü cədvəl">
+        <Panel title={t.today.scheduleTitle}>
           {appts.length === 0 ? (
             <EmptyState
               icon={<CalendarDays />}
-              title="Bu gün üçün randevu yoxdur"
-              description="Yeni pasiyent əlavə edin və ya pasiyentlər saytdan yazıldıqca burada görünəcək."
+              title={t.today.emptyTitle}
+              description={t.today.emptyDesc}
             />
           ) : (
             <ul className="divide-y divide-slate-100">
@@ -91,14 +95,14 @@ export default async function CrmTodayPage() {
                 <li key={a.id} className="flex flex-wrap items-center gap-3 py-3">
                   <div className="w-14 shrink-0 text-center">
                     <div className="font-display text-lg font-bold text-ink-900">{a.time || "—"}</div>
-                    <div className="text-[11px] text-slate-400">{a.durationMin} dəq</div>
+                    <div className="text-[11px] text-slate-400">{a.durationMin} {t.common.min}</div>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="truncate font-semibold text-ink-900">{a.name}</span>
                       {!a.patientId && (
                         <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
-                          sistemdə deyil
+                          {t.common.notInSystem}
                         </span>
                       )}
                     </div>
