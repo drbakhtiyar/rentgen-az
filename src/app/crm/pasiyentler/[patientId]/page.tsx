@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Phone, Stethoscope, CheckCircle2, CalendarDays } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { crmNav } from "@/components/dashboard/role-navs";
 import { Panel, StatusBadge } from "@/components/dashboard/widgets";
 import { RentgenFilesPanel } from "@/components/rentgen/rentgen-files-panel";
 import { RequestStatusControl } from "@/app/merkez/request-status-control";
@@ -16,7 +15,7 @@ import { formatDateTimeAz, formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getCrmDict } from "@/lib/i18n-crm";
-import { requireCenter } from "../../_lib";
+import { requireCenter, crmNavFor } from "../../_lib";
 import { CrmUpsell } from "../../crm-upsell";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +31,7 @@ export default async function CrmPatientDetailPage({
 }: {
   params: Promise<{ patientId: string }>;
 }) {
-  const { center } = await requireCenter("/crm/pasiyentler");
+  const { center, isOwner } = await requireCenter("/crm/pasiyentler");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const t = getCrmDict(await getLocale());
   const { patientId } = await params;
@@ -50,7 +49,7 @@ export default async function CrmPatientDetailPage({
   const fullName = `${patient.firstName ?? ""} ${patient.lastName ?? ""}`.trim() || "Pasiyent";
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(isOwner)} collapsible>
       <Link
         href="/crm/pasiyentler"
         className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-brand-600"

@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { crmNav } from "@/components/dashboard/role-navs";
 import {
   getCenterDayAppointments,
   getCenterWeekAppointments,
@@ -21,7 +20,7 @@ import { bakuTodayYmd, DAY_LABELS_AZ, DAY_KEYS, ymdToDayKey, parseHours, nowInBa
 import { buildMetadata } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getCrmDict } from "@/lib/i18n-crm";
-import { requireCenter } from "../_lib";
+import { requireCenter, crmNavFor } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { CalendarClient, CalendarActions, type GridDay, type GridAppt, type GridBlock } from "../calendar-grid";
 
@@ -101,7 +100,7 @@ export default async function CrmCalendarPage({
 }: {
   searchParams: Promise<{ d?: string; view?: string }>;
 }) {
-  const { center } = await requireCenter("/crm/teqvim");
+  const { center, isOwner } = await requireCenter("/crm/teqvim");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const sp = await searchParams;
   const today = bakuTodayYmd();
@@ -140,7 +139,7 @@ export default async function CrmCalendarPage({
     const monthName = `${AZ_MONTHS[Number(ymd.slice(5, 7)) - 1]} ${ymd.slice(0, 4)}`;
 
     return (
-      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(isOwner)} collapsible>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h1 className="font-display text-2xl font-bold text-ink-900">{t.calendar.title}</h1>
@@ -311,7 +310,7 @@ export default async function CrmCalendarPage({
   const actionsYmd = view === "day" ? ymd : inRange ? today : rangeStart;
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(isOwner)} collapsible>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h1 className="font-display text-2xl font-bold text-ink-900">{t.calendar.title}</h1>

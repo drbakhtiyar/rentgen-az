@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { MessageSquare, Send, TrendingUp, AlertCircle, Gift, ShoppingCart } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { crmNav } from "@/components/dashboard/role-navs";
 import { StatCard, Panel } from "@/components/dashboard/widgets";
 import { getCenterSmsStats, SMS_PACKAGES, ADMIN_SMS_RESERVE, CENTER_SMS_WARN_AT } from "@/lib/center-sms";
 import { getSmsBalance } from "@/lib/sms";
@@ -12,7 +11,7 @@ import { formatDateTimeAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getCrmDict } from "@/lib/i18n-crm";
-import { requireCenter } from "../_lib";
+import { requireCenter, crmNavFor } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { SmsOrderPanel } from "../sms-order-panel";
 import { CampaignPanel } from "../campaign-panel";
@@ -35,6 +34,19 @@ export default async function CrmSmsPage() {
   const { center, isOwner } = await requireCenter("/crm/sms");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const t = getCrmDict(await getLocale());
+
+  // The whole SMS section (balance, history, purchases, campaigns) is a
+  // sensitive/owner area — assistants don't see it at all.
+  if (!isOwner) {
+    return (
+      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(false)} collapsible>
+        <h1 className="mb-6 font-display text-2xl font-bold text-ink-900">{t.sms.title}</h1>
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+          {t.assistants.ownerOnly}
+        </div>
+      </DashboardShell>
+    );
+  }
   const KIND_LABELS: Record<string, string> = {
     reminder: t.labels.kindReminder,
     campaign: t.labels.kindCampaign,
@@ -64,7 +76,7 @@ export default async function CrmSmsPage() {
   };
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(isOwner)} collapsible>
       <div className="mb-6">
         <h1 className="font-display text-2xl font-bold text-ink-900">{t.sms.title}</h1>
         <p className="text-sm text-slate-500">
@@ -90,27 +102,19 @@ export default async function CrmSmsPage() {
         <StatCard label={t.sms.statTotal} value={stats.sentTotal} icon={<TrendingUp />} tone="green" />
       </div>
 
-      {isOwner && (
-        <div className="mt-6">
-          <Panel title={t.sms.campaignTitle}>
-            <CampaignPanel counts={audienceCounts} balance={stats.balance} />
-          </Panel>
-        </div>
-      )}
+      <div className="mt-6">
+        <Panel title={t.sms.campaignTitle}>
+          <CampaignPanel counts={audienceCounts} balance={stats.balance} />
+        </Panel>
+      </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        {isOwner ? (
-          <Panel title={t.sms.buyTitle}>
-            <SmsOrderPanel packages={SMS_PACKAGES} walletBalanceMinor={walletBalance} maxBuyable={maxBuyable} />
-            <p className="mt-3 text-xs text-slate-400">
-              {t.sms.buyNote}
-            </p>
-          </Panel>
-        ) : (
-          <Panel title={t.sms.buyTitle}>
-            <p className="text-sm text-slate-500">{t.assistants.ownerOnly}</p>
-          </Panel>
-        )}
+        <Panel title={t.sms.buyTitle}>
+          <SmsOrderPanel packages={SMS_PACKAGES} walletBalanceMinor={walletBalance} maxBuyable={maxBuyable} />
+          <p className="mt-3 text-xs text-slate-400">
+            {t.sms.buyNote}
+          </p>
+        </Panel>
 
         <Panel title={t.sms.historyTitle}>
           {stats.credits.length === 0 && stats.orders.length === 0 ? (

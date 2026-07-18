@@ -3,6 +3,14 @@ import { redirect } from "next/navigation";
 import { getActingCenter } from "@/lib/auth/acting";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { env } from "@/lib/env";
+import { crmNav } from "@/components/dashboard/role-navs";
+
+/** Assistants only see the day-to-day sections — SMS/balance, settings and
+ * the center panel link stay hidden (owner-only). */
+export function crmNavFor(isOwner: boolean) {
+  if (isOwner) return crmNav;
+  return crmNav.filter((i) => i.href === "/crm" || i.href === "/crm/teqvim" || i.href === "/crm/pasiyentler");
+}
 
 /**
  * Require a session acting for a center (the owner OR an active assistant)

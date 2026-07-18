@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Clock, ListChecks, ExternalLink, CalendarOff } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { crmNav } from "@/components/dashboard/role-navs";
 import { Panel } from "@/components/dashboard/widgets";
 import { parseHours, formatHoursSummary, DAY_KEYS } from "@/lib/hours";
 import { getCenterHolidays } from "@/lib/crm";
@@ -9,7 +8,7 @@ import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getCrmDict } from "@/lib/i18n-crm";
-import { requireCenter } from "../_lib";
+import { requireCenter, crmNavFor } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { SlotSettingsForm } from "../slot-settings-form";
 import { HolidaysManager } from "../holidays-manager";
@@ -29,7 +28,7 @@ export default async function CrmSettingsPage() {
   // Settings (incl. assistants) are owner-only; assistants see a note.
   if (!isOwner) {
     return (
-      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+      <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(isOwner)} collapsible>
         <h1 className="mb-6 font-display text-2xl font-bold text-ink-900">{t.settings.title}</h1>
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
           {t.assistants.ownerOnly}
@@ -49,7 +48,7 @@ export default async function CrmSettingsPage() {
   const holidays = await getCenterHolidays(center.id);
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(isOwner)} collapsible>
       <h1 className="mb-6 font-display text-2xl font-bold text-ink-900">{t.settings.title}</h1>
 
       <div className="space-y-6">

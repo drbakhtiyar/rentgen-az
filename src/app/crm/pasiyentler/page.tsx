@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Users, Phone, CheckCircle2, Clock } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { crmNav } from "@/components/dashboard/role-navs";
 import { Panel, EmptyState } from "@/components/dashboard/widgets";
 import { getActiveServices } from "@/lib/queries";
 import { getCenterPatients } from "@/lib/crm";
@@ -12,7 +11,7 @@ import { formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getCrmDict } from "@/lib/i18n-crm";
-import { requireCenter } from "../_lib";
+import { requireCenter, crmNavFor } from "../_lib";
 import { CrmUpsell } from "../crm-upsell";
 import { ManualAppointmentForm } from "../manual-appointment-form";
 import { RecallButton } from "../recall-button";
@@ -29,7 +28,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function CrmPatientsPage() {
-  const { center } = await requireCenter("/crm/pasiyentler");
+  const { center, isOwner } = await requireCenter("/crm/pasiyentler");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const t = getCrmDict(await getLocale());
   const [patients, services] = await Promise.all([
@@ -38,7 +37,7 @@ export default async function CrmPatientsPage() {
   ]);
 
   return (
-    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNav} collapsible>
+    <DashboardShell title="CRM" roleLabel={center.name} userName={center.name} nav={crmNavFor(isOwner)} collapsible>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-ink-900">{t.patients.title}</h1>
