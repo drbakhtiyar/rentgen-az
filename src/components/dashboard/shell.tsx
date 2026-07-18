@@ -9,6 +9,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
 import { LocaleProvider } from "@/components/locale-context";
 import { DashboardNav, type NavItem } from "./nav";
+import { MobileNavMenu } from "./mobile-nav-menu";
 import { RoleSwitcher } from "./role-switcher";
 
 export async function DashboardShell({
@@ -138,14 +139,30 @@ export async function DashboardShell({
             </div>
           )}
 
-          {/* Mobile nav (+ logout — the sidebar with it is desktop-only) */}
-          <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-            <DashboardNav items={navItems} mobile badges={mergedBadges} />
-            <LogoutButton
-              label={pd.shell.logout}
-              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-200"
-            />
-          </div>
+          {/* Mobile nav (+ logout — the sidebar with it is desktop-only).
+              CRM has too many links for the pill row → hamburger menu there. */}
+          {collapsible ? (
+            <div className="mb-5 lg:hidden">
+              <MobileNavMenu
+                items={navItems}
+                badges={mergedBadges}
+                footer={
+                  <LogoutButton
+                    label={pd.shell.logout}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                  />
+                }
+              />
+            </div>
+          ) : (
+            <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+              <DashboardNav items={navItems} mobile badges={mergedBadges} />
+              <LogoutButton
+                label={pd.shell.logout}
+                className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-200"
+              />
+            </div>
+          )}
 
           {children}
         </div>
