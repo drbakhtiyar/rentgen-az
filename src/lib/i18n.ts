@@ -145,6 +145,8 @@ type Dict = {
     doctor: string;
     doctorHint: string;
     doctorOpt: string;
+    typeToSearch: string;
+    noMatches: string;
     note: string;
     notePh: string;
     date: string;
@@ -580,6 +582,8 @@ const az: Dict = {
     doctor: "Sizi yönləndirən həkim",
     doctorHint: "Həkiminiz varsa seçin — o, müraciətinizi izləyə biləcək.",
     doctorOpt: "Həkim seçin (istəyə bağlı)",
+    typeToSearch: "Yazmağa başlayın — ən azı 3 hərf",
+    noMatches: "Uyğun variant tapılmadı",
     note: "Qeyd",
     notePh: "Əlavə məlumat (istəyə bağlı)",
     date: "Tarix",
@@ -1089,6 +1093,8 @@ const ru: Dict = {
     doctor: "Направивший врач",
     doctorHint: "Если у вас есть врач — выберите его, он сможет отслеживать заявку.",
     doctorOpt: "Выберите врача (необязательно)",
+    typeToSearch: "Начните вводить — минимум 3 буквы",
+    noMatches: "Совпадений не найдено",
     note: "Примечание",
     notePh: "Дополнительная информация (необязательно)",
     date: "Дата",
