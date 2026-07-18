@@ -12,6 +12,7 @@ export async function WalletHistory({ entries }: { entries: Entry[] }) {
     TOPUP: t.walletTopup,
     PLAN: t.walletPlan,
     STORAGE: "+1 TB storage",
+    SMS: "SMS paketi",
     REFUND: t.walletRefund,
     ADMIN: t.walletAdmin,
   };

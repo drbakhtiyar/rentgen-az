@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { sendSms, type SmsKind, type SendSmsResult } from "@/lib/sms";
+import { notifyUser } from "@/lib/notifications";
 
 /**
  * CRM SMS credits. Center-serving SMSes (reminders, re-calls, invites,
@@ -10,7 +11,7 @@ import { sendSms, type SmsKind, type SendSmsResult } from "@/lib/sms";
  */
 
 export const NO_BALANCE_ERROR =
-  "SMS balansınız bitib. CRM → SMS-lər bölməsindən paket sifariş edin.";
+  "SMS balansınız bitib. CRM → SMS-lər bölməsindən paket alın.";
 
 /** SMS packages offered to centers (qty → AZN). */
 export const SMS_PACKAGES: { qty: number; price: number }[] = [
@@ -18,6 +19,11 @@ export const SMS_PACKAGES: { qty: number; price: number }[] = [
   { qty: 5000, price: 280 },
   { qty: 10000, price: 500 },
 ];
+
+/** Kept for the platform: centers can't buy the provider pool below this. */
+export const ADMIN_SMS_RESERVE = 1000;
+/** A center gets a low-balance warning when it drops to this. */
+export const CENTER_SMS_WARN_AT = 500;
 
 export type CenterSendResult = SendSmsResult | { ok: false; error: string; noBalance: true };
 
@@ -45,8 +51,32 @@ export async function sendCenterSms(
     await prisma.centerProfile
       .update({ where: { id: centerId }, data: { smsBalance: { increment: 1 } } })
       .catch(() => {});
+  } else {
+    // Low-balance warning exactly when the counter crosses the threshold
+    // (single decrements → fires once). Platform-paid, never charged.
+    warnIfLow(centerId).catch(() => {});
   }
   return res;
+}
+
+async function warnIfLow(centerId: string): Promise<void> {
+  const c = await prisma.centerProfile.findUnique({
+    where: { id: centerId },
+    select: { smsBalance: true, phone: true, name: true, userId: true },
+  });
+  if (!c || c.smsBalance !== CENTER_SMS_WARN_AT) return;
+  await sendSms(
+    c.phone,
+    `rentgen.az: SMS balansınız azalır — ${CENTER_SMS_WARN_AT} SMS qalıb. Fasiləsiz xatırlatma/kampaniya üçün CRM-də yeni paket alın.`,
+    "other",
+  ).catch(() => {});
+  await notifyUser(
+    c.userId,
+    "STATUS_UPDATE",
+    "SMS balansı azalır",
+    `${CENTER_SMS_WARN_AT} SMS qalıb. CRM → SMS-lər bölməsindən yeni paket ala bilərsiniz.`,
+    "/crm/sms",
+  ).catch(() => {});
 }
 
 /** Add credits to a center (grant or paid purchase) with a ledger row. */

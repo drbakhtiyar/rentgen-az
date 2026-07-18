@@ -19,6 +19,7 @@ import { SmsOrdersPanel } from "@/components/admin/sms-orders-panel";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getSmsBalance } from "@/lib/sms";
+import { ADMIN_SMS_RESERVE, CENTER_SMS_WARN_AT } from "@/lib/center-sms";
 import { formatDateTimeAz, cn } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
@@ -155,6 +156,7 @@ export default async function AdminSmsPage({
       select: { id: true, name: true, smsBalance: true },
     }),
   ]);
+  const lowCenters = crmCenters.filter((c) => c.smsBalance > 0 && c.smsBalance <= CENTER_SMS_WARN_AT);
 
   // Resolve each log's recipient role once, then apply the role filter.
   const logsWithRole = logs.map((s) => ({ ...s, role: roleFor(s.kind, s.phone) }));
@@ -176,9 +178,18 @@ export default async function AdminSmsPage({
         <StatCard label="Cəmi (son 200)" value={logs.length} icon={<MessageSquare />} tone="slate" />
       </div>
 
-      {balance != null && balance < 20 && (
+      {balance != null && balance <= ADMIN_SMS_RESERVE && (
+        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+          ⚠ Lsim SMS balansı {balance}-ə düşüb (platforma rezervi: {ADMIN_SMS_RESERVE}). SMS almaq
+          lazımdır — bu həddə mərkəzlərə paket satışı dayanır. Gündəlik SMS xatırlatması aktivdir.
+        </div>
+      )}
+      {lowCenters.length > 0 && (
         <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Balans azdır ({balance} kredit). SMS-lərin dayanmaması üçün balansı artırın.
+          <p className="font-semibold">SMS balansı azalan mərkəzlər (≤{CENTER_SMS_WARN_AT}):</p>
+          <p className="mt-1">
+            {lowCenters.map((c) => `${c.name} (${c.smsBalance})`).join(" · ")}
+          </p>
         </div>
       )}
 

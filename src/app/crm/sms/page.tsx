@@ -3,7 +3,9 @@ import { MessageSquare, Send, TrendingUp, AlertCircle, Gift, ShoppingCart } from
 import { DashboardShell } from "@/components/dashboard/shell";
 import { crmNav } from "@/components/dashboard/role-navs";
 import { StatCard, Panel } from "@/components/dashboard/widgets";
-import { getCenterSmsStats, SMS_PACKAGES } from "@/lib/center-sms";
+import { getCenterSmsStats, SMS_PACKAGES, ADMIN_SMS_RESERVE, CENTER_SMS_WARN_AT } from "@/lib/center-sms";
+import { getSmsBalance } from "@/lib/sms";
+import { getBalance } from "@/lib/wallet";
 import { getCenterPatients } from "@/lib/crm";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { formatDateTimeAz } from "@/lib/utils";
@@ -36,11 +38,13 @@ const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
 export default async function CrmSmsPage() {
   const { center } = await requireCenter("/crm/sms");
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
-  const [stats, patients] = await Promise.all([
+  const [stats, patients, walletBalance, pool] = await Promise.all([
     getCenterSmsStats(center.id),
     getCenterPatients(center.id),
+    getBalance(center.userId),
+    getSmsBalance(),
   ]);
-  const hasPending = stats.orders.some((o) => o.status === "PENDING");
+  const maxBuyable = pool != null ? Math.max(0, pool - ADMIN_SMS_RESERVE) : null;
   const now = Date.now();
   const audienceCounts = {
     all: patients.length,
@@ -60,19 +64,19 @@ export default async function CrmSmsPage() {
         </p>
       </div>
 
-      {stats.balance <= 20 && (
+      {stats.balance <= CENTER_SMS_WARN_AT && (
         <div className="mb-5 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             {stats.balance === 0
-              ? "SMS balansınız bitib — xatırlatma və çağırış SMS-ləri göndərilmir. Paket sifariş edin."
-              : `SMS balansınız azalır (${stats.balance} qalıb). Fasiləsiz işləmək üçün paket sifariş edin.`}
+              ? "SMS balansınız bitib — xatırlatma və çağırış SMS-ləri göndərilmir. Paket alın."
+              : `SMS balansınız azalır (${stats.balance} qalıb). Fasiləsiz işləmək üçün yeni paket alın.`}
           </span>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Qalıq balans" value={stats.balance} icon={<MessageSquare />} tone={stats.balance <= 20 ? "amber" : "brand"} />
+        <StatCard label="Qalıq balans" value={stats.balance} icon={<MessageSquare />} tone={stats.balance <= CENTER_SMS_WARN_AT ? "amber" : "brand"} />
         <StatCard label="Bu ay göndərilən" value={stats.sentMonth} icon={<Send />} tone="cyan" />
         <StatCard label="Ümumi göndərilən" value={stats.sentTotal} icon={<TrendingUp />} tone="green" />
       </div>
@@ -85,10 +89,10 @@ export default async function CrmSmsPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Panel title="SMS paketi al">
-          <SmsOrderPanel packages={SMS_PACKAGES} hasPending={hasPending} />
+          <SmsOrderPanel packages={SMS_PACKAGES} walletBalanceMinor={walletBalance} maxBuyable={maxBuyable} />
           <p className="mt-3 text-xs text-slate-400">
-            Sifarişdən sonra admin sizinlə əlaqə saxlayıb ödənişi rəsmiləşdirir; təsdiqlənən kimi
-            balans avtomatik yüklənir.
+            Ödəniş balansınızdan çıxılır və SMS-lər dərhal yüklənir. Balansı Paket / Balans
+            səhifəsindən (Payriff ilə) artıra bilərsiniz.
           </p>
         </Panel>
 

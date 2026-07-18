@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { normalizePhone } from "@/lib/phone";
-import { sendCenterSms, SMS_PACKAGES } from "@/lib/center-sms";
-import { alertAdminSms } from "@/lib/sms";
+import { sendCenterSms, creditCenterSms, SMS_PACKAGES, ADMIN_SMS_RESERVE } from "@/lib/center-sms";
+import { alertAdminSms, getSmsBalance } from "@/lib/sms";
+import { debitWallet } from "@/lib/wallet";
 import { isSlotAvailable, getCenterPatients } from "@/lib/crm";
 
 export type CrmResult = { ok: true } | { ok: false; error: string };
@@ -416,32 +417,48 @@ export async function sendCampaignAction(input: {
   return { ok: true, sent, failed, skipped, noBalance };
 }
 
-/** Order an SMS package: creates a PENDING order and alerts the admin. */
-export async function createSmsOrderAction(qty: number): Promise<CrmResult> {
-  const center = await currentCenter();
-  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+/**
+ * Buy an SMS package instantly: pays from the wallet balance (top-ups go
+ * through Payriff) and credits the SMS balance right away — no admin approval.
+ * The platform's provider (Lsim) pool backs these units: purchases are capped
+ * so at least ADMIN_SMS_RESERVE units always stay for the platform itself.
+ */
+export async function buySmsPackageAction(qty: number): Promise<CrmResult> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true, plan: true, name: true },
+  });
+  if (!center || center.plan !== "PLATINUM") return { ok: false, error: "Mərkəz tapılmadı." };
   const pack = SMS_PACKAGES.find((p) => p.qty === qty);
   if (!pack) return { ok: false, error: "Paket tapılmadı." };
 
-  // One open order at a time — keeps the manual payment flow unambiguous.
-  const open = await prisma.centerSmsOrder.findFirst({
-    where: { centerId: center.id, status: "PENDING" },
-    select: { id: true },
-  });
-  if (open) return { ok: false, error: "Gözləyən sifarişiniz var. Admin təsdiqindən sonra yenisini verə bilərsiniz." };
+  // Stock cap: keep the admin reserve in the provider pool.
+  const pool = await getSmsBalance();
+  if (pool != null) {
+    const maxBuyable = Math.max(0, pool - ADMIN_SMS_RESERVE);
+    if (pack.qty > maxBuyable) {
+      await alertAdminSms(
+        `rentgen.az: ${center.name} ${pack.qty} SMS almaq istədi, stok çatmadı (Lsim: ${pool}). SMS almaq lazımdır.`,
+      ).catch(() => {});
+      return {
+        ok: false,
+        error:
+          maxBuyable > 0
+            ? `Hazırda stokda maksimum ${maxBuyable} SMS var. Daha kiçik paket seçin — stok tezliklə artırılacaq.`
+            : "SMS stoku müvəqqəti tükənib — tezliklə artırılacaq. Bir azdan yenidən cəhd edin.",
+      };
+    }
+  }
 
-  const profile = await prisma.centerProfile.findUnique({
-    where: { id: center.id },
-    select: { name: true },
-  });
-  await prisma.centerSmsOrder.create({
-    data: { centerId: center.id, qty: pack.qty, price: pack.price },
-  });
-  await alertAdminSms(
-    `rentgen.az: ${profile?.name ?? "Mərkəz"} ${pack.qty} SMS paketi sifariş etdi (${pack.price} AZN). Admin paneldə təsdiqləyin.`,
-  );
+  const res = await debitWallet(user.id, pack.price * 100, "SMS", `${pack.qty} SMS paketi (${pack.price} AZN)`);
+  if (!res.ok) {
+    return { ok: false, error: "Balans kifayət etmir. Paket / Balans səhifəsindən balansı artırın." };
+  }
+  await creditCenterSms(center.id, pack.qty, "PURCHASE", `${pack.qty} SMS paketi (${pack.price} AZN)`);
 
   revalidatePath("/crm/sms");
+  revalidatePath("/merkez/paket");
   return { ok: true };
 }
 

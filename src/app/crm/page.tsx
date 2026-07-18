@@ -42,7 +42,7 @@ export default async function CrmTodayPage() {
         />
       </div>
 
-      {center.smsBalance <= 20 && (
+      {center.smsBalance <= 500 && (
         <Link
           href="/crm/sms"
           className="mb-6 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:bg-amber-100"
@@ -52,7 +52,7 @@ export default async function CrmTodayPage() {
             {center.smsBalance === 0
               ? "SMS balansınız bitib — xatırlatma və çağırış SMS-ləri göndərilmir."
               : `SMS balansınız azalır (${center.smsBalance} qalıb).`}{" "}
-            <span className="font-semibold underline">SMS-lər bölməsindən paket sifariş edin.</span>
+            <span className="font-semibold underline">SMS-lər bölməsindən paket alın.</span>
           </span>
         </Link>
       )}
