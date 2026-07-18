@@ -10,7 +10,10 @@ import { doctorName } from "@/lib/utils";
 import { doctorLimits } from "@/lib/plans";
 import { CITIES } from "@/lib/constants";
 import { getLocale } from "@/lib/i18n-server";
+import { getCrmDict } from "@/lib/i18n-crm";
+import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
+import { DoctorAssistantsManager } from "../assistants-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +38,13 @@ export default async function DoctorProfilePage() {
     profile = null;
   }
   if (!profile) redirect("/hekim/qeydiyyat");
+
+  const assistants = await prisma.doctorAssistant.findMany({
+    where: { doctorId: profile.id },
+    orderBy: { createdAt: "asc" },
+    include: { user: { select: { phone: true } } },
+  });
+  const ta = getCrmDict(locale).assistants;
 
   const centerOptions = (
     await prisma.centerProfile
@@ -84,6 +94,19 @@ export default async function DoctorProfilePage() {
             workplaceCenterId: profile.workplaceCenterId ?? "",
             workplaceStatus: profile.workplaceStatus ?? "",
           }}
+        />
+      </Card>
+
+      <Card className="mt-6 max-w-2xl p-6 sm:p-8">
+        <h2 className="mb-4 font-display text-lg font-bold text-ink-900">{ta.title}</h2>
+        <DoctorAssistantsManager
+          initial={assistants.map((a) => ({
+            id: a.id,
+            firstName: a.firstName,
+            lastName: a.lastName,
+            phone: formatPhoneDisplay(a.user.phone),
+            active: a.active,
+          }))}
         />
       </Card>
     </DashboardShell>

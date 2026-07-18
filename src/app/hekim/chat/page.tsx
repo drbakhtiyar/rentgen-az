@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { doctorNav } from "@/components/dashboard/role-navs";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { prisma } from "@/lib/db";
-import { requireRole } from "@/lib/auth/rbac";
+import { requireDoctor, doctorNavFor } from "../_lib";
 import { getChatContacts } from "@/lib/chat";
 import { doctorName } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
@@ -24,15 +23,10 @@ export default async function DoctorChatPage({
 }: {
   searchParams: Promise<{ with?: string }>;
 }) {
-  const user = await requireRole("DOCTOR", "/hekim/chat");
-  const doctor = await prisma.doctorProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true, firstName: true, lastName: true },
-  });
-  if (!doctor) redirect("/hekim/qeydiyyat");
+  const { doctor, isOwner } = await requireDoctor("/hekim/chat");
 
   const { with: initialWith } = await searchParams;
-  const contacts = await getChatContacts("DOCTOR", doctor.id, user.id);
+  const contacts = await getChatContacts("DOCTOR", doctor.id, doctor.userId);
   const pd = getPanelDict(await getLocale());
 
   return (
@@ -40,7 +34,7 @@ export default async function DoctorChatPage({
       title={pd.nav.chat}
       roleLabel={pd.shell.roleDoctor}
       userName={doctorName(doctor.firstName, doctor.lastName)}
-      nav={doctorNav}
+      nav={doctorNavFor(isOwner)}
     >
       <ChatInterface contacts={contacts} meRole="DOCTOR" initialWith={initialWith} />
     </DashboardShell>

@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Users, Search, Download, Lock } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { doctorNav } from "@/components/dashboard/role-navs";
 import { EmptyState, Panel, StatusBadge } from "@/components/dashboard/widgets";
 import { Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import { RequestPartnerButton } from "@/components/partnership/partnership-butto
 import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
 import { prisma } from "@/lib/db";
 import { getActiveServices } from "@/lib/queries";
-import { requireRole } from "@/lib/auth/rbac";
+import { requireDoctor, doctorNavFor } from "../_lib";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
 import { formatDateAz, doctorName } from "@/lib/utils";
@@ -47,12 +46,7 @@ export default async function DoctorPatientsPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const user = await requireRole("DOCTOR", "/hekim/pasiyentler");
-  const doctor = await prisma.doctorProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true, firstName: true, lastName: true },
-  });
-  if (!doctor) redirect("/hekim/qeydiyyat");
+  const { doctor, isOwner } = await requireDoctor("/hekim/pasiyentler");
 
   const { q } = await searchParams;
   const query = (q ?? "").trim();
@@ -98,9 +92,11 @@ export default async function DoctorPatientsPage({
   const services = await getActiveServices();
   const serviceName = new Map(services.map((s) => [s.slug, s.shortName ?? s.name]));
 
-  // Referrals this doctor sent via the quick (public) referral form — matched by phone.
+  // Referrals this doctor sent via the quick (public) referral form — matched
+  // by the DOCTOR's phone (not the assistant's).
+  const docUser = await prisma.user.findUnique({ where: { id: doctor.userId }, select: { phone: true } });
   const myReferrals = await prisma.referral.findMany({
-    where: { doctorPhone: user.phone },
+    where: { doctorPhone: docUser?.phone ?? "" },
     orderBy: { createdAt: "desc" },
     take: 50,
     include: { center: { select: { name: true, slug: true } } },
@@ -125,7 +121,7 @@ export default async function DoctorPatientsPage({
   const t = pd.doctor;
 
   return (
-    <DashboardShell title={pd.nav.pasiyentler} roleLabel={pd.shell.roleDoctor} userName={fullName} nav={doctorNav}>
+    <DashboardShell title={pd.nav.pasiyentler} roleLabel={pd.shell.roleDoctor} userName={fullName} nav={doctorNavFor(isOwner)}>
       <form className="mb-5 flex flex-wrap items-center gap-2">
         <Input
           name="q"

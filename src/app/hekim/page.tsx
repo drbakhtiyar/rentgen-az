@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Send, Users, Building2, AlertTriangle, Download, Lock } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { doctorNav } from "@/components/dashboard/role-navs";
 import {
   StatCard,
   Panel,
@@ -18,7 +17,7 @@ import { PlanExpiryBanner } from "@/components/dashboard/plan-expiry-banner";
 import { getDoctorStats } from "@/lib/queries";
 import { doctorLimits } from "@/lib/plans";
 import { prisma } from "@/lib/db";
-import { requireRole } from "@/lib/auth/rbac";
+import { requireDoctor, doctorNavFor } from "./_lib";
 import { formatDateAz, doctorName } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
@@ -54,17 +53,7 @@ function daysUntil(d: Date | null): number | null {
 }
 
 export default async function DoctorDashboardPage() {
-  const user = await requireRole("DOCTOR", "/hekim");
-
-  let doctor = null;
-  try {
-    doctor = await prisma.doctorProfile.findUnique({
-      where: { userId: user.id },
-    });
-  } catch {
-    doctor = null;
-  }
-  if (!doctor) redirect("/hekim/qeydiyyat");
+  const { doctor, isOwner } = await requireDoctor("/hekim");
 
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
@@ -129,9 +118,9 @@ export default async function DoctorDashboardPage() {
       title={pd.nav.icmal}
       roleLabel={pd.shell.roleDoctor}
       userName={fullName}
-      nav={doctorNav}
+      nav={doctorNavFor(isOwner)}
     >
-      {doctor.plan !== "FREE" && (
+      {isOwner && doctor.plan !== "FREE" && (
         <PlanExpiryBanner
           daysLeft={daysUntil(doctor.planUntil)}
           planUntil={doctor.planUntil ? formatDateAz(doctor.planUntil) : null}

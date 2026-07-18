@@ -9,7 +9,7 @@ const PROTECTED: [prefix: string, roles: Role[]][] = [
   ["/admin", ["ADMIN"]],
   ["/merkez", ["CENTER"]],
   ["/crm", ["CENTER", "ASSISTANT"]],
-  ["/hekim", ["DOCTOR"]],
+  ["/hekim", ["DOCTOR", "ASSISTANT"]],
   ["/kabinet", ["PATIENT"]],
 ];
 

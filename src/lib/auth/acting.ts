@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "./rbac";
-import type { CenterProfile } from "@/generated/prisma/client";
+import type { CenterProfile, DoctorProfile } from "@/generated/prisma/client";
 
 export type ActingCenter = {
   userId: string;
@@ -30,6 +30,37 @@ export async function getActingCenter(): Promise<ActingCenter | null> {
     });
     if (!link || !link.active) return null;
     return { userId: me.id, center: link.center, isOwner: false };
+  }
+  return null;
+}
+
+export type ActingDoctor = {
+  userId: string;
+  doctor: DoctorProfile;
+  /** true = the doctor themself; false = an assistant acting for the doctor. */
+  isOwner: boolean;
+};
+
+/**
+ * The doctor the current session acts for: the doctor's own profile (DOCTOR
+ * role) or the linked doctor of an active assistant (ASSISTANT role).
+ * Assistants handle day-to-day work; profile editing and billing stay
+ * owner-only (callers decide via `isOwner`). Returns null for anyone else.
+ */
+export async function getActingDoctor(): Promise<ActingDoctor | null> {
+  const me = await getCurrentUser();
+  if (!me) return null;
+  if (me.role === "DOCTOR") {
+    const doctor = me.doctorProfile ?? (await prisma.doctorProfile.findUnique({ where: { userId: me.id } }));
+    return doctor ? { userId: me.id, doctor, isOwner: true } : null;
+  }
+  if (me.role === "ASSISTANT") {
+    const link = await prisma.doctorAssistant.findUnique({
+      where: { userId: me.id },
+      include: { doctor: true },
+    });
+    if (!link || !link.active) return null;
+    return { userId: me.id, doctor: link.doctor, isOwner: false };
   }
   return null;
 }

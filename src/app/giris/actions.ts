@@ -131,6 +131,8 @@ export async function verifyOtpAction(input: {
       centerProfile: true,
       patientProfile: true,
       doctorProfile: true,
+      assistantOf: true,
+      doctorAssistantOf: true,
     } as const;
     let user = await prisma.user.findUnique({ where: { phone }, include });
 
@@ -145,6 +147,20 @@ export async function verifyOtpAction(input: {
         ok: false,
         error: "Bu hesaba bu formdan giriş mümkün deyil.",
       };
+    }
+
+    // Assistant phones must never fall through to the profile-creating flow
+    // below (a doctor's assistant picking "Həkim" would otherwise start a
+    // doctor registration). The system works out whose assistant they are.
+    if (user?.doctorAssistantOf?.active && desiredRole !== "PATIENT" && !user.doctorProfile) {
+      await prisma.user.update({ where: { id: user.id }, data: { role: "ASSISTANT", lastLoginAt: new Date() } });
+      await setSessionCookie({ userId: user.id, role: "ASSISTANT", phone: user.phone });
+      return { ok: true, redirectTo: "/hekim" };
+    }
+    if (user?.assistantOf?.active && desiredRole !== "PATIENT" && !user.centerProfile) {
+      await prisma.user.update({ where: { id: user.id }, data: { role: "ASSISTANT", lastLoginAt: new Date() } });
+      await setSessionCookie({ userId: user.id, role: "ASSISTANT", phone: user.phone });
+      return { ok: true, redirectTo: "/crm/teqvim" };
     }
 
     // One account per phone, but the SAME person can be patient, center and/or

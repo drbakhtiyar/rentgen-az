@@ -176,6 +176,7 @@ export type CrmDict = {
     otpSentPre: string; otpSentPost: string;
     activeOn: string; activeOff: string; removeConfirm: string;
     ownerOnly: string; loginHint: string; limitNote: string;
+    descDoctor: string; loginHintDoctor: string; limitNoteDoctor: string;
   };
 };
 
@@ -362,6 +363,9 @@ const az: CrmDict = {
     ownerOnly: "Bu bölmə yalnız mərkəz sahibinə açıqdır.",
     loginHint: "Asistent crm.rentgen.az ünvanına daxil olub yalnız öz nömrəsi ilə (OTP) giriş edir.",
     limitNote: "Hər mərkəzə maksimum 1 asistent əlavə etmək olar.",
+    descDoctor: "Asistentiniz gündəlik işləri (pasiyentlər, nəticələr, bildirişlər, söhbətlər) sizin adınızdan idarə edə bilər. Profil və paket/balans yalnız sizə açıqdır.",
+    loginHintDoctor: "Asistent rentgen.az/giris səhifəsində «Həkim» bölməsindən öz nömrəsi ilə (OTP) daxil olur — sistem kimin asistenti olduğunu özü tanıyır.",
+    limitNoteDoctor: "Hər həkimə maksimum 1 asistent əlavə etmək olar.",
   },
 };
 
@@ -548,6 +552,9 @@ const ru: CrmDict = {
     ownerOnly: "Раздел доступен только владельцу центра.",
     loginHint: "Ассистент заходит на crm.rentgen.az и входит только по своему номеру (OTP).",
     limitNote: "На каждый центр можно добавить максимум 1 ассистента.",
+    descDoctor: "Ассистент ведёт повседневную работу (пациенты, результаты, уведомления, чаты) от вашего имени. Профиль и пакет/баланс доступны только вам.",
+    loginHintDoctor: "Ассистент входит на rentgen.az/giris во вкладке «Врач» по своему номеру (OTP) — система сама определяет, чей это ассистент.",
+    limitNoteDoctor: "На каждого врача можно добавить максимум 1 ассистента.",
   },
 };
 

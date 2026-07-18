@@ -61,6 +61,7 @@ model User {
 
   patientProfile PatientProfile?
   assistantOf    CenterAssistant?
+  doctorAssistantOf DoctorAssistant?
   centerProfile  CenterProfile?
   doctorProfile  DoctorProfile?
   adminLogs      AdminActionLog[] @relation("AdminUser")
@@ -295,6 +296,20 @@ model CenterAssistant {
   createdAt DateTime      @default(now())
 
   @@index([centerId])
+}
+
+model DoctorAssistant {
+  id        String        @id @default(cuid())
+  doctorId  String
+  doctor    DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  userId    String        @unique
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+
+  @@index([doctorId])
 }
 
 model CenterHoliday {
@@ -561,6 +576,7 @@ model DoctorProfile {
   centerPartners      CenterDoctor[]
   conversations       Conversation[]
   events              DoctorEvent[]
+  assistants          DoctorAssistant[]
 
   @@index([status])
   @@index([workplaceCenterId, workplaceStatus])

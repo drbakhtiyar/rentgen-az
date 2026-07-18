@@ -36,6 +36,15 @@ async function meParticipant() {
   if (me.role === "DOCTOR" && me.doctorProfile) {
     return { userId: me.id, role: "DOCTOR" as const, profileId: me.doctorProfile.id };
   }
+  if (me.role === "ASSISTANT") {
+    // An active assistant chats on behalf of their center/doctor.
+    const [c, d] = await Promise.all([
+      prisma.centerAssistant.findUnique({ where: { userId: me.id }, select: { centerId: true, active: true } }),
+      prisma.doctorAssistant.findUnique({ where: { userId: me.id }, select: { doctorId: true, active: true } }),
+    ]);
+    if (c?.active) return { userId: me.id, role: "CENTER" as const, profileId: c.centerId };
+    if (d?.active) return { userId: me.id, role: "DOCTOR" as const, profileId: d.doctorId };
+  }
   return null;
 }
 

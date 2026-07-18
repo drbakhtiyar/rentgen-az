@@ -375,12 +375,27 @@ export async function getDownloadUrlAction(
   } else if (me.role === "CENTER" && me.centerProfile) {
     allowed = r.centerId === me.centerProfile.id;
   } else if (me.role === "ASSISTANT") {
-    // An active assistant may open the files of their own center's requests.
+    // An active assistant may open their own center's files, or (for doctor
+    // assistants) the referring doctor's files under the same partnership gate.
     const link = await prisma.centerAssistant.findUnique({
       where: { userId: me.id },
       select: { centerId: true, active: true },
     });
-    allowed = !!link?.active && r.centerId === link.centerId;
+    if (link) {
+      allowed = link.active && r.centerId === link.centerId;
+    } else {
+      const dlink = await prisma.doctorAssistant.findUnique({
+        where: { userId: me.id },
+        select: { doctorId: true, active: true },
+      });
+      if (dlink?.active && r.doctorId === dlink.doctorId && r.centerId) {
+        const partner = await prisma.centerDoctor.findUnique({
+          where: { centerId_doctorId: { centerId: r.centerId, doctorId: dlink.doctorId } },
+          select: { status: true },
+        });
+        allowed = partner?.status === "ACCEPTED";
+      }
+    }
   } else if (me.role === "PATIENT" && me.patientProfile) {
     allowed = r.patientId === me.patientProfile.id;
   } else if (me.role === "DOCTOR" && me.doctorProfile) {

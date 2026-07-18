@@ -3,11 +3,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Building2, MapPin, MessageSquare } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { doctorNav } from "@/components/dashboard/role-navs";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { prisma } from "@/lib/db";
-import { requireRole } from "@/lib/auth/rbac";
+import { requireDoctor, doctorNavFor } from "../_lib";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
 import { doctorName } from "@/lib/utils";
@@ -23,12 +22,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function DoctorCentersPage() {
-  const user = await requireRole("DOCTOR", "/hekim/merkezler");
-  const doctor = await prisma.doctorProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true, firstName: true, lastName: true, status: true },
-  });
-  if (!doctor) redirect("/hekim/qeydiyyat");
+  const { doctor, isOwner } = await requireDoctor("/hekim/merkezler");
 
   const [centers, partners] = await Promise.all([
     prisma.centerProfile.findMany({
@@ -51,7 +45,7 @@ export default async function DoctorCentersPage() {
   const t = pd.doctor;
 
   return (
-    <DashboardShell title={pd.nav.merkezler} roleLabel={pd.shell.roleDoctor} userName={fullName} nav={doctorNav}>
+    <DashboardShell title={pd.nav.merkezler} roleLabel={pd.shell.roleDoctor} userName={fullName} nav={doctorNavFor(isOwner)}>
       <div className="mb-5 rounded-2xl border border-brand-100 bg-brand-50/50 p-4 text-sm text-brand-900">
         {t.centersIntro}
       </div>
