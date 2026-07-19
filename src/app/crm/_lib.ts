@@ -9,7 +9,9 @@ import { crmNav } from "@/components/dashboard/role-navs";
  * the center panel link stay hidden (owner-only). */
 export function crmNavFor(isOwner: boolean) {
   if (isOwner) return crmNav;
-  return crmNav.filter((i) => i.href === "/crm" || i.href === "/crm/teqvim" || i.href === "/crm/pasiyentler");
+  return crmNav.filter(
+    (i) => i.href === "/crm" || i.href === "/crm/teqvim" || i.href === "/crm/pasiyentler" || i.href === "/crm/ai",
+  );
 }
 
 /**

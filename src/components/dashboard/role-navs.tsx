@@ -19,6 +19,7 @@ import {
   UserPlus,
   Handshake,
   CalendarDays,
+  Sparkles,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -44,6 +45,7 @@ export const crmNav: NavItem[] = [
   { label: "Pasiyentlər", href: "/crm/pasiyentler", icon: <Users />, navKey: "pasiyentler" },
   { label: "SMS-lər", href: "/crm/sms", icon: <MessageSquare />, navKey: "crmSms" },
   { label: "Ayarlar", href: "/crm/ayarlar", icon: <Settings />, navKey: "crmSettings" },
+  { label: "AI Yardımçı", href: "/crm/ai", icon: <Sparkles />, navKey: "crmAi" },
   { label: "Mərkəz paneli", href: "https://rentgen.az/merkez", icon: <Building2 />, navKey: "crmCenterPanel" },
 ];
 
@@ -67,6 +69,7 @@ export const patientNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { label: "İcmal", href: "/admin", icon: <LayoutDashboard /> },
   { label: "Söhbətlər", href: "/admin/sohbetler", icon: <MessageSquare /> },
+  { label: "AI Yardımçı", href: "/admin/ai", icon: <Sparkles /> },
   { label: "Mərkəzlər", href: "/admin/merkezler", icon: <Building2 /> },
   { label: "Pasiyentlər", href: "/admin/pasiyentler", icon: <Users /> },
   { label: "Həkimlər", href: "/admin/hekimler", icon: <Stethoscope /> },

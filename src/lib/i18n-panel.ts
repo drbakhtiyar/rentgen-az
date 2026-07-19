@@ -85,6 +85,12 @@ export type PanelDict = {
     write: string;
     attach: string;
     fileError: string;
+    aiName: string;
+    aiSub: string;
+    aiGreeting: string;
+    aiPlaceholder: string;
+    aiThinking: string;
+    aiDisclaimer: string;
   };
   status: {
     PENDING: string;
@@ -102,6 +108,7 @@ export type PanelDict = {
     profil: string;
     pasiyentler: string;
     crmToday: string;
+    crmAi: string;
     crmCalendar: string;
     crmSms: string;
     crmSettings: string;
@@ -417,6 +424,12 @@ const az: PanelDict = {
     search: "Axtar…",
     write: "Mesaj yazın…",
     attach: "Fayl əlavə et",
+    aiName: "AI Yardımçı",
+    aiSub: "Sistem haqqında suallara dərhal cavab",
+    aiGreeting: "Salam! Rentgen.az üzrə AI yardımçıyam. Sayt və panellərin işləməsi ilə bağlı istənilən sualı yazın — qısa və konkret cavablandıracağam.",
+    aiPlaceholder: "Sualınızı yazın…",
+    aiThinking: "Cavab hazırlanır…",
+    aiDisclaimer: "AI cavabları məlumat xarakterlidir. Hesaba aid məsələlər üçün adminə yazın.",
     fileError: "Fayl yüklənmədi. Yenidən cəhd edin.",
   },
   status: {
@@ -435,6 +448,7 @@ const az: PanelDict = {
     profil: "Profil",
     pasiyentler: "Pasiyentlər",
     crmToday: "Bugün",
+    crmAi: "AI Yardımçı",
     crmCalendar: "Təqvim",
     crmSms: "SMS-lər",
     crmSettings: "Ayarlar",
@@ -750,6 +764,12 @@ const ru: PanelDict = {
     search: "Поиск…",
     write: "Напишите сообщение…",
     attach: "Прикрепить файл",
+    aiName: "AI Помощник",
+    aiSub: "Мгновенные ответы о работе системы",
+    aiGreeting: "Здравствуйте! Я AI-помощник Rentgen.az. Задайте любой вопрос о работе сайта и панелей — отвечу коротко и по делу.",
+    aiPlaceholder: "Напишите вопрос…",
+    aiThinking: "Готовлю ответ…",
+    aiDisclaimer: "Ответы AI носят информационный характер. По вопросам аккаунта пишите админу.",
     fileError: "Файл не загрузился. Попробуйте снова.",
   },
   status: {
@@ -768,6 +788,7 @@ const ru: PanelDict = {
     profil: "Профиль",
     pasiyentler: "Пациенты",
     crmToday: "Сегодня",
+    crmAi: "AI Помощник",
     crmCalendar: "Календарь",
     crmSms: "SMS",
     crmSettings: "Настройки",

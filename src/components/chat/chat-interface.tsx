@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search, Pin, LifeBuoy, Paperclip, FileText } from "lucide-react";
+import { Send, Loader2, ArrowLeft, Check, CheckCheck, MessageSquare, Stethoscope, Building2, Search, Pin, LifeBuoy, Paperclip, FileText, Sparkles } from "lucide-react";
 import {
   openConversationAction,
   sendMessageAction,
@@ -18,6 +18,7 @@ import {
   getAdminChatFileUrlAction,
 } from "@/app/actions/admin-chat";
 import type { ChatContact } from "@/lib/chat";
+import { AiChatPanel } from "@/components/ai/ai-chat-panel";
 import { useLocale } from "@/components/locale-context";
 import { getPanelDict } from "@/lib/i18n-panel";
 
@@ -66,6 +67,19 @@ export function ChatInterface({
   initialWith?: string;
 }) {
   const ct = getPanelDict(useLocale()).chat;
+  // Pinned synthetic contact — answers "how does the system work" questions.
+  const aiContact: ChatContact = {
+    profileId: "__ai__",
+    name: ct.aiName,
+    sub: ct.aiSub,
+    avatarUrl: null,
+    conversationId: null,
+    lastMessageAt: null,
+    preview: ct.aiSub,
+    unread: 0,
+    kind: "admin", // narrowed below via isAi — reuses the pinned styling
+  };
+  const isAi = (c: ChatContact | null) => c?.profileId === "__ai__";
   const [active, setActive] = React.useState<ChatContact | null>(null);
   const [convId, setConvId] = React.useState<string | null>(null);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -79,9 +93,10 @@ export function ChatInterface({
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const OtherIcon = meRole === "CENTER" ? Stethoscope : Building2;
 
+  const allContacts = [aiContact, ...contacts];
   const filtered = query.trim()
-    ? contacts.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
-    : contacts;
+    ? allContacts.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
+    : allContacts;
 
   const load = React.useCallback(async (id: string) => {
     const res = await fetchMessagesAction(id);
@@ -94,7 +109,7 @@ export function ChatInterface({
 
   // Poll the active conversation (partner) or the admin thread.
   React.useEffect(() => {
-    if (!active) return;
+    if (!active || isAi(active)) return;
     const isAdmin = active.kind === "admin";
     if (!isAdmin && !convId) return;
     const run = () => {
@@ -115,6 +130,7 @@ export function ChatInterface({
     setActive(c);
     setMessages([]);
     setConvId(null);
+    if (isAi(c)) return; // AI thread is local — nothing to load
     if (c.kind === "admin") {
       // Admin thread operates on the current user's single thread — no convId.
       return;
@@ -248,11 +264,7 @@ export function ChatInterface({
           (active ? "hidden sm:block" : "block")
         }
       >
-        {contacts.length === 0 ? (
-          <div className="p-6 text-center text-sm text-slate-400">
-            Partnyorunuz yoxdur. Söhbət üçün əvvəlcə əməkdaşlıq qurun.
-          </div>
-        ) : (
+        {(
           <>
             <div className="sticky top-0 z-10 border-b border-slate-100 bg-white p-2">
               <div className="relative">
@@ -279,7 +291,7 @@ export function ChatInterface({
                     (active?.profileId === c.profileId ? "bg-brand-50" : "")
                   }
                 >
-                  <ChatAvatar url={c.avatarUrl} name={c.name} size={36} Icon={c.kind === "admin" ? LifeBuoy : OtherIcon} />
+                  <ChatAvatar url={c.avatarUrl} name={c.name} size={36} Icon={isAi(c) ? Sparkles : c.kind === "admin" ? LifeBuoy : OtherIcon} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-1 truncate font-semibold text-ink-900">
@@ -325,13 +337,17 @@ export function ChatInterface({
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <ChatAvatar url={active.avatarUrl} name={active.name} size={32} Icon={active.kind === "admin" ? LifeBuoy : OtherIcon} />
+              <ChatAvatar url={active.avatarUrl} name={active.name} size={32} Icon={isAi(active) ? Sparkles : active.kind === "admin" ? LifeBuoy : OtherIcon} />
               <div className="min-w-0">
                 <p className="truncate font-semibold text-ink-900">{active.name}</p>
                 {active.sub && <p className="truncate text-xs text-slate-400">{active.sub}</p>}
               </div>
             </header>
 
+            {isAi(active) ? (
+              <AiChatPanel embedded />
+            ) : (
+              <>
             <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-slate-50/50 p-4">
               {loading && (
                 <div className="flex justify-center py-4">
@@ -419,6 +435,8 @@ export function ChatInterface({
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </form>
+              </>
+            )}
           </>
         )}
       </section>
