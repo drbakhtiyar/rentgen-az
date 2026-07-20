@@ -9,6 +9,7 @@ import { notifyUser } from "@/lib/notifications";
 import { alertAdminSms, sendOtpSms } from "@/lib/sms";
 import { createOtp, verifyOtp } from "@/lib/otp";
 import { normalizePhone } from "@/lib/phone";
+import { bumpSessionVersion } from "@/lib/auth/revoke";
 import { env } from "@/lib/env";
 import { doctorName } from "@/lib/utils";
 
@@ -230,9 +231,10 @@ export async function confirmAddDoctorAssistantAction(input: {
 export async function setDoctorAssistantActiveAction(id: string, active: boolean): Promise<DoctorActionResult> {
   const doctor = await ownerDoctor();
   if (!doctor) return { ok: false, error: "Həkim profili tapılmadı." };
-  const link = await prisma.doctorAssistant.findUnique({ where: { id }, select: { doctorId: true } });
+  const link = await prisma.doctorAssistant.findUnique({ where: { id }, select: { doctorId: true, userId: true } });
   if (!link || link.doctorId !== doctor.id) return { ok: false, error: "Asistent tapılmadı." };
   await prisma.doctorAssistant.update({ where: { id }, data: { active } });
+  if (!active) await bumpSessionVersion(link.userId);
   revalidatePath("/hekim/profil");
   return { ok: true };
 }
@@ -241,9 +243,10 @@ export async function setDoctorAssistantActiveAction(id: string, active: boolean
 export async function removeDoctorAssistantAction(id: string): Promise<DoctorActionResult> {
   const doctor = await ownerDoctor();
   if (!doctor) return { ok: false, error: "Həkim profili tapılmadı." };
-  const link = await prisma.doctorAssistant.findUnique({ where: { id }, select: { doctorId: true } });
+  const link = await prisma.doctorAssistant.findUnique({ where: { id }, select: { doctorId: true, userId: true } });
   if (!link || link.doctorId !== doctor.id) return { ok: false, error: "Asistent tapılmadı." };
   await prisma.doctorAssistant.delete({ where: { id } });
+  await bumpSessionVersion(link.userId);
   revalidatePath("/hekim/profil");
   return { ok: true };
 }

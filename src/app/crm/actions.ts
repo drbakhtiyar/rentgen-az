@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getActingCenter } from "@/lib/auth/acting";
+import { bumpSessionVersion } from "@/lib/auth/revoke";
 import { normalizePhone } from "@/lib/phone";
 import { sendCenterSms, creditCenterSms, SMS_PACKAGES, ADMIN_SMS_RESERVE } from "@/lib/center-sms";
 import { alertAdminSms, getSmsBalance, sendOtpSms } from "@/lib/sms";
@@ -636,9 +637,11 @@ export async function confirmAddAssistantAction(input: {
 export async function setAssistantActiveAction(id: string, active: boolean): Promise<CrmResult> {
   const center = await currentCenter(true);
   if (!center) return { ok: false, error: OWNER_ONLY };
-  const link = await prisma.centerAssistant.findUnique({ where: { id }, select: { centerId: true } });
+  const link = await prisma.centerAssistant.findUnique({ where: { id }, select: { centerId: true, userId: true } });
   if (!link || link.centerId !== center.id) return { ok: false, error: "Asistent tapılmadı." };
   await prisma.centerAssistant.update({ where: { id }, data: { active } });
+  // Deactivating kills any open session immediately (bump invalidates tokens).
+  if (!active) await bumpSessionVersion(link.userId);
   revalidatePath("/crm/ayarlar");
   return { ok: true };
 }
@@ -647,9 +650,10 @@ export async function setAssistantActiveAction(id: string, active: boolean): Pro
 export async function removeAssistantAction(id: string): Promise<CrmResult> {
   const center = await currentCenter(true);
   if (!center) return { ok: false, error: OWNER_ONLY };
-  const link = await prisma.centerAssistant.findUnique({ where: { id }, select: { centerId: true } });
+  const link = await prisma.centerAssistant.findUnique({ where: { id }, select: { centerId: true, userId: true } });
   if (!link || link.centerId !== center.id) return { ok: false, error: "Asistent tapılmadı." };
   await prisma.centerAssistant.delete({ where: { id } });
+  await bumpSessionVersion(link.userId);
   revalidatePath("/crm/ayarlar");
   return { ok: true };
 }

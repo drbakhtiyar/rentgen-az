@@ -24,7 +24,18 @@ export {
 const COOKIE_DOMAIN = env.isProd ? ".rentgen.az" : undefined;
 
 export async function setSessionCookie(payload: SessionPayload) {
-  const token = await createSessionToken(payload);
+  // Stamp the token with the user's current sessionVersion (and read their saved
+  // locale) in a single query — no login call-site needs to pass either.
+  let u: { locale: string | null; sessionVersion: number } | null = null;
+  try {
+    u = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { locale: true, sessionVersion: true },
+    });
+  } catch {
+    /* best-effort */
+  }
+  const token = await createSessionToken({ ...payload, v: u?.sessionVersion ?? 0 });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
@@ -37,10 +48,6 @@ export async function setSessionCookie(payload: SessionPayload) {
   // Apply the user's saved language preference, if any, so a returning user
   // lands in the language they last chose (persists across devices/logins).
   try {
-    const u = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { locale: true },
-    });
     if (u?.locale && isLocale(u.locale)) {
       cookieStore.set(LOCALE_COOKIE, u.locale, {
         sameSite: "lax",

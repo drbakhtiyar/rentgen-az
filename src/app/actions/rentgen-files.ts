@@ -440,9 +440,13 @@ export async function getDownloadUrlAction(
 export async function deleteFileAction(
   fileId: string,
 ): Promise<FileResult<{ trashed: boolean; retentionDays: number }>> {
-  // Owner or an active assistant (assistants upload scans day-to-day).
+  // Deleting files is owner-only. Assistants upload and view day-to-day, but
+  // removing a scan (even to the recoverable trash) stays with the owner.
   const acting = await getActingCenter();
   if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
+  if (!acting.isOwner) {
+    return { ok: false, error: "Faylı yalnız mərkəz sahibi silə bilər." };
+  }
   const user = { id: acting.userId };
   const center = { id: acting.center.id, plan: acting.center.plan };
 

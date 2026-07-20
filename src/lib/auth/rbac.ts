@@ -23,6 +23,9 @@ export const getCurrentUser = cache(async () => {
         include: { patientProfile: true, centerProfile: true, doctorProfile: true },
       });
       if (!user || user.isBlocked) return null;
+      // Token was invalidated (user.sessionVersion bumped — e.g. removed
+      // assistant). Old tokens carry a lower version → treat as logged out.
+      if (typeof session.v === "number" && session.v !== user.sessionVersion) return null;
       // A deactivated/removed assistant's session is dead: treat it as logged
       // out everywhere (header, pages) so they aren't bounced around. Their
       // access is revoked the moment the owner removes/deactivates them.

@@ -114,6 +114,7 @@ export default async function CrmPatientDetailPage({
                 requestId={a.id}
                 trashDays={trashDays}
                 canView={canView}
+                canDelete={isOwner}
                 files={a.files.map((f) => ({ ...f, downloadNote: downloadLabels[f.id] }))}
               />
             ) : (

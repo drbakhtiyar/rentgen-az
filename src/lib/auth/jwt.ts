@@ -14,6 +14,9 @@ export type SessionPayload = {
   userId: string;
   role: Role;
   phone: string;
+  /** User.sessionVersion at issue time — lets a removed/blocked user's existing
+   * tokens be invalidated by bumping the DB value. Missing on old tokens (→ 0). */
+  v?: number;
 };
 
 function secretKey() {
@@ -59,6 +62,7 @@ export async function verifySessionToken(
         userId: payload.userId,
         role: payload.role as Role,
         phone: payload.phone,
+        v: typeof payload.v === "number" ? payload.v : 0,
       };
     }
     return null;

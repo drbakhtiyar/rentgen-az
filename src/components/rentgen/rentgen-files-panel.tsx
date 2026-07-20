@@ -119,12 +119,15 @@ export function RentgenFilesPanel({
   files,
   trashDays = 0,
   canView = false,
+  canDelete = true,
 }: {
   requestId: string;
   files: RentgenFileItem[];
   trashDays?: number;
   /** Pre-launch: the in-browser viewer "Bax" button is gated (viewer-access). */
   canView?: boolean;
+  /** File deletion is owner-only — hide the button for assistants. */
+  canDelete?: boolean;
 }) {
   const router = useRouter();
   const t = getPanelDict(useLocale()).center;
@@ -325,14 +328,16 @@ export function RentgenFilesPanel({
               >
                 <FileDown className="h-4 w-4" />
               </button>
-              <button
-                type="button"
-                onClick={() => remove(f.id)}
-                className="shrink-0 rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                title={t.deleteTitle}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={() => remove(f.id)}
+                  className="shrink-0 rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                  title={t.deleteTitle}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </li>
           ))}
         </ul>
