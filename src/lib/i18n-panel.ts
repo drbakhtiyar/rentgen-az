@@ -130,6 +130,9 @@ export type PanelDict = {
     roleCenter: string;
     roleDoctor: string;
     rolePatient: string;
+    assistantOfPre: string;
+    assistantOfPost: string;
+    assistantWord: string;
   };
   center: {
     roleLabel: string;
@@ -471,6 +474,9 @@ const az: PanelDict = {
     roleCenter: "Mərkəz",
     roleDoctor: "Həkim",
     rolePatient: "Pasiyent",
+    assistantOfPre: "Siz ",
+    assistantOfPost: " adından asistent kimi işləyirsiniz.",
+    assistantWord: "Asistent",
   },
   center: {
     roleLabel: "Rentgen mərkəzi",
@@ -691,7 +697,7 @@ const az: PanelDict = {
     dsSent: "Göndərdiyiniz pasiyentlər",
     dsPartners: "Partnyor mərkəzlər",
   },
-};
+  };
 
 const ru: PanelDict = {
   cform: {
@@ -815,6 +821,9 @@ const ru: PanelDict = {
     roleCenter: "Центр",
     roleDoctor: "Врач",
     rolePatient: "Пациент",
+    assistantOfPre: "Вы работаете как ассистент от имени ",
+    assistantOfPost: ".",
+    assistantWord: "Ассистент",
   },
   center: {
     roleLabel: "Рентген-центр",
@@ -1035,7 +1044,7 @@ const ru: PanelDict = {
     dsSent: "Отправленные пациенты",
     dsPartners: "Центры-партнёры",
   },
-};
+  };
 
 const PANEL_DICTS: Record<Locale, PanelDict> = { az, ru };
 

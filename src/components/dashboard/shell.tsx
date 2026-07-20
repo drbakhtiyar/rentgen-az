@@ -1,6 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
+import { UserCog } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
+import { prisma } from "@/lib/db";
+import { doctorName } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { unreadNotificationCount } from "@/lib/notifications";
 import { unreadMessageCount } from "@/lib/chat";
@@ -34,6 +37,23 @@ export async function DashboardShell({
   const me = await getCurrentUser();
   const locale = await getLocale();
   const pd = getPanelDict(locale);
+  // Assistants act on behalf of a center/doctor — make that unmistakable with a
+  // banner on every panel page ("You are working as X's assistant").
+  let assistantOf: string | null = null;
+  if (me?.role === "ASSISTANT") {
+    const [ca, da] = await Promise.all([
+      prisma.centerAssistant.findUnique({
+        where: { userId: me.id },
+        select: { active: true, center: { select: { name: true } } },
+      }),
+      prisma.doctorAssistant.findUnique({
+        where: { userId: me.id },
+        select: { active: true, doctor: { select: { firstName: true, lastName: true } } },
+      }),
+    ]);
+    if (ca?.active) assistantOf = ca.center.name;
+    else if (da?.active) assistantOf = doctorName(da.doctor.firstName, da.doctor.lastName);
+  }
   // Localize nav labels by their stable key (falls back to the AZ label).
   const navItems: NavItem[] = nav.map((item) =>
     item.navKey && item.navKey in pd.nav
@@ -132,6 +152,19 @@ export async function DashboardShell({
 
         {/* Content */}
         <div className="min-w-0 flex-1">
+          {assistantOf && (
+            <div className="mb-4 flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm text-violet-800">
+              <UserCog className="h-4 w-4 shrink-0 text-violet-500" />
+              <span>
+                <span className="rounded-full bg-violet-200/70 px-2 py-0.5 text-xs font-semibold text-violet-800">
+                  {pd.shell.assistantWord}
+                </span>{" "}
+                {pd.shell.assistantOfPre}
+                <span className="font-semibold">{assistantOf}</span>
+                {pd.shell.assistantOfPost}
+              </span>
+            </div>
+          )}
           {/* CRM pages render their own heading; skip the shell title to save space. */}
           {!collapsible && (
             <div className="mb-5 flex items-center justify-between">
