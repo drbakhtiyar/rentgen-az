@@ -546,10 +546,10 @@ async function centerAssistantEligibility(phone: string, centerId: string): Prom
     return "Bu nömrə mərkəz/həkim/admin hesabına bağlıdır — asistent ola bilməz.";
   }
   if (existing?.doctorAssistantOf) {
-    return "Bu nömrə artıq bir həkimin asistentidir.";
+    return "Bu nömrə artıq bir həkimin asistentidir. Buraya əlavə etmək üçün əvvəlcə həmin həkim onu asistentlikdən silməlidir.";
   }
   if (existing?.assistantOf && existing.assistantOf.centerId !== centerId) {
-    return "Bu nömrə artıq başqa mərkəzin asistentidir.";
+    return "Bu nömrə artıq başqa mərkəzin asistentidir. Buraya əlavə etmək üçün əvvəlcə həmin mərkəz onu asistentlikdən silməlidir.";
   }
   return null;
 }

@@ -170,10 +170,10 @@ export async function startAddDoctorAssistantAction(input: {
     return { ok: false, error: "Bu nömrə mərkəz/həkim/admin hesabına bağlıdır — asistent ola bilməz." };
   }
   if (existing?.assistantOf) {
-    return { ok: false, error: "Bu nömrə artıq bir mərkəzin asistentidir." };
+    return { ok: false, error: "Bu nömrə artıq bir mərkəzin asistentidir. Buraya əlavə etmək üçün əvvəlcə həmin mərkəz onu asistentlikdən silməlidir." };
   }
   if (existing?.doctorAssistantOf && existing.doctorAssistantOf.doctorId !== doctor.id) {
-    return { ok: false, error: "Bu nömrə artıq başqa həkimin asistentidir." };
+    return { ok: false, error: "Bu nömrə artıq başqa həkimin asistentidir. Buraya əlavə etmək üçün əvvəlcə həmin həkim onu asistentlikdən silməlidir." };
   }
   // One assistant per doctor (re-verifying the same phone is allowed).
   const others = await prisma.doctorAssistant.count({

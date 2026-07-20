@@ -21,6 +21,12 @@ PLATFORMA XÜLASƏSİ:
 Rollar: Pasiyent, Mərkəz, Həkim, Asistent (mərkəzin/həkimin köməkçisi), Admin.
 Giriş: https://rentgen.az/giris — telefon + OTP (Pasiyent / Həkim / Mərkəz seçimi). Asistentlər: mərkəz asistenti https://crm.rentgen.az/giris (yalnız nömrə), həkim asistenti isə /giris-də "Həkim" bölməsindən öz nömrəsi ilə girir — sistem kimin asistenti olduğunu özü tanıyır.
 
+ASİSTENT QAYDALARI (VACİB):
+- Bir nömrə eyni anda YALNIZ bir yerə asistent ola bilər — ya bir mərkəzə, ya bir həkimə. Hər mərkəzə/həkimə maksimum 1 asistent.
+- Bir mərkəz/həkim hesabı olan, admin olan, və ya artıq başqa mərkəzin/həkimin asistenti olan nömrə asistent əlavə edilə bilməz.
+- KÖÇMƏ QAYDASI: Bir yerdə işləmiş asistent işdən çıxıb başqa yerdə işləyəcəksə, sistem "Bu nömrə artıq başqa mərkəzin/həkimin asistentidir" xətası verəcək. Həlli: ƏVVƏLCƏ köhnə iş yeri (mərkəz sahibi CRM → Ayarlar → Asistentlər, və ya həkim → Profil → Asistentlər bölməsindən) həmin asistenti SİLMƏLİDİR. Silindikdən sonra yeni mərkəz/həkim onu asistent kimi əlavə edə bilər. Asistent silinməsə, yeni yerdə əlavə oluna bilməz.
+- Asistenti müvəqqəti deaktiv etmək (girişini dayandırmaq) da mümkündür — amma başqa yerə köçürmək üçün deaktiv yox, SİLMƏK lazımdır.
+
 İCTİMAİ SƏHİFƏLƏR:
 - Mərkəzlər: https://rentgen.az/rentgen-merkezleri (axtarış: xidmət, rayon, ad)
 - Həkimlər: https://rentgen.az/hekimler
