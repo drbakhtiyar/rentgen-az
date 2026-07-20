@@ -525,6 +525,36 @@ export async function updateSlotSettingsAction(input: {
 export type AssistantResult = { ok: boolean; error?: string; devCode?: string };
 
 /**
+ * Whether `phone` may be (re)assigned as THIS center's assistant. Mirrors the
+ * doctor-side guard: a center/doctor/admin account, or a doctor's assistant, or
+ * another center's assistant can't be one. Re-verifying this center's own
+ * assistant phone is allowed. Returns an error message, or null if eligible.
+ * Enforced in BOTH steps so a direct confirm() call can't bypass it.
+ */
+async function centerAssistantEligibility(phone: string, centerId: string): Promise<string | null> {
+  const existing = await prisma.user.findUnique({
+    where: { phone },
+    select: {
+      role: true,
+      centerProfile: { select: { id: true } },
+      doctorProfile: { select: { id: true } },
+      assistantOf: { select: { centerId: true } },
+      doctorAssistantOf: { select: { doctorId: true } },
+    },
+  });
+  if (existing?.centerProfile || existing?.doctorProfile || existing?.role === "ADMIN") {
+    return "Bu nömrə mərkəz/həkim/admin hesabına bağlıdır — asistent ola bilməz.";
+  }
+  if (existing?.doctorAssistantOf) {
+    return "Bu nömrə artıq bir həkimin asistentidir.";
+  }
+  if (existing?.assistantOf && existing.assistantOf.centerId !== centerId) {
+    return "Bu nömrə artıq başqa mərkəzin asistentidir.";
+  }
+  return null;
+}
+
+/**
  * Step 1 of adding an assistant: validate the phone and send an OTP to it.
  * The assistant is typically next to the owner and reads the code out loud —
  * confirming they really own that number.
@@ -542,20 +572,8 @@ export async function startAddAssistantAction(input: {
   const phone = normalizePhone(input.phone);
   if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
 
-  const existing = await prisma.user.findUnique({
-    where: { phone },
-    select: {
-      role: true,
-      centerProfile: { select: { id: true } },
-      assistantOf: { select: { centerId: true } },
-    },
-  });
-  if (existing?.centerProfile || existing?.role === "ADMIN") {
-    return { ok: false, error: "Bu nömrə mərkəz/admin hesabına bağlıdır — asistent ola bilməz." };
-  }
-  if (existing?.assistantOf && existing.assistantOf.centerId !== center.id) {
-    return { ok: false, error: "Bu nömrə artıq başqa mərkəzin asistentidir." };
-  }
+  const eligErr = await centerAssistantEligibility(phone, center.id);
+  if (eligErr) return { ok: false, error: eligErr };
   // One assistant per center (re-verifying the same phone is allowed).
   const others = await prisma.centerAssistant.count({
     where: { centerId: center.id, user: { phone: { not: phone } } },
@@ -582,6 +600,8 @@ export async function confirmAddAssistantAction(input: {
   if (!center) return { ok: false, error: OWNER_ONLY };
   const phone = normalizePhone(input.phone);
   if (!phone) return { ok: false, error: "Telefon nömrəsi düzgün deyil." };
+  const eligErr = await centerAssistantEligibility(phone, center.id);
+  if (eligErr) return { ok: false, error: eligErr };
   const v = await verifyOtp(phone, input.code.trim());
   if (!v.ok) return { ok: false, error: v.error };
   const others = await prisma.centerAssistant.count({
