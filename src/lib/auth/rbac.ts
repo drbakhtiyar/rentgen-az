@@ -23,6 +23,16 @@ export const getCurrentUser = cache(async () => {
         include: { patientProfile: true, centerProfile: true, doctorProfile: true },
       });
       if (!user || user.isBlocked) return null;
+      // A deactivated/removed assistant's session is dead: treat it as logged
+      // out everywhere (header, pages) so they aren't bounced around. Their
+      // access is revoked the moment the owner removes/deactivates them.
+      if (user.role === "ASSISTANT") {
+        const [ca, da] = await Promise.all([
+          prisma.centerAssistant.findUnique({ where: { userId: user.id }, select: { active: true } }),
+          prisma.doctorAssistant.findUnique({ where: { userId: user.id }, select: { active: true } }),
+        ]);
+        if (!ca?.active && !da?.active) return null;
+      }
       return user;
     } catch (e) {
       if (attempt === 2) {

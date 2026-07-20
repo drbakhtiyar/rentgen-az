@@ -34,9 +34,10 @@ export async function proxy(request: NextRequest) {
       // Phone-only CRM login (no role tabs) — the system works out who it is.
       return NextResponse.redirect(new URL("https://crm.rentgen.az/giris"));
     }
-    if (allowed && isLogin) {
-      return NextResponse.redirect(new URL("https://crm.rentgen.az/teqvim"));
-    }
+    // NB: don't blanket-redirect a "logged-in" cookie away from the login page —
+    // a deactivated assistant still carries a CENTER/ASSISTANT cookie but has no
+    // active link, and bouncing them to /teqvim (which bounces back) would loop.
+    // The login page itself redirects genuinely-active sessions to /teqvim.
     if (pathname.startsWith("/crm")) return NextResponse.next();
     const url = request.nextUrl.clone();
     url.pathname = `/crm${pathname === "/" ? "" : pathname}`;
