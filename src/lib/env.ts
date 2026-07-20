@@ -47,6 +47,9 @@ export const env = {
     merchant: process.env.PAYRIFF_MERCHANT ?? "",
     base: process.env.PAYRIFF_BASE ?? "https://api.payriff.com",
   },
+  // Google Places API (server-side, single platform key) — used to fetch and
+  // display each center's Google rating from their Place ID.
+  googlePlacesApiKey: process.env.GOOGLE_PLACES_API_KEY ?? "",
   // Backblaze B2 (S3-compatible) — private bucket for rentgen files
   b2: {
     keyId: process.env.B2_KEY_ID ?? "",

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { centerNav } from "@/components/dashboard/role-navs";
 import { CenterProfileForm } from "@/components/forms/center-profile-form";
+import { GoogleRatingCard } from "@/components/forms/google-rating-card";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { CITIES } from "@/lib/constants";
@@ -56,6 +57,14 @@ export default async function CenterProfilePage() {
           hours: parseHours(center.hours),
           lat: center.lat,
           lng: center.lng,
+        }}
+      />
+      <GoogleRatingCard
+        current={{
+          placeId: center.googlePlaceId,
+          rating: center.googleRating,
+          reviewCount: center.googleReviewCount,
+          updatedAt: center.googleRatingAt ? center.googleRatingAt.toISOString() : null,
         }}
       />
     </DashboardShell>

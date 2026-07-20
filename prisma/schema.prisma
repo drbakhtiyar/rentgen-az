@@ -206,6 +206,12 @@ model CenterProfile {
   // fayllar silinir. Yeniləmədə null olur.
   planExpiredAt     DateTime?
   apiKey            String?      @unique // Platinum API girişi açarı
+
+  // Google rating (fetched via the platform's Places API key from googlePlaceId)
+  googlePlaceId     String?
+  googleRating      Float?
+  googleReviewCount Int?
+  googleRatingAt    DateTime?
   // Platinum: +1 TB storage blokları (hər blok 30 gün, OVERAGE_PER_TB_MINOR).
   extraStorageTb    Int          @default(0)
   extraStorageUntil DateTime? // blokların qüvvədə olma tarixi; keçibsə effektiv 0

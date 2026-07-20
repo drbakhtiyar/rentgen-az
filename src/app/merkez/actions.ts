@@ -463,3 +463,56 @@ export async function broadcastToPartnerDoctorsAction(
   if (sent === 0) return { ok: false, error: "Təsdiqlənmiş partnyor həkim yoxdur." };
   return { ok: true, message: `Mesaj ${sent} partnyor həkimə göndərildi.` };
 }
+
+// ---------------------- Google rating (owner-only) ------------------------
+
+import { resolveAndFetchRating } from "@/lib/google-rating";
+
+export type GoogleRatingResult =
+  | { ok: true; rating: number; reviewCount: number }
+  | { ok: false; error: string };
+
+/**
+ * Center saves/updates its Google Place. We resolve the input (Place ID, Maps
+ * link, or business name), fetch the live rating via the platform's Places key,
+ * and cache it on the profile. Shown on the public center page.
+ */
+export async function saveGooglePlaceAction(input: { query: string }): Promise<GoogleRatingResult> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+
+  const res = await resolveAndFetchRating(input.query);
+  if ("error" in res) return { ok: false, error: res.error };
+
+  await prisma.centerProfile.update({
+    where: { id: center.id },
+    data: {
+      googlePlaceId: res.placeId,
+      googleRating: res.rating,
+      googleReviewCount: res.reviewCount,
+      googleRatingAt: new Date(),
+    },
+  });
+  revalidatePath("/merkez/profil");
+  return { ok: true, rating: res.rating, reviewCount: res.reviewCount };
+}
+
+/** Center removes its Google rating from the site. */
+export async function removeGooglePlaceAction(): Promise<{ ok: boolean }> {
+  const user = await requireRole("CENTER");
+  const center = await prisma.centerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (!center) return { ok: false };
+  await prisma.centerProfile.update({
+    where: { id: center.id },
+    data: { googlePlaceId: null, googleRating: null, googleReviewCount: null, googleRatingAt: null },
+  });
+  revalidatePath("/merkez/profil");
+  return { ok: true };
+}

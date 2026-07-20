@@ -19,6 +19,7 @@ import { AppointmentForm } from "@/components/forms/appointment-form";
 import { DoctorReferralForm } from "@/components/forms/doctor-referral-form";
 import { ScrollToReferral } from "@/components/scroll-to-referral";
 import { Stars, RatingSummary } from "@/components/reviews/stars";
+import { GoogleRatingBadge } from "@/components/reviews/google-rating-badge";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { JsonLd } from "@/components/ui/json-ld";
 import {
@@ -243,6 +244,13 @@ export default async function CenterDetailPage({
               avg={rating.avg}
               count={rating.count}
               className="[&_.text-ink-900]:text-white [&_.text-slate-400]:text-slate-300"
+            />
+          )}
+          {center.googleRating != null && (
+            <GoogleRatingBadge
+              placeId={center.googlePlaceId}
+              rating={center.googleRating}
+              reviewCount={center.googleReviewCount}
             />
           )}
         </div>
