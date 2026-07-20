@@ -47,6 +47,7 @@ export const crmNav: NavItem[] = [
   { label: "Söhbətlər", href: "/crm/chat", icon: <MessagesSquare />, navKey: "chat" },
   { label: "SMS-lər", href: "/crm/sms", icon: <MessageSquare />, navKey: "crmSms" },
   { label: "Ayarlar", href: "/crm/ayarlar", icon: <Settings />, navKey: "crmSettings" },
+  { label: "Jurnal", href: "/crm/jurnal", icon: <History />, navKey: "crmActivity" },
   { label: "Mərkəz paneli", href: "https://rentgen.az/merkez", icon: <Building2 />, navKey: "crmCenterPanel" },
 ];
 

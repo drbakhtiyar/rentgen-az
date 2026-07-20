@@ -248,6 +248,7 @@ model CenterProfile {
   timeBlocks          CenterTimeBlock[]
   holidays            CenterHoliday[]
   assistants          CenterAssistant[]
+  crmActivities       CrmActivity[]
   smsCredits          CenterSmsCredit[]
   smsOrders           CenterSmsOrder[]
 
@@ -342,6 +343,23 @@ model CenterTimeBlock {
   createdAt DateTime      @default(now())
 
   @@index([centerId, startAt])
+}
+
+// Accountability log for CRM mutations — records whether the owner or an
+// assistant made an appointment/status change (who did what, when).
+model CrmActivity {
+  id          String        @id @default(cuid())
+  centerId    String
+  center      CenterProfile @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  actorUserId String
+  actorName   String // assistant's name; empty for the owner
+  isAssistant Boolean       @default(false)
+  action      String // "create" | "update" | "reschedule" | "delete" | "status"
+  detail      String? // e.g. "Səbinə H. → Tamamlandı"
+  requestId   String?
+  createdAt   DateTime      @default(now())
+
+  @@index([centerId, createdAt])
 }
 
 model Service {

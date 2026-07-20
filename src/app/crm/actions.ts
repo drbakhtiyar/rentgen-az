@@ -11,6 +11,7 @@ import { createOtp, verifyOtp } from "@/lib/otp";
 import { env } from "@/lib/env";
 import { debitWallet } from "@/lib/wallet";
 import { isSlotAvailable, getCenterPatients } from "@/lib/crm";
+import { logCrmActivity } from "@/lib/crm-activity";
 
 export type CrmResult = { ok: true } | { ok: false; error: string };
 
@@ -102,6 +103,7 @@ export async function addManualAppointmentAction(input: {
     },
   });
 
+  await logCrmActivity({ action: "create", detail: name });
   revalidatePath("/crm");
   revalidatePath("/crm/teqvim");
   revalidatePath("/crm/pasiyentler");
@@ -160,6 +162,7 @@ export async function updateAppointmentAction(input: {
     },
   });
 
+  await logCrmActivity({ action: "update", detail: name ?? null, requestId: input.id });
   revalidatePath("/crm");
   revalidatePath("/crm/teqvim");
   revalidatePath("/crm/pasiyentler");
@@ -201,6 +204,7 @@ export async function rescheduleAppointmentAction(input: {
     data: { preferredDate: when.date, status },
   });
 
+  await logCrmActivity({ action: "reschedule", detail: `${input.ymd} ${input.time}`, requestId: input.id });
   revalidatePath("/crm");
   revalidatePath("/crm/teqvim");
   revalidatePath("/crm/pasiyentler");
@@ -214,7 +218,7 @@ export async function deleteAppointmentAction(id: string): Promise<CrmResult> {
 
   const req = await prisma.appointmentRequest.findUnique({
     where: { id },
-    select: { centerId: true, _count: { select: { files: true } } },
+    select: { centerId: true, name: true, _count: { select: { files: true } } },
   });
   if (!req || req.centerId !== center.id) return { ok: false, error: "Randevu tapılmadı." };
   if (req._count.files > 0) {
@@ -222,6 +226,7 @@ export async function deleteAppointmentAction(id: string): Promise<CrmResult> {
   }
 
   await prisma.appointmentRequest.delete({ where: { id } });
+  await logCrmActivity({ action: "delete", detail: req.name });
   revalidatePath("/crm");
   revalidatePath("/crm/teqvim");
   revalidatePath("/crm/pasiyentler");

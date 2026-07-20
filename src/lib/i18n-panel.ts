@@ -109,6 +109,7 @@ export type PanelDict = {
     pasiyentler: string;
     crmToday: string;
     crmAi: string;
+    crmActivity: string;
     crmCalendar: string;
     crmSms: string;
     crmSettings: string;
@@ -453,6 +454,7 @@ const az: PanelDict = {
     pasiyentler: "Pasiyentlər",
     crmToday: "Bugün",
     crmAi: "AI Yardımçı",
+    crmActivity: "Jurnal",
     crmCalendar: "Təqvim",
     crmSms: "SMS-lər",
     crmSettings: "Ayarlar",
@@ -800,6 +802,7 @@ const ru: PanelDict = {
     pasiyentler: "Пациенты",
     crmToday: "Сегодня",
     crmAi: "AI Помощник",
+    crmActivity: "Журнал",
     crmCalendar: "Календарь",
     crmSms: "SMS",
     crmSettings: "Настройки",

@@ -6,6 +6,7 @@ import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/rbac";
 import { getActingCenter } from "@/lib/auth/acting";
+import { logCrmActivity } from "@/lib/crm-activity";
 import { alertAdminSms } from "@/lib/sms";
 import { centerProfileSchema } from "@/lib/validation";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
@@ -316,6 +317,17 @@ export async function updateRequestStatusAction(
         "/hekim/pasiyentler",
       );
     }
+    const STATUS_AZ: Record<string, string> = {
+      NEW: "Yeni",
+      CONTACTED: "Əlaqə saxlanıb",
+      COMPLETED: "Tamamlandı",
+      CANCELLED: "Ləğv edildi",
+    };
+    await logCrmActivity({
+      action: "status",
+      detail: `${req.name || "Pasiyent"} → ${STATUS_AZ[status] ?? status}`,
+      requestId: req.id,
+    });
     revalidatePath("/merkez");
     revalidatePath("/merkez/pasiyentler");
     revalidatePath("/hekim/pasiyentler");
