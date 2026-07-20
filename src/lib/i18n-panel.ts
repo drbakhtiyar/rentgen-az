@@ -155,6 +155,7 @@ export type PanelDict = {
     editProfile: string;
     servicesPrices: string;
     svcHelp: string;
+    svcSearchPh: string; svcAllCats: string; svcNoMatch: string; svcEnabledShort: string;
     svcEmptyTitle: string;
     svcEmptyBody: string;
     broadcastTitle: string;
@@ -495,6 +496,10 @@ const az: PanelDict = {
     editProfile: "Profili redaktə et",
     servicesPrices: "Xidmət və qiymətlər",
     svcHelp: "Mərkəzinizin göstərdiyi xidmətləri seçin və hər biri üçün fiks qiymət (₼) əlavə edin. Xidmət seçəndə qiymət yazmaq məcburidir.",
+    svcSearchPh: "Xidmət axtar…",
+    svcAllCats: "Hamısı",
+    svcNoMatch: "Uyğun xidmət tapılmadı.",
+    svcEnabledShort: "seçili",
     svcEmptyTitle: "Xidmət kataloqu boşdur",
     svcEmptyBody: "Sistemdə xidmətlər hələ əlavə olunmayıb. Zəhmət olmasa adminlə əlaqə saxlayın (seed/migrasiya tələb oluna bilər).",
     broadcastTitle: "Partnyor həkimlərə toplu mesaj",
@@ -835,6 +840,10 @@ const ru: PanelDict = {
     editProfile: "Редактировать профиль",
     servicesPrices: "Услуги и цены",
     svcHelp: "Выберите услуги, которые предоставляет ваш центр, и укажите для каждой фиксированную цену (₼). При выборе услуги цена обязательна.",
+    svcSearchPh: "Поиск услуги…",
+    svcAllCats: "Все",
+    svcNoMatch: "Услуга не найдена.",
+    svcEnabledShort: "выбрано",
     svcEmptyTitle: "Каталог услуг пуст",
     svcEmptyBody: "Услуги в системе ещё не добавлены. Пожалуйста, свяжитесь с администратором (может потребоваться seed/миграция).",
     broadcastTitle: "Массовое сообщение врачам-партнёрам",

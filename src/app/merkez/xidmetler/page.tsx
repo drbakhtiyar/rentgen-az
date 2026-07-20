@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
+import { categoryRu } from "@/content/services-ru";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,7 @@ export default async function CenterServicesPage() {
       name: s.name,
       icon: s.icon,
       iconUrl: s.iconUrl,
+      category: s.category,
       enabled: Boolean(cs),
       price: cs?.price ?? null,
       priceTo: cs?.priceTo ?? null,
@@ -49,7 +51,16 @@ export default async function CenterServicesPage() {
     };
   });
 
-  const pd = getPanelDict(await getLocale());
+  const locale = await getLocale();
+  const pd = getPanelDict(locale);
+  const ru = locale === "ru";
+  // Ordered categories (catalog order) + localized labels, like the public
+  // /xidmetler page — lets the center jump straight to its own category.
+  const categories = [
+    ...new Set(allServices.map((s) => s.category).filter((c): c is string => Boolean(c))),
+  ];
+  const categoryLabels: Record<string, string> = {};
+  for (const c of categories) categoryLabels[c] = ru ? categoryRu(c) : c;
 
   return (
     <DashboardShell
@@ -63,7 +74,7 @@ export default async function CenterServicesPage() {
       </Card>
 
       {rows.length > 0 ? (
-        <CenterServicesManager initial={rows} />
+        <CenterServicesManager initial={rows} categories={categories} categoryLabels={categoryLabels} />
       ) : (
         <EmptyState
           title={pd.center.svcEmptyTitle}
