@@ -118,10 +118,13 @@ export function RentgenFilesPanel({
   requestId,
   files,
   trashDays = 0,
+  canView = false,
 }: {
   requestId: string;
   files: RentgenFileItem[];
   trashDays?: number;
+  /** Pre-launch: the in-browser viewer "Bax" button is gated (viewer-access). */
+  canView?: boolean;
 }) {
   const router = useRouter();
   const t = getPanelDict(useLocale()).center;
@@ -304,7 +307,7 @@ export function RentgenFilesPanel({
                 {formatDate(f.createdAt)}
               </span>
               <span className="shrink-0 text-xs text-slate-400">{formatBytes(f.size)}</span>
-              {isViewableFile(f.fileName) && (
+              {canView && isViewableFile(f.fileName) && (
                 <button
                   type="button"
                   onClick={() => window.open(viewerUrl(f.id), "_blank", "noopener,noreferrer")}

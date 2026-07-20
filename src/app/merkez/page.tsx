@@ -17,6 +17,7 @@ import { StatCard, EmptyState, StatusBadge, Panel } from "@/components/dashboard
 import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
+import { viewerEnabled } from "@/lib/viewer-access";
 import { getCenterEventStats, getCenterStorageUsage, getCenterFullStats } from "@/lib/queries";
 import { StorageUsage } from "@/components/dashboard/storage-usage";
 import { CenterAnalytics } from "@/components/dashboard/center-analytics";
@@ -46,6 +47,7 @@ function daysUntil(d: Date | null): number | null {
 
 export default async function CenterDashboardPage() {
   const user = await requireRole("CENTER", "/merkez");
+  const canView = await viewerEnabled();
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
     include: { _count: { select: { services: true, appointmentRequests: true } } },
@@ -225,6 +227,7 @@ export default async function CenterDashboardPage() {
                         defaultUrl={r.resultUrl}
                         doctorId={r.doctorId}
                         doctors={doctorOptions}
+                        canView={canView}
                         files={r.files.map((f) => ({
                           ...f,
                           downloadNote: downloadLabels[f.id],

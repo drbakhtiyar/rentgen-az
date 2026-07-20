@@ -14,7 +14,14 @@ function formatBytes(n: number): string {
 }
 
 /** Download-only list of a request's rentgen files (doctor / patient). */
-export function RentgenDownloadList({ files }: { files: RentgenFileItem[] }) {
+export function RentgenDownloadList({
+  files,
+  canView = false,
+}: {
+  files: RentgenFileItem[];
+  /** Pre-launch: the in-browser viewer "Bax" button is gated (viewer-access). */
+  canView?: boolean;
+}) {
   const [busy, setBusy] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -37,7 +44,7 @@ export function RentgenDownloadList({ files }: { files: RentgenFileItem[] }) {
             <FileIcon className="h-4 w-4 shrink-0 text-brand-500" />
             <span className="min-w-0 flex-1 truncate text-ink-800">{f.fileName}</span>
             <span className="shrink-0 text-xs text-slate-400">{formatBytes(f.size)}</span>
-            {isViewableFile(f.fileName) && (
+            {canView && isViewableFile(f.fileName) && (
               <button
                 type="button"
                 onClick={() => window.open(viewerUrl(f.id), "_blank", "noopener,noreferrer")}

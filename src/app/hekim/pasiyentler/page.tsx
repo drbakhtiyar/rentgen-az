@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
+import { viewerEnabled } from "@/lib/viewer-access";
 import { prisma } from "@/lib/db";
 import { getActiveServices } from "@/lib/queries";
 import { requireDoctor, doctorNavFor } from "../_lib";
@@ -47,6 +48,7 @@ export default async function DoctorPatientsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { doctor, isOwner } = await requireDoctor("/hekim/pasiyentler");
+  const canView = await viewerEnabled();
 
   const { q } = await searchParams;
   const query = (q ?? "").trim();
@@ -204,7 +206,7 @@ export default async function DoctorPatientsPage({
                           <Download className="h-3.5 w-3.5" /> Rentgen nəticəsini aç
                         </a>
                       )}
-                      {isPartner && <RentgenDownloadList files={r.files} />}
+                      {isPartner && <RentgenDownloadList files={r.files} canView={canView} />}
                       {r.resultUrl && !isPartner && r.centerId && (
                         <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-100">
                           <span className="flex items-center gap-1.5">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/rbac";
+import { viewerEnabled } from "@/lib/viewer-access";
 import { getDownloadUrlAction } from "@/app/actions/rentgen-files";
 import { FileViewer } from "@/components/viewer/file-viewer";
 import { buildMetadata } from "@/lib/seo";
@@ -27,6 +28,9 @@ export default async function ViewerPage({
   const { fileId } = await params;
   const me = await getCurrentUser();
   if (!me) redirect(`/giris?next=/viewer/${fileId}`);
+  // Pre-launch: the in-browser viewer is limited to Dr. Bakhtiyar's account
+  // for testing. Others (even with a direct link) are sent to their download.
+  if (!(await viewerEnabled())) redirect("/");
 
   const res = await getDownloadUrlAction(fileId);
   if (!res.ok) {

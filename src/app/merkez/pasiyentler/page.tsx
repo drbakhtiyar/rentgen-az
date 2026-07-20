@@ -12,6 +12,7 @@ import { trashRetentionDays } from "@/lib/plans";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
 import { requireRole } from "@/lib/auth/rbac";
+import { viewerEnabled } from "@/lib/viewer-access";
 import { formatDateAz, formatDateTimeAz, doctorName } from "@/lib/utils";
 import { formatPhoneDisplay } from "@/lib/phone";
 import { buildMetadata } from "@/lib/seo";
@@ -46,6 +47,7 @@ export default async function CenterPatientsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const user = await requireRole("CENTER", "/merkez/pasiyentler");
+  const canView = await viewerEnabled();
   const center = await prisma.centerProfile.findUnique({
     where: { userId: user.id },
     select: { id: true, name: true, plan: true },
@@ -196,6 +198,7 @@ export default async function CenterPatientsPage({
                           doctorId={r.doctorId}
                           doctors={doctorOptions}
                           trashDays={trashDays}
+                          canView={canView}
                           files={r.files.map((f) => ({
                             ...f,
                             downloadNote: downloadLabels[f.id],

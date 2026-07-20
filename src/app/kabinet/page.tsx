@@ -8,6 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { CancelRequestButton } from "@/components/reviews/cancel-request-button";
 import { EditTimeButton } from "@/components/reviews/edit-time-button";
 import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
+import { viewerEnabled } from "@/lib/viewer-access";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
@@ -29,6 +30,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default async function PatientDashboardPage() {
   const user = await requireRole("PATIENT", "/kabinet");
+  const canView = await viewerEnabled();
   const profile = await prisma.patientProfile.findUnique({
     where: { userId: user.id },
     include: {
@@ -134,7 +136,7 @@ export default async function PatientDashboardPage() {
                         <Download className="h-4 w-4" /> {t.openResult}
                       </a>
                     )}
-                    <RentgenDownloadList files={r.files} />
+                    <RentgenDownloadList files={r.files} canView={canView} />
                   </div>
                 ))}
               </div>

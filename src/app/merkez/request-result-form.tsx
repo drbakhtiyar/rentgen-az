@@ -23,6 +23,7 @@ export function RequestResultForm({
   doctors,
   files = [],
   trashDays = 0,
+  canView = false,
 }: {
   requestId: string;
   defaultUrl: string | null;
@@ -30,6 +31,7 @@ export function RequestResultForm({
   doctors: Option[];
   files?: RentgenFileItem[];
   trashDays?: number;
+  canView?: boolean;
 }) {
   const router = useRouter();
   const t = getPanelDict(useLocale()).center;
@@ -82,7 +84,7 @@ export function RequestResultForm({
       )}
 
       {/* Upload rentgen files directly (B2) */}
-      <RentgenFilesPanel requestId={requestId} files={files} trashDays={trashDays} />
+      <RentgenFilesPanel requestId={requestId} files={files} trashDays={trashDays} canView={canView} />
 
       {/* Result link (optional / legacy external link) */}
       <div className="border-t border-slate-100 pt-3">

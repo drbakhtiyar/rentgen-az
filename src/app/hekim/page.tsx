@@ -11,6 +11,7 @@ import {
 } from "@/components/dashboard/widgets";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
 import { RentgenDownloadList } from "@/components/rentgen/rentgen-download-list";
+import { viewerEnabled } from "@/lib/viewer-access";
 import { DoctorStats } from "@/components/dashboard/doctor-stats";
 import { SupportCard } from "@/components/dashboard/support-card";
 import { PlanExpiryBanner } from "@/components/dashboard/plan-expiry-banner";
@@ -54,6 +55,7 @@ function daysUntil(d: Date | null): number | null {
 
 export default async function DoctorDashboardPage() {
   const { doctor, isOwner } = await requireDoctor("/hekim");
+  const canView = await viewerEnabled();
 
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
@@ -241,7 +243,7 @@ export default async function DoctorDashboardPage() {
                               <Download className="h-3.5 w-3.5" /> {t.openResult}
                             </a>
                           )}
-                          {isPartner && <RentgenDownloadList files={r.files} />}
+                          {isPartner && <RentgenDownloadList files={r.files} canView={canView} />}
                           {r.resultUrl && !isPartner && r.centerId && (
                             <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-100">
                               <span className="flex items-center gap-1.5">

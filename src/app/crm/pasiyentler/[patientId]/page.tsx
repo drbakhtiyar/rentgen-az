@@ -16,6 +16,7 @@ import { buildMetadata } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getCrmDict } from "@/lib/i18n-crm";
 import { requireCenter, crmNavFor } from "../../_lib";
+import { viewerEnabled } from "@/lib/viewer-access";
 import { CrmUpsell } from "../../crm-upsell";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ export default async function CrmPatientDetailPage({
   params: Promise<{ patientId: string }>;
 }) {
   const { center, isOwner } = await requireCenter("/crm/pasiyentler");
+  const canView = await viewerEnabled();
   if (center.plan !== "PLATINUM") return <CrmUpsell centerName={center.name} />;
   const t = getCrmDict(await getLocale());
   const { patientId } = await params;
@@ -111,6 +113,7 @@ export default async function CrmPatientDetailPage({
               <RentgenFilesPanel
                 requestId={a.id}
                 trashDays={trashDays}
+                canView={canView}
                 files={a.files.map((f) => ({ ...f, downloadNote: downloadLabels[f.id] }))}
               />
             ) : (
