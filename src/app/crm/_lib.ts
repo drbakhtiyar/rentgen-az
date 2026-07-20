@@ -10,7 +10,7 @@ import { crmNav } from "@/components/dashboard/role-navs";
 export function crmNavFor(isOwner: boolean) {
   if (isOwner) return crmNav;
   return crmNav.filter(
-    (i) => i.href === "/crm" || i.href === "/crm/teqvim" || i.href === "/crm/pasiyentler" || i.href === "/crm/ai",
+    (i) => i.href === "/crm" || i.href === "/crm/teqvim" || i.href === "/crm/pasiyentler" || i.href === "/crm/chat",
   );
 }
 
