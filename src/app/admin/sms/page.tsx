@@ -41,7 +41,7 @@ const KIND_LABEL: Record<string, string> = {
   other: "Digər",
 };
 
-type Role = "PATIENT" | "CENTER" | "DOCTOR" | "ADMIN";
+type Role = "PATIENT" | "CENTER" | "DOCTOR" | "ASSISTANT" | "ADMIN";
 
 const ROLE_FILTERS: { value: Role | "ALL"; label: string }[] = [
   { value: "ALL", label: "Hamısı" },
@@ -69,6 +69,11 @@ const ROLE_META: Record<
     icon: <Stethoscope className="h-3.5 w-3.5" />,
     className: "bg-emerald-50 text-emerald-700",
   },
+  ASSISTANT: {
+    label: "Asistent",
+    icon: <User className="h-3.5 w-3.5" />,
+    className: "bg-violet-50 text-violet-700",
+  },
   ADMIN: {
     label: "Admin",
     icon: <Shield className="h-3.5 w-3.5" />,
@@ -77,14 +82,15 @@ const ROLE_META: Record<
 };
 
 function RoleTag({ role }: { role: Role | null }) {
-  if (!role) {
+  const m = role ? ROLE_META[role] : undefined;
+  // Any unknown/new role (or none) falls back to a neutral tag — never crashes.
+  if (!m) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
         <HelpCircle className="h-3.5 w-3.5" /> Naməlum
       </span>
     );
   }
-  const m = ROLE_META[role];
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${m.className}`}
