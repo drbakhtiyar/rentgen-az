@@ -5,6 +5,7 @@ import { ShieldCheck, Zap, Lock } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getCurrentUser, dashboardPathForRole } from "@/lib/auth/rbac";
+import { assistantAccount } from "@/lib/auth/acting";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
@@ -27,7 +28,13 @@ export default async function LoginPage({
 }) {
   const user = await getCurrentUser();
   const sp = await searchParams;
-  if (user) redirect(sp.next || dashboardPathForRole(user.role));
+  if (user) {
+    const dest =
+      user.role === "ASSISTANT"
+        ? (await assistantAccount(user.id))?.dashboard ?? "/"
+        : dashboardPathForRole(user.role);
+    redirect(sp.next || dest);
+  }
 
   const locale = await getLocale();
   const t = getDict(locale).auth;

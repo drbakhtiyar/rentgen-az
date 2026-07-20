@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { getCurrentUser, dashboardPathForRole } from "@/lib/auth/rbac";
+import { assistantAccount } from "@/lib/auth/acting";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { HeaderClient } from "./header-client";
@@ -20,11 +21,17 @@ export async function SiteHeader() {
     { label: d.nav.contact, href: "/elaqe" },
   ];
 
+  // Assistants have no own profile — resolve their dashboard (doctor → /hekim,
+  // center → CRM) and name from the assistant link, else the account button
+  // would point at /kabinet and bounce home.
+  const assistant = user?.role === "ASSISTANT" ? await assistantAccount(user.id) : null;
+
   const sessionInfo = user
     ? {
         role: user.role,
-        dashboard: dashboardPathForRole(user.role),
+        dashboard: assistant?.dashboard ?? dashboardPathForRole(user.role),
         name:
+          assistant?.name ||
           user.centerProfile?.name ||
           [user.patientProfile?.firstName, user.patientProfile?.lastName]
             .filter(Boolean)

@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import { env } from "@/lib/env";
 import { getCurrentUser } from "./rbac";
 import type { CenterProfile, DoctorProfile } from "@/generated/prisma/client";
 
@@ -30,6 +31,35 @@ export async function getActingCenter(): Promise<ActingCenter | null> {
     });
     if (!link || !link.active) return null;
     return { userId: me.id, center: link.center, isOwner: false };
+  }
+  return null;
+}
+
+/**
+ * Where the account button / post-login should send an ASSISTANT, plus their
+ * display name. dashboardPathForRole can't resolve this (it only sees the role,
+ * not whether they assist a doctor or a center). Returns null for a deactivated
+ * or unlinked assistant.
+ */
+export async function assistantAccount(
+  userId: string,
+): Promise<{ dashboard: string; name: string } | null> {
+  const [d, c] = await Promise.all([
+    prisma.doctorAssistant.findUnique({
+      where: { userId },
+      select: { active: true, firstName: true, lastName: true },
+    }),
+    prisma.centerAssistant.findUnique({
+      where: { userId },
+      select: { active: true, firstName: true, lastName: true },
+    }),
+  ]);
+  if (d?.active) return { dashboard: "/hekim", name: `${d.firstName} ${d.lastName}`.trim() };
+  if (c?.active) {
+    return {
+      dashboard: env.isProd ? "https://crm.rentgen.az/teqvim" : "/crm/teqvim",
+      name: `${c.firstName} ${c.lastName}`.trim(),
+    };
   }
   return null;
 }
