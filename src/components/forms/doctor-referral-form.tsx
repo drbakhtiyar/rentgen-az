@@ -5,6 +5,7 @@ import { Loader2, Send, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { DatePicker } from "@/components/forms/date-picker";
+import { SuggestInput } from "@/components/forms/suggest-input";
 import { bakuTodayYmd, slotsForDate, type WeeklyHours } from "@/lib/hours";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import {
@@ -233,28 +234,21 @@ export function DoctorReferralForm({
       </Field>
 
       <Field label={t.serviceLabel} htmlFor="ref-service">
-        <Select
+        {/* Type-ahead over ONLY the selected center's services. Remounts per
+            center (key) so switching center clears the typed text. */}
+        <SuggestInput
+          key={centerId || "none"}
           id="ref-service"
-          value={serviceSlug}
-          onChange={(e) => {
-            setServiceSlug(e.target.value);
+          name="serviceSlug"
+          options={services.map((s) => ({ value: s.slug, label: s.name }))}
+          placeholder={!centerId ? t.servicePickCenter : services.length === 0 ? t.serviceNone : t.servicePick}
+          typeHint={t.serviceTypeHint}
+          noMatches={t.serviceNoMatch}
+          onPick={(v) => {
+            setServiceSlug(v);
             setTime(""); // offered slots depend on the service's duration
           }}
-          disabled={!centerId}
-        >
-          <option value="">
-            {!centerId
-              ? t.servicePickCenter
-              : services.length === 0
-                ? t.serviceNone
-                : t.servicePick}
-          </option>
-          {services.map((s) => (
-            <option key={s.slug} value={s.slug}>
-              {s.name}
-            </option>
-          ))}
-        </Select>
+        />
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">

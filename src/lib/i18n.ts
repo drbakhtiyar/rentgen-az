@@ -404,6 +404,7 @@ type Dict = {
     complete: string; back: string;
     centerLabel: string; centerHintPartner: string; centerFallback: string; centerPlaceholder: string;
     serviceLabel: string; servicePickCenter: string; serviceNone: string; servicePick: string;
+    serviceTypeHint: string; serviceNoMatch: string;
     firstLabel: string; firstPh: string; lastLabel: string; lastPh: string;
     docFirstLabel: string; docLastLabel: string;
     phoneLabel: string; phoneHint: string; phonePlaceholder: string;
@@ -900,6 +901,8 @@ const az: Dict = {
     servicePickCenter: "İlk öncə mərkəzi seçin",
     serviceNone: "Bu mərkəzdə xidmət yoxdur",
     servicePick: "Müayinə seçin (istəyə bağlı)",
+    serviceTypeHint: "Yazmağa başlayın — ən azı 3 hərf",
+    serviceNoMatch: "Bu mərkəzdə uyğun xidmət tapılmadı",
     docFirstLabel: "Həkimin adı",
     docLastLabel: "Həkimin soyadı",
     firstLabel: "Pasiyentin adı",
@@ -1411,6 +1414,8 @@ const ru: Dict = {
     servicePickCenter: "Сначала выберите центр",
     serviceNone: "В этом центре нет услуг",
     servicePick: "Выберите обследование (необязательно)",
+    serviceTypeHint: "Начните вводить — минимум 3 буквы",
+    serviceNoMatch: "В этом центре нет подходящей услуги",
     docFirstLabel: "Имя врача",
     docLastLabel: "Фамилия врача",
     firstLabel: "Имя пациента",

@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
 import { createOtp, verifyOtp } from "@/lib/otp";
 import { sendOtpSms } from "@/lib/sms";
 import { normalizePhone } from "@/lib/phone";
-import { requireRole } from "@/lib/auth/rbac";
+import { getCurrentUser } from "@/lib/auth/rbac";
 import { centerLimits } from "@/lib/plans";
 import { notifyNewAppointment, smsCenterBooking, smsPatientBooking } from "@/lib/notify";
 import { isPreferredDateAvailable } from "@/lib/crm";
@@ -20,11 +20,55 @@ export type ReferralResult = {
   devCode?: string;
 };
 
+type DoctorLite = {
+  id: string;
+  userId: string;
+  status: string;
+  firstName: string | null;
+  lastName: string | null;
+  onboarded: boolean;
+};
+
+/**
+ * The doctor this session refers on behalf of: the doctor themself, or the
+ * doctor whose active assistant is logged in. `doctor` is null only for a
+ * first-time QR doctor with no profile yet (created later in the flow).
+ * Returns null when the caller isn't allowed to refer at all.
+ */
+async function referralDoctorCtx(): Promise<
+  { doctorUserId: string; doctor: DoctorLite | null } | null
+> {
+  const me = await getCurrentUser();
+  if (!me) return null;
+  const select = {
+    id: true,
+    userId: true,
+    status: true,
+    firstName: true,
+    lastName: true,
+    onboarded: true,
+  } as const;
+  if (me.role === "DOCTOR") {
+    const doctor = await prisma.doctorProfile.findUnique({ where: { userId: me.id }, select });
+    return { doctorUserId: me.id, doctor };
+  }
+  if (me.role === "ASSISTANT") {
+    const link = await prisma.doctorAssistant.findUnique({
+      where: { userId: me.id },
+      select: { active: true, doctor: { select } },
+    });
+    if (!link?.active || !link.doctor) return null;
+    return { doctorUserId: link.doctor.userId, doctor: link.doctor };
+  }
+  return null;
+}
+
 /** Step 1: send an OTP to the patient's phone to confirm the referral. */
 export async function requestReferralOtpAction(input: {
   phone: string;
 }): Promise<ReferralResult> {
-  await requireRole("DOCTOR");
+  const ctx = await referralDoctorCtx();
+  if (!ctx) return { ok: false, error: "Yönləndirmə üçün icazəniz yoxdur." };
   const phone = normalizePhone(input.phone);
   if (!phone) return { ok: false, error: "Pasiyentin nömrəsi düzgün deyil." };
   try {
@@ -58,7 +102,8 @@ export async function submitDoctorReferralAction(input: {
   doctorFirstName?: string;
   doctorLastName?: string;
 }): Promise<ReferralResult> {
-  const user = await requireRole("DOCTOR");
+  const ctx = await referralDoctorCtx();
+  if (!ctx) return { ok: false, error: "Yönləndirmə üçün icazəniz yoxdur." };
   const phone = normalizePhone(input.phone);
   if (!phone) return { ok: false, error: "Pasiyentin nömrəsi düzgün deyil." };
   // Optional preferred date (referral date is not required).
@@ -98,10 +143,7 @@ export async function submitDoctorReferralAction(input: {
       }
     }
 
-    let doctor = await prisma.doctorProfile.findUnique({
-      where: { userId: user.id },
-      select: { id: true, status: true, firstName: true, lastName: true, onboarded: true },
-    });
+    let doctor = ctx.doctor;
 
     if (input.invited) {
       // Invited via the center's QR: create a minimal draft profile if the doctor
@@ -114,8 +156,8 @@ export async function submitDoctorReferralAction(input: {
           return { ok: false, error: "Ad və soyadınızı yazın." };
         }
         doctor = await prisma.doctorProfile.create({
-          data: { userId: user.id, firstName: df, lastName: dl, status: "PENDING", onboarded: false },
-          select: { id: true, status: true, firstName: true, lastName: true, onboarded: true },
+          data: { userId: ctx.doctorUserId, firstName: df, lastName: dl, status: "PENDING", onboarded: false },
+          select: { id: true, userId: true, status: true, firstName: true, lastName: true, onboarded: true },
         });
       }
       await prisma.centerDoctor.upsert({

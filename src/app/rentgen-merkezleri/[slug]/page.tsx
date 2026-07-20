@@ -36,6 +36,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { centerLimits } from "@/lib/plans";
 import { getCurrentUser } from "@/lib/auth/rbac";
+import { getActingDoctor } from "@/lib/auth/acting";
 import { prisma } from "@/lib/db";
 import { formatPrice, formatDateAz, cn, doctorName } from "@/lib/utils";
 import {
@@ -114,17 +115,17 @@ export default async function CenterDetailPage({
 
   const receivesReferrals = centerLimits(center.plan).receivesReferrals;
 
-  // A logged-in approved partner doctor gets the referral form (this center
-  // pre-selected) instead of the patient appointment form.
-  const approvedDoctor =
-    me?.role === "DOCTOR" && me.doctorProfile?.status === "APPROVED"
-      ? me.doctorProfile
-      : null;
+  // A logged-in doctor — OR the doctor whose active assistant is logged in —
+  // gets the referral form (this center pre-selected, doctor name prefilled)
+  // instead of the patient appointment form. The assistant refers on the
+  // doctor's behalf; the referral is attributed to that doctor.
+  const acting = await getActingDoctor();
+  const actingDoctor = acting?.doctor ?? null;
   let isPartnerDoctor = false;
-  if (approvedDoctor) {
+  if (actingDoctor) {
     const partner = await prisma.centerDoctor
       .findUnique({
-        where: { centerId_doctorId: { centerId: center.id, doctorId: approvedDoctor.id } },
+        where: { centerId_doctorId: { centerId: center.id, doctorId: actingDoctor.id } },
         select: { status: true },
       })
       .catch(() => null);
@@ -134,7 +135,7 @@ export default async function CenterDetailPage({
   // partnership/approval — the center invited them via its own QR.
   const invitedDoctor = invited && me?.role === "DOCTOR";
   // The doctor profile to prefill the form from (may be null for a first-timer).
-  const referralDoctor = approvedDoctor ?? (invitedDoctor ? me?.doctorProfile ?? null : null);
+  const referralDoctor = actingDoctor ?? (invitedDoctor ? me?.doctorProfile ?? null : null);
   // Referral form only for centers whose plan accepts doctor referrals (Gold+).
   const canRefer = receivesReferrals && (isPartnerDoctor || invitedDoctor);
   // First-time QR doctor with no name yet — the form collects it once.
