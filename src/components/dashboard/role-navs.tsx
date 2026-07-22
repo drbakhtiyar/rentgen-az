@@ -21,6 +21,7 @@ import {
   CalendarDays,
   MessagesSquare,
   Sparkles,
+  UserCog,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -75,6 +76,7 @@ export const adminNav: NavItem[] = [
   { label: "Mərkəzlər", href: "/admin/merkezler", icon: <Building2 /> },
   { label: "Pasiyentlər", href: "/admin/pasiyentler", icon: <Users /> },
   { label: "Həkimlər", href: "/admin/hekimler", icon: <Stethoscope /> },
+  { label: "Asistentlər", href: "/admin/asistentler", icon: <UserCog /> },
   { label: "Müraciətlər", href: "/admin/muracietler", icon: <Inbox /> },
   { label: "Yarımçıq qeydiyyat", href: "/admin/yarimciq-qeydiyyat", icon: <UserPlus /> },
   { label: "Həkim göndərişləri", href: "/admin/gonderisler", icon: <Stethoscope /> },

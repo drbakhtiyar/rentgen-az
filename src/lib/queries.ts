@@ -328,6 +328,8 @@ export async function getIncompleteSignups(): Promise<IncompleteSignup[]> {
             centerProfile: { select: { id: true } },
             doctorProfile: { select: { id: true, onboarded: true } },
             patientProfile: { select: { id: true } },
+            assistantOf: { select: { id: true } },
+            doctorAssistantOf: { select: { id: true } },
           },
         })
       : [];
@@ -336,6 +338,10 @@ export async function getIncompleteSignups(): Promise<IncompleteSignup[]> {
     const out: IncompleteSignup[] = [];
     for (const a of attempts) {
       const u = byPhone.get(a.phone);
+      // An assistant is not an incomplete signup — they were intentionally added
+      // as a center's/doctor's assistant (their own signup was never meant to
+      // finish). They show up in the dedicated Asistentlər admin section.
+      if (u?.assistantOf || u?.doctorAssistantOf) continue;
       let completed: boolean;
       let stage: "otp" | "profile" = "profile";
       if (!u) {
@@ -353,6 +359,54 @@ export async function getIncompleteSignups(): Promise<IncompleteSignup[]> {
     }
     return out;
   }, [] as IncompleteSignup[]);
+}
+
+export type AdminAssistant = {
+  id: string;
+  type: "center" | "doctor";
+  firstName: string;
+  lastName: string;
+  phone: string;
+  ownerName: string; // the center name or the doctor's full name
+  active: boolean;
+  createdAt: Date;
+};
+
+/** All assistants (center + doctor) for the admin's dedicated Asistentlər view. */
+export async function getAdminAssistants(): Promise<AdminAssistant[]> {
+  return safe(async () => {
+    const [center, doctor] = await Promise.all([
+      prisma.centerAssistant.findMany({
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true, firstName: true, lastName: true, active: true, createdAt: true,
+          user: { select: { phone: true } },
+          center: { select: { name: true } },
+        },
+      }),
+      prisma.doctorAssistant.findMany({
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true, firstName: true, lastName: true, active: true, createdAt: true,
+          user: { select: { phone: true } },
+          doctor: { select: { firstName: true, lastName: true } },
+        },
+      }),
+    ]);
+    const rows: AdminAssistant[] = [
+      ...center.map((a) => ({
+        id: a.id, type: "center" as const, firstName: a.firstName, lastName: a.lastName,
+        phone: a.user.phone, ownerName: a.center.name, active: a.active, createdAt: a.createdAt,
+      })),
+      ...doctor.map((a) => ({
+        id: a.id, type: "doctor" as const, firstName: a.firstName, lastName: a.lastName,
+        phone: a.user.phone, ownerName: doctorName(a.doctor.firstName, a.doctor.lastName),
+        active: a.active, createdAt: a.createdAt,
+      })),
+    ];
+    rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return rows;
+  }, [] as AdminAssistant[]);
 }
 
 export type PartnershipDoctor = {
