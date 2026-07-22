@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Stars } from "@/components/reviews/stars";
 import { ScoreBreakdown } from "@/components/reviews/score-breakdown";
 import { ReviewHideToggle, ReviewModerationButtons } from "@/components/admin/review-controls";
+import { CenterSuggestFilter } from "@/components/admin/center-suggest-filter";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, doctorName } from "@/lib/utils";
@@ -77,6 +78,13 @@ export default async function AdminReviewsPage({
     prisma.review.count({ where: listWhere }).catch(() => 0),
   ]);
 
+  // Center names (only those that have reviews) for the search autocomplete.
+  const centerNames = (
+    await prisma.centerProfile
+      .findMany({ where: { reviews: { some: {} } }, select: { name: true }, orderBy: { name: "asc" } })
+      .catch(() => [])
+  ).map((c) => c.name);
+
   const pageCount = Math.max(1, Math.ceil(total / PER_PAGE));
   // Preserve the active filters across pagination.
   const filterQs = new URLSearchParams();
@@ -136,11 +144,14 @@ export default async function AdminReviewsPage({
       <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-4">
         <form method="get" className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              name="q"
+            <CenterSuggestFilter
+              names={centerNames}
               defaultValue={q}
-              placeholder="Mərkəz adı ilə axtar…"
-              className="h-10 flex-1 rounded-xl border border-slate-200 px-3 text-sm focus:border-brand-400 focus:outline-none"
+              preserve={{
+                range: sp.range && range ? range : "",
+                from: sp.from && YMD.test(sp.from) ? sp.from : "",
+                to: toYmd ?? "",
+              }}
             />
             <div className="flex items-center gap-2">
               <input
