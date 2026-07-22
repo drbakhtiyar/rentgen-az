@@ -15,11 +15,19 @@ export function CenterSuggestFilter({
   names,
   defaultValue,
   preserve,
+  basePath = "/admin/reyler",
+  paramName = "q",
+  placeholder = "Mərkəz adı ilə axtar…",
 }: {
   names: string[];
   defaultValue: string;
-  /** Active date params to keep when picking a suggestion (range/from/to). */
+  /** Other active params to keep when picking a suggestion. */
   preserve: Record<string, string>;
+  /** Page the filter navigates to (default: reviews). */
+  basePath?: string;
+  /** Query param the picked center name is written to. */
+  paramName?: string;
+  placeholder?: string;
 }) {
   const router = useRouter();
   const [text, setText] = React.useState(defaultValue);
@@ -31,15 +39,15 @@ export function CenterSuggestFilter({
     setText(name);
     setOpen(false);
     const qs = new URLSearchParams();
-    qs.set("q", name);
+    qs.set(paramName, name);
     for (const [k, v] of Object.entries(preserve)) if (v) qs.set(k, v);
-    router.push(`/admin/reyler?${qs.toString()}`);
+    router.push(`${basePath}?${qs.toString()}`);
   }
 
   return (
     <div className="relative flex-1">
       <input
-        name="q"
+        name={paramName}
         value={text}
         autoComplete="off"
         onChange={(e) => {
@@ -48,7 +56,7 @@ export function CenterSuggestFilter({
         }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
-        placeholder="Mərkəz adı ilə axtar…"
+        placeholder={placeholder}
         className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:border-brand-400 focus:outline-none"
       />
       {open && matches.length > 0 && (
