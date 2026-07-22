@@ -50,6 +50,10 @@ function resolveType(file: File): string {
   switch (ext) {
     case "zip":
       return "application/zip";
+    case "rar":
+      // Pin a canonical, allow-listed type so RAR uploads don't depend on the
+      // browser's (inconsistent) MIME detection.
+      return "application/vnd.rar";
     case "dcm":
     case "dicom":
       return "application/dicom";
@@ -254,7 +258,7 @@ export function RentgenFilesPanel({
           ref={inputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/webp,application/pdf,application/zip,application/dicom,application/xml,text/xml,text/plain,.dcm,.zip,.xml,.txt"
+          accept="image/jpeg,image/png,image/webp,application/pdf,application/zip,application/vnd.rar,application/x-rar-compressed,application/dicom,application/xml,text/xml,text/plain,.dcm,.zip,.rar,.xml,.txt"
           onChange={(e) => e.target.files && handleFiles(e.target.files)}
           className="hidden"
         />

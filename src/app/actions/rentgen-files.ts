@@ -34,6 +34,11 @@ const ALLOWED_TYPES = new Set([
   "application/x-zip-compressed",
   "application/x-compressed",
   "multipart/x-zip",
+  // RAR archives (CBCT/tomography series are often shipped as .rar). Browsers
+  // report the type inconsistently, so accept every common variant.
+  "application/vnd.rar",
+  "application/x-rar-compressed",
+  "application/x-rar",
   "application/dicom",
   "application/xml", // rentgen aparatının hesabat/metadata XML-i
   "text/xml",
