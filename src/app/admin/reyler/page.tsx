@@ -10,7 +10,10 @@ import { ReviewHideToggle, ReviewModerationButtons } from "@/components/admin/re
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz, doctorName } from "@/lib/utils";
+import { bakuTodayYmd } from "@/lib/hours";
+import { mondayOf } from "@/lib/crm";
 import { buildMetadata } from "@/lib/seo";
+import type { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -27,14 +30,36 @@ const reviewInclude = {
   patient: { select: { firstName: true, lastName: true } },
 } as const;
 
+const YMD = /^\d{4}-\d{2}-\d{2}$/;
+/** Start-of-period Date (Baku) for a quick range chip. */
+function quickStart(range: string): string | null {
+  const today = bakuTodayYmd();
+  if (range === "today") return today;
+  if (range === "week") return mondayOf(today);
+  if (range === "month") return `${today.slice(0, 8)}01`;
+  return null;
+}
+
 export default async function AdminReviewsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; range?: string; from?: string; to?: string }>;
 }) {
   const admin = await requireRole("ADMIN", "/admin/reyler");
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  const q = (sp.q ?? "").trim();
+  const range = ["today", "week", "month"].includes(sp.range ?? "") ? sp.range! : "";
+  // Custom from/to override the quick range; otherwise the chip sets the start.
+  const fromYmd = sp.from && YMD.test(sp.from) ? sp.from : range ? quickStart(range) : null;
+  const toYmd = sp.to && YMD.test(sp.to) ? sp.to : null;
+
+  const createdAt: Prisma.DateTimeFilter = {};
+  if (fromYmd) createdAt.gte = new Date(`${fromYmd}T00:00:00+04:00`);
+  if (toYmd) createdAt.lte = new Date(`${toYmd}T23:59:59+04:00`);
+  const dateWhere = fromYmd || toYmd ? { createdAt } : {};
+  const centerWhere = q ? { center: { name: { contains: q, mode: "insensitive" as const } } } : {};
+  const listWhere: Prisma.ReviewWhereInput = { flagged: false, ...centerWhere, ...dateWhere };
 
   const [flagged, reviews, total] = await Promise.all([
     prisma.review
@@ -42,18 +67,38 @@ export default async function AdminReviewsPage({
       .catch(() => []),
     prisma.review
       .findMany({
-        where: { flagged: false },
+        where: listWhere,
         include: reviewInclude,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * PER_PAGE,
         take: PER_PAGE,
       })
       .catch(() => []),
-    prisma.review.count({ where: { flagged: false } }).catch(() => 0),
+    prisma.review.count({ where: listWhere }).catch(() => 0),
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PER_PAGE));
-  const pageUrl = (p: number) => (p > 1 ? `/admin/reyler?page=${p}` : "/admin/reyler");
+  // Preserve the active filters across pagination.
+  const filterQs = new URLSearchParams();
+  if (q) filterQs.set("q", q);
+  if (sp.range && range) filterQs.set("range", range);
+  if (sp.from && YMD.test(sp.from)) filterQs.set("from", sp.from);
+  if (toYmd) filterQs.set("to", toYmd);
+  const pageUrl = (p: number) => {
+    const qs = new URLSearchParams(filterQs);
+    if (p > 1) qs.set("page", String(p));
+    const s = qs.toString();
+    return s ? `/admin/reyler?${s}` : "/admin/reyler";
+  };
+  // Quick-chip link that keeps the center search but resets custom dates + page.
+  const chipUrl = (r: string) => {
+    const qs = new URLSearchParams();
+    if (q) qs.set("q", q);
+    if (r) qs.set("range", r);
+    const s = qs.toString();
+    return s ? `/admin/reyler?${s}` : "/admin/reyler";
+  };
+  const filtered = !!(q || fromYmd || toYmd);
 
   // Resolve referring-doctor names (admin-only info).
   const docIds = [...new Set([...flagged, ...reviews].map((r) => r.doctorId).filter(Boolean))] as string[];
@@ -71,8 +116,68 @@ export default async function AdminReviewsPage({
   const nameOf = (p: { firstName: string | null; lastName: string | null }) =>
     `${p.firstName ?? ""} ${p.lastName ? p.lastName[0] + "." : ""}`.trim() || "Pasiyent";
 
+  const chip = (r: string, label: string) => {
+    const active = r === range || (r === "" && !range && !sp.from && !sp.to);
+    return (
+      <Link
+        href={chipUrl(r)}
+        className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ring-1 ring-inset transition-colors ${
+          active ? "bg-brand-600 text-white ring-brand-600" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"
+        }`}
+      >
+        {label}
+      </Link>
+    );
+  };
+
   return (
     <AdminShell title="Rəylər" userName={admin.phone}>
+      {/* Filter bar: center-name search + quick date ranges + custom range */}
+      <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-4">
+        <form method="get" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="Mərkəz adı ilə axtar…"
+              className="h-10 flex-1 rounded-xl border border-slate-200 px-3 text-sm focus:border-brand-400 focus:outline-none"
+            />
+            <div className="flex items-center gap-2">
+              <input
+                name="from"
+                type="date"
+                defaultValue={sp.from && YMD.test(sp.from) ? sp.from : ""}
+                className="h-10 rounded-xl border border-slate-200 px-2 text-sm focus:border-brand-400 focus:outline-none"
+              />
+              <span className="text-slate-400">–</span>
+              <input
+                name="to"
+                type="date"
+                defaultValue={toYmd ?? ""}
+                className="h-10 rounded-xl border border-slate-200 px-2 text-sm focus:border-brand-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="h-10 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+              >
+                Süz
+              </button>
+            </div>
+          </div>
+        </form>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {chip("", "Hamısı")}
+          {chip("today", "Bu gün")}
+          {chip("week", "Bu həftə")}
+          {chip("month", "Bu ay")}
+          {filtered && (
+            <Link href="/admin/reyler" className="ml-1 text-sm font-medium text-slate-400 underline hover:text-slate-600">
+              Filtri təmizlə
+            </Link>
+          )}
+        </div>
+      </div>
+
       {flagged.length > 0 && (
         <div className="mb-5">
           <Panel
@@ -158,7 +263,11 @@ export default async function AdminReviewsPage({
             ))}
           </div>
         ) : (
-          <EmptyState icon={<Star />} title="Hələ rəy yoxdur" />
+          <EmptyState
+            icon={<Star />}
+            title={filtered ? "Filtrə uyğun rəy tapılmadı" : "Hələ rəy yoxdur"}
+            description={filtered ? "Axtarışı və ya tarix aralığını dəyişin." : undefined}
+          />
         )}
 
         {pageCount > 1 && (
