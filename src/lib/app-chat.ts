@@ -78,7 +78,7 @@ export async function appGetContacts(p: AppParticipant) {
     conversationId: c.conversationId,
     name: c.name,
     sub: c.sub,
-    avatarUrl: absoluteAssetUrl(c.avatarUrl),
+    avatar: absoluteAssetUrl(c.avatarUrl), // key is `avatar` — the app decodes that
     preview: c.preview,
     unread: c.unread,
     kind: c.kind as "partner" | "admin",
@@ -89,7 +89,7 @@ export async function appGetContacts(p: AppParticipant) {
     conversationId: null as string | null,
     name: "AI Yardımçı",
     sub: "Rentgen.az köməkçisi",
-    avatarUrl: null as string | null,
+    avatar: null as string | null,
     preview: null as string | null,
     unread: 0,
     kind: "ai" as const,
@@ -144,6 +144,38 @@ export async function appFetchMessages(
     createdAt: m.createdAt.toISOString(),
   }));
   return { ok: true, messages };
+}
+
+/**
+ * Fetch a partner thread by `conversationId` OR by `peerId` (the other party's
+ * profile id — used before the first message, when the app has no
+ * conversationId yet). Resolves the conversation without creating it; returns
+ * an empty thread when none exists yet. Always echoes back the resolved
+ * `conversationId` so the app can lock onto it and stop sending `peerId`.
+ */
+export async function appFetchThread(
+  p: AppParticipant,
+  opts: { conversationId?: string; peerId?: string },
+): Promise<
+  | { ok: true; messages: AppChatMessage[]; conversationId: string | null }
+  | { ok: false; error: string }
+> {
+  let conversationId = opts.conversationId?.trim() || "";
+  if (!conversationId && opts.peerId) {
+    const centerId = p.role === "CENTER" ? p.profileId : opts.peerId;
+    const doctorId = p.role === "DOCTOR" ? p.profileId : opts.peerId;
+    const conv = await prisma.conversation.findUnique({
+      where: { centerId_doctorId: { centerId, doctorId } },
+      select: { id: true },
+    });
+    if (!conv) return { ok: true, messages: [], conversationId: null }; // not started yet
+    conversationId = conv.id;
+  }
+  if (!conversationId) return { ok: false, error: "conversationId və ya peerId tələb olunur" };
+
+  const result = await appFetchMessages(p, conversationId);
+  if (!result.ok) return result;
+  return { ok: true, messages: result.messages, conversationId };
 }
 
 /**
