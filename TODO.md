@@ -1,0 +1,26 @@
+# TODO
+
+Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[blocked]` waiting on external input.
+
+## Active — mobile app
+- [~] **Center mobile MVP.** Site endpoints done & tested (`/api/app/center/requests` GET, `/api/app/center/status` POST). Rork given a prompt to: enable center login (`enabledRoles=[.doctor,.center]`, login shows Həkim + Mərkəz), build `CenterTabView` dashboard listing incoming requests + status change. **Awaiting Rork files** (Worker `index.ts` center routes + SwiftUI screens) to review.
+- [ ] **Result file download in app.** `/referrals` and `/center/requests` return `files:[{...,url:null}]` — Bax/Endir currently bounces to the site. To open in-app: short-lived presigned B2 link behind a partnership/ownership check. Deferred.
+- [ ] **Push notifications** (Expo). Fire on new referral / status change / result ready. Endpoint skeleton planned (`/api/push/register`), not built.
+- [ ] **Harden Worker auth.** `/referrals?phone=` and `/center/*` are protected only by the obscure Worker URL + knowing a phone — no per-user auth. Add a signed token bound to the logged-in user. Deferred (low real-world risk given URL secrecy + x-app-key).
+- [ ] **SMS on center status change from app.** `/api/app/center/status` sends in-app notifications only; the site's status control also SMSes. Wire SMS here for parity.
+
+## Blocked — waiting on external input
+- [blocked] **`GOOGLE_PLACES_API_KEY`** — Google rating feature is fully built (connect Place ID, daily refresh cron `google-ratings`), inert until the key is set in Vercel env. User to create.
+- [blocked] **Anthropic credit** — AI Yardımçı (Haiku 4.5) needs account credit. Cheap top-up.
+- [blocked] **App store accounts** — Apple Developer ($99/yr) + Google Play ($25) for submission.
+
+## Product / site backlog
+- [ ] **RU translation** of panel UIs (admin/center/doctor/patient). Public pages + home done; panels deferred by user. Dicts in `src/lib/i18n*.ts`.
+- [ ] **DICOM viewer public launch** — `/viewer/[fileId]` gated to Dr. Bakhtiyar (`viewer-access.ts`). Needs 4th-quadrant reference images, then ungate.
+- [ ] **Monetization (next big item)** — sell cloud storage to centers as the primary revenue line (see memory `rentgen-az-monetization`). Payriff pipeline + wallet live; business model/pricing to finalize.
+- [ ] **Payriff go-live** — pipeline live (Merchant ES1097669); confirm production credentials + settle the fee/business model.
+- [ ] **CRM Faza 2** — beyond current Bugün/Təqvim/Pasiyentlər/SMS/Söhbətlər/Jurnal (see memory `rentgen-az-crm`).
+
+## Notes
+- Language mix cleanup (AZ/RU) is a recurring low-priority chore — see memory `rentgen-az-pending-tasks`.
+- No open bugs known at handoff. Recent fixes are in `CHANGELOG.md`.
