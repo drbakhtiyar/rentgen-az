@@ -123,12 +123,21 @@ export async function getAppAccounts(): Promise<AppAccount[]> {
   return accounts;
 }
 
+export type WantedRole = "DOCTOR" | "CENTER" | "PATIENT";
+
 /**
  * Single account for one phone (login resolver) — so the app never has to
  * download the whole registry (which would leak every doctor/center phone).
- * Returns null when the phone isn't an approved doctor/center or a patient.
+ *
+ * `role` mirrors the site's login tab: when given, only that role is returned
+ * (a number that is both a doctor and a center resolves to the requested one,
+ * not a fixed priority). Without it, priority is doctor → center → patient.
+ * Returns null when the phone isn't an approved account for the wanted role.
  */
-export async function getAppAccountForPhone(phone: string): Promise<AppAccount | { role: "PATIENT"; phone: string; name: string | null } | null> {
+export async function getAppAccountForPhone(
+  phone: string,
+  role?: WantedRole,
+): Promise<AppAccount | { role: "PATIENT"; phone: string; name: string | null } | null> {
   const norm = normalizePhone(phone);
   const nat = nationalDigits(phone);
   if (!norm && nat.length < 7) return null;
@@ -149,8 +158,12 @@ export async function getAppAccountForPhone(phone: string): Promise<AppAccount |
   }
   if (!user || user.isBlocked) return null;
 
+  const wantDoctor = !role || role === "DOCTOR";
+  const wantCenter = !role || role === "CENTER";
+  const wantPatient = !role || role === "PATIENT";
+
   // Doctor
-  if (user.doctorProfile && user.doctorProfile.status === "APPROVED") {
+  if (wantDoctor && user.doctorProfile && user.doctorProfile.status === "APPROVED") {
     const [d, partners] = await Promise.all([
       prisma.doctorProfile.findUnique({ where: { id: user.doctorProfile.id }, select: DOCTOR_ACCOUNT_SELECT }),
       prisma.centerDoctor.findMany({
@@ -158,21 +171,25 @@ export async function getAppAccountForPhone(phone: string): Promise<AppAccount |
         select: { center: { select: { slug: true } } },
       }),
     ]);
-    if (!d) return null;
-    const slugs = [...new Set(partners.map((p) => p.center.slug).filter((s): s is string => Boolean(s)))];
-    return doctorAccount(d as DoctorAccountRow, slugs);
+    if (d) {
+      const slugs = [...new Set(partners.map((p) => p.center.slug).filter((s): s is string => Boolean(s)))];
+      return doctorAccount(d as DoctorAccountRow, slugs);
+    }
+    if (role === "DOCTOR") return null;
   }
   // Center
-  if (user.centerProfile) {
+  if (wantCenter && user.centerProfile) {
     const c = await prisma.centerProfile.findUnique({
       where: { id: user.centerProfile.id },
       select: { slug: true, name: true, logoUrl: true, status: true },
     });
-    if (!c || c.status !== "APPROVED") return null;
-    return { phone: user.phone, role: "CENTER", name: c.name, centerSlug: c.slug, assistantOf: null, photoUrl: absoluteAssetUrl(c.logoUrl) };
+    if (c && c.status === "APPROVED") {
+      return { phone: user.phone, role: "CENTER", name: c.name, centerSlug: c.slug, assistantOf: null, photoUrl: absoluteAssetUrl(c.logoUrl) };
+    }
+    if (role === "CENTER") return null;
   }
   // Patient (exists but no doctor/center profile)
-  if (user.patientProfile) {
+  if (wantPatient && user.patientProfile) {
     const name = [user.patientProfile.firstName, user.patientProfile.lastName].filter(Boolean).join(" ") || null;
     return { role: "PATIENT", phone: user.phone, name };
   }

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
-import { getAppAccountForPhone } from "@/lib/app-catalog";
+import { getAppAccountForPhone, type WantedRole } from "@/lib/app-catalog";
+
+const ROLES: WantedRole[] = ["DOCTOR", "CENTER", "PATIENT"];
 
 export const dynamic = "force-dynamic";
 
@@ -13,12 +15,15 @@ export async function GET(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
 
-  const phone = new URL(req.url).searchParams.get("phone") ?? "";
+  const params = new URL(req.url).searchParams;
+  const phone = params.get("phone") ?? "";
+  const roleRaw = (params.get("role") ?? "").toUpperCase();
+  const role = ROLES.includes(roleRaw as WantedRole) ? (roleRaw as WantedRole) : undefined;
   if (nationalDigits(phone).length < 7) {
     return NextResponse.json({ ok: false, error: "phone tələb olunur" }, { status: 400 });
   }
   try {
-    const account = await getAppAccountForPhone(phone);
+    const account = await getAppAccountForPhone(phone, role);
     return NextResponse.json({ ok: true, account: account ?? null }, {
       headers: { "Cache-Control": "no-store" },
     });
