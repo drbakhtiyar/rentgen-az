@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { resolveUserIdByPhone } from "@/lib/app-catalog";
-import { isExpoPushToken } from "@/lib/push";
+import { isValidPushToken } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   if (nationalDigits(phone).length < 7 || !token) {
     return NextResponse.json({ ok: false, error: "phone və token tələb olunur" }, { status: 400 });
   }
-  if (!isExpoPushToken(token)) {
+  if (!isValidPushToken(token)) {
     return NextResponse.json({ ok: false, error: "keçərsiz push token" }, { status: 400 });
   }
 
