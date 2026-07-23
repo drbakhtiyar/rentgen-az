@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAppKey, nationalDigits, splitName } from "@/lib/app-api";
 import { normalizePhone } from "@/lib/phone";
+import { verifyOtp } from "@/lib/otp";
 import { notifyNewAppointment } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
 
@@ -37,6 +38,8 @@ type ReferralBody = {
   serviceName?: string | null;
   patientName?: string;
   patientPhone?: string;
+  /** OTP the patient received (confirms the phone is real) — required. */
+  code?: string;
   note?: string | null;
   preferredDate?: string | null;
 };
@@ -65,7 +68,14 @@ export async function POST(req: Request): Promise<NextResponse> {
   const patientPhone = normalizePhone(patientPhoneRaw);
   if (!patientPhone) return NextResponse.json({ ok: false, error: "pasiyent nömrəsi düzgün deyil" }, { status: 400 });
 
+  // Confirm the patient's phone with the OTP they were sent (like the site).
+  const code = body.code?.trim() ?? "";
+  if (!code) return NextResponse.json({ ok: false, error: "təsdiq kodu tələb olunur" }, { status: 400 });
+
   try {
+    const v = await verifyOtp(patientPhone, code);
+    if (!v.ok) return NextResponse.json({ ok: false, error: v.error }, { status: 400 });
+
     const doctorId = await findDoctorByPhone(doctorPhone);
     if (!doctorId) return NextResponse.json({ ok: false, error: "həkim tapılmadı" }, { status: 404 });
 
