@@ -226,13 +226,18 @@ export async function getAppCatalog(): Promise<Record<string, unknown>> {
     ratingAgg.set(r.centerId, agg);
   }
 
-  const categories = [...new Set(services.map((s) => s.category).filter(Boolean))];
+  // The site lists all ~112 services for SEO, but the app only needs the ones
+  // a center actually offers — a much shorter, relevant list.
+  const offeredSlugs = new Set<string>();
+  for (const c of centers) for (const cs of c.services) offeredSlugs.add(cs.service.slug);
+  const offeredServices = services.filter((s) => offeredSlugs.has(s.slug));
+  const categories = [...new Set(offeredServices.map((s) => s.category).filter(Boolean))];
 
   return {
     version: 2,
     updatedAt: new Date().toISOString().slice(0, 10),
     categories,
-    services,
+    services: offeredServices,
     cities: CITIES.map((c) => c.name),
     examTypes: EXAM_TYPES,
     specializations: DENTAL_SPECIALIZATIONS,
