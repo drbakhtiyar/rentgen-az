@@ -3,8 +3,8 @@
 Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[blocked]` waiting on external input.
 
 ## Active — mobile app
-- [x] **Center mobile MVP** — DONE & verified live (Worker v18). Login role picker (Həkim·Mərkəz), İdarəetmə dashboard (requests + status workflow via `/center/status`), Mərkəzim profile, offline cache + pull-to-refresh.
-- [ ] **Worker `/catalog` cache header** (Rork side, defense-in-depth). Worker v18 still sets `public, max-age=60` on `/catalog`. Server no longer ships phones there (leak already closed at source), but flip it to `no-store` for consistency with the other routes.
+- [x] **Center mobile MVP** — DONE & verified live (Worker v18/v19). Login role picker (Həkim·Mərkəz), İdarəetmə dashboard (requests + status workflow via `/center/status`), Mərkəzim profile, offline cache + pull-to-refresh.
+- [x] **Worker `/catalog` → no-store** — Worker v19 dropped the `public, max-age=60`; all routes now default to `no-store`. Leak closed at both layers. (Cosmetic: `/health` + fallback still report `version: 18`.)
 - [ ] **Result file download in app.** `/referrals` and `/center/requests` return `files:[{...,url:null}]` — Bax/Endir currently bounces to the site. To open in-app: short-lived presigned B2 link behind a partnership/ownership check. Deferred.
 - [ ] **Push notifications** (Expo). Fire on new referral / status change / result ready. Endpoint skeleton planned (`/api/push/register`), not built.
 - [ ] **Harden Worker auth.** `/referrals?phone=` and `/center/*` are protected only by the obscure Worker URL + knowing a phone — no per-user auth. Add a signed token bound to the logged-in user. Deferred (low real-world risk given URL secrecy + x-app-key).
