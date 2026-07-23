@@ -10,8 +10,9 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (gate) return gate;
   try {
     const accounts = await getAppAccounts();
+    // Key-protected (exposes phone numbers) → never CDN-cache publicly.
     return NextResponse.json({ ok: true, accounts, source: "site" }, {
-      headers: { "Cache-Control": "public, max-age=120" },
+      headers: { "Cache-Control": "no-store" },
     });
   } catch (e) {
     console.error("[api/app/accounts]", e);

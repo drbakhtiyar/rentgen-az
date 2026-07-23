@@ -10,8 +10,9 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (gate) return gate;
   try {
     const payload = await getAppCatalog();
+    // Key-protected → never CDN-cache publicly (would leak to keyless callers).
     return NextResponse.json({ ...payload, source: "site" }, {
-      headers: { "Cache-Control": "public, max-age=120" },
+      headers: { "Cache-Control": "no-store" },
     });
   } catch (e) {
     console.error("[api/app/catalog]", e);
