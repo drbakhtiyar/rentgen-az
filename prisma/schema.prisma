@@ -72,6 +72,7 @@ model User {
   adminThread    AdminThread?
   wallet         Wallet?
   payments       Payment[]
+  pushTokens     PushToken[]
 
   @@index([role])
 }
@@ -160,6 +161,22 @@ model Notification {
 
   @@index([userId, read])
   @@index([userId, createdAt])
+}
+
+// Mobil app push bildiriş tokeni (Expo). Bir istifadəçinin bir neçə cihazı ola
+// bilər. Hadisə (yeni müraciət / status / nəticə) olanda notifyUser həm in-app
+// bildiriş yaradır, həm də bu tokenlərə Expo push göndərir. APNs/FCM açarları
+// Expo build tərəfindədir — server yalnız Expo push API-yə token ötürür.
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique // "ExponentPushToken[...]"
+  platform  String   @default("ios") // ios | android
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model PatientProfile {

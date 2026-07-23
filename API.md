@@ -39,6 +39,14 @@ A center's incoming requests. `{ok, center:{id,name,slug}, requests:[{id, patien
 ### `POST /api/app/center/status`
 Center advances a request. Body `{phone(center), requestId, status}`. One-way transitions: NEW→CONTACTED|CANCELLED, CONTACTED→COMPLETED|CANCELLED. Verifies the request belongs to that center. Notifies patient + referring doctor (in-app), like the site's status control. Returns `{ok, status}`. (SMS on status change NOT yet wired here — deferred.)
 
+### `POST /api/app/push/register`
+Register a device's **Expo** push token for the signed-in user. Body `{phone, token(`ExponentPushToken[...]`), platform?("ios"|"android")}`. Resolves user by phone (`resolveUserIdByPhone`, tolerant of +994/0/national), upserts on `token` (unique) → re-points a shared device to the current account. Returns `{ok}`; 400 bad/missing token, 404 unknown phone. See `src/lib/push.ts`.
+
+### `POST /api/app/push/unregister`
+Drop a token on sign-out so a shared phone stops getting the previous account's pushes. Body `{token}`. Deletes by token alone. Returns `{ok}`.
+
+> **Push delivery:** the server forwards messages to Expo (`exp.host/--/api/v2/push/send`); Expo delivers via APNs/FCM using credentials in the Expo/EAS build — **no Apple/Google keys on the site**. Every `notifyUser(...)` call (new referral, status, result, partner, review, etc.) now also pushes to the user's devices, best-effort. Dead tokens (`DeviceNotRegistered`) are auto-pruned. Optional env `EXPO_ACCESS_TOKEN` adds an authorized-sender header. Fully functional now; only the app needs a push-capable build (Apple Developer account) to receive them.
+
 ## Internal
 - `POST /api/pay/callback` — Payriff payment callback (verifies order via API, settles wallet).
 - `POST /api/upload` — authenticated upload helper.

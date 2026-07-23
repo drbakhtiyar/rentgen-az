@@ -125,6 +125,31 @@ export async function getAppAccounts(): Promise<AppAccount[]> {
 
 export type WantedRole = "DOCTOR" | "CENTER" | "PATIENT";
 
+/**
+ * Resolve the `User.id` for a phone number (any role), tolerant of
+ * +994/0/national formats. Used to attach a push token to the signed-in user.
+ * Returns null when no user matches or the user is blocked.
+ */
+export async function resolveUserIdByPhone(phone: string): Promise<string | null> {
+  const norm = normalizePhone(phone);
+  const nat = nationalDigits(phone);
+  if (norm) {
+    const u = await prisma.user.findUnique({
+      where: { phone: norm },
+      select: { id: true, isBlocked: true },
+    });
+    if (u) return u.isBlocked ? null : u.id;
+  }
+  if (nat.length < 7) return null;
+  // Tolerant fallback by last-9-digits.
+  const rows = await prisma.user.findMany({
+    where: { phone: { endsWith: nat }, isBlocked: false },
+    select: { id: true, phone: true },
+  });
+  const u = rows.find((r) => nationalDigits(r.phone) === nat);
+  return u?.id ?? null;
+}
+
 /** Resolve the APPROVED center owned by (or assisted from) `phone`. */
 export async function getAppCenterForPhone(
   phone: string,

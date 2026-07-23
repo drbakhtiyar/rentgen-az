@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./db";
+import { sendPushToUser } from "./push";
 
 export type NotifType =
   | "NEW_REQUEST"
@@ -37,6 +38,10 @@ export async function notifyUser(
   } catch {
     /* best-effort */
   }
+  // Also push to the user's mobile devices (no-op if they have no tokens).
+  // Kept out of the try above so a push failure can't mask a DB error, and
+  // sendPushToUser never throws on its own.
+  await sendPushToUser(userId, title, body ?? undefined, { type, link: link ?? null });
 }
 
 /** Unread notification count for a user (for the nav badge). */

@@ -3,6 +3,7 @@
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
 ## Mobile app bridge (`/api/app/*`) — current focus
+- **Push notifications — backend built.** New `PushToken` model + migration; `/api/app/push/register` + `/unregister`; `src/lib/push.ts` (Expo push, dead-token pruning); wired into `notifyUser` so every event (referral/status/result/partner/review) pushes to the user's devices. No Apple/Google keys on the site (Expo handles APNs/FCM). Ready the moment the app has a push build.
 - **Center mobile MVP shipped (Worker v18)** — login role picker (Həkim·Mərkəz), İdarəetmə dashboard (incoming requests + New/Total counters + status chips + status workflow via `/center/status`), Mərkəzim profile, per-phone offline cache + pull-to-refresh. Verified end-to-end.
 - **Security: dropped `accounts` from `/api/app/catalog`** — it embedded every doctor/center phone; the Worker serves `/catalog` keyless and publicly cacheable, reopening the f753fd2 leak. Login uses `whoami`; registry stays only at gated `/accounts`.
 - `8d605e9` **Center endpoints** — `GET /center/requests` (incoming requests) + `POST /center/status` (advance status, one-way, notifies patient+doctor). Enables the center mobile MVP (Rork building screens).

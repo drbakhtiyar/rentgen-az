@@ -17,7 +17,7 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 - `Plan`: FREE · SILVER · GOLD · PLATINUM
 - `PartnerStatus`: PENDING · ACCEPTED · REJECTED (center↔doctor partnership)
 
-## Models (41)
+## Models (42)
 
 ### Identity & money
 - **User** — phone (unique, normalized), role, isBlocked, **`sessionVersion`** (bumped to invalidate all JWTs — assistant removal/block), locale, lastLoginAt. 1:1 to profile models below.
@@ -57,6 +57,7 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 
 ### Auth & misc
 - **OTPCode** — phone, `codeHash` (sha256(code+secret)), expiresAt, consumed, attempts, ip.
+- **PushToken** — mobile push tokens (Expo). `token` (unique, `ExponentPushToken[...]`), `platform` ios|android, → User (Cascade). Every `notifyUser` fires an Expo push to these; dead tokens auto-pruned. Registered via `/api/app/push/register`.
 - **SignupAttempt** / **WaitlistSignup** — incomplete signups / waitlist.
 - **CenterEvent** / **DoctorEvent** — view analytics.
 - **BlogPost**, **City**, **SeoSetting**, **AdminActionLog** — content, geo, SEO, admin audit.
