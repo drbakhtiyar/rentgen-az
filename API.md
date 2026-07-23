@@ -47,6 +47,14 @@ Drop a token on sign-out so a shared phone stops getting the previous account's 
 
 > **Push delivery:** the server forwards messages to Expo (`exp.host/--/api/v2/push/send`); Expo delivers via APNs/FCM using credentials in the Expo/EAS build — **no Apple/Google keys on the site**. Every `notifyUser(...)` call (new referral, status, result, partner, review, etc.) now also pushes to the user's devices, best-effort. Dead tokens (`DeviceNotRegistered`) are auto-pruned. Optional env `EXPO_ACCESS_TOKEN` adds an authorized-sender header. Fully functional now; only the app needs a push-capable build (Apple Developer account) to receive them.
 
+### Chat / messaging (mobile) — text only (images deferred)
+Phone-authed REST mirrors of the site's chat server actions (the app has no session), in `src/lib/app-chat.ts`. `resolveAppParticipant(phone, role)` maps a phone → CENTER/DOCTOR profile (incl. active assistants). Partner rule unchanged: only **ACCEPTED** partners.
+- `GET /api/app/chat/contacts?phone=&role=` → `{ok, contacts:[{id(profileId|"ai"|"admin"), conversationId, name, sub, avatarUrl(abs), preview, unread, kind:"ai"|"admin"|"partner"}]}`. AI + Dəstək pinned on top, then every ACCEPTED partner.
+- `GET /api/app/chat/messages?phone=&role=&conversationId=` → `{ok, messages:[{id, mine, content, hasFile, fileName, readAt, createdAt}]}`. Marks the other party's messages read. Polling endpoint (~4 s).
+- `POST /api/app/chat/send` — body `{phone, role, conversationId?|peerId?, content}`. With `peerId` (other party's profile id) it opens the conversation on first send after the ACCEPTED check. Returns `{ok, id, conversationId}`. Notifies recipient → fires push.
+- `POST /api/app/ai` — body `{phone, messages:[{role:"user"|"assistant", content}]}` → `{ok, answer}`. AI Yardımçı (Claude Haiku via `askAssistant`); stateless, last turn must be a user question (≤12 turns, ≤1500 chars each).
+- `GET /api/app/support/messages?phone=` / `POST /api/app/support/send {phone, content}` — the user's rentgen.az support (AdminThread) chat; admin replies from the site's Söhbətlər panel.
+
 ## Internal
 - `POST /api/pay/callback` — Payriff payment callback (verifies order via API, settles wallet).
 - `POST /api/upload` — authenticated upload helper.

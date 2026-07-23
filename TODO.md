@@ -3,6 +3,7 @@
 Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[blocked]` waiting on external input.
 
 ## Active — mobile app
+- [~] **Chat/messaging in app.** **Backend DONE (text)**: `/api/app/chat/{contacts,messages,send}`, `/api/app/ai`, `/api/app/support/{messages,send}` (`src/lib/app-chat.ts`); AI + Dəstək pinned, ACCEPTED-partner rule, new-message push. **Remaining (Rork):** Worker proxy routes + SwiftUI screens (contact list, conversation, AI, support). **Deferred by user:** image/file sending in chat (do next), canned-reply "scripts" (later). Message-pinning not wanted.
 - [x] **Center mobile MVP** — DONE & verified live (Worker v18/v19). Login role picker (Həkim·Mərkəz), İdarəetmə dashboard (requests + status workflow via `/center/status`), Mərkəzim profile, offline cache + pull-to-refresh.
 - [x] **Worker `/catalog` → no-store** — Worker v19 dropped the `public, max-age=60`; all routes now default to `no-store`. Leak closed at both layers. (Cosmetic: `/health` + fallback still report `version: 18`.)
 - [ ] **Result file download in app.** `/referrals` and `/center/requests` return `files:[{...,url:null}]` — Bax/Endir currently bounces to the site. To open in-app: short-lived presigned B2 link behind a partnership/ownership check. Deferred.
