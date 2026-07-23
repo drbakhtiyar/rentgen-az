@@ -3,7 +3,8 @@
 Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[blocked]` waiting on external input.
 
 ## Active — mobile app
-- [~] **Center mobile MVP.** Site endpoints done & tested (`/api/app/center/requests` GET, `/api/app/center/status` POST). Rork given a prompt to: enable center login (`enabledRoles=[.doctor,.center]`, login shows Həkim + Mərkəz), build `CenterTabView` dashboard listing incoming requests + status change. **Awaiting Rork files** (Worker `index.ts` center routes + SwiftUI screens) to review.
+- [x] **Center mobile MVP** — DONE & verified live (Worker v18). Login role picker (Həkim·Mərkəz), İdarəetmə dashboard (requests + status workflow via `/center/status`), Mərkəzim profile, offline cache + pull-to-refresh.
+- [ ] **Worker `/catalog` cache header** (Rork side, defense-in-depth). Worker v18 still sets `public, max-age=60` on `/catalog`. Server no longer ships phones there (leak already closed at source), but flip it to `no-store` for consistency with the other routes.
 - [ ] **Result file download in app.** `/referrals` and `/center/requests` return `files:[{...,url:null}]` — Bax/Endir currently bounces to the site. To open in-app: short-lived presigned B2 link behind a partnership/ownership check. Deferred.
 - [ ] **Push notifications** (Expo). Fire on new referral / status change / result ready. Endpoint skeleton planned (`/api/push/register`), not built.
 - [ ] **Harden Worker auth.** `/referrals?phone=` and `/center/*` are protected only by the obscure Worker URL + knowing a phone — no per-user auth. Add a signed token bound to the logged-in user. Deferred (low real-world risk given URL secrecy + x-app-key).

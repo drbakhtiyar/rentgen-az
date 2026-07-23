@@ -40,7 +40,7 @@ The web platform is production-live and used by real centers/doctors/patients. T
 
 **Google rating:** centers connect a Place ID/name → cached rating shown on their page; daily cron refresh. **Needs `GOOGLE_PLACES_API_KEY` env to activate.**
 
-**Mobile app (`/api/app/*` bridge):** doctor MVP complete (login via whoami+OTP, referral with patient OTP, patient list w/ status filter + files). Center MVP in progress (endpoints ready, Rork building screens).
+**Mobile app (`/api/app/*` bridge):** doctor MVP complete (login via whoami+OTP, referral with patient OTP, patient list w/ status filter + files). **Center MVP complete & verified live** (Worker v18): Həkim·Mərkəz login role picker, `whoami?role=CENTER`, İdarəetmə dashboard (incoming requests, New/Total counters, status chips, status workflow writing back via `/center/status`), Mərkəzim profile, per-phone offline cache + pull-to-refresh.
 
 ## Known gaps / not done (see TODO.md for full list)
 - Mobile: result file Bax/Endir opens site (files return `url:null`); no push notifications; Worker endpoints unauthenticated beyond obscure URL (token hardening deferred).

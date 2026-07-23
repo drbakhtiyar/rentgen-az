@@ -3,6 +3,8 @@
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
 ## Mobile app bridge (`/api/app/*`) — current focus
+- **Center mobile MVP shipped (Worker v18)** — login role picker (Həkim·Mərkəz), İdarəetmə dashboard (incoming requests + New/Total counters + status chips + status workflow via `/center/status`), Mərkəzim profile, per-phone offline cache + pull-to-refresh. Verified end-to-end.
+- **Security: dropped `accounts` from `/api/app/catalog`** — it embedded every doctor/center phone; the Worker serves `/catalog` keyless and publicly cacheable, reopening the f753fd2 leak. Login uses `whoami`; registry stays only at gated `/accounts`.
 - `8d605e9` **Center endpoints** — `GET /center/requests` (incoming requests) + `POST /center/status` (advance status, one-way, notifies patient+doctor). Enables the center mobile MVP (Rork building screens).
 - `8b62a87` **Catalog filtered** — app catalog shows only services a center actually offers (not all 112 SEO services).
 - `6d730cf` **whoami role param** — dual-role numbers (doctor & center) resolve to the requested role; fixes doctor-only login for such numbers.

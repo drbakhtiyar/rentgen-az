@@ -221,9 +221,19 @@ export async function getAppAccountForPhone(
   return null;
 }
 
-/** Full catalog: services, cities, centers, prices, ratings and accounts. */
+/**
+ * Full catalog: services, cities, centers, prices and ratings.
+ *
+ * Deliberately does NOT embed the accounts registry: login now goes through
+ * `whoami` (single account), and the app renders centers from `centers[]`
+ * below. Shipping every doctor/center phone here is both dead weight and a
+ * leak vector — the Worker serves `/catalog` to the app without a key and may
+ * cache it publicly, which would re-expose the registry (cf. the f753fd2 CDN
+ * bypass). The gated `/api/app/accounts` endpoint still exists for the rare
+ * caller that genuinely needs the full list.
+ */
 export async function getAppCatalog(): Promise<Record<string, unknown>> {
-  const [services, centers, reviews, accounts] = await Promise.all([
+  const [services, centers, reviews] = await Promise.all([
     prisma.service.findMany({
       where: { isActive: true },
       orderBy: { order: "asc" },
@@ -240,7 +250,6 @@ export async function getAppCatalog(): Promise<Record<string, unknown>> {
       },
     }),
     prisma.review.findMany({ where: { hidden: false }, select: { centerId: true, rating: true } }),
-    getAppAccounts(),
   ]);
 
   const ratingAgg = new Map<string, { sum: number; count: number }>();
@@ -266,7 +275,6 @@ export async function getAppCatalog(): Promise<Record<string, unknown>> {
     cities: CITIES.map((c) => c.name),
     examTypes: EXAM_TYPES,
     specializations: DENTAL_SPECIALIZATIONS,
-    accounts,
     centers: centers.map((c) => {
       const agg = ratingAgg.get(c.id);
       return {

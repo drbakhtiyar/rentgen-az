@@ -9,10 +9,10 @@ Implementation: routes in `src/app/api/app/*/route.ts`; logic in `src/lib/app-ca
 ## Mobile bridge — `/api/app/*`
 
 ### `GET /api/app/catalog`
-Full catalog for the app. Returns `{ version, updatedAt, categories, services[], cities[], examTypes[], specializations[], accounts[], centers[], source }`.
+Full catalog for the app. Returns `{ version, updatedAt, categories, services[], cities[], examTypes[], specializations[], centers[] }`.
 - `services`: **only services offered by ≥1 approved center** (not all 112 SEO services). Each `{slug,name,shortName,description,icon,category,order,featured}`.
 - `centers[]`: `{id, slug, name, city, district, address, phone, workingHours, about, equipment, responsiblePerson, logoUrl(abs), imageUrl(abs), rating, reviewCount, services:[{slug,name,price,priceTo}]}`. Rating = avg of non-hidden reviews, else Google rating fallback.
-- `accounts`: see whoami shape (doctors + centers).
+- **No `accounts` field** — it embedded every doctor/center phone and the Worker serves `/catalog` keyless (public-cacheable), which reopened the f753fd2 leak. Login uses `whoami`; the registry lives only at the gated `/accounts`.
 
 ### `GET /api/app/accounts`
 Full sign-in registry (doctors + centers). Largely superseded by `whoami` (privacy). `{ok, accounts[]}`.
