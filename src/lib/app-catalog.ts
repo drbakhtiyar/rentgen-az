@@ -18,6 +18,10 @@ export type AppAccount = {
   centerSlug: string | null;
   assistantOf: string | null;
   centerSlugs?: string[];
+  /** Doctor photo (absolute URL) / center logo, for display in the app. */
+  photoUrl?: string | null;
+  clinic?: string | null;
+  specializations?: string[];
 };
 
 /** Sign-in registry: doctors (with their ACCEPTED partner centers) + centers. */
@@ -25,11 +29,14 @@ export async function getAppAccounts(): Promise<AppAccount[]> {
   const [doctors, centers, partners] = await Promise.all([
     prisma.doctorProfile.findMany({
       where: { status: "APPROVED", user: { isBlocked: false } },
-      select: { id: true, firstName: true, lastName: true, user: { select: { phone: true } } },
+      select: {
+        id: true, firstName: true, lastName: true, photoUrl: true, clinic: true,
+        specializations: true, user: { select: { phone: true } },
+      },
     }),
     prisma.centerProfile.findMany({
       where: { status: "APPROVED", user: { isBlocked: false } },
-      select: { slug: true, name: true, user: { select: { phone: true } } },
+      select: { slug: true, name: true, logoUrl: true, user: { select: { phone: true } } },
     }),
     prisma.centerDoctor.findMany({
       where: { status: "ACCEPTED", center: { status: "APPROVED" } },
@@ -55,11 +62,21 @@ export async function getAppAccounts(): Promise<AppAccount[]> {
       centerSlug: null,
       assistantOf: null,
       centerSlugs: partnersByDoctor.get(d.id) ?? [],
+      photoUrl: absoluteAssetUrl(d.photoUrl),
+      clinic: d.clinic,
+      specializations: d.specializations ?? [],
     });
   }
   for (const c of centers) {
     if (!c.user.phone) continue;
-    accounts.push({ phone: c.user.phone, role: "CENTER", name: c.name, centerSlug: c.slug, assistantOf: null });
+    accounts.push({
+      phone: c.user.phone,
+      role: "CENTER",
+      name: c.name,
+      centerSlug: c.slug,
+      assistantOf: null,
+      photoUrl: absoluteAssetUrl(c.logoUrl),
+    });
   }
   return accounts;
 }
