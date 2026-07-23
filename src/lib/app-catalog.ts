@@ -125,6 +125,31 @@ export async function getAppAccounts(): Promise<AppAccount[]> {
 
 export type WantedRole = "DOCTOR" | "CENTER" | "PATIENT";
 
+/** Resolve the APPROVED center owned by (or assisted from) `phone`. */
+export async function getAppCenterForPhone(
+  phone: string,
+): Promise<{ id: string; name: string; slug: string | null; userId: string } | null> {
+  const norm = normalizePhone(phone);
+  const nat = nationalDigits(phone);
+  const select = { id: true, name: true, slug: true, status: true, userId: true } as const;
+
+  if (norm) {
+    const u = await prisma.user.findUnique({
+      where: { phone: norm },
+      select: { centerProfile: { select }, assistantOf: { select: { active: true, center: { select } } } },
+    });
+    const c = u?.centerProfile ?? (u?.assistantOf?.active ? u.assistantOf.center : null);
+    if (c && c.status === "APPROVED") return { id: c.id, name: c.name, slug: c.slug, userId: c.userId };
+  }
+  // Tolerant fallback by last-9-digits.
+  const rows = await prisma.centerProfile.findMany({
+    where: { status: "APPROVED" },
+    select: { id: true, name: true, slug: true, userId: true, user: { select: { phone: true } } },
+  });
+  const c = rows.find((r) => nationalDigits(r.user.phone) === nat);
+  return c ? { id: c.id, name: c.name, slug: c.slug, userId: c.userId } : null;
+}
+
 /**
  * Single account for one phone (login resolver) — so the app never has to
  * download the whole registry (which would leak every doctor/center phone).
