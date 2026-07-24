@@ -22,7 +22,7 @@ Full sign-in registry (doctors + centers). Largely superseded by `whoami` (priva
 - DOCTOR: `{phone, role:"DOCTOR", name, centerSlug:null, assistantOf:null, centerSlugs:[ACCEPTED partner slugs], photoUrl(abs), clinic, specializations[], city, workplace(ACCEPTED workplace center name), instagram, website}`
 - CENTER: `{phone, role:"CENTER", name, centerSlug, assistantOf:null, photoUrl(logo abs)}`
 - PATIENT: `{role:"PATIENT", phone, name}`
-Only APPROVED doctors/centers resolve.
+Only APPROVED doctors/centers resolve. **Assistants** resolve too: a doctor-assistant signs in as the doctor they assist (role DOCTOR), a center-assistant as their center (role CENTER) — acting on the owner's behalf, keeping their own phone, with `assistantOf` set to the owner's name. All app endpoints resolve the assistant's phone to the acting owner (chat via `resolveAppParticipant`, centers via `getAppCenterForPhone`, referrals via `findDoctorByPhone`).
 
 ### `POST /api/app/referrals/otp`
 Send an OTP SMS to the **patient's** phone (referral confirmation). Body `{patientPhone}`. Returns `{ok, devCode}` (devCode only in dev). Uses site `createOtp`+`sendOtpSms`.
