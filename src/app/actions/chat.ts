@@ -66,7 +66,7 @@ async function assertParticipant(conversationId: string) {
 /** Notify the message recipient (one unread chat notice at a time — anti-spam). */
 async function notifyRecipient(
   senderRole: "CENTER" | "DOCTOR",
-  conv: { centerId: string; doctorId: string },
+  conv: { id: string; centerId: string; doctorId: string },
 ): Promise<void> {
   if (senderRole === "CENTER") {
     const [dr, center] = await Promise.all([
@@ -79,7 +79,7 @@ async function notifyRecipient(
       select: { id: true },
     });
     if (unread) return;
-    await notifyUser(dr.userId, "NEW_MESSAGE", "Yeni mesaj", `${center?.name ?? "Mərkəz"} sizə yazdı.`, "/hekim/chat");
+    await notifyUser(dr.userId, "NEW_MESSAGE", "Yeni mesaj", `${center?.name ?? "Mərkəz"} sizə yazdı.`, "/hekim/chat", { conversationId: conv.id });
   } else {
     const [center, dr] = await Promise.all([
       prisma.centerProfile.findUnique({ where: { id: conv.centerId }, select: { userId: true } }),
@@ -97,6 +97,7 @@ async function notifyRecipient(
       "Yeni mesaj",
       `${doctorName(dr?.firstName, dr?.lastName) || "Həkim"} sizə yazdı.`,
       "/merkez/chat",
+      { conversationId: conv.id },
     );
   }
 }

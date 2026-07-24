@@ -11,7 +11,7 @@ Implementation: routes in `src/app/api/app/*/route.ts`; logic in `src/lib/app-ca
 ### `GET /api/app/catalog`
 Full catalog for the app. Returns `{ version, updatedAt, categories, services[], cities[], examTypes[], specializations[], centers[] }`.
 - `services`: **only services offered by ≥1 approved center** (not all 112 SEO services). Each `{slug,name,shortName,description,icon,category,order,featured}`.
-- `centers[]`: `{id, slug, name, city, district, address, phone, workingHours, about, equipment, responsiblePerson, logoUrl(abs), imageUrl(abs), rating, reviewCount, services:[{slug,name,price,priceTo}]}`. Rating = avg of non-hidden reviews, else Google rating fallback.
+- `centers[]`: `{id, slug, name, city, district, address, phone, workingHours, hours(structured `{mon:{open,close}|null,…}` "HH:mm", Asia/Baku — for "open now"), lat, lng (nullable — geocode address if null, for the map), about, equipment, responsiblePerson, logoUrl(abs), imageUrl(abs), rating, reviewCount, services:[{slug,name,price,priceTo}]}`. Rating = avg of non-hidden reviews, else Google rating fallback.
 - **No `accounts` field** — it embedded every doctor/center phone and the Worker serves `/catalog` keyless (public-cacheable), which reopened the f753fd2 leak. Login uses `whoami`; the registry lives only at the gated `/accounts`.
 
 ### `GET /api/app/accounts`
@@ -44,6 +44,8 @@ Register a device's **Expo** push token for the signed-in user. Body `{phone, to
 
 ### `POST /api/app/push/unregister`
 Drop a token on sign-out so a shared phone stops getting the previous account's pushes. Body `{token}`. Deletes by token alone. Returns `{ok}`.
+
+> **Push deep-link:** `notifyUser(...)` takes an optional `data` object merged into the push payload's top level. Chat pushes (`NEW_MESSAGE`) now carry `conversationId` (both web-sent via `notifyRecipient` and app-sent via `notifyChatRecipient`), so a tap can open that thread directly. The app reads `userInfo["conversationId"]`.
 
 > **Push delivery (native APNs):** the iOS app is a **native** build (not Expo) — it stores the raw APNs hex device token. The server sends **directly to Apple APNs** over HTTP/2 with an ES256 JWT signed by the `.p8` auth key (`src/lib/push.ts`). Every `notifyUser(...)` call (new referral, status, result, partner, review, new message, etc.) also pushes, best-effort; custom keys (`link`, `type`) ride at the payload top level for tap-navigation. Tokens APNs rejects (410/`BadDeviceToken`) are auto-pruned. **Inert until these env vars are set** (like the Google key): `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, `APNS_ENV` (production|sandbox) — all obtained from the Apple Developer account. `/push/register` accepts native APNs hex tokens (and Expo tokens for compatibility).
 

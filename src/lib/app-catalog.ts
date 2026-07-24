@@ -297,7 +297,8 @@ export async function getAppCatalog(): Promise<Record<string, unknown>> {
       where: { status: "APPROVED" },
       select: {
         id: true, slug: true, name: true, city: true, district: true, address: true,
-        phone: true, workingHours: true, description: true, equipment: true,
+        phone: true, workingHours: true, hours: true, lat: true, lng: true,
+        description: true, equipment: true,
         responsiblePerson: true, logoUrl: true, images: true,
         googleRating: true, googleReviewCount: true,
         services: { select: { price: true, priceTo: true, service: { select: { slug: true, name: true } } } },
@@ -340,6 +341,11 @@ export async function getAppCatalog(): Promise<Record<string, unknown>> {
         address: c.address,
         phone: c.phone,
         workingHours: c.workingHours,
+        // Structured weekly hours for "open now" filtering: { mon:{open,close}|null, … } ("HH:mm", Asia/Baku).
+        hours: c.hours ?? null,
+        // Coordinates for the map (nullable — many centers have none; geocode the address as fallback).
+        lat: c.lat ?? null,
+        lng: c.lng ?? null,
         about: c.description,
         equipment: c.equipment,
         responsiblePerson: c.responsiblePerson,

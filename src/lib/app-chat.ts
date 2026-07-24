@@ -230,7 +230,7 @@ export async function appSendMessage(
       where: { id: conversationId },
       data: { lastMessageAt: msg.createdAt },
     });
-    await notifyChatRecipient(p.role, conv).catch(() => {});
+    await notifyChatRecipient(p.role, conv, conversationId).catch(() => {});
     return { ok: true, id: msg.id, conversationId };
   } catch {
     return { ok: false, error: "Mesaj göndərilmədi." };
@@ -276,10 +276,12 @@ export async function appMarkRead(
   return { ok: true, unread: await appUnreadTotal(p) };
 }
 
-/** Notify the recipient (one unread chat notice at a time — anti-spam). */
+/** Notify the recipient (one unread chat notice at a time — anti-spam).
+ * `conversationId` rides the push payload so a tap opens that thread. */
 async function notifyChatRecipient(
   senderRole: AppRole,
   conv: { centerId: string; doctorId: string },
+  conversationId: string,
 ): Promise<void> {
   if (senderRole === "CENTER") {
     const [dr, center] = await Promise.all([
@@ -292,7 +294,7 @@ async function notifyChatRecipient(
       select: { id: true },
     });
     if (unread) return;
-    await notifyUser(dr.userId, "NEW_MESSAGE", "Yeni mesaj", `${center?.name ?? "Mərkəz"} sizə yazdı.`, "/hekim/chat");
+    await notifyUser(dr.userId, "NEW_MESSAGE", "Yeni mesaj", `${center?.name ?? "Mərkəz"} sizə yazdı.`, "/hekim/chat", { conversationId });
   } else {
     const [center, dr] = await Promise.all([
       prisma.centerProfile.findUnique({ where: { id: conv.centerId }, select: { userId: true } }),
@@ -310,6 +312,7 @@ async function notifyChatRecipient(
       "Yeni mesaj",
       `${doctorName(dr?.firstName, dr?.lastName) || "Həkim"} sizə yazdı.`,
       "/merkez/chat",
+      { conversationId },
     );
   }
 }
