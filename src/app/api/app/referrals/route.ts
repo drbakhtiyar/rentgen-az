@@ -8,23 +8,37 @@ import { notifyUser } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
-/** Resolve a phone to a DoctorProfile — exact +994 match, tolerant fallback. */
+/**
+ * Resolve a phone to a DoctorProfile id — the doctor themselves OR their active
+ * assistant (who acts on the doctor's behalf). Exact +994 match, tolerant
+ * last-9-digits fallback for +994/0 inconsistencies.
+ */
 async function findDoctorByPhone(phone: string) {
   const norm = normalizePhone(phone);
   if (norm) {
     const u = await prisma.user.findUnique({
       where: { phone: norm },
-      select: { doctorProfile: { select: { id: true } } },
+      select: {
+        doctorProfile: { select: { id: true } },
+        doctorAssistantOf: { select: { active: true, doctorId: true } },
+      },
     });
     if (u?.doctorProfile) return u.doctorProfile.id;
+    if (u?.doctorAssistantOf?.active) return u.doctorAssistantOf.doctorId;
   }
-  // Fallback: match by last 9 digits (handles +994/0 inconsistencies).
   const nat = nationalDigits(phone);
   if (nat.length >= 7) {
     const docs = await prisma.doctorProfile.findMany({
       select: { id: true, user: { select: { phone: true } } },
     });
-    return docs.find((d) => nationalDigits(d.user.phone) === nat)?.id ?? null;
+    const direct = docs.find((d) => nationalDigits(d.user.phone) === nat)?.id;
+    if (direct) return direct;
+    // Active doctor-assistant by last-9-digits.
+    const assistants = await prisma.user.findMany({
+      where: { doctorAssistantOf: { active: true } },
+      select: { phone: true, doctorAssistantOf: { select: { doctorId: true } } },
+    });
+    return assistants.find((a) => nationalDigits(a.phone) === nat)?.doctorAssistantOf?.doctorId ?? null;
   }
   return null;
 }

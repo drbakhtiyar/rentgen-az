@@ -196,13 +196,13 @@ export async function getAppAccountForPhone(
   let user = norm
     ? await prisma.user.findUnique({
         where: { phone: norm },
-        select: { id: true, phone: true, isBlocked: true, doctorProfile: { select: { id: true, status: true } }, centerProfile: { select: { id: true } }, patientProfile: { select: { firstName: true, lastName: true } } },
+        select: { id: true, phone: true, isBlocked: true, doctorProfile: { select: { id: true, status: true } }, centerProfile: { select: { id: true } }, patientProfile: { select: { firstName: true, lastName: true } }, doctorAssistantOf: { select: { active: true, doctorId: true } }, assistantOf: { select: { active: true, centerId: true } } },
       })
     : null;
   if (!user) {
     const rows = await prisma.user.findMany({
-      where: { role: { in: ["DOCTOR", "CENTER"] } },
-      select: { id: true, phone: true, isBlocked: true, doctorProfile: { select: { id: true, status: true } }, centerProfile: { select: { id: true } }, patientProfile: { select: { firstName: true, lastName: true } } },
+      where: { role: { in: ["DOCTOR", "CENTER", "ASSISTANT"] } },
+      select: { id: true, phone: true, isBlocked: true, doctorProfile: { select: { id: true, status: true } }, centerProfile: { select: { id: true } }, patientProfile: { select: { firstName: true, lastName: true } }, doctorAssistantOf: { select: { active: true, doctorId: true } }, assistantOf: { select: { active: true, centerId: true } } },
     });
     user = rows.find((u) => nationalDigits(u.phone) === nat) ?? null;
   }
@@ -227,6 +227,24 @@ export async function getAppAccountForPhone(
     }
     if (role === "DOCTOR") return null;
   }
+  // Doctor-assistant → sign in as the doctor they assist (acts on their behalf,
+  // like the site). Keeps the assistant's own phone; flags assistantOf.
+  if (wantDoctor && user.doctorAssistantOf?.active) {
+    const doctorId = user.doctorAssistantOf.doctorId;
+    const [d, partners] = await Promise.all([
+      prisma.doctorProfile.findUnique({ where: { id: doctorId }, select: { ...DOCTOR_ACCOUNT_SELECT, status: true } }),
+      prisma.centerDoctor.findMany({
+        where: { doctorId, status: "ACCEPTED", center: { status: "APPROVED" } },
+        select: { center: { select: { slug: true } } },
+      }),
+    ]);
+    if (d && d.status === "APPROVED") {
+      const slugs = [...new Set(partners.map((p) => p.center.slug).filter((s): s is string => Boolean(s)))];
+      const acc = doctorAccount(d as DoctorAccountRow, slugs);
+      return { ...acc, phone: user.phone, assistantOf: acc.name };
+    }
+    if (role === "DOCTOR") return null;
+  }
   // Center
   if (wantCenter && user.centerProfile) {
     const c = await prisma.centerProfile.findUnique({
@@ -235,6 +253,17 @@ export async function getAppAccountForPhone(
     });
     if (c && c.status === "APPROVED") {
       return { phone: user.phone, role: "CENTER", name: c.name, centerSlug: c.slug, assistantOf: null, photoUrl: absoluteAssetUrl(c.logoUrl) };
+    }
+    if (role === "CENTER") return null;
+  }
+  // Center-assistant → sign in as the center they assist.
+  if (wantCenter && user.assistantOf?.active) {
+    const c = await prisma.centerProfile.findUnique({
+      where: { id: user.assistantOf.centerId },
+      select: { slug: true, name: true, logoUrl: true, status: true },
+    });
+    if (c && c.status === "APPROVED") {
+      return { phone: user.phone, role: "CENTER", name: c.name, centerSlug: c.slug, assistantOf: c.name, photoUrl: absoluteAssetUrl(c.logoUrl) };
     }
     if (role === "CENTER") return null;
   }
