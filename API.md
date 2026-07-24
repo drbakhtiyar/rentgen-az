@@ -49,6 +49,9 @@ Drop a token on sign-out so a shared phone stops getting the previous account's 
 
 > **Push delivery (native APNs):** the iOS app is a **native** build (not Expo) — it stores the raw APNs hex device token. The server sends **directly to Apple APNs** over HTTP/2 with an ES256 JWT signed by the `.p8` auth key (`src/lib/push.ts`). Every `notifyUser(...)` call (new referral, status, result, partner, review, new message, etc.) also pushes, best-effort; custom keys (`link`, `type`) ride at the payload top level for tap-navigation. Tokens APNs rejects (410/`BadDeviceToken`) are auto-pruned. **Inert until these env vars are set** (like the Google key): `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, `APNS_ENV` (production|sandbox) — all obtained from the Apple Developer account. `/push/register` accepts native APNs hex tokens (and Expo tokens for compatibility).
 
+### `GET /api/app/summary?phone=&role=`
+Cheap counts for the home-screen widget + Siri intents → `{ok, newRequests, unread}`. `newRequests` = NEW `AppointmentRequest`s (center's incoming / doctor's referrals); `unread` = total unread chat. `getAppSummary` in `src/lib/app-chat.ts`.
+
 ### Chat / messaging (mobile) — text only (images deferred)
 Phone-authed REST mirrors of the site's chat server actions (the app has no session), in `src/lib/app-chat.ts`. `resolveAppParticipant(phone, role)` maps a phone → CENTER/DOCTOR profile (incl. active assistants). Partner rule unchanged: only **ACCEPTED** partners.
 - `GET /api/app/chat/contacts?phone=&role=` → `{ok, contacts:[{id(profileId|"ai"|"admin"), conversationId, name, sub, avatar(abs), preview, unread, kind:"ai"|"admin"|"partner"}]}`. AI + Dəstək pinned on top, then every ACCEPTED partner.

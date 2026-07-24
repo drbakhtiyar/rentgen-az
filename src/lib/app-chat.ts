@@ -251,6 +251,23 @@ export async function appUnreadTotal(p: AppParticipant): Promise<number> {
 }
 
 /**
+ * Lightweight counts for the home-screen widget / Siri: NEW requests (role-
+ * appropriate) + total unread chat. Cheap `count` queries, safe to poll.
+ */
+export async function getAppSummary(p: AppParticipant): Promise<{ newRequests: number; unread: number }> {
+  const [newRequests, unread] = await Promise.all([
+    prisma.appointmentRequest.count({
+      where:
+        p.role === "CENTER"
+          ? { centerId: p.profileId, status: "NEW" }
+          : { doctorId: p.profileId, status: "NEW" },
+    }),
+    appUnreadTotal(p),
+  ]);
+  return { newRequests, unread };
+}
+
+/**
  * Mark a thread read (partner conversation OR the admin/support thread) and
  * return the fresh total unread badge, so the app can zero the badge instantly
  * without waiting for the next contacts poll. Idempotent.
