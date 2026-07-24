@@ -16,6 +16,9 @@ Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git
 - `f753fd2` **Security: fixed `/api/app` auth bypass** — public CDN cache had served authorized (keyed) responses to keyless callers, leaking phone numbers. Personal-data routes now `no-store`.
 - `d186673` **Initial mobile backend** — `/api/app/*` bridge behind `x-app-key`.
 
+## Web panels
+- **Browser desktop alerts** (doctor + center panels) — while the panel tab is open, a new patient request or chat message triggers a WebAudio "ding", a `(N)` tab-title counter, and a desktop Notification (if permitted). `getAlertCountAction` (combined unread) + `DashboardAlerts` client component in `DashboardShell`; no asset, no schema change. Audio/permission unlocked on first gesture.
+
 ## Admin panel filters
 - `a8f4244` Requests: status chips + center filter.
 - `671b0d3` / `44dd47c` Reviews: center-name autocomplete + date-range filter.
