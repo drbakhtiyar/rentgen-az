@@ -171,8 +171,16 @@ export async function sendPushToUser(
     if (tokens.length === 0 || !cfg) return; // inert until APNs env is set
 
     const jwt = await apnsAuthToken(cfg);
+    // Home-screen icon badge = the user's unread notifications, so the red
+    // count updates even while the app is closed. The app refines it to the
+    // exact chat-unread when foregrounded.
+    const badge = await prisma.notification.count({ where: { userId, read: false } }).catch(() => null);
     const payload = JSON.stringify({
-      aps: { alert: { title, body: body ?? undefined }, sound: "default" },
+      aps: {
+        alert: { title, body: body ?? undefined },
+        sound: "default",
+        ...(typeof badge === "number" ? { badge } : {}),
+      },
       ...(data ?? {}),
     });
 
