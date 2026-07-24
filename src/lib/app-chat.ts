@@ -4,7 +4,8 @@ import { normalizePhone } from "./phone";
 import { nationalDigits, absoluteAssetUrl } from "./app-api";
 import { notifyUser } from "./notifications";
 import { doctorName } from "./utils";
-import { getChatContacts } from "./chat";
+import { getChatContacts, unreadMessageCount } from "./chat";
+import { getUserAdminContact } from "./admin-chat";
 
 /**
  * Phone-authed chat for the mobile app. The site's chat lives in server
@@ -234,6 +235,45 @@ export async function appSendMessage(
   } catch {
     return { ok: false, error: "Mesaj göndərilmədi." };
   }
+}
+
+/**
+ * The app's total unread chat badge = unread partner messages + unread admin
+ * (support) messages. Matches the sum of `unread` across `/chat/contacts`, so
+ * the app can set its Söhbətlər badge directly from this number.
+ */
+export async function appUnreadTotal(p: AppParticipant): Promise<number> {
+  const [chat, admin] = await Promise.all([
+    unreadMessageCount(p.userId, p.role, p.profileId),
+    getUserAdminContact(p.userId).then((a) => a.unread),
+  ]);
+  return chat + admin;
+}
+
+/**
+ * Mark a thread read (partner conversation OR the admin/support thread) and
+ * return the fresh total unread badge, so the app can zero the badge instantly
+ * without waiting for the next contacts poll. Idempotent.
+ */
+export async function appMarkRead(
+  p: AppParticipant,
+  opts: { conversationId?: string; support?: boolean },
+): Promise<{ ok: true; unread: number } | { ok: false; error: string }> {
+  if (opts.support) {
+    await prisma.adminThread
+      .updateMany({ where: { userId: p.userId }, data: { userReadAt: new Date() } })
+      .catch(() => {});
+  } else if (opts.conversationId) {
+    const conv = await convForParticipant(p, opts.conversationId);
+    if (!conv) return { ok: false, error: "İcazə yoxdur." };
+    await prisma.message
+      .updateMany({
+        where: { conversationId: opts.conversationId, senderId: { not: p.userId }, readAt: null },
+        data: { readAt: new Date() },
+      })
+      .catch(() => {});
+  }
+  return { ok: true, unread: await appUnreadTotal(p) };
 }
 
 /** Notify the recipient (one unread chat notice at a time — anti-spam). */
