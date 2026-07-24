@@ -14,6 +14,7 @@ import { LocaleProvider } from "@/components/locale-context";
 import { DashboardNav, type NavItem } from "./nav";
 import { MobileNavMenu } from "./mobile-nav-menu";
 import { RoleSwitcher } from "./role-switcher";
+import { DashboardAlerts } from "./alerts";
 
 export async function DashboardShell({
   title,
@@ -98,8 +99,13 @@ export async function DashboardShell({
     ] as ("PATIENT" | "CENTER" | "DOCTOR" | null)[]
   ).filter((r): r is "PATIENT" | "CENTER" | "DOCTOR" => r !== null);
 
+  // Browser desktop alerts (sound + tab-title counter) for the panels that
+  // receive new requests/messages — doctors, centers, and their assistants.
+  const showAlerts = !!me && (me.role === "CENTER" || me.role === "DOCTOR" || me.role === "ASSISTANT");
+
   return (
     <LocaleProvider locale={locale}>
+    {showAlerts && <DashboardAlerts />}
     <div className="min-h-[calc(100vh-4rem)] bg-surface">
       <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Sidebar (desktop) */}
