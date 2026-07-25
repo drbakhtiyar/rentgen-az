@@ -13,6 +13,7 @@ import {
   Star,
   MessageSquare,
   Bell,
+  BarChart3,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -44,6 +45,7 @@ export const patientNav: NavItem[] = [
 
 export const adminNav: NavItem[] = [
   { label: "İcmal", href: "/admin", icon: <LayoutDashboard /> },
+  { label: "Analitika", href: "/admin/analitika", icon: <BarChart3 /> },
   { label: "Mərkəzlər", href: "/admin/merkezler", icon: <Building2 /> },
   { label: "Pasiyentlər", href: "/admin/pasiyentler", icon: <Users /> },
   { label: "Həkimlər", href: "/admin/hekimler", icon: <Stethoscope /> },
