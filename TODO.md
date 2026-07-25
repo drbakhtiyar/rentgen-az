@@ -22,8 +22,8 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 ## Product / site backlog
 - [ ] **RU translation** of panel UIs (admin/center/doctor/patient). Public pages + home done; panels deferred by user. Dicts in `src/lib/i18n*.ts`.
 - [ ] **DICOM viewer public launch** — `/viewer/[fileId]` gated to Dr. Bakhtiyar (`viewer-access.ts`). Needs 4th-quadrant reference images, then ungate.
-- [x] **Monetization: sell storage to centers** — BUILT & live. Platinum-only, +1 TB = 29 ₼ / 30 days (`buyExtraStorageAction`, wallet-debit, `/merkez/paket` UI, upload-limit enforcement, storage-usage bar). User confirmed the model (Platinum-only, 29₼/TB) on 2026-07-25 — no change. **Only real prerequisite for revenue: Payriff go-live** (wallet top-up needs live Payriff credentials; admin can grant balance meanwhile).
-- [ ] **Payriff go-live** — pipeline live (Merchant ES1097669); confirm production credentials + settle the fee/business model.
+- [x] **Monetization: sell storage to centers — FULLY OPERATIONAL.** Platinum-only, +1 TB = 29 ₼ / 30 days (`buyExtraStorageAction`, wallet-debit, `/merkez/paket` UI, upload-limit enforcement, storage-usage bar). Model confirmed 2026-07-25 (Platinum-only, 29₼/TB).
+- [x] **Payriff — LIVE.** `PAYRIFF_MERCHANT`/`PAYRIFF_SECRET` in Vercel prod; callback 200. Verified end-to-end: 3 real 1 AZN top-ups settled (PAID → wallet credited via TOPUP ledger). Whole revenue loop works: center tops up wallet via Payriff → buys storage from balance. (1 abandoned PENDING checkout on 2026-07-20 — harmless.)
 - [ ] **CRM Faza 2** — beyond current Bugün/Təqvim/Pasiyentlər/SMS/Söhbətlər/Jurnal (see memory `rentgen-az-crm`).
 
 ## Analytics / SEO
