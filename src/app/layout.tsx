@@ -8,6 +8,7 @@ import { SITE, buildMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/se
 import { SITE_URL } from "@/lib/env";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { GoogleAnalytics } from "@/components/google-analytics";
 import { getLocale } from "@/lib/i18n-server";
 
 const inter = Inter({
@@ -67,6 +68,7 @@ export default async function RootLayout({
         <SiteFooter />
         <Analytics />
         <SpeedInsights />
+        <GoogleAnalytics />
       </body>
     </html>
   );
