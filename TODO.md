@@ -15,8 +15,9 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 ## Blocked — waiting on external input
 - [blocked] **Apple Developer account** ($99/yr) — push code (native APNs) fully built; needs the `.p8` key + `APNS_*` Vercel env to go live, and the account for App Store submission. Biggest blocker for the app.
 - [blocked] **`GOOGLE_PLACES_API_KEY`** — Google rating feature fully built (Place ID, daily `google-ratings` cron), inert until the key is in Vercel env.
-- [blocked] **Anthropic credit** — AI Yardımçı (Haiku 4.5) needs account credit. Cheap top-up.
 - [blocked] **Google Play account** ($25) — Android submission (later).
+
+> ~~Anthropic credit~~ — RESOLVED: `ANTHROPIC_API_KEY` is set in Vercel prod and the AI Yardımçı is live (verified: `/api/app/ai` returns real Haiku answers; ~$0.04 used Jul 19–24).
 
 ## Product / site backlog
 - [ ] **RU translation** of panel UIs (admin/center/doctor/patient). Public pages + home done; panels deferred by user. Dicts in `src/lib/i18n*.ts`.
