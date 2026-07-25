@@ -28,6 +28,12 @@ export const metadata: Metadata = {
   applicationName: SITE.name,
   authors: [{ name: SITE.name }],
   // Icons (favicon.ico, icon.png, apple-icon.png) are auto-detected from app/ file conventions.
+  // Google Search Console verification (HTML-tag method). Set the token from
+  // Search Console in the GOOGLE_SITE_VERIFICATION env var; renders
+  // <meta name="google-site-verification" content="…" /> on every page.
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
 };
 
 export const viewport: Viewport = {
