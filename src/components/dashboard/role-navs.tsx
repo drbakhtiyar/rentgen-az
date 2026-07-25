@@ -13,6 +13,7 @@ import {
   Star,
   MessageSquare,
   Bell,
+  BarChart3,
   Wallet,
   Download,
   Trash2,
@@ -71,6 +72,7 @@ export const patientNav: NavItem[] = [
 
 export const adminNav: NavItem[] = [
   { label: "İcmal", href: "/admin", icon: <LayoutDashboard /> },
+  { label: "Analitika", href: "/admin/analitika", icon: <BarChart3 /> },
   { label: "Söhbətlər", href: "/admin/sohbetler", icon: <MessageSquare /> },
   { label: "AI Yardımçı", href: "/admin/ai", icon: <Sparkles /> },
   { label: "Mərkəzlər", href: "/admin/merkezler", icon: <Building2 /> },
