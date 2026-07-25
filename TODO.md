@@ -22,7 +22,7 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 ## Product / site backlog
 - [ ] **RU translation** of panel UIs (admin/center/doctor/patient). Public pages + home done; panels deferred by user. Dicts in `src/lib/i18n*.ts`.
 - [ ] **DICOM viewer public launch** — `/viewer/[fileId]` gated to Dr. Bakhtiyar (`viewer-access.ts`). Needs 4th-quadrant reference images, then ungate.
-- [ ] **Monetization (next big item)** — sell cloud storage to centers as the primary revenue line (see memory `rentgen-az-monetization`). Payriff pipeline + wallet live; business model/pricing to finalize.
+- [x] **Monetization: sell storage to centers** — BUILT & live. Platinum-only, +1 TB = 29 ₼ / 30 days (`buyExtraStorageAction`, wallet-debit, `/merkez/paket` UI, upload-limit enforcement, storage-usage bar). User confirmed the model (Platinum-only, 29₼/TB) on 2026-07-25 — no change. **Only real prerequisite for revenue: Payriff go-live** (wallet top-up needs live Payriff credentials; admin can grant balance meanwhile).
 - [ ] **Payriff go-live** — pipeline live (Merchant ES1097669); confirm production credentials + settle the fee/business model.
 - [ ] **CRM Faza 2** — beyond current Bugün/Təqvim/Pasiyentlər/SMS/Söhbətlər/Jurnal (see memory `rentgen-az-crm`).
 
