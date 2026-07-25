@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { Panel } from "@/components/dashboard/widgets";

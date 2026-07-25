@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Send, Users, Building2, AlertTriangle, Download, Lock } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";

@@ -146,7 +146,6 @@ export async function requestUploadUrlAction(input: {
   // Owner or an active assistant (assistants upload scans day-to-day).
   const acting = await getActingCenter();
   if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
-  const user = { id: acting.userId };
   if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
 
   if (!ALLOWED_TYPES.has(input.contentType)) {
@@ -192,7 +191,6 @@ export async function startMultipartUploadAction(input: {
   // Owner or an active assistant (assistants upload scans day-to-day).
   const acting = await getActingCenter();
   if (!acting) return { ok: false, error: "Mərkəz tapılmadı." };
-  const user = { id: acting.userId };
   if (!b2Configured()) return { ok: false, error: "Fayl saxlama konfiqurasiya olunmayıb." };
   if (!ALLOWED_TYPES.has(input.contentType)) {
     return { ok: false, error: "Bu fayl tipi qəbul edilmir (JPG, PNG, PDF, ZIP, DICOM)." };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Handshake, Building2, Stethoscope, Users } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
-import { StatCard, EmptyState, Panel } from "@/components/dashboard/widgets";
+import { StatCard, EmptyState } from "@/components/dashboard/widgets";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";

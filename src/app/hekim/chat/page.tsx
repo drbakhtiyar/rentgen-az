@@ -1,8 +1,6 @@
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { ChatInterface } from "@/components/chat/chat-interface";
-import { prisma } from "@/lib/db";
 import { requireDoctor, doctorNavFor } from "../_lib";
 import { getChatContacts } from "@/lib/chat";
 import { doctorName } from "@/lib/utils";

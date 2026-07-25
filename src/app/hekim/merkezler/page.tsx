@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Building2, MapPin, MessageSquare } from "lucide-react";
