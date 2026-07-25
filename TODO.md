@@ -2,19 +2,21 @@
 
 Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[blocked]` waiting on external input.
 
-## Active — mobile app
-- [~] **Chat/messaging in app.** **Backend DONE (text)**: `/api/app/chat/{contacts,messages,send}`, `/api/app/ai`, `/api/app/support/{messages,send}` (`src/lib/app-chat.ts`); AI + Dəstək pinned, ACCEPTED-partner rule, new-message push. **Remaining (Rork):** Worker proxy routes + SwiftUI screens (contact list, conversation, AI, support). **Deferred by user:** image/file sending in chat (do next), canned-reply "scripts" (later). Message-pinning not wanted.
-- [x] **Center mobile MVP** — DONE & verified live (Worker v18/v19). Login role picker (Həkim·Mərkəz), İdarəetmə dashboard (requests + status workflow via `/center/status`), Mərkəzim profile, offline cache + pull-to-refresh.
-- [x] **Worker `/catalog` → no-store** — Worker v19 dropped the `public, max-age=60`; all routes now default to `no-store`. Leak closed at both layers. (Cosmetic: `/health` + fallback still report `version: 18`.)
-- [ ] **Result file download in app.** `/referrals` and `/center/requests` return `files:[{...,url:null}]` — Bax/Endir currently bounces to the site. To open in-app: short-lived presigned B2 link behind a partnership/ownership check. Deferred.
-- [~] **Push notifications** (Expo). **Backend DONE**: `PushToken` model, `/api/app/push/register` + `/unregister`, `src/lib/push.ts` (Expo sender + dead-token pruning), wired into `notifyUser` so every event pushes. Works end-to-end the moment the app has a push build. **Remaining (Rork + Apple):** app must request permission, register the token via `/push/register` after login, unregister on logout, and navigate on tap — and this needs the Apple Developer account for the APNs-capable build. Optional site env `EXPO_ACCESS_TOKEN`.
-- [ ] **Harden Worker auth.** `/referrals?phone=` and `/center/*` are protected only by the obscure Worker URL + knowing a phone — no per-user auth. Add a signed token bound to the logged-in user. Deferred (low real-world risk given URL secrecy + x-app-key).
-- [ ] **SMS on center status change from app.** `/api/app/center/status` sends in-app notifications only; the site's status control also SMSes. Wire SMS here for parity.
+## Mobile app (Rork) — mostly DONE; these remain
+- [x] **Doctor + Center MVP, chat, push, map/filters, share, assistant login, redesign, tab icons** — all built & verified. Chat (partner+AI+support, mark-read, deep-link), push (native APNs backend + app), catalog lat/lng+hours, `/summary` for widget — done.
+- [ ] **Chat image sending** — deferred by user ("do next"). Backend B2 presign flow ready; needs `/api/app/chat/upload` + app picker + gated download.
+- [ ] **Chat canned-reply "scripts"** — deferred by user (later). No backend yet.
+- [ ] **Result file download in app.** `/referrals` and `/center/requests` return `files:[{url:null}]`. Needs short-lived presigned B2 link behind partnership/ownership check.
+- [ ] **Widget + Siri (app side).** Backend `/api/app/summary` DONE; Rork must build WidgetKit (App Group) + App Intents. Worker needs `/summary` proxy route.
+- [ ] **Harden Worker auth** — `/referrals?phone=` / `/center/*` protected only by obscure Worker URL + phone. Add signed per-user token. Deferred (low risk).
+- [ ] **SMS on center status change from app** — `/api/app/center/status` sends in-app only; site also SMSes. Wire for parity.
+- [ ] **Center rating/endorsement (#12)** — deferred by user ("hələ saxla"); decide model (doctor endorsement vs patient review vs favorite).
 
 ## Blocked — waiting on external input
-- [blocked] **`GOOGLE_PLACES_API_KEY`** — Google rating feature is fully built (connect Place ID, daily refresh cron `google-ratings`), inert until the key is set in Vercel env. User to create.
+- [blocked] **Apple Developer account** ($99/yr) — push code (native APNs) fully built; needs the `.p8` key + `APNS_*` Vercel env to go live, and the account for App Store submission. Biggest blocker for the app.
+- [blocked] **`GOOGLE_PLACES_API_KEY`** — Google rating feature fully built (Place ID, daily `google-ratings` cron), inert until the key is in Vercel env.
 - [blocked] **Anthropic credit** — AI Yardımçı (Haiku 4.5) needs account credit. Cheap top-up.
-- [blocked] **App store accounts** — Apple Developer ($99/yr) + Google Play ($25) for submission.
+- [blocked] **Google Play account** ($25) — Android submission (later).
 
 ## Product / site backlog
 - [ ] **RU translation** of panel UIs (admin/center/doctor/patient). Public pages + home done; panels deferred by user. Dicts in `src/lib/i18n*.ts`.
@@ -23,6 +25,19 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **Payriff go-live** — pipeline live (Merchant ES1097669); confirm production credentials + settle the fee/business model.
 - [ ] **CRM Faza 2** — beyond current Bugün/Təqvim/Pasiyentlər/SMS/Söhbətlər/Jurnal (see memory `rentgen-az-crm`).
 
+## Analytics / SEO
+- [x] **Google Search Console** — domain verified (DNS TXT via Vercel DNS, covers all subdomains). **Sitemap submit still pending** (Search Console → Sitemaps → `sitemap.xml`, 154 URLs).
+- [x] **Google Analytics 4** — live (`G-CHQ316PK72`, `NEXT_PUBLIC_GA_ID`). Optional: link GA4 ↔ Search Console (GA Admin → Product Links).
+- [x] **Admin analytics dashboard** — merged into İcmal (`/admin`): pending centers → totals → access funnels.
+- [ ] **Search-tracking event** (REN-41 gap) — patient search step not instrumented, so the discovery funnel starts at center view, not search.
+
+## Intentionally left (not really todo)
+- **8 lint errors** — React-19 best-practice flags in old code (server-component Date.now false positives, setState-in-effect data-fetch patterns, viewer ref). User chose to leave; build passes.
+- **2 redesign cosmetics** — ChatInputBar focus binding (keyboard auto-scroll no-op) + dead FilterChip/CategoryChip structs. Left by choice.
+
+## Automation
+- **Linear autonomous agents PAUSED** by user (2026-07-25). On resume, review every agent PR by the rule in memory `rentgen-az-linear-agents` (agents cut branches from stale main — never merge directly; apply real files onto current main).
+
 ## Notes
 - Language mix cleanup (AZ/RU) is a recurring low-priority chore — see memory `rentgen-az-pending-tasks`.
-- No open bugs known at handoff. Recent fixes are in `CHANGELOG.md`.
+- No open bugs known. Recent fixes/features in `CHANGELOG.md`.
