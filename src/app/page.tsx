@@ -41,16 +41,15 @@ import { getDict } from "@/lib/i18n";
 export const revalidate = 300;
 
 export default async function HomePage() {
+  const locale = await getLocale();
   const [centers, posts, stats, counts, usage, allServices] = await Promise.all([
     getFeaturedCenters(6),
-    getPublishedPosts(3),
+    getPublishedPosts(3, locale),
     getPlatformStats(),
     countApprovedCentersByService(),
     getServiceRequestCounts(),
     getActiveServices(),
   ]);
-
-  const locale = await getLocale();
   const d = getDict(locale);
   const homeFaq = getHomeFaq(locale);
 

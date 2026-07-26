@@ -157,6 +157,7 @@ export const serviceFormSchema = z.object({
 
 export const blogPostSchema = z.object({
   slug: z.string().trim().min(2).max(160),
+  locale: z.enum(["az", "ru"]).optional(),
   title: z.string().trim().min(2).max(200),
   excerpt: z.string().trim().max(400).optional().or(z.literal("")),
   content: z.string().trim().min(1, "Məzmun tələb olunur"),

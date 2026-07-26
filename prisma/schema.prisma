@@ -692,6 +692,7 @@ model CenterDoctor {
 model BlogPost {
   id              String    @id @default(cuid())
   slug            String    @unique
+  locale          String    @default("az") // "az" | "ru" — public blog list filters by current locale
   title           String
   excerpt         String?
   content         String // markdown

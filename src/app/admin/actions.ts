@@ -363,6 +363,7 @@ export async function setRequestStatusAdminAction(
 export async function saveBlogPostAction(input: {
   id?: string;
   slug: string;
+  locale?: "az" | "ru";
   title: string;
   excerpt?: string;
   content: string;
@@ -394,6 +395,7 @@ export async function saveBlogPostAction(input: {
 
     const data = {
       slug,
+      locale: d.locale === "ru" ? "ru" : "az",
       title: d.title,
       excerpt: d.excerpt || null,
       content: d.content,

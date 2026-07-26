@@ -30,6 +30,7 @@ export default async function EditBlogPostPage({
         defaults={{
           id: post.id,
           slug: post.slug,
+          locale: post.locale,
           title: post.title,
           excerpt: post.excerpt ?? "",
           content: post.content,

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { FileText, Plus } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
@@ -18,22 +19,59 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-export default async function AdminBlogPage() {
+const LOCALE_TABS = [
+  { key: "", label: "Hamısı" },
+  { key: "az", label: "Azərbaycanca" },
+  { key: "ru", label: "Русский" },
+];
+
+export default async function AdminBlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dil?: string }>;
+}) {
   const admin = await requireRole("ADMIN", "/admin/blog");
+  const { dil } = await searchParams;
+  const activeLocale = dil === "az" || dil === "ru" ? dil : "";
 
   let posts: Awaited<ReturnType<typeof prisma.blogPost.findMany>> = [];
   try {
-    posts = await prisma.blogPost.findMany({ orderBy: { updatedAt: "desc" } });
+    posts = await prisma.blogPost.findMany({
+      where: activeLocale ? { locale: activeLocale } : {},
+      orderBy: { updatedAt: "desc" },
+    });
   } catch {
     posts = [];
   }
 
   return (
     <AdminShell title="Blog" userName={admin.phone}>
+      {/* Dil keçidi — admin RU versiyalarını ayrıca görüb redaktə edə bilir. */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {LOCALE_TABS.map((tab) => {
+          const isActive = activeLocale === tab.key;
+          return (
+            <Link
+              key={tab.key}
+              href={tab.key ? `/admin/blog?dil=${tab.key}` : "/admin/blog"}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-brand-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </div>
       <Panel
         title={`Məqalələr (${posts.length})`}
         action={
-          <ButtonLink href="/admin/blog/yeni" size="sm">
+          <ButtonLink
+            href={activeLocale === "ru" ? "/admin/blog/yeni?dil=ru" : "/admin/blog/yeni"}
+            size="sm"
+          >
             <Plus className="h-4 w-4" /> Yeni məqalə
           </ButtonLink>
         }
@@ -48,6 +86,9 @@ export default async function AdminBlogPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-ink-900">{p.title}</p>
+                    <Badge tone={p.locale === "ru" ? "brand" : "slate"}>
+                      {p.locale === "ru" ? "RU" : "AZ"}
+                    </Badge>
                     {p.published ? (
                       <Badge tone="green">Dərc olunub</Badge>
                     ) : (

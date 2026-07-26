@@ -11,6 +11,7 @@ import { saveBlogPostAction } from "@/app/admin/actions";
 export type BlogDefaults = {
   id?: string;
   slug?: string;
+  locale?: string;
   title?: string;
   excerpt?: string;
   content?: string;
@@ -41,6 +42,7 @@ export function BlogEditor({ defaults }: { defaults?: BlogDefaults }) {
         id: defaults?.id,
         title: get("title"),
         slug: effectiveSlug,
+        locale: (get("locale") === "ru" ? "ru" : "az"),
         excerpt: get("excerpt"),
         content: get("content"),
         coverImage: get("coverImage"),
@@ -82,6 +84,17 @@ export function BlogEditor({ defaults }: { defaults?: BlogDefaults }) {
             }}
             placeholder="meqale-slug"
           />
+        </Field>
+        <Field label="Dil" htmlFor="locale" hint="Bloq siyahısı seçilmiş dilə görə filtrlənir">
+          <select
+            id="locale"
+            name="locale"
+            defaultValue={defaults?.locale ?? "az"}
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+          >
+            <option value="az">Azərbaycanca</option>
+            <option value="ru">Русский</option>
+          </select>
         </Field>
         <Field label="Qısa təsvir (excerpt)" htmlFor="excerpt">
           <Textarea id="excerpt" name="excerpt" defaultValue={defaults?.excerpt} className="min-h-[70px]" />

@@ -12,11 +12,17 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-export default async function NewBlogPostPage() {
+export default async function NewBlogPostPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dil?: string }>;
+}) {
   const admin = await requireRole("ADMIN", "/admin/blog/yeni");
+  const { dil } = await searchParams;
+  const locale = dil === "ru" ? "ru" : "az";
   return (
     <AdminShell title="Yeni məqalə" userName={admin.phone}>
-      <BlogEditor />
+      <BlogEditor defaults={{ locale }} />
     </AdminShell>
   );
 }

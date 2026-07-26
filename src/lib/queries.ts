@@ -637,11 +637,11 @@ export async function getReviewableCentersForPatient(patientId: string) {
   );
 }
 
-export async function getPublishedPosts(take?: number) {
+export async function getPublishedPosts(take?: number, locale?: string) {
   return safe(
     () =>
       prisma.blogPost.findMany({
-        where: { published: true },
+        where: { published: true, ...(locale ? { locale } : {}) },
         orderBy: { publishedAt: "desc" },
         take,
       }),

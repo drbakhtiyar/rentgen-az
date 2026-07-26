@@ -30,8 +30,9 @@ export const metadata = buildMetadata({
 });
 
 export default async function BlogPage() {
-  const posts = await getPublishedPosts();
-  const t = getDict(await getLocale()).blog;
+  const locale = await getLocale();
+  const posts = await getPublishedPosts(undefined, locale);
+  const t = getDict(locale).blog;
 
   return (
     <>
