@@ -20,7 +20,7 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 > ~~Anthropic credit~~ — RESOLVED: `ANTHROPIC_API_KEY` is set in Vercel prod and the AI Yardımçı is live (verified: `/api/app/ai` returns real Haiku answers; ~$0.04 used Jul 19–24).
 
 ## Product / site backlog
-- [ ] **RU translation** of panel UIs (admin/center/doctor/patient). Public pages + home done; panels deferred by user. Dicts in `src/lib/i18n*.ts`.
+- [x] **RU translation — essentially COMPLETE.** All public pages + center/doctor/CRM panels + blog (12 RU posts) are Russian (verified live via ru-cookie cyrillic count). **Admin panel is AZ-only by design — RU version NOT needed, do not track it.** Only `/viewer` (gated pre-launch) + DB content (center/service names, reviews) stay AZ.
 - [ ] **DICOM viewer public launch** — `/viewer/[fileId]` gated to Dr. Bakhtiyar (`viewer-access.ts`). Needs 4th-quadrant reference images, then ungate.
 - [x] **Monetization: sell storage to centers — FULLY OPERATIONAL.** Platinum-only, +1 TB = 29 ₼ / 30 days (`buyExtraStorageAction`, wallet-debit, `/merkez/paket` UI, upload-limit enforcement, storage-usage bar). Model confirmed 2026-07-25 (Platinum-only, 29₼/TB).
 - [x] **Payriff — LIVE.** `PAYRIFF_MERCHANT`/`PAYRIFF_SECRET` in Vercel prod; callback 200. Verified end-to-end: 3 real 1 AZN top-ups settled (PAID → wallet credited via TOPUP ledger). Whole revenue loop works: center tops up wallet via Payriff → buys storage from balance. (1 abandoned PENDING checkout on 2026-07-20 — harmless.)
