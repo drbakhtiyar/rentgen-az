@@ -13,6 +13,9 @@ export const env = {
   adminPhone: process.env.ADMIN_PHONE ?? "",
   // Secret admin access link: /admin-giris/<ADMIN_ACCESS_KEY>
   adminAccessKey: process.env.ADMIN_ACCESS_KEY ?? "",
+  // Secret operator access link: /panel/acar/<OPERATOR_ACCESS_KEY>. Grants a
+  // centers-only data-entry session (no OTP). Empty = link disabled.
+  operatorAccessKey: process.env.OPERATOR_ACCESS_KEY ?? "",
   // When true, the secret link also requires an emailed OTP code (2FA).
   admin2fa: process.env.ADMIN_2FA === "true",
   // Notification email (new appointment requests / referrals)

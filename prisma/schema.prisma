@@ -18,6 +18,9 @@ enum Role {
   DOCTOR
   ASSISTANT
   ADMIN
+  // Data-entry operator: admin-style but scoped to centers only (view / create /
+  // edit). Reaches the site through a secret link (/panel/acar/<key>), no OTP.
+  OPERATOR
 }
 
 enum CenterStatus {

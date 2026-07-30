@@ -2,66 +2,55 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { AdminShell } from "@/components/dashboard/admin-shell";
-import { Panel } from "@/components/dashboard/widgets";
+import { OperatorShell } from "@/components/operator/operator-shell";
 import { CenterProfileForm } from "@/components/forms/center-profile-form";
-import { AdminMessageForm } from "@/components/admin/admin-message-form";
-import { PlanSelector } from "@/components/admin/plan-selector";
-import { WalletCredit } from "@/components/admin/wallet-credit";
-import { prisma } from "@/lib/db";
+import { updateCenterFlexAction } from "@/app/panel/actions";
 import { requireRole } from "@/lib/auth/rbac";
-import {
-  adminUpdateCenterAction,
-  adminSetCenterPlanAction,
-  adminCreditWalletAction,
-} from "@/app/admin/actions";
+import { OPERATOR_NAME } from "@/lib/auth/operator";
+import { prisma } from "@/lib/db";
 import { parseHours } from "@/lib/hours";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
-import { centerLimits } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Mərkəzi redaktə et",
-  path: "/admin/merkezler",
+  path: "/panel",
   noIndex: true,
 });
 
 const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
 
-export default async function AdminEditCenterPage({
+export default async function OperatorEditCenterPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const admin = await requireRole("ADMIN", "/admin/merkezler");
+  const user = await requireRole(["OPERATOR", "ADMIN"], "/panel");
   const { id } = await params;
 
   const center = await prisma.centerProfile.findUnique({ where: { id } });
   if (!center) notFound();
 
-  const save = adminUpdateCenterAction.bind(null, center.id);
-  const setPlan = adminSetCenterPlanAction.bind(null, center.id);
-  const credit = adminCreditWalletAction.bind(null, center.userId);
+  const userName = user.role === "OPERATOR" ? OPERATOR_NAME : "Administrator";
+  const save = updateCenterFlexAction.bind(null, center.id);
 
   return (
-    <AdminShell title="Mərkəzi redaktə et" userName={admin.phone}>
+    <OperatorShell title={center.name} userName={userName}>
       <Link
-        href="/admin/merkezler"
+        href="/panel"
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-brand-600"
       >
         <ArrowLeft className="h-4 w-4" /> Mərkəzlərə qayıt
       </Link>
-
-      <Panel title={center.name}>
+      <div className="rounded-2xl border border-slate-100 bg-white p-5 sm:p-6">
         <CenterProfileForm
           cities={cityOptions}
           mode="edit"
           loose
           onSave={save}
-          maxImages={centerLimits(center.plan).photoLimit ?? 999}
-          allowBanner={centerLimits(center.plan).banner}
+          maxImages={999}
           defaults={{
             name: center.name,
             phone: center.phone,
@@ -83,20 +72,7 @@ export default async function AdminEditCenterPage({
             lng: center.lng,
           }}
         />
-      </Panel>
-
-      <div className="mt-5">
-        <Panel title="Paket / Abunə">
-          <PlanSelector current={center.plan} action={setPlan} />
-          <WalletCredit action={credit} />
-        </Panel>
       </div>
-
-      <div className="mt-5">
-        <Panel title="Mərkəzə bildiriş göndər">
-          <AdminMessageForm userId={center.userId} />
-        </Panel>
-      </div>
-    </AdminShell>
+    </OperatorShell>
   );
 }

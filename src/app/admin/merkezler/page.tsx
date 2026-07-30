@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2, Download } from "lucide-react";
+import { Building2, Download, Plus } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { AdminCenterCard } from "@/components/admin/admin-center-card";
@@ -116,12 +116,20 @@ export default async function AdminCentersPage({
       <Panel
         title="Mərkəzlər"
         action={
-          <a
-            href="/admin/export/merkezler"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-ink-800 ring-1 ring-slate-200 hover:bg-slate-50"
-          >
-            <Download className="h-4 w-4" /> CSV yüklə
-          </a>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/admin/merkezler/yeni"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              <Plus className="h-4 w-4" /> Yeni mərkəz
+            </Link>
+            <a
+              href="/admin/export/merkezler"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-ink-800 ring-1 ring-slate-200 hover:bg-slate-50"
+            >
+              <Download className="h-4 w-4" /> CSV yüklə
+            </a>
+          </div>
         }
       >
         {centers.length > 0 ? (

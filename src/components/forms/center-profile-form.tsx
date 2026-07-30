@@ -62,6 +62,7 @@ export function CenterProfileForm({
   onSave,
   maxImages,
   allowBanner,
+  loose = false,
 }: {
   cities: Option[];
   defaults?: CenterFormDefaults;
@@ -72,6 +73,12 @@ export function CenterProfileForm({
   maxImages?: number;
   /** Whether the plan allows a profile banner (Platinum). */
   allowBanner?: boolean;
+  /**
+   * Data-entry mode (admin/operator): nothing is required — the license and the
+   * name/phone/city fields can be left empty and the form still saves. Lets us
+   * add many centers even when we know almost nothing about them.
+   */
+  loose?: boolean;
 }) {
   const c = getPanelDict(useLocale()).cform;
   const imgCap = maxImages ?? 12;
@@ -181,8 +188,9 @@ export function CenterProfileForm({
     e.preventDefault();
     setError(null);
     setDone(null);
-    // Radiology license is mandatory — registration/profile can't be saved without it.
-    if (!licenseUrl) {
+    // Radiology license is mandatory for self-serve centers — but in loose
+    // (admin/operator data-entry) mode nothing is required.
+    if (!loose && !licenseUrl) {
       setError(c.licenseRequired);
       if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -287,11 +295,15 @@ export function CenterProfileForm({
         <div
           className={
             "mb-5 rounded-2xl border p-4 " +
-            (licenseUrl ? "border-emerald-200 bg-emerald-50/40" : "border-red-200 bg-red-50/40")
+            (licenseUrl
+              ? "border-emerald-200 bg-emerald-50/40"
+              : loose
+                ? "border-slate-200 bg-slate-50/40"
+                : "border-red-200 bg-red-50/40")
           }
         >
           <p className="text-sm font-semibold text-ink-900">
-            {c.licenseTitle} <span className="text-red-500">*</span>
+            {c.licenseTitle} {!loose && <span className="text-red-500">*</span>}
           </p>
           <p className="mt-0.5 text-xs text-slate-500">
             {c.licenseHint}
@@ -340,8 +352,8 @@ export function CenterProfileForm({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={c.nameLabel} htmlFor="name" required>
-            <Input id="name" name="name" defaultValue={defaults?.name} required placeholder={c.namePh} />
+          <Field label={c.nameLabel} htmlFor="name" required={!loose}>
+            <Input id="name" name="name" defaultValue={defaults?.name} required={!loose} placeholder={c.namePh} />
           </Field>
           <Field label={c.responsible} htmlFor="responsiblePerson">
             <Input id="responsiblePerson" name="responsiblePerson" defaultValue={defaults?.responsiblePerson} placeholder={c.responsiblePh} />
@@ -354,8 +366,8 @@ export function CenterProfileForm({
 
       <FormSection icon={<Phone />} title={c.s2} stepLabel={c.step} step={2}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={c.phoneOfficial} htmlFor="phone" required>
-            <Input id="phone" name="phone" type="tel" inputMode="tel" defaultValue={defaults?.phone} required placeholder="050 123 45 67" />
+          <Field label={c.phoneOfficial} htmlFor="phone" required={!loose}>
+            <Input id="phone" name="phone" type="tel" inputMode="tel" defaultValue={defaults?.phone} required={!loose} placeholder="050 123 45 67" />
           </Field>
           <Field label={c.whatsapp} htmlFor="whatsapp">
             <Input id="whatsapp" name="whatsapp" type="tel" inputMode="tel" defaultValue={defaults?.whatsapp} placeholder="050 123 45 67" />
@@ -365,8 +377,8 @@ export function CenterProfileForm({
 
       <FormSection icon={<MapPin />} title={c.s3} stepLabel={c.step} step={3}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={c.cityDistrict} htmlFor="city" required>
-            <Select id="city" name="city" defaultValue={defaults?.city ?? ""} required>
+          <Field label={c.cityDistrict} htmlFor="city" required={!loose}>
+            <Select id="city" name="city" defaultValue={defaults?.city ?? ""} required={!loose}>
               <option value="" disabled>
                 {c.select}
               </option>

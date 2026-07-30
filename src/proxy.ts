@@ -7,6 +7,7 @@ import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/jwt";
 // pages/actions; this is coarse protection. Order doesn't matter (exact prefix).
 const PROTECTED: [prefix: string, roles: Role[]][] = [
   ["/admin", ["ADMIN"]],
+  ["/panel", ["OPERATOR", "ADMIN"]],
   ["/merkez", ["CENTER"]],
   ["/crm", ["CENTER", "ASSISTANT"]],
   ["/hekim", ["DOCTOR", "ASSISTANT"]],
@@ -47,6 +48,8 @@ export async function proxy(request: NextRequest) {
   // --- Main site (rentgen.az) — only gate protected prefixes -------------
   // The CRM login page itself is public (phone-only OTP form).
   if (isUnder(pathname, "/crm/giris")) return NextResponse.next();
+  // The operator secret link sets the session itself → must stay public.
+  if (isUnder(pathname, "/panel/acar")) return NextResponse.next();
   for (const [prefix, roles] of PROTECTED) {
     if (!isUnder(pathname, prefix)) continue;
     if (!session) {

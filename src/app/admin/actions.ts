@@ -12,6 +12,7 @@ import {
   serviceFormSchema,
 } from "@/lib/validation";
 import { withAutoFill } from "@/lib/services";
+import { saveCenterLoose, type CenterWriteInput } from "@/lib/center-write";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import { smsPatientStatusChange } from "@/lib/notify";
 import { sendSms } from "@/lib/sms";
@@ -150,48 +151,22 @@ export async function adminUpdateCenterAction(
     lng?: number | null;
   },
 ): Promise<AdminResult> {
+  // Loose save — admin data-entry may leave "required" fields empty (goal: add
+  // many centers even with partial info). See saveCenterLoose.
   const admin = await requireRole("ADMIN");
-  const parsed = centerProfileSchema.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Yanlış məlumat" };
-  }
-  const d = parsed.data;
-  const week = (d.hours ?? null) as WeeklyHours | null;
-  try {
-    // slug is intentionally left unchanged to preserve existing links/SEO.
-    const center = await prisma.centerProfile.update({
-      where: { id: centerId },
-      data: {
-        name: d.name,
-        phone: normalizePhone(d.phone) ?? d.phone,
-        whatsapp: d.whatsapp ? normalizePhone(d.whatsapp) ?? d.whatsapp : null,
-        address: d.address || null,
-        city: d.city,
-        district: d.district || null,
-        mapsUrl: d.mapsUrl || null,
-        hours: week ? (week as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
-        workingHours: formatHoursSummary(week) || null,
-        equipment: d.equipment || null,
-        responsiblePerson: d.responsiblePerson || null,
-        description: d.description || null,
-        logoUrl: d.logoUrl || null,
-        licenseUrl: d.licenseUrl || null,
-        bannerUrl: d.bannerUrl || null,
-        images: d.images ?? [],
-        lat: d.lat ?? null,
-        lng: d.lng ?? null,
-      },
-      select: { slug: true },
-    });
-    await logAction(admin.id, "center:edit", "CenterProfile", centerId);
-    revalidatePath("/admin/merkezler");
-    revalidatePath(`/admin/merkezler/${centerId}`);
-    revalidatePath(`/rentgen-merkezleri/${center.slug}`);
-    revalidatePath("/rentgen-merkezleri");
-    return { ok: true, message: "Mərkəz məlumatları yeniləndi." };
-  } catch {
-    return { ok: false, error: "Texniki xəta." };
-  }
+  const res = await saveCenterLoose(centerId, input);
+  if (res.ok) await logAction(admin.id, "center:edit", "CenterProfile", centerId);
+  return res;
+}
+
+/** Create a center from the admin panel (loose — missing fields allowed). */
+export async function adminCreateCenterAction(
+  input: CenterWriteInput,
+): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  const res = await saveCenterLoose(null, input);
+  if (res.ok && res.id) await logAction(admin.id, "center:create", "CenterProfile", res.id);
+  return res;
 }
 
 export async function adminUpdateDoctorAction(
