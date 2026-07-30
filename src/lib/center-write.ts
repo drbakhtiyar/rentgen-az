@@ -5,7 +5,12 @@ import { prisma } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
-import { googleConfigured, resolveAndFetchRating } from "@/lib/google-rating";
+import {
+  googleConfigured,
+  resolveAndFetchRating,
+  fetchRatingNear,
+  resolveCoordsFromMapsUrl,
+} from "@/lib/google-rating";
 import { Prisma } from "@/generated/prisma/client";
 
 /**
@@ -18,12 +23,17 @@ async function maybeEnrichGoogleRating(centerId: string): Promise<void> {
   try {
     const c = await prisma.centerProfile.findUnique({
       where: { id: centerId },
-      select: { googlePlaceId: true, name: true, city: true },
+      select: { googlePlaceId: true, name: true, city: true, lat: true, lng: true },
     });
     if (!c || c.googlePlaceId) return; // already connected → daily cron refreshes it
     const query = [c.name, c.city, "Azərbaycan"].filter(Boolean).join(" ").trim();
     if (!query) return;
-    const r = await resolveAndFetchRating(query);
+    // With coordinates (e.g. resolved from the pasted Google link) we can pin the
+    // exact place; otherwise fall back to a name + city text search.
+    const r =
+      c.lat != null && c.lng != null
+        ? await fetchRatingNear(c.name, c.lat, c.lng)
+        : await resolveAndFetchRating(query);
     if ("error" in r) return;
     await prisma.centerProfile.update({
       where: { id: centerId },
@@ -114,6 +124,19 @@ export async function saveCenterLoose(
     ? normalizePhone(input.whatsapp) ?? input.whatsapp.trim()
     : null;
 
+  // Coordinates: use what was given, else auto-extract from the pasted Google
+  // Maps link (short or full). This drives both the mini-map and the precise
+  // rating lookup — so pasting a link is all the operator needs to do.
+  let lat = typeof input.lat === "number" && Number.isFinite(input.lat) ? input.lat : null;
+  let lng = typeof input.lng === "number" && Number.isFinite(input.lng) ? input.lng : null;
+  if ((lat === null || lng === null) && input.mapsUrl) {
+    const coords = await resolveCoordsFromMapsUrl(input.mapsUrl);
+    if (coords) {
+      lat = coords.lat;
+      lng = coords.lng;
+    }
+  }
+
   const data = {
     name: s(input.name, 120) ?? "Adsız mərkəz",
     phone: phone ?? "",
@@ -133,8 +156,8 @@ export async function saveCenterLoose(
     images: (input.images ?? [])
       .filter((u) => typeof u === "string" && u.trim())
       .slice(0, 999),
-    lat: typeof input.lat === "number" && Number.isFinite(input.lat) ? input.lat : null,
-    lng: typeof input.lng === "number" && Number.isFinite(input.lng) ? input.lng : null,
+    lat,
+    lng,
   };
 
   try {
