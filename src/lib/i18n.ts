@@ -92,6 +92,7 @@ type Dict = {
     requestDesc: string;
     replyBy: string; // "{center} cavabı" → suffix
     openMap: string;
+    directions: string;
     today: string;
     closed: string;
     phone: string;
@@ -528,6 +529,7 @@ const az: Dict = {
     requestDesc: "Mərkəz sizinlə əlaqə saxlasın.",
     replyBy: "cavabı",
     openMap: "Xəritədə bax",
+    directions: "Yol tərifi",
     today: "bu gün",
     closed: "Bağlı",
     phone: "Telefon",
@@ -1042,6 +1044,7 @@ const ru: Dict = {
     requestDesc: "Центр свяжется с вами.",
     replyBy: "ответ",
     openMap: "На карте",
+    directions: "Маршрут",
     today: "сегодня",
     closed: "Закрыто",
     phone: "Телефон",

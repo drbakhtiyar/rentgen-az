@@ -379,6 +379,7 @@ export default async function CenterDetailPage({
                       lng={center.lng}
                       name={center.name}
                       slug={center.slug}
+                      directionsLabel={dd.directions}
                     />
                   </div>
                 )}
