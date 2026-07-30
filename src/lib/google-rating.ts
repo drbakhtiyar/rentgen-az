@@ -29,52 +29,63 @@ function extractPlaceId(input: string): string | null {
   const m =
     s.match(/[?&]query_place_id=([A-Za-z0-9_-]+)/) ??
     s.match(/[?&]place_id=([A-Za-z0-9_-]+)/) ??
-    s.match(/place_id:([A-Za-z0-9_-]+)/) ??
-    s.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i); // embedded ftid form (rare)
+    s.match(/place_id:([A-Za-z0-9_-]+)/);
   return m?.[1] ?? null;
 }
 
+// Places API (New) — https://places.googleapis.com/v1. The legacy
+// maps.googleapis.com/maps/api/place endpoints are disabled for new GCP
+// projects, so we use the New API (Text Search + Place Details).
+
 /** Resolve free text (a business name, optionally with city) to a Place ID. */
 async function findPlaceIdFromText(query: string): Promise<string | null> {
-  const url = new URL("https://maps.googleapis.com/maps/api/place/findplacefromtext/json");
-  url.searchParams.set("input", query);
-  url.searchParams.set("inputtype", "textquery");
-  url.searchParams.set("fields", "place_id");
-  url.searchParams.set("key", env.googlePlacesApiKey);
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": env.googlePlacesApiKey,
+      "X-Goog-FieldMask": "places.id",
+    },
+    body: JSON.stringify({ textQuery: query, languageCode: "az", regionCode: "AZ" }),
+    cache: "no-store",
+  });
   if (!res.ok) return null;
-  const data = (await res.json()) as { status?: string; candidates?: { place_id?: string }[] };
-  if (data.status !== "OK") return null;
-  return data.candidates?.[0]?.place_id ?? null;
+  const data = (await res.json()) as { places?: { id?: string }[] };
+  return data.places?.[0]?.id ?? null;
 }
 
 /** Place Details → current rating + review count. */
 async function fetchRating(placeId: string): Promise<PlaceRating | { error: string }> {
-  const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
-  url.searchParams.set("place_id", placeId);
-  url.searchParams.set("fields", "rating,user_ratings_total,name");
-  url.searchParams.set("key", env.googlePlacesApiKey);
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) return { error: "Google-a müraciət alınmadı." };
-  const data = (await res.json()) as {
-    status?: string;
-    result?: { rating?: number; user_ratings_total?: number; name?: string };
-  };
-  if (data.status === "NOT_FOUND" || data.status === "INVALID_REQUEST") {
+  const res = await fetch(
+    `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`,
+    {
+      headers: {
+        "X-Goog-Api-Key": env.googlePlacesApiKey,
+        "X-Goog-FieldMask": "id,displayName,rating,userRatingCount",
+      },
+      cache: "no-store",
+    },
+  );
+  if (res.status === 404) {
     return { error: "Bu Place ID tapılmadı. Düzgün olduğunu yoxlayın." };
   }
-  if (data.status !== "OK" || !data.result) {
+  if (!res.ok) {
     return { error: "Google reytinqi alınmadı. Bir azdan yenidən cəhd edin." };
   }
-  const r = data.result;
+  const r = (await res.json()) as {
+    id?: string;
+    displayName?: { text?: string };
+    rating?: number;
+    userRatingCount?: number;
+  };
   if (typeof r.rating !== "number") {
     return { error: "Bu Google profilində hələ reytinq yoxdur." };
   }
   return {
-    placeId,
+    placeId: r.id ?? placeId,
     rating: r.rating,
-    reviewCount: r.user_ratings_total ?? 0,
-    name: r.name ?? null,
+    reviewCount: r.userRatingCount ?? 0,
+    name: r.displayName?.text ?? null,
   };
 }
 
