@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { RatingSummary } from "@/components/reviews/stars";
+import { GoogleRatingBadge } from "@/components/reviews/google-rating-badge";
 import { OpenStatus } from "@/components/centers/open-status";
 import { formatPrice } from "@/lib/utils";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
@@ -112,9 +113,17 @@ export function CenterCard({
           )}
         </div>
 
-        {rating && (
-          <div className="mt-2">
-            <RatingSummary avg={rating.avg} count={rating.count} size="sm" />
+        {(rating || typeof center.googleRating === "number") && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {rating && <RatingSummary avg={rating.avg} count={rating.count} size="sm" />}
+            {typeof center.googleRating === "number" && (
+              <GoogleRatingBadge
+                placeId={center.googlePlaceId}
+                rating={center.googleRating}
+                reviewCount={center.googleReviewCount}
+                className="border border-slate-200 !bg-white px-2.5 py-0.5 text-xs !shadow-none !ring-0"
+              />
+            )}
           </div>
         )}
 
