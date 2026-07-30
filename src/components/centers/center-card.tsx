@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Clock, ArrowUpRight, Tag, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { VerifiedBadge, Badge } from "@/components/ui/badge";
@@ -42,12 +43,12 @@ export function CenterCard({
         <div className="absolute inset-0 bg-grid-dark opacity-50" />
         <div className="glow absolute -right-10 -top-10 h-40 w-40 opacity-60" />
         {center.images?.[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={center.images[0]}
-            alt={`${center.name} — rentgen mərkəzi`}
-            className="absolute inset-0 h-full w-full object-cover"
-            loading="lazy"
+            alt={`${center.name} — ${center.city ?? "Bakı"} dental rentgen mərkəzi`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover"
           />
         ) : center.logoUrl ? (
           <>

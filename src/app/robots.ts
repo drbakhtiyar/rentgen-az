@@ -6,7 +6,20 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/kabinet", "/merkez", "/giris", "/api"],
+      // NB: anchor the panel prefixes so they don't also block the PUBLIC pages
+      // /hekimler and /merkezler-ucun (a bare "/hekim" / "/merkez" would).
+      disallow: [
+        "/admin",
+        "/panel",
+        "/crm",
+        "/hekim$",
+        "/hekim/",
+        "/merkez$",
+        "/merkez/",
+        "/kabinet",
+        "/giris",
+        "/api",
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

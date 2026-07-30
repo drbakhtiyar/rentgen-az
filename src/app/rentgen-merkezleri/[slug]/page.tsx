@@ -62,7 +62,9 @@ export async function generateMetadata({
     title: `${center.name}${center.city ? ` — ${center.city}` : ""}`,
     description:
       center.description?.slice(0, 155) ||
-      `${center.name} — ${svcNames.slice(0, 4).join(", ")} xidmətləri. Ünvan, iş saatları və əlaqə məlumatı.`,
+      `${center.name} — ${center.city ?? "Bakı"}da ${
+        svcNames.slice(0, 3).join(", ") || "dental rentgen və 3D tomoqrafiya"
+      }. Qiymət, ünvan, iş saatı, əlaqə və rəylər rentgen.az-da.`,
     path: `/rentgen-merkezleri/${center.slug}`,
     keywords: [center.name, ...svcNames, "rentgen mərkəzi", center.city ?? "Bakı"],
   });
