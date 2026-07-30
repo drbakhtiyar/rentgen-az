@@ -205,6 +205,7 @@ export default async function CenterDetailPage({
             lat: center.lat,
             lng: center.lng,
             services: svcNames,
+            rating: rating.count > 0 ? rating : null,
           }),
         ]}
       />

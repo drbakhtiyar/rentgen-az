@@ -133,6 +133,8 @@ export function medicalBusinessJsonLd(center: {
   lat?: number | null;
   lng?: number | null;
   services?: string[];
+  /** First-party review summary — drives the ⭐ rich snippet in search. */
+  rating?: { avg: number; count: number } | null;
 }) {
   return {
     "@context": "https://schema.org",
@@ -141,6 +143,18 @@ export function medicalBusinessJsonLd(center: {
     url: canonical(`/rentgen-merkezleri/${center.slug}`),
     telephone: center.phone,
     image: center.images?.length ? center.images : undefined,
+    // Only first-party (on-site) reviews — Google requires the marked-up rating
+    // to be visible on the page, which our review summary is.
+    aggregateRating:
+      center.rating && center.rating.count > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: Number(center.rating.avg.toFixed(1)),
+            reviewCount: center.rating.count,
+            bestRating: 5,
+            worstRating: 1,
+          }
+        : undefined,
     address: {
       "@type": "PostalAddress",
       streetAddress: center.address ?? undefined,

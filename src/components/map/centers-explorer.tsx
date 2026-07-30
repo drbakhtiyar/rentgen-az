@@ -82,11 +82,17 @@ export function CentersExplorer({
         return pa - pb;
       });
     } else if (sort === "rating") {
+      // Prefer the Google rating (most centers have one); fall back to the
+      // platform's own review score.
+      const score = (c: CenterWithServices) => ({
+        r: c.googleRating ?? ratings[c.id]?.avg ?? 0,
+        n: c.googleReviewCount ?? ratings[c.id]?.count ?? 0,
+      });
       list.sort((a, b) => {
-        const ra = ratings[a.c.id]?.avg ?? 0;
-        const rb = ratings[b.c.id]?.avg ?? 0;
-        if (rb !== ra) return rb - ra;
-        return (ratings[b.c.id]?.count ?? 0) - (ratings[a.c.id]?.count ?? 0);
+        const sa = score(a.c);
+        const sb = score(b.c);
+        if (sb.r !== sa.r) return sb.r - sa.r;
+        return sb.n - sa.n;
       });
     } else if (user) {
       // "recommended" but location known → nearest first is the useful default.
