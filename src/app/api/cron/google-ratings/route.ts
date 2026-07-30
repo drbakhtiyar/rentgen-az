@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { googleConfigured, refreshRating } from "@/lib/google-rating";
+import {
+  googleConfigured,
+  refreshRating,
+  resolveAndFetchRating,
+} from "@/lib/google-rating";
+
+// How many not-yet-connected centers to auto-resolve per run (keeps Places API
+// text-search calls bounded; the backlog clears over a few days).
+const CONNECT_BATCH = 40;
 
 export const dynamic = "force-dynamic";
 
@@ -45,5 +53,39 @@ export async function GET(request: Request): Promise<NextResponse> {
     updated++;
   }
 
-  return NextResponse.json({ ok: true, total: centers.length, updated, failed });
+  // Auto-connect: centers with no Place ID yet get resolved from name + city so
+  // no manual "connect Google" step is needed. Bounded per run.
+  let connected = 0;
+  const unconnected = await prisma.centerProfile.findMany({
+    where: { googlePlaceId: null },
+    select: { id: true, name: true, city: true },
+    take: CONNECT_BATCH,
+  });
+  for (const c of unconnected) {
+    const query = [c.name, c.city, "Azərbaycan"].filter(Boolean).join(" ").trim();
+    if (!query) continue;
+    const res = await resolveAndFetchRating(query);
+    if ("error" in res) {
+      failed++;
+      continue;
+    }
+    await prisma.centerProfile.update({
+      where: { id: c.id },
+      data: {
+        googlePlaceId: res.placeId,
+        googleRating: res.rating,
+        googleReviewCount: res.reviewCount,
+        googleRatingAt: new Date(),
+      },
+    });
+    connected++;
+  }
+
+  return NextResponse.json({
+    ok: true,
+    total: centers.length,
+    updated,
+    connected,
+    failed,
+  });
 }

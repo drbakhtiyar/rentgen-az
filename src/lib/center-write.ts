@@ -5,7 +5,39 @@ import { prisma } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
+import { googleConfigured, resolveAndFetchRating } from "@/lib/google-rating";
 import { Prisma } from "@/generated/prisma/client";
+
+/**
+ * Best-effort: if the Google Places key is set and this center has no Place ID
+ * yet, resolve one from its name + city and cache the current rating. A no-op
+ * (zero cost/latency) while GOOGLE_PLACES_API_KEY is unset. Never throws.
+ */
+async function maybeEnrichGoogleRating(centerId: string): Promise<void> {
+  if (!googleConfigured()) return;
+  try {
+    const c = await prisma.centerProfile.findUnique({
+      where: { id: centerId },
+      select: { googlePlaceId: true, name: true, city: true },
+    });
+    if (!c || c.googlePlaceId) return; // already connected → daily cron refreshes it
+    const query = [c.name, c.city, "Azərbaycan"].filter(Boolean).join(" ").trim();
+    if (!query) return;
+    const r = await resolveAndFetchRating(query);
+    if ("error" in r) return;
+    await prisma.centerProfile.update({
+      where: { id: centerId },
+      data: {
+        googlePlaceId: r.placeId,
+        googleRating: r.rating,
+        googleReviewCount: r.reviewCount,
+        googleRatingAt: new Date(),
+      },
+    });
+  } catch {
+    /* rating is a nice-to-have — never block a save on it */
+  }
+}
 
 export type CenterWriteInput = {
   name?: string;
@@ -113,6 +145,7 @@ export async function saveCenterLoose(
         data,
         select: { slug: true },
       });
+      await maybeEnrichGoogleRating(centerId);
       revalidateCenter(center.slug, centerId);
       return { ok: true, message: "Mərkəz məlumatları yeniləndi.", id: centerId, slug: center.slug };
     }
@@ -145,6 +178,7 @@ export async function saveCenterLoose(
       data: { ...data, slug, userId, status: "PENDING", plan: "FREE" },
       select: { id: true, slug: true },
     });
+    await maybeEnrichGoogleRating(center.id);
     revalidateCenter(center.slug);
     return {
       ok: true,
