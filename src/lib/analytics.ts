@@ -20,12 +20,12 @@ import { Prisma } from "@/generated/prisma/client";
  *  • "Aktiv/təsdiqlənmiş mərkəz"   — CenterProfile.status = APPROVED.
  *  • "Təsdiq müddəti"              — mərkəzin ilk `center:APPROVED` admin
  *      jurnalı (AdminActionLog) ilə CenterProfile.createdAt arasındakı fərq.
+ *  • "Axtarış"                     — SearchEvent (kataloqda q/şəhər/xidmət filtri).
  *  • "Baxış / Əlaqə"               — CenterEvent type=view / (call|whatsapp).
  *  • "Müraciət"                    — AppointmentRequest sətri (booking).
  *
- * Bilinən boşluq: pasiyent AXTARIŞ addımı hələ instrumentləşdirilməyib
- * (event yazılmır), ona görə "axtarış → mərkəz" konversiyası bu paneldə
- * mərkəz BAXIŞI-ndan başlayır. Bax: REN-41 alt-tapşırığı (search tracking).
+ * Funnel artıq AXTARIŞ addımından başlayır (REN-41 həll olundu). SearchEvent
+ * aqreqat-yalnızdır (istifadəçi bağlantısı yoxdur, PII-təhlükəsiz).
  */
 
 /** Window in days; `null` = bütün dövr (all-time). */
@@ -142,10 +142,12 @@ export async function getApprovalStats(windowDays: WindowDays): Promise<Approval
 // ── 3. Kəşf → əlaqə / booking konversiyası ─────────────────────────────────
 export type DiscoveryFunnel = {
   windowDays: WindowDays;
+  searches: number; // axtarışlar (funnel başı)
   views: number; // mərkəz baxışları
   contacts: number; // zəng + whatsapp
   requests: number; // müraciətlər (booking)
   completed: number; // tamamlanmış müraciətlər
+  searchToViewPct: number | null; // axtarış başına baxış (>100% ola bilər)
   viewToContactPct: number | null;
   viewToRequestPct: number | null;
 };
@@ -153,18 +155,20 @@ export type DiscoveryFunnel = {
 export async function getDiscoveryFunnel(windowDays: WindowDays): Promise<DiscoveryFunnel> {
   const since = sinceSql(windowDays);
   const rows = await prisma.$queryRaw<
-    Array<{ views: number; contacts: number; requests: number; completed: number }>
+    Array<{ searches: number; views: number; contacts: number; requests: number; completed: number }>
   >`
     select
+      (select count(*)::int from "SearchEvent" where "createdAt" >= ${since}) as "searches",
       (select count(*)::int from "CenterEvent" where type = 'view' and "createdAt" >= ${since}) as "views",
       (select count(*)::int from "CenterEvent" where type in ('call','whatsapp') and "createdAt" >= ${since}) as "contacts",
       (select count(*)::int from "AppointmentRequest" where "createdAt" >= ${since}) as "requests",
       (select count(*)::int from "AppointmentRequest" where status = 'COMPLETED' and "createdAt" >= ${since}) as "completed"
   `;
-  const r = rows[0] ?? { views: 0, contacts: 0, requests: 0, completed: 0 };
+  const r = rows[0] ?? { searches: 0, views: 0, contacts: 0, requests: 0, completed: 0 };
   return {
     windowDays,
     ...r,
+    searchToViewPct: r.searches > 0 ? (r.views / r.searches) * 100 : null,
     viewToContactPct: r.views > 0 ? (r.contacts / r.views) * 100 : null,
     viewToRequestPct: r.views > 0 ? (r.requests / r.views) * 100 : null,
   };

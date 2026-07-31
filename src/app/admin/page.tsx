@@ -12,6 +12,7 @@ import {
   Eye,
   Phone,
   Info,
+  Search,
 } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { StatCard, Panel, EmptyState, StatusBadge } from "@/components/dashboard/widgets";
@@ -177,6 +178,7 @@ export default async function AdminDashboardPage() {
             tone="green"
           />
           <StatCard label="Orta təsdiq" value={hours(s.approval.avgHours)} icon={<Clock />} tone="amber" />
+          <StatCard label="Axtarış (30g)" value={num(s.discovery.searches)} icon={<Search />} tone="brand" />
           <StatCard label="Baxış (30g)" value={num(s.discovery.views)} icon={<Eye />} tone="slate" />
           <StatCard label="Müraciət (30g)" value={num(s.discovery.requests)} icon={<Inbox />} tone="cyan" />
         </div>
@@ -259,9 +261,20 @@ export default async function AdminDashboardPage() {
 
         {/* 3. Kəşf → əlaqə / booking */}
         <div className="mt-6">
-          <Panel title="3. Mərkəz kəşfi → əlaqə / müraciət konversiyası">
+          <Panel title="3. Axtarış → mərkəz kəşfi → əlaqə / müraciət konversiyası">
             <MetricTable
               rows={[
+                {
+                  label: "Axtarış",
+                  hint: "kataloqda axtarış (SearchEvent: söz/şəhər/xidmət filtri)",
+                  values: discRows((d) => num(d.searches)),
+                },
+                {
+                  label: "Axtarış → baxış",
+                  hint: "axtarış başına orta mərkəz baxışı (>100% mümkündür)",
+                  values: discRows((d) => pct(d.searchToViewPct)),
+                  strong: true,
+                },
                 {
                   label: "Mərkəz baxışı",
                   hint: "mərkəz səhifəsi baxışları (CenterEvent: view)",

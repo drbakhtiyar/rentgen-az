@@ -4,6 +4,7 @@ import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { SearchPanel } from "@/components/search-panel";
 import { CentersExplorer } from "@/components/map/centers-explorer";
+import { TrackSearch } from "@/components/centers/track-search";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
@@ -84,6 +85,9 @@ export default async function CentersPage({
 
   return (
     <>
+      {(sp.q || sp.city || sp.service) && (
+        <TrackSearch query={sp.q} city={sp.city} service={sp.service} results={total} />
+      )}
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Ana səhifə", path: "/" },

@@ -586,6 +586,19 @@ model CenterEvent {
   @@index([centerId, type, createdAt])
 }
 
+// Aggregate-only search analytics (no user link) — instruments the top of the
+// discovery funnel so it starts at "search", not "center view". See REN-41.
+model SearchEvent {
+  id        String   @id @default(cuid())
+  query     String? // free-text term (capped)
+  city      String? // city filter
+  service   String? // service slug filter
+  results   Int? // number of centers shown
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model DoctorProfile {
   id              String       @id @default(cuid())
   userId          String       @unique
