@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   MapPin,
   Clock,
@@ -271,11 +272,13 @@ export default async function CenterDetailPage({
       </PageHeader>
       {centerLimits(center.plan).banner && center.bannerUrl && (
         <div className="relative h-40 w-full overflow-hidden sm:h-56 lg:h-64">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={center.bannerUrl}
             alt={`${center.name} banner`}
-            className="h-full w-full object-cover"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
           />
         </div>
       )}
@@ -289,14 +292,19 @@ export default async function CenterDetailPage({
               {center.images.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {center.images.slice(0, 6).map((img, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <div
                       key={i}
-                      src={img}
-                      alt={`${center.name} — şəkil ${i + 1}`}
-                      className="aspect-video w-full rounded-xl object-cover"
-                      loading="lazy"
-                    />
+                      className="relative aspect-video overflow-hidden rounded-xl"
+                    >
+                      <Image
+                        src={img}
+                        alt={`${center.name} — şəkil ${i + 1}`}
+                        fill
+                        sizes="(max-width: 640px) 50vw, 33vw"
+                        className="object-cover"
+                        loading="lazy"
+                      />
+                    </div>
                   ))}
                 </div>
               )}
