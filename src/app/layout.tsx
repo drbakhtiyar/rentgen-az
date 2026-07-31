@@ -4,7 +4,14 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
-import { SITE, buildMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
+import { headers } from "next/headers";
+import {
+  SITE,
+  buildMetadata,
+  hreflangAlternates,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -23,19 +30,31 @@ const manrope = Manrope({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  ...buildMetadata(),
-  applicationName: SITE.name,
-  authors: [{ name: SITE.name }],
-  // Icons (favicon.ico, icon.png, apple-icon.png) are auto-detected from app/ file conventions.
-  // Google Search Console verification (HTML-tag method). Set the token from
-  // Search Console in the GOOGLE_SITE_VERIFICATION env var; renders
-  // <meta name="google-site-verification" content="…" /> on every page.
-  ...(process.env.GOOGLE_SITE_VERIFICATION
-    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
-    : {}),
-};
+// Panels/private areas have no localized (/ru) version.
+const PRIVATE_RE = /^\/(admin|panel|merkez|hekim|crm|kabinet|giris|admin-giris)(\/|$)/;
+
+// Canonical + bilingual hreflang are set here (once), locale- and path-aware,
+// so every page gets correct /ru alternates without touching its own metadata.
+export async function generateMetadata(): Promise<Metadata> {
+  const h = await headers();
+  const path = h.get("x-pathname") || "/";
+  const locale = await getLocale();
+  const isPublic = !PRIVATE_RE.test(path);
+  return {
+    metadataBase: new URL(SITE_URL),
+    ...buildMetadata(),
+    applicationName: SITE.name,
+    authors: [{ name: SITE.name }],
+    alternates: isPublic
+      ? hreflangAlternates(path, locale)
+      : { canonical: `${SITE_URL}${path === "/" ? "" : path}` },
+    // Icons (favicon.ico, icon.png, apple-icon.png) are auto-detected from app/.
+    // Google Search Console verification (HTML-tag method) via env.
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+      : {}),
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#08142b",

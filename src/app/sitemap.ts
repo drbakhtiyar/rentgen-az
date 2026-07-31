@@ -4,6 +4,19 @@ import { prisma } from "@/lib/db";
 
 export const revalidate = 3600;
 
+type Entry = MetadataRoute.Sitemap[number];
+
+/** Public page present in both languages → az at `path`, ru at `/ru<path>`,
+ *  cross-linked with hreflang so Google indexes both versions. */
+function bilingual(
+  path: string,
+  opts: Omit<Entry, "url" | "alternates">,
+): Entry {
+  const az = `${SITE_URL}${path}`;
+  const ru = `${SITE_URL}/ru${path}`;
+  return { url: az, alternates: { languages: { az, ru } }, ...opts };
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
@@ -20,12 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/istifade-shertleri",
   ];
 
-  const entries: MetadataRoute.Sitemap = staticPaths.map((p) => ({
-    url: `${SITE_URL}${p}`,
-    lastModified: now,
-    changeFrequency: p === "" ? "daily" : "weekly",
-    priority: p === "" ? 1 : 0.7,
-  }));
+  const entries: MetadataRoute.Sitemap = staticPaths.map((p) =>
+    bilingual(p, {
+      lastModified: now,
+      changeFrequency: p === "" ? "daily" : "weekly",
+      priority: p === "" ? 1 : 0.7,
+    }),
+  );
 
   // Service pages (active services from DB)
   try {
@@ -34,12 +48,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true },
     });
     for (const s of services) {
-      entries.push({
-        url: `${SITE_URL}/xidmetler/${s.slug}`,
-        lastModified: now,
-        changeFrequency: "weekly",
-        priority: 0.8,
-      });
+      entries.push(
+        bilingual(`/xidmetler/${s.slug}`, {
+          lastModified: now,
+          changeFrequency: "weekly",
+          priority: 0.8,
+        }),
+      );
     }
   } catch {
     /* DB unavailable — skip dynamic entries */
@@ -52,12 +67,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, updatedAt: true },
     });
     for (const c of centers) {
-      entries.push({
-        url: `${SITE_URL}/rentgen-merkezleri/${c.slug}`,
-        lastModified: c.updatedAt,
-        changeFrequency: "weekly",
-        priority: 0.7,
-      });
+      entries.push(
+        bilingual(`/rentgen-merkezleri/${c.slug}`, {
+          lastModified: c.updatedAt,
+          changeFrequency: "weekly",
+          priority: 0.7,
+        }),
+      );
     }
   } catch {
     /* DB unavailable — skip dynamic entries */
@@ -70,26 +86,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { id: true, updatedAt: true },
     });
     for (const d of doctors) {
-      entries.push({
-        url: `${SITE_URL}/hekimler/${d.id}`,
-        lastModified: d.updatedAt,
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
+      entries.push(
+        bilingual(`/hekimler/${d.id}`, {
+          lastModified: d.updatedAt,
+          changeFrequency: "monthly",
+          priority: 0.6,
+        }),
+      );
     }
   } catch {
     /* DB unavailable — skip dynamic entries */
   }
 
-  // Published blog posts
+  // Published blog posts — AZ and RU posts have DIFFERENT slugs (separate
+  // content), so they are listed at their own locale URL without hreflang
+  // pairing.
   try {
     const posts = await prisma.blogPost.findMany({
       where: { published: true },
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, updatedAt: true, locale: true },
     });
     for (const p of posts) {
+      const prefix = p.locale === "ru" ? "/ru" : "";
       entries.push({
-        url: `${SITE_URL}/blog/${p.slug}`,
+        url: `${SITE_URL}${prefix}/blog/${p.slug}`,
         lastModified: p.updatedAt,
         changeFrequency: "monthly",
         priority: 0.6,

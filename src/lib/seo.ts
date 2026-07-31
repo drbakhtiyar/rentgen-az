@@ -26,6 +26,20 @@ export function canonical(path = "/"): string {
   return `${SITE_URL}${path === "/" ? "" : path}`;
 }
 
+/**
+ * Self-referencing canonical + bilingual hreflang for a public page.
+ * `path` is the logical (un-prefixed) path; az lives at it, ru at `/ru<path>`.
+ */
+export function hreflangAlternates(path: string, locale: "az" | "ru") {
+  const clean = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
+  const az = `${SITE_URL}${clean}`;
+  const ru = `${SITE_URL}/ru${clean}`;
+  return {
+    canonical: locale === "ru" ? ru : az,
+    languages: { az, ru, "x-default": az },
+  };
+}
+
 export function buildMetadata({
   title,
   description,
@@ -47,7 +61,9 @@ export function buildMetadata({
     title: title ?? SITE.title,
     description: desc,
     keywords,
-    alternates: { canonical: url },
+    // NB: canonical + hreflang are set centrally in the root layout
+    // (locale-aware, from the request path) so all 75 static callers get correct
+    // /ru alternates without change. See hreflangAlternates + app/layout.tsx.
     robots: noIndex
       ? { index: false, follow: false }
       : { index: true, follow: true },

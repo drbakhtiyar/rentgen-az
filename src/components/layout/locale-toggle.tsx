@@ -1,20 +1,29 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LOCALES, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
 import { setLocaleAction } from "@/app/actions/locale";
 import { cn } from "@/lib/utils";
 
 export function LocaleToggle({ locale }: { locale: Locale }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   function set(l: Locale) {
     if (l === locale) return;
-    // Instant client-side switch…
+    // Remember the choice (cookie + account) so links/logins stay in this language.
     // eslint-disable-next-line react-hooks/immutability
     document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
-    // …and persist to the account (best-effort) so future logins remember it.
     void setLocaleAction(l);
+    // Navigate to the language's own URL (/ru prefix) so it's crawlable/shareable.
+    const current = pathname || "/";
+    const bare = current.startsWith("/ru/")
+      ? current.slice(3)
+      : current === "/ru"
+        ? "/"
+        : current;
+    const target = l === "ru" ? (bare === "/" ? "/ru" : `/ru${bare}`) : bare;
+    router.push(target);
     router.refresh();
   }
 

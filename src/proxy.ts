@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import type { Role } from "@/generated/prisma/enums";
 import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/jwt";
+import { LOCALE_COOKIE } from "@/lib/i18n";
 
 // Role-gated app prefixes on the main site. Fine-grained checks are re-done in
 // pages/actions; this is coarse protection. Order doesn't matter (exact prefix).
@@ -50,6 +51,38 @@ export async function proxy(request: NextRequest) {
   if (isUnder(pathname, "/crm/giris")) return NextResponse.next();
   // The operator secret link sets the session itself → must stay public.
   if (isUnder(pathname, "/panel/acar")) return NextResponse.next();
+
+  // Forward the logical (un-prefixed) path so canonical/hreflang metadata is
+  // correct on every page.
+  const requestHeaders = new Headers(request.headers);
+
+  // --- Locale prefix: /ru/* serves the Russian version at its own crawlable,
+  // self-canonical URL. Rewrite to the un-prefixed path and flag the locale +
+  // logical path via request headers (getLocale + metadata read them). ---
+  if (pathname === "/ru" || pathname.startsWith("/ru/")) {
+    const logical = pathname === "/ru" ? "/" : pathname.slice(3);
+    // Private panels have no localized version — never expose them un-gated
+    // through the /ru rewrite; send to the real path where auth is enforced.
+    if (PROTECTED.some(([prefix]) => isUnder(logical, prefix))) {
+      const url = request.nextUrl.clone();
+      url.pathname = logical;
+      return NextResponse.redirect(url);
+    }
+    requestHeaders.set("x-locale", "ru");
+    requestHeaders.set("x-pathname", logical);
+    const url = request.nextUrl.clone();
+    url.pathname = logical;
+    const res = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+    // Keep the visitor in Russian as they follow un-prefixed links.
+    res.cookies.set(LOCALE_COOKIE, "ru", {
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+    return res;
+  }
+  requestHeaders.set("x-pathname", pathname);
+
   for (const [prefix, roles] of PROTECTED) {
     if (!isUnder(pathname, prefix)) continue;
     if (!session) {
@@ -63,7 +96,7 @@ export async function proxy(request: NextRequest) {
     break;
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
