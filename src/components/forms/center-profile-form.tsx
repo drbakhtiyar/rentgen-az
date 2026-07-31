@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { upload } from "@vercel/blob/client";
-import { Loader2, CheckCircle2, Building2, Phone, MapPin, Upload, X, FileText } from "lucide-react";
+import { Loader2, CheckCircle2, Building2, Phone, MapPin, Upload, X, FileText, HelpCircle } from "lucide-react";
+import { CENTER_FAQ_QUESTIONS, faqQuestionText } from "@/content/center-faq";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select, Field } from "@/components/ui/field";
 import { LocationPicker } from "@/components/map/location-picker";
@@ -33,6 +34,7 @@ export type CenterFormDefaults = {
   images?: string[];
   lat?: number | null;
   lng?: number | null;
+  faqAnswers?: Record<string, string> | null;
 };
 
 type SaveInput = {
@@ -53,6 +55,7 @@ type SaveInput = {
   images: string[];
   lat: number | null;
   lng: number | null;
+  faqAnswers: Record<string, string>;
 };
 
 export function CenterProfileForm({
@@ -80,7 +83,8 @@ export function CenterProfileForm({
    */
   loose?: boolean;
 }) {
-  const c = getPanelDict(useLocale()).cform;
+  const loc = useLocale();
+  const c = getPanelDict(loc).cform;
   const imgCap = maxImages ?? 12;
   const [pending, startTransition] = React.useTransition();
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(
@@ -197,6 +201,11 @@ export function CenterProfileForm({
     }
     const fd = new FormData(e.currentTarget);
     const get = (k: string) => String(fd.get(k) ?? "").trim();
+    const faqAnswers: Record<string, string> = {};
+    for (const q of CENTER_FAQ_QUESTIONS) {
+      const v = get(`faq_${q.key}`);
+      if (v) faqAnswers[q.key] = v;
+    }
     startTransition(async () => {
       const save = onSave ?? saveCenterProfileAction;
       const res = await save({
@@ -217,6 +226,7 @@ export function CenterProfileForm({
         images,
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
+        faqAnswers,
       });
       if (!res.ok) {
         setError(res.error ?? c.errGeneric);
@@ -512,6 +522,32 @@ export function CenterProfileForm({
             }
             onChange={(lat, lng) => setCoords({ lat, lng })}
           />
+        </div>
+      </FormSection>
+
+      <FormSection
+        icon={<HelpCircle />}
+        title={loc === "ru" ? "Часто задаваемые вопросы" : "Tez-tez verilən suallar"}
+        stepLabel={c.step}
+        step={4}
+      >
+        <p className="mb-4 text-sm text-slate-500">
+          {loc === "ru"
+            ? "Ответьте на вопросы пациентов — заполненные ответы появятся на странице центра. Пустые не показываются."
+            : "Pasiyentlərin suallarını cavablandırın — yalnız doldurulan cavablar mərkəz səhifəsində görünür."}
+        </p>
+        <div className="space-y-4">
+          {CENTER_FAQ_QUESTIONS.map((q) => (
+            <Field key={q.key} label={faqQuestionText(q, loc)} htmlFor={`faq_${q.key}`}>
+              <Textarea
+                id={`faq_${q.key}`}
+                name={`faq_${q.key}`}
+                rows={2}
+                defaultValue={defaults?.faqAnswers?.[q.key] ?? ""}
+                placeholder={q.hint ? (loc === "ru" ? q.hint.ru : q.hint.az) : undefined}
+              />
+            </Field>
+          ))}
         </div>
       </FormSection>
 

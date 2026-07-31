@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { CITIES } from "@/lib/constants";
 import { parseHours } from "@/lib/hours";
+import { parseFaqAnswers } from "@/content/center-faq";
 import { getLocale } from "@/lib/i18n-server";
 import { getPanelDict } from "@/lib/i18n-panel";
 import { buildMetadata } from "@/lib/seo";
@@ -57,6 +58,7 @@ export default async function CenterProfilePage() {
           hours: parseHours(center.hours),
           lat: center.lat,
           lng: center.lng,
+          faqAnswers: parseFaqAnswers(center.faqAnswers),
         }}
       />
       <GoogleRatingCard

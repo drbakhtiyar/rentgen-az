@@ -9,6 +9,7 @@ import { requireRole } from "@/lib/auth/rbac";
 import { OPERATOR_NAME } from "@/lib/auth/operator";
 import { prisma } from "@/lib/db";
 import { parseHours } from "@/lib/hours";
+import { parseFaqAnswers } from "@/content/center-faq";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 
@@ -70,6 +71,7 @@ export default async function OperatorEditCenterPage({
             hours: parseHours(center.hours),
             lat: center.lat,
             lng: center.lng,
+            faqAnswers: parseFaqAnswers(center.faqAnswers),
           }}
         />
       </div>

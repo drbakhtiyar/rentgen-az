@@ -22,6 +22,7 @@ import {
   MessagesSquare,
   Sparkles,
   UserCog,
+  AlertCircle,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -83,6 +84,7 @@ export const adminNav: NavItem[] = [
   { label: "Əməkdaşlıqlar", href: "/admin/emekdashliq", icon: <Handshake /> },
   { label: "Blog", href: "/admin/blog", icon: <FileText /> },
   { label: "Rəylər", href: "/admin/reyler", icon: <Star /> },
+  { label: "Məlumat bildirişləri", href: "/admin/duzelisler", icon: <AlertCircle /> },
   { label: "Ödənişlər", href: "/admin/odenisler", icon: <Wallet /> },
   { label: "Xidmətlər", href: "/admin/xidmetler", icon: <ListChecks /> },
   { label: "SMS", href: "/admin/sms", icon: <MessageSquare /> },

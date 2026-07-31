@@ -218,6 +218,9 @@ model CenterProfile {
   equipment         String? // avadanlıq məlumatı (mətn)
   responsiblePerson String?
   description       String?
+  // Per-center answers to the fixed FAQ questions (see src/content/center-faq.ts).
+  // Shape: { [questionKey]: answerText }. Only answered questions are shown/indexed.
+  faqAnswers        Json?
   logoUrl           String? // mərkəzin loqosu (yüklənmiş şəkil)
   licenseUrl        String? // rentgenologiya üzrə lisenziya (məcburi)
   images            String[]     @default([])
@@ -274,9 +277,25 @@ model CenterProfile {
   crmActivities       CrmActivity[]
   smsCredits          CenterSmsCredit[]
   smsOrders           CenterSmsOrder[]
+  contentReports      ContentReport[]
 
   @@index([status])
   @@index([city])
+}
+
+// "Məlumat düzgün deyil?" reports submitted from a center's public FAQ block.
+// Aggregated in the admin panel so the info can be corrected.
+model ContentReport {
+  id        String         @id @default(cuid())
+  centerId  String?
+  center    CenterProfile? @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  name      String? // optional
+  email     String? // optional
+  message   String
+  resolved  Boolean        @default(false)
+  createdAt DateTime       @default(now())
+
+  @@index([resolved, createdAt])
 }
 
 // CRM SMS balans yüklənmələri (hədiyyə və ya alış). Xərclənmə ayrıca yazılmır —

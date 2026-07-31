@@ -159,6 +159,21 @@ export async function adminUpdateCenterAction(
   return res;
 }
 
+/** Mark a "Məlumat düzgün deyil?" content report resolved / unresolved. */
+export async function resolveContentReportAction(
+  id: string,
+  resolved: boolean,
+): Promise<AdminResult> {
+  await requireRole("ADMIN");
+  try {
+    await prisma.contentReport.update({ where: { id }, data: { resolved } });
+    revalidatePath("/admin/duzelisler");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Texniki xəta." };
+  }
+}
+
 /** Create a center from the admin panel (loose — missing fields allowed). */
 export async function adminCreateCenterAction(
   input: CenterWriteInput,

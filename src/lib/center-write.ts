@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/utils";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
+import { parseFaqAnswers } from "@/content/center-faq";
 import {
   googleConfigured,
   resolveAndFetchRating,
@@ -67,6 +68,7 @@ export type CenterWriteInput = {
   images?: string[];
   lat?: number | null;
   lng?: number | null;
+  faqAnswers?: Record<string, string> | null;
 };
 
 export type CenterWriteResult = {
@@ -158,6 +160,10 @@ export async function saveCenterLoose(
       .slice(0, 999),
     lat,
     lng,
+    faqAnswers: (() => {
+      const faq = parseFaqAnswers(input.faqAnswers);
+      return Object.keys(faq).length ? (faq as Prisma.InputJsonValue) : Prisma.DbNull;
+    })(),
   };
 
   try {

@@ -9,6 +9,7 @@ import { getActingCenter } from "@/lib/auth/acting";
 import { logCrmActivity } from "@/lib/crm-activity";
 import { alertAdminSms } from "@/lib/sms";
 import { centerProfileSchema } from "@/lib/validation";
+import { parseFaqAnswers } from "@/content/center-faq";
 import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import {
   smsPatientStatusChange,
@@ -53,6 +54,7 @@ export async function saveCenterProfileAction(input: {
   images?: string[];
   lat?: number | null;
   lng?: number | null;
+  faqAnswers?: Record<string, string>;
 }): Promise<CenterActionResult> {
   const user = await requireRole("CENTER");
   const parsed = centerProfileSchema.safeParse(input);
@@ -95,6 +97,10 @@ export async function saveCenterProfileAction(input: {
       images,
       lat: d.lat ?? null,
       lng: d.lng ?? null,
+      faqAnswers: (() => {
+        const faq = parseFaqAnswers(d.faqAnswers);
+        return Object.keys(faq).length ? (faq as Prisma.InputJsonValue) : Prisma.DbNull;
+      })(),
     };
 
     if (existing) {

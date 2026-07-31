@@ -16,6 +16,7 @@ import {
   adminCreditWalletAction,
 } from "@/app/admin/actions";
 import { parseHours } from "@/lib/hours";
+import { parseFaqAnswers } from "@/content/center-faq";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 import { centerLimits } from "@/lib/plans";
@@ -81,6 +82,7 @@ export default async function AdminEditCenterPage({
             hours: parseHours(center.hours),
             lat: center.lat,
             lng: center.lng,
+            faqAnswers: parseFaqAnswers(center.faqAnswers),
           }}
         />
       </Panel>

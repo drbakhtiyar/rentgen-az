@@ -18,14 +18,17 @@ export async function AdminShell({
   let newRequests = 0;
   let newReferrals = 0;
   let unreadChat = 0;
+  let openReports = 0;
   try {
-    [pendingCenters, pendingDoctors, newRequests, newReferrals, unreadChat] = await Promise.all([
-      prisma.centerProfile.count({ where: { status: "PENDING" } }),
-      prisma.doctorProfile.count({ where: { status: "PENDING" } }),
-      prisma.appointmentRequest.count({ where: { status: "NEW" } }),
-      prisma.referral.count({ where: { status: "NEW" } }),
-      adminUnreadTotal(),
-    ]);
+    [pendingCenters, pendingDoctors, newRequests, newReferrals, unreadChat, openReports] =
+      await Promise.all([
+        prisma.centerProfile.count({ where: { status: "PENDING" } }),
+        prisma.doctorProfile.count({ where: { status: "PENDING" } }),
+        prisma.appointmentRequest.count({ where: { status: "NEW" } }),
+        prisma.referral.count({ where: { status: "NEW" } }),
+        adminUnreadTotal(),
+        prisma.contentReport.count({ where: { resolved: false } }),
+      ]);
   } catch {
     /* keep zeros */
   }
@@ -42,6 +45,7 @@ export async function AdminShell({
         "/admin/hekimler": pendingDoctors,
         "/admin/muracietler": newRequests,
         "/admin/gonderisler": newReferrals,
+        "/admin/duzelisler": openReports,
       }}
     >
       {children}

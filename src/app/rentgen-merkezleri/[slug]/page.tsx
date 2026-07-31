@@ -44,7 +44,10 @@ import {
   buildMetadata,
   breadcrumbJsonLd,
   medicalBusinessJsonLd,
+  faqJsonLd,
 } from "@/lib/seo";
+import { CenterFaq } from "@/components/centers/center-faq";
+import { answeredFaq } from "@/content/center-faq";
 
 export const revalidate = 120;
 
@@ -89,6 +92,7 @@ export default async function CenterDetailPage({
   const todayKey = nowInBaku().day;
   const locale = await getLocale();
   const dd = getDict(locale).centerDetail;
+  const faqItems = answeredFaq(center.faqAnswers, locale);
 
   const [reviews, ratingsMap] = await Promise.all([
     getCenterReviews(center.id),
@@ -209,6 +213,9 @@ export default async function CenterDetailPage({
             services: svcNames,
             rating: rating.count > 0 ? rating : null,
           }),
+          ...(faqItems.length > 0
+            ? [faqJsonLd(faqItems.map((f) => ({ question: f.question, answer: f.answer })))]
+            : []),
         ]}
       />
 
@@ -429,6 +436,15 @@ export default async function CenterDetailPage({
                   </ul>
                 </Card>
               )}
+
+              {/* Center FAQ — unique, patient-facing Q&A (answered questions only) */}
+              <CenterFaq
+                items={faqItems}
+                centerName={center.name}
+                centerId={center.id}
+                lastUpdated={formatDateAz(center.updatedAt)}
+                locale={locale}
+              />
 
               {/* Reviews — Gold+ plans only */}
               {showReviews && (

@@ -83,6 +83,7 @@ export const centerProfileSchema = z.object({
   images: z.array(z.string().trim().url()).max(999).optional(),
   lat: z.number().min(-90).max(90).nullable().optional(),
   lng: z.number().min(-180).max(180).nullable().optional(),
+  faqAnswers: z.record(z.string(), z.string()).optional(),
 });
 
 export const appointmentRequestSchema = z.object({
