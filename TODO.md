@@ -14,7 +14,7 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 
 ## Blocked — waiting on external input
 - [blocked] **Apple Developer account** ($99/yr) — push code (native APNs) fully built; needs the `.p8` key + `APNS_*` Vercel env to go live, and the account for App Store submission. Biggest blocker for the app.
-- [blocked] **`GOOGLE_PLACES_API_KEY`** — Google rating feature fully built (Place ID, daily `google-ratings` cron), inert until the key is in Vercel env.
+- [x] **`GOOGLE_PLACES_API_KEY` — DONE (2026-07-31).** Key (Places API New) in Vercel prod; ~16 centers auto-connected with live Google ratings (shown on cards + detail + app), daily cron refresh + auto-connect of new centers. 7 centers still need their exact Google link (generic names): Vitamin, Kristal, Dental Clinic Naxçıvan, F Clinic, 3DM Yasamal, 3DM Xalqlar, Implant Dentist.
 - [blocked] **Google Play account** ($25) — Android submission (later).
 
 > ~~Anthropic credit~~ — RESOLVED: `ANTHROPIC_API_KEY` is set in Vercel prod and the AI Yardımçı is live (verified: `/api/app/ai` returns real Haiku answers; ~$0.04 used Jul 19–24).
@@ -27,7 +27,11 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **CRM Faza 2** — beyond current Bugün/Təqvim/Pasiyentlər/SMS/Söhbətlər/Jurnal (see memory `rentgen-az-crm`).
 
 ## Analytics / SEO
-- [x] **Google Search Console** — domain verified (DNS TXT via Vercel DNS, covers all subdomains). **Sitemap submit still pending** (Search Console → Sitemaps → `sitemap.xml`, 154 URLs).
+- [x] **Google Search Console** — domain verified; **sitemap submitted 2026-07-31 (Успешно, 188 URLs discovered).**
+- [x] **RU indexing — DONE (2026-08-01).** Russian now at crawlable `/ru/*` URLs with self-canonical + hreflang (az/ru/x-default), sitemap lists both. Was cookie-only (invisible to Google) → now indexable. See memory `rentgen-az-ru-i18n`.
+- [x] **SEO quick wins (2026-07-31)** — robots anchored (fixed /hekimler + /merkezler-ucun deindex), next/image card cover, aggregateRating JSON-LD (first-party reviews), richer center meta descriptions.
+- [x] **Operator data-entry panel (2026-07-30)** — `/panel` secret-link (role OPERATOR "Nərmin"), loose center create/edit, paste Google link → auto coords+rating+map. Logout fixed 2026-08-01.
+- [ ] **Grow first-party reviews** — patient review invite (SMS/QR after a scan) → drives ⭐ rich snippets + fresh content. Not started.
 - [x] **Google Analytics 4** — live (`G-CHQ316PK72`, `NEXT_PUBLIC_GA_ID`). Optional: link GA4 ↔ Search Console (GA Admin → Product Links).
 - [x] **Admin analytics dashboard** — merged into İcmal (`/admin`): pending centers → totals → access funnels.
 - [ ] **Search-tracking event** (REN-41 gap) — patient search step not instrumented, so the discovery funnel starts at center view, not search.
