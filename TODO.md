@@ -34,7 +34,7 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **Grow first-party reviews** — patient review invite (SMS/QR after a scan) → drives ⭐ rich snippets + fresh content. Not started.
 - [x] **Google Analytics 4** — live (`G-CHQ316PK72`, `NEXT_PUBLIC_GA_ID`). Optional: link GA4 ↔ Search Console (GA Admin → Product Links).
 - [x] **Admin analytics dashboard** — merged into İcmal (`/admin`): pending centers → totals → access funnels.
-- [ ] **Search-tracking event** (REN-41 gap) — patient search step not instrumented, so the discovery funnel starts at center view, not search.
+- [x] **Search-tracking event (REN-41) — DONE 2026-08-01.** SearchEvent model + TrackSearch on /rentgen-merkezleri; funnel now starts at "Axtarış" (admin İcmal card + row).
 
 ## Intentionally left (not really todo)
 - **8 lint errors** — React-19 best-practice flags in old code (server-component Date.now false positives, setState-in-effect data-fetch patterns, viewer ref). User chose to leave; build passes.
