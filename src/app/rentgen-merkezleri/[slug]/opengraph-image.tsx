@@ -24,6 +24,16 @@ export default async function Image({
   const rating = typeof center?.googleRating === "number" ? center.googleRating : null;
   const reviews = center?.googleReviewCount ?? 0;
 
+  // Precompute single-string lines — satori requires display:flex on any element
+  // with multiple children, so single text children are the safe pattern.
+  const cityLine = serviceCount > 0 ? `${city}  ·  ${serviceCount} xidmət` : city;
+  const ratingLine =
+    rating != null
+      ? reviews > 0
+        ? `Google  ${rating.toFixed(1)}  ·  ${reviews} rəy`
+        : `Google  ${rating.toFixed(1)}`
+      : null;
+
   return new ImageResponse(
     (
       <div
@@ -53,34 +63,20 @@ export default async function Image({
           <div style={{ fontSize: 68, fontWeight: 800, lineHeight: 1.05, maxWidth: 1040 }}>
             {name}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div
-              style={{ width: 14, height: 14, borderRadius: 999, background: "#0bb1f0" }}
-            />
-            <div style={{ fontSize: 30, color: "#9fb4d6" }}>{city}</div>
-            {serviceCount > 0 && (
-              <div style={{ fontSize: 30, color: "#9fb4d6" }}>· {serviceCount} xidmət</div>
-            )}
-          </div>
-          {rating != null && (
+          <div style={{ fontSize: 30, color: "#9fb4d6" }}>{cityLine}</div>
+          {ratingLine && (
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
                 fontSize: 28,
                 fontWeight: 700,
                 color: "#0a1124",
                 background: "#ffd84a",
                 borderRadius: 999,
-                padding: "8px 22px",
+                padding: "10px 24px",
                 alignSelf: "flex-start",
               }}
             >
-              Google {rating.toFixed(1)}
-              {reviews > 0 && (
-                <span style={{ fontWeight: 400 }}>· {reviews} rəy</span>
-              )}
+              {ratingLine}
             </div>
           )}
         </div>
