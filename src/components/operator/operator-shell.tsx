@@ -1,8 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { redirect } from "next/navigation";
 import { LogOut, Plus } from "lucide-react";
-import { clearSessionCookie } from "@/lib/auth/session";
 
 /**
  * Minimal chrome for the operator (data-entry) panel. Intentionally spartan:
@@ -20,12 +18,6 @@ export function OperatorShell({
   showNew?: boolean;
   children: React.ReactNode;
 }) {
-  async function logout() {
-    "use server";
-    await clearSessionCookie();
-    redirect("/");
-  }
-
   return (
     <div className="min-h-screen bg-surface">
       <header className="border-b border-slate-200 bg-white">
@@ -50,7 +42,7 @@ export function OperatorShell({
               </Link>
             )}
             <span className="hidden text-sm text-slate-500 sm:inline">{userName}</span>
-            <form action={logout}>
+            <form action="/panel/cixis" method="post">
               <button
                 type="submit"
                 className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
