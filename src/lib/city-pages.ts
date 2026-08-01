@@ -31,26 +31,46 @@ export function citySlug(name: string): string {
   return slugify(name);
 }
 
-/** Səhifəsi olan şəhərlər — mərkəz sayına görə azalan. */
+/**
+ * Səhifəsi olan şəhərlər — mərkəz sayına görə azalan.
+ * DB xətasını UDMUR: çağıran tərəf nəyin baş verdiyini bilməlidir
+ * (bax `getCityPages` vs `getCityBySlug` fərqi aşağıda).
+ */
+async function fetchCityPages(): Promise<CityPage[]> {
+  const rows = await prisma.centerProfile.groupBy({
+    by: ["city"],
+    where: { status: "APPROVED", city: { not: null } },
+    _count: { _all: true },
+  });
+  return rows
+    .filter((r): r is typeof r & { city: string } => !!r.city && r._count._all >= MIN_CENTERS)
+    .map((r) => ({ name: r.city, slug: citySlug(r.city), count: r._count._all }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "az"));
+}
+
+/**
+ * Naviqasiya siyahıları üçün (kataloq altındakı şəhər çipləri, sitemap).
+ * Burada DB xətası zərərsizdir — sadəcə blok göstərilmir.
+ */
 export async function getCityPages(): Promise<CityPage[]> {
   try {
-    const rows = await prisma.centerProfile.groupBy({
-      by: ["city"],
-      where: { status: "APPROVED", city: { not: null } },
-      _count: { _all: true },
-    });
-    return rows
-      .filter((r): r is typeof r & { city: string } => !!r.city && r._count._all >= MIN_CENTERS)
-      .map((r) => ({ name: r.city, slug: citySlug(r.city), count: r._count._all }))
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "az"));
+    return await fetchCityPages();
   } catch {
     return [];
   }
 }
 
-/** Slug → şəhər (səhifəsi olmayan şəhər üçün null). */
+/**
+ * Slug → şəhər. Səhifəsi olmayan şəhər üçün `null`.
+ *
+ * ⚠️ DB xətası burada UDULMUR və `null`-a çevrilmir. Səbəb: səhifə `null`-da
+ * `notFound()` çağırır, Next isə 404-ü ISR keşinə yazır — yəni bir anlıq DB
+ * problemi mövcud şəhər səhifəsini `revalidate` müddəti boyu 404-də saxlayardı.
+ * (Məhz bu, /sheher/baki səhifəsində baş verdi.) Xəta atılsın → 500 qayıtsın →
+ * keşlənməsin və növbəti sorğuda düzəlsin.
+ */
 export async function getCityBySlug(slug: string): Promise<CityPage | null> {
-  const pages = await getCityPages();
+  const pages = await fetchCityPages();
   return pages.find((c) => c.slug === slug) ?? null;
 }
 
