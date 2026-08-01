@@ -21,6 +21,9 @@ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { parseSort, combinedRatingScore, bayesian } from "@/lib/rating";
+import { getCityPages } from "@/lib/city-pages";
+import Link from "next/link";
+import { MapPin } from "lucide-react";
 
 export const revalidate = 120;
 
@@ -106,6 +109,7 @@ export default async function CentersPage({
     value: c,
     label: c,
   }));
+  const cityPages = await getCityPages();
   const serviceCounts = await countApprovedCentersByService();
   const serviceOptions = (await getActiveServices())
     .filter((s) => (serviceCounts[s.slug] ?? 0) > 0)
@@ -215,6 +219,28 @@ export default async function CentersPage({
                 {d.centers.allCenters}
               </ButtonLink>
             </Card>
+          )}
+
+          {/* Şəhər səhifələrinə keçidlər — həm istifadəçi üçün qısayol, həm də
+              Google-un onları tapa bilməsi üçün yeganə daxili keçid mənbəyi. */}
+          {cityPages.length > 0 && (
+            <div className="mt-12 border-t border-slate-200 pt-8">
+              <h2 className="font-display flex items-center gap-2 text-lg font-bold text-ink-900">
+                <MapPin className="h-5 w-5 text-brand-600" />
+                {locale === "ru" ? "Центры по городам" : "Şəhərlər üzrə mərkəzlər"}
+              </h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {cityPages.map((c) => (
+                  <Link
+                    key={c.slug}
+                    href={`/rentgen-merkezleri/sheher/${c.slug}`}
+                    className="rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-brand-50 hover:text-brand-700"
+                  >
+                    {c.name} <span className="text-slate-400">· {c.count}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           )}
         </Container>
       </Section>

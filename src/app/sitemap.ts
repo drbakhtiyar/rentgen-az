@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/env";
 import { prisma } from "@/lib/db";
+import { getCityPages } from "@/lib/city-pages";
 
 export const revalidate = 3600;
 
@@ -52,6 +53,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         bilingual(`/xidmetler/${s.slug}`, {
           lastModified: now,
           changeFrequency: "weekly",
+          priority: 0.8,
+        }),
+      );
+    }
+  } catch {
+    /* DB unavailable — skip dynamic entries */
+  }
+
+  // City landing pages (only cities with enough centers — see city-pages.ts)
+  try {
+    const cities = await getCityPages();
+    for (const c of cities) {
+      entries.push(
+        bilingual(`/rentgen-merkezleri/sheher/${c.slug}`, {
+          lastModified: now,
+          changeFrequency: "weekly",
+          // Şəhər səhifələri kataloqun özündən sonra ən vacib giriş nöqtəsidir.
           priority: 0.8,
         }),
       );
