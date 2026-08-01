@@ -106,6 +106,33 @@ export async function setCenterStatusAction(
   }
 }
 
+export async function deleteCenterAction(centerId: string): Promise<AdminResult> {
+  const admin = await requireRole("ADMIN");
+  try {
+    const center = await prisma.centerProfile.findUnique({
+      where: { id: centerId },
+      select: { userId: true, name: true },
+    });
+    if (!center) return { ok: false, error: "Mərkəz tapılmadı." };
+    // FK-lar Cascade/SetNull olduğu üçün profili silmək uşaq qeydləri təmizləyir.
+    await prisma.centerProfile.delete({ where: { id: centerId } });
+    // Yalnız bu mərkəzə bağlı CENTER hesabını təmizlə (başqa profili yoxdursa).
+    const owner = await prisma.user.findUnique({
+      where: { id: center.userId },
+      select: { role: true, centerProfile: { select: { id: true } }, doctorProfile: { select: { id: true } } },
+    });
+    if (owner && owner.role === "CENTER" && !owner.centerProfile && !owner.doctorProfile) {
+      await prisma.user.delete({ where: { id: center.userId } }).catch(() => {});
+    }
+    await logAction(admin.id, "center:delete", "CenterProfile", centerId);
+    revalidatePath("/admin/merkezler");
+    revalidatePath("/admin");
+    return { ok: true, message: `«${center.name}» silindi.` };
+  } catch {
+    return { ok: false, error: "Silinmə zamanı texniki xəta." };
+  }
+}
+
 export async function setDoctorStatusAction(
   doctorId: string,
   status: CenterStatus,

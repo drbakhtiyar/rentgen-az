@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/dashboard/widgets";
 import { RatingSummary } from "@/components/reviews/stars";
-import { CenterStatusControls, BlockToggle } from "@/components/admin/controls";
+import { CenterStatusControls, BlockToggle, DeleteCenterButton } from "@/components/admin/controls";
 import { PLAN_LABEL } from "@/lib/plans";
 import type { CenterStatus } from "@/generated/prisma/enums";
 import type { Plan } from "@/generated/prisma/client";
@@ -164,6 +164,7 @@ export function AdminCenterCard({
           )}
           <CenterStatusControls centerId={center.id} status={center.status} />
           <BlockToggle userId={center.user.id} blocked={center.user.isBlocked} />
+          <DeleteCenterButton centerId={center.id} name={center.name} />
         </div>
       </div>
     </Card>

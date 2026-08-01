@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Check, Ban, Loader2, RotateCcw, ShieldOff, ShieldCheck } from "lucide-react";
+import { Check, Ban, Loader2, RotateCcw, ShieldOff, ShieldCheck, Trash2 } from "lucide-react";
 import { Select } from "@/components/ui/field";
 import {
   setCenterStatusAction,
+  deleteCenterAction,
   setDoctorStatusAction,
   setUserBlockedAction,
   setReferralStatusAction,
@@ -70,6 +71,35 @@ export function CenterStatusControls({
         </button>
       )}
     </div>
+  );
+}
+
+export function DeleteCenterButton({
+  centerId,
+  name,
+}: {
+  centerId: string;
+  name: string;
+}) {
+  const { pending, run } = useAction();
+  const onClick = () => {
+    if (
+      window.confirm(
+        `«${name}» mərkəzi tamamilə silinsin?\n\nBu əməl geri qaytarıla bilməz — profil, xidmətlər və bütün əlaqəli qeydlər silinəcək.`,
+      )
+    ) {
+      run(() => deleteCenterAction(centerId));
+    }
+  };
+  return (
+    <button
+      className={`${btn} bg-red-600 text-white hover:bg-red-700`}
+      disabled={pending}
+      onClick={onClick}
+    >
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+      Sil
+    </button>
   );
 }
 
