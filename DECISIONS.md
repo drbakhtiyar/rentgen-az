@@ -2,6 +2,59 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Rating sort = weighted (Bayesian) + server-side global + URL param
+- **Decision:** the centers list sorts by a Bayesian weighted rating `(avg·n + 4.2·8)/(n + 8)`
+  (unrated → last), NOT raw average. "Yüksək reytinq" blends the platform's own reviews (×1.5)
+  with Google; a separate "Google reytinqi" sort uses Google only. Sorting + pagination happen
+  **on the server over the full matching set**, driven by `?sort=`; pagination links carry it.
+- **Why:** a 5.0 from 2 reviews shouldn't outrank a 4.8 from 50 (user's explicit example). The
+  old sort was client-side per-page, so it "disappeared on page 2" — server-global fixes that.
+- **Consequence:** shared `src/lib/rating.ts` (server + client). Only `distance` stays
+  client-side (needs geolocation), reordering just the current page.
+
+## Duplicate detection ignores logo & shared switchboard phone
+- **Decision:** centers are considered duplicates by **placeId / same phone / normalized name
+  (Cyrillic-homoglyph folded) / <120 m coords + shared distinctive word** — never by logo, and
+  same-central-number across a network's branches is NOT treated as a duplicate.
+- **Why:** networks (BMP, Sağlam Ailə, SağlamDiş, Diamed, Referans) route all branches through
+  one switchboard; TƏBİB state hospitals all use the one TƏBİB logo. These are legitimately
+  distinct listings.
+- **Consequence:** merges keep the fullest record, copy missing fields (photo/rating/hours/
+  coords), delete the redundant profile + its owner-less CENTER user. Same-generic-name centers
+  in DIFFERENT cities are kept separate.
+
+## OTP needs a mobile; landline preserved in `landlinePhone`
+- **Decision:** OTP SMS only reaches AZ mobile prefixes (010/050/051/055/060/070/077/099). When
+  a mobile is added as a center's primary `phone`, the previous city/landline number moves to
+  the new `landlinePhone` field (not discarded). For owner-less bulk centers a placeholder
+  `User.phone` (`placeholder:<uuid>`) holds the account until a real mobile is set.
+- **Why:** user: "mobil olması bizim üçün həlledicidir — OTP ancaq mobil nömrələrə gəlir", but
+  contactability via the landline must not be lost.
+- **Consequence:** admin/operator lists filter by 📱 mobil / 🏢 şəhər nömrəsi; a website scraper
+  auto-found mobiles for centers that publish them.
+
+## Bulk import = PENDING + full-service template + admin trims
+- **Decision:** centers scraped from Google Places are created **PENDING** with the **full 89
+  non-dental imaging service set** as a template; the admin trims to real modalities at approval.
+- **Why:** we can't know each center's exact modalities from Places; PENDING keeps them off the
+  public site until curated; a template is faster to trim than to build.
+- **Consequence:** never treat PENDING service lists as authoritative. All import/enrichment
+  runs via throwaway `scripts-tmp-*.mts` (dotenv + PrismaPg, `npx tsx`, deleted after) — none
+  committed. Google **Places API (New)** only (legacy API is disabled on the key).
+
+## Operator (data-entry) role — rich cards, edit-only
+- **Decision:** the OPERATOR role ("Nərmin", secret-link `/panel`) sees the same rich center
+  cards + completeness filters as admin, but the ONLY action is **Redaktə** (+ Yeni mərkəz).
+  No approve / deactivate / block / delete — those stay admin-only.
+- **Why:** operators enrich data; approval/moderation/deletion are owner/admin responsibilities.
+
+## Homepage hero map is data-driven, decorative, non-interactive
+- **Decision:** the hero shows a real (simplified GeoJSON) Azerbaijan silhouette + Nakhchivan
+  with a glowing marker per city that has an **APPROVED** center (`getCoveredCities()` →
+  `src/lib/az-cities.ts` coord table + projection). It's purely decorative — no links.
+- **Why:** conveys nationwide coverage; markers must appear automatically as new cities go live.
+- **Consequence:** adding an approved center in a new city auto-adds its marker; no manual edit.
+
 ## Mobile app = Worker proxy → site API (NOT WebView, NOT direct DB)
 - **Decision:** the companion iOS app (built in Rork, SwiftUI) talks to a thin **Cloudflare Worker** (`rentgen-az-sync-backend.rork.app`) which proxies to the site's `/api/app/*` endpoints (Prisma → Supabase).
 - **Why:** user explicitly rejected a WebView ("app should feel native, not a wrapped site"). Direct DB access from the app was also rejected — leaks credentials into the app bundle and floods the free/small-tier Postgres with unpooled connections. Routing through the site keeps all business logic and one pooled connection in a single place, so app writes are automatically consistent with the site (patient auto-created/linked, right `AppointmentRequest` fields, notifications fire).

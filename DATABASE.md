@@ -2,7 +2,9 @@
 
 **Postgres on Supabase** (project `yunonkioubsvozqmezvp`, PRO plan, SMALL compute). Accessed **only via Prisma 7** (direct connection, PrismaPg pooled adapter in `src/lib/db.ts`) — PostgREST/Data API is unused (the recurring `pg_pgrst_no_exposed_schemas` 503 in Supabase logs is therefore harmless). **The same DB backs the live site and the mobile app.**
 
-Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated/prisma` → import from `@/generated/prisma/client` + `@/generated/prisma/enums`. Migrations: `prisma/migrations/*` (48). Apply: `npm run db:migrate:dev -- --name <x>`. **Never reset the DB password without updating Vercel `DATABASE_URL` + `DIRECT_URL` in the same step**, or the site 500s.
+Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated/prisma` → import from `@/generated/prisma/client` + `@/generated/prisma/enums`. Migrations: `prisma/migrations/*` (51; newest `20260801140000_center_landline`, `..._center_faq_reports`, `..._search_event`, `..._operator_role`). Apply: `npm run db:migrate:dev -- --name <x>`. **Never reset the DB password without updating Vercel `DATABASE_URL` + `DIRECT_URL` in the same step**, or the site 500s.
+
+> **Applying a migration on prod:** the datasource block has no `url` (driver-adapter setup), so a raw `prisma migrate deploy` may not connect. The 2026-08 `landlinePhone` column was applied by running the `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` via a `scripts-tmp` PrismaPg script **and** recording the row in `_prisma_migrations` (id + sha256 checksum of the migration.sql) so history stays consistent. Keep migration SQL idempotent.
 
 ## Conventions
 - IDs: `cuid()`. Money: **minor units** (qəpik, `Int` — 2000 = 20.00 AZN). Times: `DateTime` UTC, computed/displayed in **Asia/Baku**.
@@ -28,7 +30,18 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 
 ### Profiles
 - **PatientProfile** — patient details, favorites (→ centers), reviews.
-- **CenterProfile** — the big one. name/slug/phone/address/city/geo, structured `hours` (Json) + human `workingHours`, equipment, logo/license/images/banner, `status`, `plan`+`planUntil`+`planExpiredAt`, `apiKey` (Platinum), **Google rating** (`googlePlaceId`/`googleRating`/`googleReviewCount`/`googleRatingAt`), `extraStorageTb`+`extraStorageUntil` (sold storage blocks), **CRM slot settings** (`slotBookingEnabled`/`slotMinutes`/`slotCapacity`/lunch/reminders), `smsBalance` (CRM SMS credits). Relations: services, requests, reviews, doctorPartners, conversations, assistants, holidays, timeBlocks, crmActivities, smsCredits/Orders, workplaceDoctors.
+- **CenterProfile** — the big one. name/slug/phone/`whatsapp`/**`landlinePhone`** (2nd/city
+  number, kept when a mobile takes over `phone` for OTP)/address/city/district/geo (`lat`/`lng`/
+  `mapsUrl`), structured `hours` (Json `{mon:{open,close}|null,...}`) + human `workingHours`,
+  equipment, logo/license/images[]/banner, `status`, `plan`+`planUntil`+`planExpiredAt`,
+  `apiKey` (Platinum), **Google rating** (`googlePlaceId`/`googleRating`/`googleReviewCount`/
+  `googleRatingAt`), `faqAnswers` (Json), `extraStorageTb`+`extraStorageUntil` (sold storage
+  blocks), **CRM slot settings** (`slotBookingEnabled`/`slotMinutes`/`slotCapacity`/lunch/
+  reminders), `smsBalance` (CRM SMS credits). Relations: services, requests, reviews,
+  doctorPartners, conversations, assistants, holidays, timeBlocks, crmActivities,
+  smsCredits/Orders, workplaceDoctors. Written via `src/lib/center-write.ts` `saveCenterLoose`
+  (never-rejects create/edit; placeholder `User.phone` = `placeholder:<uuid>` for owner-less
+  bulk centers; extracts coords from a pasted Google Maps link).
 - **DoctorProfile** — name, clinic, `specializations[]`, city, photo/banner, socials, documents, `status`, `onboarded` (false = QR draft), **workplace** (`workplaceCenterId`+`workplaceStatus` PENDING|ACCEPTED|REJECTED), plan.
 
 ### Assistants (max 1 each; ASSISTANT role resolved dynamically)

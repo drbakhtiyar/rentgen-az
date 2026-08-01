@@ -2,6 +2,18 @@
 
 Two API surfaces: (1) the **mobile-app bridge** (`/api/app/*`, consumed by the Rork Cloudflare Worker), and (2) internal webhooks/crons/upload. Most web functionality uses **Server Actions**, not REST.
 
+> **Public centers listing is NOT a REST API** — `/rentgen-merkezleri` is a Server Component
+> driven by URL search params: `?service=<slug>` `?city=<rayon>` `?q=<name>` `?page=<n>`
+> `?sort=<recommended|rating|googleRating|price|distance>`. For `rating`/`googleRating`/`price`
+> the server sorts the FULL matching set (weighted rating via `src/lib/rating.ts`) then
+> paginates 30/page; `distance` is reordered client-side (geolocation).
+>
+> **Center enrichment** (bulk import, Google rating/photo/hours, mobile scrape) is done with
+> throwaway `scripts-tmp-*.mts` calling **Google Places API (New)** directly (not our API):
+> `POST places:searchText` (locationBias circle) for placeId+rating+coords+phone+
+> `regularOpeningHours`; `GET places/{id}` `photos` → media → Vercel Blob. Key
+> `GOOGLE_PLACES_API_KEY`. See CHANGELOG for the pattern.
+
 Base: `https://rentgen.az`. All `/api/app/*` require header **`x-app-key: <APP_API_KEY>`** (env, in `.env.local` + Vercel). Missing/wrong → 401. Personal-data responses are `Cache-Control: no-store` (a public cache once leaked authorized data to keyless callers — fixed in `f753fd2`).
 
 Implementation: routes in `src/app/api/app/*/route.ts`; logic in `src/lib/app-catalog.ts` + `src/lib/app-api.ts`.

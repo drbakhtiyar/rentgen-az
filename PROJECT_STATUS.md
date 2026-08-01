@@ -13,6 +13,32 @@
 
 The web platform is production-live and used by real centers/doctors/patients. The mobile app (doctor MVP) is functionally complete and end-to-end verified; the center MVP is in progress.
 
+**Live numbers (2026-08-02 prod DB):** 363 centers (**246 APPROVED / 117 PENDING**), 112 active services (15 categories), 17 doctors, 428 users, 18 platform reviews, ~23 cities covered.
+
+### 2026-08 marketplace expansion (this session — see CHANGELOG)
+- **~305 imaging centers bulk-imported** from Google Places across 20 cities (PENDING),
+  then many manually enriched (mobile phone, building photo, logo, hours, coords, Google
+  rating). Repeatable enrichment via throwaway `scripts-tmp-*.mts` (never committed).
+- **New field `CenterProfile.landlinePhone`** — preserves the city/landline number when a
+  mobile becomes the primary `phone` (OTP only reaches AZ mobiles: 010/050/051/055/060/070/
+  077/099). Editable in the center form; shown on admin/operator cards.
+- **Listing sort is now URL-driven, server-side global, paginated** (fixed "sort lost on
+  page 2"); **weighted Bayesian rating** (`src/lib/rating.ts`) so few-review 5.0s don't beat
+  many-review 4.8s; new **"Google reytinqi"** sort. 30/page, auto-filtering dropdowns.
+- **Admin/operator center lists**: shared completeness filters + "ən dolğun əvvəl" sort +
+  0–5 badge (`src/lib/center-filters.ts`); admin got a **Sil** (delete) button; operator
+  panel upgraded to rich edit-only cards.
+- **Duplicate policy**: dedup by placeId / same-phone / normalized-name (Cyrillic fold) /
+  near-coords — **NOT** by logo or shared switchboard phone. Many network branches share one
+  central number and are legit; TƏBİB state hospitals share one logo. Merged dozens of true
+  dup listings this session.
+- **Homepage hero** → data-driven Azerbaijan map (marker per city with an APPROVED center).
+- **TƏBİB logo** stored at stable Blob URL `shared/tabib-logo.png` for state hospitals.
+
+**⚠️ Follow-up owed:** the 117 PENDING centers carry the **full 89-service template** — trim
+to each center's real modalities at approval. Landline-only centers need a mobile before they
+can OTP-login. See TODO.md.
+
 ## Roles (enum `Role`): PATIENT · CENTER · DOCTOR · ASSISTANT · ADMIN
 - Multi-role: one phone/account can be patient + center + doctor simultaneously (role picked at login tab). `ASSISTANT` is a shared role for center-assistants and doctor-assistants (resolved dynamically).
 

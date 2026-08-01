@@ -28,11 +28,13 @@ src/
   lib/                         # domain logic (see below)
   generated/prisma/            # generated Prisma client (import from here)
   proxy.ts                     # middleware: subdomain routing + route gating
-prisma/schema.prisma           # single schema; 48 migrations
+prisma/schema.prisma           # single schema; 51 migrations
 ```
 
 ### Key `src/lib` modules
-`db.ts` (prisma), `env.ts` (typed env), `auth/` (jwt, session, rbac, acting, revoke), `queries.ts` (public+catalog reads), `crm.ts` (slot engine), `crm-activity.ts`, `notify.ts`+`notifications.ts` (SMS+in-app), `otp.ts`, `sms.ts`+`center-sms.ts`, `wallet.ts`+`payments.ts`+`payriff.ts`, `b2.ts`, `plans.ts` (`centerLimits`/`doctorLimits`), `phone.ts` (`normalizePhone` → `+994XXXXXXXXX`), `hours.ts` (Baku tz, slots), `i18n.ts`/`i18n-panel.ts`/`i18n-crm.ts` (az/ru dicts), `constants.ts` (CITIES, EXAM_TYPES, DENTAL_SPECIALIZATIONS), `google-rating.ts`, `viewer-access.ts`, **`app-api.ts` + `app-catalog.ts`** (mobile bridge).
+`db.ts` (prisma), `env.ts` (typed env), `auth/` (jwt, session, rbac, acting, revoke; +`operator.ts` = OPERATOR "Nərmin" secret-link), `queries.ts` (public+catalog reads; incl. `getApprovedCenters`, `getCoveredCities`), `center-write.ts` (`saveCenterLoose` — loose center create/edit, placeholder owner phone, coord extraction from pasted Maps link), `center-filters.ts` (shared admin+operator completeness filters/where/score), **`rating.ts`** (Bayesian weighted rating — server+client sort), **`az-cities.ts`** (Azerbaijan border GeoJSON + city coords for the hero map), `crm.ts` (slot engine), `crm-activity.ts`, `notify.ts`+`notifications.ts` (SMS+in-app), `otp.ts`, `sms.ts`+`center-sms.ts`, `wallet.ts`+`payments.ts`+`payriff.ts`, `b2.ts`, `plans.ts` (`centerLimits`/`doctorLimits`), `phone.ts` (`normalizePhone` → `+994XXXXXXXXX`), `hours.ts` (Baku tz, slots, `formatHoursSummary`/`WeeklyHours`), `i18n.ts`/`i18n-panel.ts`/`i18n-crm.ts` (az/ru dicts), `constants.ts` (CITIES, EXAM_TYPES, DENTAL_SPECIALIZATIONS), `google-rating.ts` (**Places API New** — `searchText`/place details; legacy Places API disabled), `viewer-access.ts`, **`app-api.ts` + `app-catalog.ts`** (mobile bridge).
+
+**Operator panel** (`/panel`, role OPERATOR): rich edit-only center cards (`src/components/operator/*`), same `center-filters.ts` as admin; secret-link login `/panel/acar/[key]`, logout `/panel/cixis`. **Admin center cards** (`src/components/admin/*`) add approve/deactivate/block + **delete** (`deleteCenterAction`) + completeness badge.
 
 ## Auth & sessions
 - **Login:** `/giris` (role tabs). `requestOtpAction`/`verifyOtpAction` in `src/app/giris/actions.ts`. OTP created/verified in `src/lib/otp.ts` (OTPCode table, sha256 hash). On verify → `setSessionCookie({userId, role, phone})` (`src/lib/auth/session.ts`) → JWT cookie `rx_session` (`src/lib/auth/jwt.ts`, jose HS256, 30d, domain `.rentgen.az` in prod). Token carries `v` = `User.sessionVersion`.

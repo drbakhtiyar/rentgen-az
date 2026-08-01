@@ -19,6 +19,22 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 
 > ~~Anthropic credit~~ — RESOLVED: `ANTHROPIC_API_KEY` is set in Vercel prod and the AI Yardımçı is live (verified: `/api/app/ai` returns real Haiku answers; ~$0.04 used Jul 19–24).
 
+## Marketplace data ops (2026-08 bulk import — active)
+- [ ] **Trim PENDING centers' service list.** ~117 PENDING centers were bulk-imported with the
+  **full 89 non-dental imaging service template** — over-lists services. Trim to each center's
+  real modalities (rentgen-only vs full MRT/KT/USM) before/at admin approval.
+- [ ] **Admin-review + approve the PENDING queue.** Use `/admin/merkezler?status=PENDING` with
+  the completeness filters + "ən dolğun əvvəl" sort. Delete non-medical junk that slips in.
+- [ ] **Add mobile numbers to landline-only centers.** OTP only reaches AZ mobiles. Centers
+  with only a city number can't OTP-login; add a mobile → old number auto-preserved in
+  `landlinePhone`. Filter `/admin/merkezler` by 🏢 Şəhər nömrəsi to find them. Website scraper
+  found ~29 mobiles; the rest need manual entry (user sends them).
+- [ ] **Building photos + logos for remaining PENDING.** ~97 had no Google photo; user is
+  sending storefront photos/logos which get uploaded to Vercel Blob (pattern in CHANGELOG).
+- [x] **Weighted rating + persistent server-side sort** — DONE 2026-08-02 (see CHANGELOG).
+- [x] **30/page + auto-filter dropdowns + admin/operator completeness filters** — DONE.
+- [x] **Data-driven homepage Azerbaijan map** — DONE (auto-marks cities with APPROVED centers).
+
 ## Product / site backlog
 - [x] **RU translation — essentially COMPLETE.** All public pages + center/doctor/CRM panels + blog (12 RU posts) are Russian (verified live via ru-cookie cyrillic count). **Admin panel is AZ-only by design — RU version NOT needed, do not track it.** Only `/viewer` (gated pre-launch) + DB content (center/service names, reviews) stay AZ.
 - [ ] **DICOM viewer public launch** — `/viewer/[fileId]` gated to Dr. Bakhtiyar (`viewer-access.ts`). Needs 4th-quadrant reference images, then ungate.
