@@ -30,7 +30,9 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 
 ### Profiles
 - **PatientProfile** — patient details, favorites (→ centers), reviews.
-- **CenterProfile** — the big one. name/slug/phone/`whatsapp`/**`landlinePhone`** (2nd/city
+- **CenterProfile** — the big one. `city` **yalnız şəhər** saxlayır, rayon `district`-dədir
+  (2026-08-02 normallaşdırması — ictimai filtr `city` üzrə dəqiq bərabərlik axtarır).
+  name/slug/phone/`whatsapp`/**`landlinePhone`** (2nd/city
   number, kept when a mobile takes over `phone` for OTP)/address/city/district/geo (`lat`/`lng`/
   `mapsUrl`), structured `hours` (Json `{mon:{open,close}|null,...}`) + human `workingHours`,
   equipment, logo/license/images[]/banner, `status`, `plan`+`planUntil`+`planExpiredAt`,
@@ -70,7 +72,11 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 
 ### Auth & misc
 - **OTPCode** — phone, `codeHash` (sha256(code+secret)), expiresAt, consumed, attempts, ip.
-- **PushToken** — mobile push tokens (Expo). `token` (unique, `ExponentPushToken[...]`), `platform` ios|android, → User (Cascade). Every `notifyUser` fires an Expo push to these; dead tokens auto-pruned. Registered via `/api/app/push/register`.
+- **PushToken** — mobile push tokens. Token = **raw APNs hex** (native iOS build); Expo
+  `ExponentPushToken[...]` da qəbul edilir (köhnə uyğunluq). `token` unique, `platform`
+  ios|android, → User (Cascade). Hər `notifyUser` **birbaşa Apple APNs**-ə push göndərir
+  (`src/lib/push.ts`, HTTP/2 + ES256 JWT); APNs rədd etdiyi tokenlər avtomatik silinir.
+  `/api/app/push/register` ilə qeydiyyat. **`APNS_*` env gələnə qədər passivdir.**
 - **SignupAttempt** / **WaitlistSignup** — incomplete signups / waitlist.
 - **CenterEvent** / **DoctorEvent** — view analytics.
 - **BlogPost**, **City**, **SeoSetting**, **AdminActionLog** — content, geo, SEO, admin audit.

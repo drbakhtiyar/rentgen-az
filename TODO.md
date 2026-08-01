@@ -20,9 +20,12 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 > ~~Anthropic credit~~ — RESOLVED: `ANTHROPIC_API_KEY` is set in Vercel prod and the AI Yardımçı is live (verified: `/api/app/ai` returns real Haiku answers; ~$0.04 used Jul 19–24).
 
 ## Marketplace data ops (2026-08 bulk import — active)
-- [ ] **Trim PENDING centers' service list.** ~117 PENDING centers were bulk-imported with the
-  **full 89 non-dental imaging service template** — over-lists services. Trim to each center's
-  real modalities (rentgen-only vs full MRT/KT/USM) before/at admin approval.
+- [x] **APPROVED mərkəzlərin şablon siyahısı təmizləndi (2026-08-02).** 185 mərkəz,
+  6 664 sətir: MRT/KT/Mammoqrafiya/Densitometriya/Floroskopiya yalnız SÜBUTLA qalır
+  (bax DECISIONS). Sonra 51-lik baza 30–51 aralığına yayıldı (185 mərkəz, 1 796 sətir).
+- [ ] **PENDING mərkəzlərə eyni prosesi tətbiq et.** 117 PENDING hələ 89-luq şablon
+  daşıyır. Təsdiqdən əvvəl eyni sübut qaydası + yayılma tətbiq edilməlidir. Metod
+  CHANGELOG-dadır; sübut keşi `scratchpad/places-types.json` + `website-modalities.json`.
 - [ ] **Admin-review + approve the PENDING queue.** Use `/admin/merkezler?status=PENDING` with
   the completeness filters + "ən dolğun əvvəl" sort. Delete non-medical junk that slips in.
 - [ ] **Add mobile numbers to landline-only centers.** OTP only reaches AZ mobiles. Centers
@@ -47,6 +50,13 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [x] **RU indexing — DONE (2026-08-01).** Russian now at crawlable `/ru/*` URLs with self-canonical + hreflang (az/ru/x-default), sitemap lists both. Was cookie-only (invisible to Google) → now indexable. See memory `rentgen-az-ru-i18n`.
 - [x] **SEO quick wins (2026-07-31)** — robots anchored (fixed /hekimler + /merkezler-ucun deindex), next/image card cover, aggregateRating JSON-LD (first-party reviews), richer center meta descriptions.
 - [x] **Operator data-entry panel (2026-07-30)** — `/panel` secret-link (role OPERATOR "Nərmin"), loose center create/edit, paste Google link → auto coords+rating+map. Logout fixed 2026-08-01.
+- [ ] **Şəhər lendinq səhifələri** — `/rentgen-merkezleri/[şəhər]` marşrutu YOXDUR; şəhər
+  filtri yalnız `?city=` query-dir və kanonik query-ni ataraq SEO dəyərini sıfırlayır.
+  Ən böyük açıq imkan: "Bakıda MRT", "Sumqayıtda rentgen". Ön şərt (şəhər
+  normallaşdırması) 2026-08-02 BİTDİ — Bakı 134, ≥3 mərkəzi olan ~15 şəhər var.
+- [ ] **Sitemap xırdalıqları** — RU yalnız `xhtml:link` alternate kimi verilir, öz `<loc>`
+  bloku yoxdur (Google-un tövsiyəsi hər dil versiyasına ayrıca `<url>`); sitemap-da
+  `x-default` yoxdur (layout-da var); `/paketler` və `/hekimler-ucun` sitemap-da deyil.
 - [ ] **Grow first-party reviews** — patient review invite (SMS/QR after a scan) → drives ⭐ rich snippets + fresh content. Not started.
 - [x] **Google Analytics 4** — live (`G-CHQ316PK72`, `NEXT_PUBLIC_GA_ID`). Optional: link GA4 ↔ Search Console (GA Admin → Product Links).
 - [x] **Admin analytics dashboard** — merged into İcmal (`/admin`): pending centers → totals → access funnels.

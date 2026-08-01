@@ -35,9 +35,16 @@ The web platform is production-live and used by real centers/doctors/patients. T
 - **Homepage hero** → data-driven Azerbaijan map (marker per city with an APPROVED center).
 - **TƏBİB logo** stored at stable Blob URL `shared/tabib-logo.png` for state hospitals.
 
-**⚠️ Follow-up owed:** the 117 PENDING centers carry the **full 89-service template** — trim
-to each center's real modalities at approval. Landline-only centers need a mobile before they
-can OTP-login. See TODO.md.
+### 2026-08-02 SEO təmizliyi (data-only — bax CHANGELOG/DECISIONS)
+Sayt 48 saatda ~10 → 246 indekslənən mərkəz səhifəsinə çıxdı; audit kütləvi təkrar məzmun
+və uydurma xidmət iddiaları aşkarladı. Düzəldildi: **unikal təsvir 39 → 246/246**;
+modallıq iddiaları sübutla məhdudlaşdırıldı (**MRT 188 → 15, KT 190 → 18**); eyni 51-lik
+siyahı 30–51 aralığına yayıldı (**fərqli xidmət dəsti 171/246**, ən böyük təkrar qrup
+186 → 14); şəhər dəyəri 31 → 23 (Bakı filtri 92 → **134**). Boş xidmət səhifəsi 0/112.
+
+**⚠️ Follow-up owed:** the 117 PENDING centers still carry the **full 89-service template** —
+eyni sübut qaydası + yayılma təsdiqdən əvvəl onlara da tətbiq edilməlidir. Landline-only
+centers need a mobile before they can OTP-login. See TODO.md.
 
 ## Roles (enum `Role`): PATIENT · CENTER · DOCTOR · ASSISTANT · ADMIN
 - Multi-role: one phone/account can be patient + center + doctor simultaneously (role picked at login tab). `ASSISTANT` is a shared role for center-assistants and doctor-assistants (resolved dynamically).

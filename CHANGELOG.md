@@ -2,6 +2,48 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-02 — SEO təmizliyi: təkrar məzmun + uydurma xidmət iddiaları
+
+Səbəb: 48 saatda indekslənən mərkəz səhifəsi ~10 → 246 oldu (sitemap 188 → 408 URL).
+Audit göstərdi ki, səhifələrin böyük hissəsi bir-birinin təkrarıdır və importun
+yapışdırdığı xidmət siyahısı yanlışdır. Üç mərhələdə düzəldildi (hamısı data,
+`scripts-tmp-*` ilə; hər addımın ehtiyat nüsxəsi scratchpad-dədir).
+
+**1. Unikal mərkəz təsvirləri** — `src/lib/center-description.ts` (commit `d763a2f`).
+207 mərkəzin şablon təsviri deterministik generatorla əvəzləndi: 20 açılış × 4 yer ×
+11 qrafik × 11 reytinq × 12 yekun + mərkəzin ÖZ faktları (rayon/ünvan, iş saatı,
+Google rəy sayı). Nəticə: **unikal təsvir 39 → 246/246**, ən böyük təkrar qrup 78 → 1,
+meta description 246/246 unikal. 39 həqiqi (mərkəzin öz) təsvirinə toxunulmadı.
+Generator modallıq (MRT/KT/USM) SADALAMIR — bax DECISIONS.
+
+**2. Sübuta əsaslanan modallıq kəsimi** — 185 mərkəz, **6 664 sətir silindi**.
+Ayrıca aparat tələb edən 5 kateqoriya (MRT 10, KT 14, Mammoqrafiya 4, Densitometriya 4,
+Floroskopiya 6 = 38 xidmət) yalnız SÜBUT olduqda saxlanıldı. Sübut mənbələri: mərkəzin
+öz vebsaytı (Google `websiteUri` → 115 mərkəzdə var, 82-si oxundu), `equipment`, ad.
+Nəticə: MRT iddia edən 188 → **15**, KT 190 → **18**, Mammoqrafiya 187 → **8**,
+Densitometriya 187 → **6**, Floroskopiya 186 → **5**.
+
+**3. 51-lik siyahının 30–51 aralığına yayılması** — 185 mərkəz, **1 796 sətir**.
+Eyni 51 xidməti daşıyan 192 mərkəzin siyahısı mərkəzin ölçü balına görə (Google rəy
+sayı, Places `primaryType`, sayt, şəkil, iş saatı → 0–9 bal) 30–51 aralığına yayıldı.
+Kəsmə TƏSADÜFİ DEYİL — nadirlik sırası ilə: nüvə müayinələr (ağciyər, bel onurğası,
+əl/ayaq, qarın USM…) heç vaxt silinmir, nadir proyeksiyalar (mastoid, orbita, TMJ,
+koksiks, bone-age…) əvvəl gedir. Hər xidmət ən azı 20 mərkəzdə qalır (döşəmə
+qoruyucusu) — boş qalan xidmət səhifəsi **0/112**.
+
+**4. Şəhər normallaşdırması** — 42 mərkəz. Bakı bazada 9 ayrı dəyərə bölünmüşdü
+(`Bakı`, `Bakı — Nərimanov`…) → filtr 134-dən yalnız 92-ni göstərirdi. Rayon `city`-dən
+`district` sahəsinə köçürüldü, küçə adı düşmüş `district` dəyərləri təmizləndi
+("Babək prospekti" → `Xətai`). Şəhər dəyəri 31 → 23; Bakı filtri artıq 134 mərkəz.
+
+**Yekun (prod, 246 APPROVED):** unikal təsvir 246/246 · fərqli xidmət dəsti 171
+(ən böyük təkrar qrup 14, əvvəl 186) · 37 fərqli xidmət sayı variantı.
+
+**Operator izi** (commit `98ad21e`) — `/panel` heç nə qeyd etmirdi; artıq operator
+create/edit `AdminActionLog`-a yazılır. `src/lib/center-editors.ts` →
+`centerIdsEditedByOperator()`. Jurnalda "Nərmin (operator)" görünür. **Keçmiş
+redaktələr bərpa oluna bilmir** — iz yox idi.
+
 ## 2026-08-01 → 08-02 — Marketplace data expansion + listing UX
 
 **Bulk center import & enrichment (data-only, via throwaway `scripts-tmp-*.mts`)**

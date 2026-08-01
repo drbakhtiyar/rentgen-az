@@ -2,6 +2,60 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Xidmət iddiası SÜBUT tələb edir — sübut yoxdursa, iddia da yoxdur
+- **Qərar:** ayrıca bahalı aparat tələb edən kateqoriyalar (MRT, KT, Mammoqrafiya,
+  Densitometriya, Floroskopiya) mərkəzin siyahısında yalnız SÜBUT olduqda qalır.
+  Qəbul edilən sübut: mərkəzin **öz** vebsaytı, `equipment` sahəsi, mərkəzin adı.
+  Sübut yoxdursa kateqoriya bütövlükdə silinir. Rentgen proyeksiyaları + USM (51-lik
+  baza) sübut tələb etmir — bir aparatla edilir.
+- **Niyə:** import 186 mərkəzə eyni 89-luq şablon yapışdırmışdı; `/xidmetler/mammoqrafiya`
+  mammoqrafiya etməyən mərkəzləri sadalayırdı. Tibbi kataloqda uydurma iddia təkrar
+  mətndən daha zərərlidir və məhz reytinq gətirən xidmət səhifələrini korlayır.
+- **Qəbul edilməyən sübut (yalan müsbətlər — yoxlanılıb tapılıb):**
+  **(1) şəbəkənin korporativ saytı** — bir domeni 3+ mərkəz paylaşırsa, o sayt QRUPUN
+  portfelini sadalayır, filialın deyil (referansclc.com → 17 filial); **(2) çatbot/FAQ
+  sualı** — "MRT varmı?" xidmət iddiası deyil; **(3) dental CBCT ≠ tibbi KT** —
+  "konus-şüalı kompüter tomoqraf (Planmeca)" diş aparatıdır; **(4) sosial profil** —
+  Instagram bio-su xidmət siyahısı deyil.
+- **Nəticə:** şəbəkə/sosial sübutu olan 18 mərkəz (17 Referans filialı + HH klinika)
+  ƏL İLƏ qərara saxlanıldı; istifadəçi **toxunmamağı** seçdi (2026-08-02) — onlar
+  MRT+KT+Mammoqrafiya+Densitometriya iddiasını saxlayır.
+
+## Şablon xidmət siyahısı 30–51 aralığına yayılır (təsadüfi yox, nadirliyə görə)
+- **Qərar:** eyni 51-lik siyahını daşıyan 192 mərkəzin siyahısı 30–51 aralığına yayılır.
+  Ölçü balı (Google rəy sayı + Places `primaryType` + sayt + şəkil + iş saatı = 0–9)
+  hədəf sayı verir; kəsmə **nadirlik sırası** ilə gedir — nüvə müayinələr (ağciyər,
+  bel onurğası, əl/ayaq, kəllə, qarın/tiroid USM) **heç vaxt** silinmir, nadir
+  proyeksiyalar (mastoid, orbita, TMJ, koksiks, sternum, bone-age) əvvəl gedir.
+- **Niyə:** 192 eyni siyahı həm təkrar məzmun idi, həm də özü təsdiqlənməmiş fərziyyə.
+  Təsadüfi kəsmək məlumatı əks istiqamətdə pozardı — rentgen aparatı olan mərkəzdən
+  "ayaq rentgeni"ni silmək onu həmin axtarışda görünməz edir.
+- **Nəticə:** hər xidmət ən azı **20 mərkəzdə** qalır (döşəmə qoruyucusu) — boş xidmət
+  səhifəsi 0/112. Fərqli xidmət dəsti 171/246. Mərkəzlər panelə girdikcə öz siyahılarını
+  özləri dəqiqləşdirəcək — bu, yayılmanın əsas məqsədidir.
+
+## Mərkəz təsvirləri deterministik generatorla unikallaşdırılır
+- **Qərar:** şablon təsvirlər `src/lib/center-description.ts` ilə əvəzlənir. Hər mərkəz
+  həm fərqli cümlə quruluşu, həm də ÖZ faktlarını (rayon/ünvan, iş qrafiki, Google rəy
+  sayı) alır. Seçim mərkəz id-sinin heşi ilə **sabitdir**.
+- **Niyə:** sadəcə sinonim yazmaq ("spin content") Google-un təkrar aşkarlamasını
+  aldatmır — mətnin məna barmaq izinə baxılır. Fərq məzmunda olmalıdır.
+- **Qaydalar:** modallıq (MRT/KT/rentgen/USM) SADALANMIR — real xidmət siyahısı hələ
+  dəqiqləşdirilməyib. Google-dan gələn zibil ünvanlar (Plus-kod, Kiril, balanssız
+  mötərizə) və küçə adı düşmüş `district` dəyərləri süzülür. Google reytinqi 4.0-dan
+  aşağı olanda meta-təsvirə **bal yox, yalnız rəy sayı** yazılır (bal onsuz da səhifədəki
+  canlı Google nişanında görünür — gizlədilmir, sadəcə snippetdə önə çıxarılmır).
+
+## `city` = yalnız şəhər, rayon `district`-dədir
+- **Qərar:** `CenterProfile.city` yalnız şəhər adını saxlayır ("Bakı"); rayon ayrıca
+  `district` sahəsindədir. Əvvəl Bakı 9 ayrı `city` dəyərinə bölünmüşdü.
+- **Niyə:** ictimai filtr (`centerWhere`) `city` üzrə DƏQİQ bərabərlik axtarır — ona görə
+  "Bakı" seçən istifadəçi 134 mərkəzdən yalnız 92-ni görürdü. Şəhər lendinq səhifələri
+  üçün də vahid açar lazımdır.
+- **Nəticə:** şəhər dəyəri 31 → 23. `district` ictimai filtrdə İŞLƏNMİR (yalnız formalar
+  və admin/operator kartları), ona görə doldurmaq təhlükəsizdir. Yeni mərkəz əlavə
+  edərkən rayonu `city`-yə yazma.
+
 ## Rating sort = weighted (Bayesian) + server-side global + URL param
 - **Decision:** the centers list sorts by a Bayesian weighted rating `(avg·n + 4.2·8)/(n + 8)`
   (unrated → last), NOT raw average. "Yüksək reytinq" blends the platform's own reviews (×1.5)
