@@ -46,13 +46,24 @@ export function SearchPanel({
   const [city, setCity] = React.useState(defaults?.city ?? "");
   const [service, setService] = React.useState(defaults?.service ?? "");
 
+  // On the centers page (compact) the dropdowns filter instantly — no need to
+  // press "Axtar". The free-text field still submits via the button / Enter.
+  const autoFilter = variant === "compact";
+
+  function go(next: { q?: string; city?: string; service?: string }) {
+    const params = new URLSearchParams();
+    const nq = (next.q ?? q).trim();
+    const ncity = next.city ?? city;
+    const nservice = next.service ?? service;
+    if (nq) params.set("q", nq);
+    if (ncity) params.set("city", ncity);
+    if (nservice) params.set("service", nservice);
+    router.push(`/rentgen-merkezleri${params.toString() ? `?${params}` : ""}`);
+  }
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (q.trim()) params.set("q", q.trim());
-    if (city) params.set("city", city);
-    if (service) params.set("service", service);
-    router.push(`/rentgen-merkezleri${params.toString() ? `?${params}` : ""}`);
+    go({});
   }
 
   return (
@@ -66,7 +77,15 @@ export function SearchPanel({
     >
       <div className="grid gap-3 md:grid-cols-[1.1fr_1fr_1fr_auto]">
         <Labeled icon={<Stethoscope className="h-4 w-4" />} label={labels.service}>
-          <Select value={service} onChange={(e) => setService(e.target.value)} aria-label={labels.service}>
+          <Select
+            value={service}
+            onChange={(e) => {
+              const v = e.target.value;
+              setService(v);
+              if (autoFilter) go({ service: v });
+            }}
+            aria-label={labels.service}
+          >
             <option value="">{labels.allServices}</option>
             {services.map((s) => (
               <option key={s.value} value={s.value}>
@@ -77,7 +96,15 @@ export function SearchPanel({
         </Labeled>
 
         <Labeled icon={<MapPin className="h-4 w-4" />} label={labels.city}>
-          <Select value={city} onChange={(e) => setCity(e.target.value)} aria-label={labels.city}>
+          <Select
+            value={city}
+            onChange={(e) => {
+              const v = e.target.value;
+              setCity(v);
+              if (autoFilter) go({ city: v });
+            }}
+            aria-label={labels.city}
+          >
             <option value="">{labels.allCities}</option>
             {cities.map((c) => (
               <option key={c.value} value={c.value}>

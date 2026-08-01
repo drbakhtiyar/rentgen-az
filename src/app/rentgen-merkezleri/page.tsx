@@ -47,7 +47,7 @@ export async function generateMetadata({
   });
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 30;
 
 export default async function CentersPage({
   searchParams,
