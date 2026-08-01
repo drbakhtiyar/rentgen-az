@@ -12,7 +12,7 @@ import { getRatingsForCenters } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import type { CenterStatus } from "@/generated/prisma/enums";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -31,26 +31,79 @@ const STATUS_FILTERS: { value: CenterStatus | "ALL"; label: string }[] = [
 
 const VALID_STATUSES: CenterStatus[] = ["PENDING", "APPROVED", "DEACTIVATED"];
 
-async function getCenters(status?: CenterStatus, q?: string) {
+type HasKey = "phone" | "photo" | "rating" | "hours";
+const HAS_FILTERS: { key: HasKey; label: string }[] = [
+  { key: "phone", label: "📞 Telefonlu" },
+  { key: "photo", label: "🖼 Şəkilli" },
+  { key: "rating", label: "⭐ Reytinqli" },
+  { key: "hours", label: "🕐 Saatlı" },
+];
+
+const HAS_WHERE: Record<HasKey, Prisma.CenterProfileWhereInput> = {
+  phone: { phone: { not: "" } },
+  photo: { images: { isEmpty: false } },
+  rating: { googleRating: { not: null } },
+  hours: { NOT: { hours: { equals: Prisma.DbNull } } },
+};
+
+/** Data-completeness score 0–5 — used to surface the richest listings first. */
+function completeness(c: {
+  phone: string;
+  images: string[];
+  googleRating: number | null;
+  hours: unknown;
+  workingHours: string | null;
+  address: string | null;
+}): number {
+  let s = 0;
+  if (c.phone && c.phone.trim() !== "") s++;
+  if (c.images && c.images.length > 0) s++;
+  if (c.googleRating != null) s++;
+  if (c.hours != null || (c.workingHours && c.workingHours.trim() !== "")) s++;
+  if (c.address && c.address.trim() !== "") s++;
+  return s;
+}
+
+function baseWhere(status?: CenterStatus, q?: string): Prisma.CenterProfileWhereInput {
+  const where: Prisma.CenterProfileWhereInput = {};
+  if (status) where.status = status;
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { phone: { contains: q } },
+      { city: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  return where;
+}
+
+async function getCenters(
+  status: CenterStatus | undefined,
+  q: string | undefined,
+  has: HasKey[],
+  sort: "full" | "new",
+) {
   try {
-    const where: Prisma.CenterProfileWhereInput = {};
-    if (status) where.status = status;
-    if (q) {
-      where.OR = [
-        { name: { contains: q, mode: "insensitive" } },
-        { phone: { contains: q } },
-        { city: { contains: q, mode: "insensitive" } },
-      ];
-    }
-    return await prisma.centerProfile.findMany({
+    const where = baseWhere(status, q);
+    if (has.length) where.AND = has.map((k) => HAS_WHERE[k]);
+    const centers = await prisma.centerProfile.findMany({
       where,
       include: {
         user: { select: { id: true, isBlocked: true } },
-        services: { include: { service: { select: { name: true, shortName: true } } } },
+        services: { take: 4, include: { service: { select: { name: true, shortName: true } } } },
+        _count: { select: { services: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      // completeness sort needs the full set in memory; cap generously
+      take: sort === "full" ? 400 : 100,
     });
+    if (sort === "full") {
+      return centers
+        .map((c) => ({ c, score: completeness(c) }))
+        .sort((a, b) => b.score - a.score)
+        .map((x) => x.c);
+    }
+    return centers;
   } catch {
     return [];
   }
@@ -59,20 +112,49 @@ async function getCenters(status?: CenterStatus, q?: string) {
 export default async function AdminCentersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; has?: string; sort?: string }>;
 }) {
   const admin = await requireRole("ADMIN", "/admin/merkezler");
-  const { status: rawStatus, q } = await searchParams;
+  const { status: rawStatus, q, has: rawHas, sort: rawSort } = await searchParams;
   const activeStatus = VALID_STATUSES.includes(rawStatus as CenterStatus)
     ? (rawStatus as CenterStatus)
     : undefined;
+  const activeHas = (rawHas ?? "")
+    .split(",")
+    .filter((k): k is HasKey => HAS_FILTERS.some((f) => f.key === k));
+  const sort: "full" | "new" = rawSort === "new" ? "new" : "full";
 
-  const centers = await getCenters(activeStatus, q);
+  const centers = await getCenters(activeStatus, q, activeHas, sort);
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
+
+  // Completeness breakdown for the active status (independent of has-filters)
+  const cb = baseWhere(activeStatus, q);
+  const [total, nPhone, nPhoto, nRating, nHours] = await Promise.all([
+    prisma.centerProfile.count({ where: cb }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.phone } }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.photo } }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.rating } }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.hours } }),
+  ]).catch(() => [0, 0, 0, 0, 0]);
+
+  // Preserve status+q across filter/sort links; toggle a single `has` key.
+  const buildHref = (over: { has?: HasKey[]; sort?: "full" | "new" }) => {
+    const sp = new URLSearchParams();
+    if (activeStatus) sp.set("status", activeStatus);
+    if (q) sp.set("q", q);
+    const hs = over.has ?? activeHas;
+    if (hs.length) sp.set("has", hs.join(","));
+    const st = over.sort ?? sort;
+    if (st === "new") sp.set("sort", "new");
+    const s = sp.toString();
+    return s ? `/admin/merkezler?${s}` : "/admin/merkezler";
+  };
+  const toggleHas = (k: HasKey) =>
+    activeHas.includes(k) ? activeHas.filter((x) => x !== k) : [...activeHas, k];
 
   return (
     <AdminShell title="Mərkəzlər" userName={admin.phone}>
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => {
           const isActive =
             f.value === "ALL" ? !activeStatus : activeStatus === f.value;
@@ -97,6 +179,60 @@ export default async function AdminCentersPage({
         })}
       </div>
 
+      {/* Data-completeness quick filters + sort */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {HAS_FILTERS.map((f) => {
+          const on = activeHas.includes(f.key);
+          return (
+            <Link
+              key={f.key}
+              href={buildHref({ has: toggleHas(f.key) })}
+              className={cn(
+                "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset transition-colors",
+                on
+                  ? "bg-cyan-600 text-white ring-cyan-600"
+                  : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50",
+              )}
+            >
+              {f.label}
+            </Link>
+          );
+        })}
+        <span className="mx-1 h-4 w-px bg-slate-200" />
+        <Link
+          href={buildHref({ sort: "full" })}
+          className={cn(
+            "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset transition-colors",
+            sort === "full"
+              ? "bg-ink-900 text-white ring-ink-900"
+              : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50",
+          )}
+        >
+          Ən dolğun əvvəl
+        </Link>
+        <Link
+          href={buildHref({ sort: "new" })}
+          className={cn(
+            "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset transition-colors",
+            sort === "new"
+              ? "bg-ink-900 text-white ring-ink-900"
+              : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50",
+          )}
+        >
+          Ən yeni
+        </Link>
+      </div>
+
+      <p className="mb-4 text-xs text-slate-500">
+        {activeStatus === "PENDING" ? "Gözləmədə" : "Cəmi"}: <b>{total}</b>
+        {"  ·  "}📞 {nPhone}{"  ·  "}🖼 {nPhoto}{"  ·  "}⭐ {nRating}{"  ·  "}🕐 {nHours}
+        {activeHas.length > 0 && (
+          <>
+            {"  —  "}filtrlə uyğun: <b>{centers.length}</b>
+          </>
+        )}
+      </p>
+
       <form
         action="/admin/merkezler"
         className="mb-5 flex flex-wrap items-center gap-2"
@@ -104,6 +240,10 @@ export default async function AdminCentersPage({
         {activeStatus && (
           <input type="hidden" name="status" value={activeStatus} />
         )}
+        {activeHas.length > 0 && (
+          <input type="hidden" name="has" value={activeHas.join(",")} />
+        )}
+        {sort === "new" && <input type="hidden" name="sort" value="new" />}
         <Input
           name="q"
           defaultValue={q ?? ""}
@@ -135,7 +275,13 @@ export default async function AdminCentersPage({
         {centers.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
             {centers.map((c) => (
-              <AdminCenterCard key={c.id} center={c} rating={ratings[c.id]} />
+              <AdminCenterCard
+                key={c.id}
+                center={c}
+                rating={ratings[c.id]}
+                serviceCount={c._count.services}
+                completeness={completeness(c)}
+              />
             ))}
           </div>
         ) : (

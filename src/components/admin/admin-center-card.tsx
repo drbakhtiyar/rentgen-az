@@ -34,15 +34,28 @@ const PLAN_TONE: Record<Plan, string> = {
 
 /** Admin-side center card: same visual language as the public site card,
  *  but with the real status and admin controls (edit / activate / block). */
+const COMPLETENESS_TONE = [
+  "bg-rose-50 text-rose-600 ring-rose-200", // 0
+  "bg-rose-50 text-rose-600 ring-rose-200", // 1
+  "bg-amber-50 text-amber-700 ring-amber-200", // 2
+  "bg-amber-50 text-amber-700 ring-amber-200", // 3
+  "bg-emerald-50 text-emerald-700 ring-emerald-200", // 4
+  "bg-emerald-50 text-emerald-700 ring-emerald-200", // 5
+];
+
 export function AdminCenterCard({
   center,
   rating,
+  serviceCount,
+  completeness,
 }: {
   center: AdminCenter;
   rating?: { avg: number; count: number };
+  serviceCount?: number;
+  completeness?: number;
 }) {
   const services = center.services.slice(0, 4);
-  const extra = center.services.length - services.length;
+  const extra = (serviceCount ?? center.services.length) - services.length;
 
   return (
     <Card className="flex flex-col overflow-hidden">
@@ -68,8 +81,16 @@ export function AdminCenterCard({
             <span className="font-display text-2xl font-bold text-white/90">{center.name.charAt(0)}</span>
           </div>
         )}
-        <div className="absolute left-3 top-3">
+        <div className="absolute left-3 top-3 flex items-center gap-1.5">
           <StatusBadge status={center.status} />
+          {typeof completeness === "number" && (
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm ring-1 ring-inset ${COMPLETENESS_TONE[completeness] ?? COMPLETENESS_TONE[0]}`}
+              title="Məlumat dolğunluğu (telefon · şəkil · reytinq · saat · ünvan)"
+            >
+              {completeness}/5
+            </span>
+          )}
         </div>
         <div className="absolute right-3 top-3">
           <span
@@ -102,7 +123,11 @@ export function AdminCenterCard({
           )}
           <p className="flex items-center gap-1.5">
             <span className="text-slate-400">☎</span>
-            <a href={`tel:${center.phone}`} className="hover:text-brand-600">{center.phone}</a>
+            {center.phone && center.phone.trim() !== "" ? (
+              <a href={`tel:${center.phone}`} className="hover:text-brand-600">{center.phone}</a>
+            ) : (
+              <span className="text-slate-400 italic">nömrə yox</span>
+            )}
           </p>
           {center.workingHours && (
             <p className="flex items-center gap-1.5">
