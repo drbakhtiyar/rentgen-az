@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2, MapPin, Search } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { OperatorShell } from "@/components/operator/operator-shell";
-import { Badge } from "@/components/ui/badge";
+import { OperatorCenterCard } from "@/components/operator/operator-center-card";
+import { Input } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { OPERATOR_NAME } from "@/lib/auth/operator";
+import { getRatingsForCenters } from "@/lib/queries";
+import { cn } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
+import type { CenterStatus } from "@/generated/prisma/enums";
+import { HAS_FILTERS, HAS_WHERE, completeness, parseHas, baseWhere } from "@/lib/center-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -16,91 +22,154 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-const statusTone = { PENDING: "amber", APPROVED: "green", DEACTIVATED: "slate" } as const;
-const statusLabel = { PENDING: "Gözləyir", APPROVED: "Təsdiqli", DEACTIVATED: "Deaktiv" } as const;
+const STATUS_FILTERS: { value: CenterStatus | "ALL"; label: string }[] = [
+  { value: "ALL", label: "Hamısı" },
+  { value: "PENDING", label: "Gözləmədə" },
+  { value: "APPROVED", label: "Təsdiqli" },
+  { value: "DEACTIVATED", label: "Deaktiv" },
+];
+const VALID_STATUSES: CenterStatus[] = ["PENDING", "APPROVED", "DEACTIVATED"];
 
 export default async function PanelHome({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; has?: string; sort?: string }>;
 }) {
   const user = await requireRole(["OPERATOR", "ADMIN"], "/panel");
-  const { q } = await searchParams;
-  const query = (q ?? "").trim();
+  const { status: rawStatus, q, has: rawHas, sort: rawSort } = await searchParams;
+  const activeStatus = VALID_STATUSES.includes(rawStatus as CenterStatus)
+    ? (rawStatus as CenterStatus)
+    : undefined;
+  const activeHas = parseHas(rawHas);
+  const sort: "full" | "new" = rawSort === "new" ? "new" : "full";
 
-  const centers = await prisma.centerProfile.findMany({
-    where: query
-      ? {
-          OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { city: { contains: query, mode: "insensitive" } },
-            { address: { contains: query, mode: "insensitive" } },
-            { phone: { contains: query } },
-          ],
-        }
-      : {},
+  const where = baseWhere(activeStatus, q);
+  if (activeHas.length) where.AND = activeHas.map((k) => HAS_WHERE[k]);
+
+  const rows = await prisma.centerProfile.findMany({
+    where,
+    include: {
+      services: { take: 4, include: { service: { select: { name: true, shortName: true } } } },
+      _count: { select: { services: true } },
+    },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, name: true, city: true, phone: true, status: true, logoUrl: true },
-    take: 500,
+    take: sort === "full" ? 400 : 100,
   });
+  const centers =
+    sort === "full"
+      ? rows.map((c) => ({ c, s: completeness(c) })).sort((a, b) => b.s - a.s).map((x) => x.c)
+      : rows;
+  const ratings = await getRatingsForCenters(centers.map((c) => c.id));
+
+  const cb = baseWhere(activeStatus, q);
+  const [total, nPhone, nPhoto, nRating, nHours] = await Promise.all([
+    prisma.centerProfile.count({ where: cb }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.phone } }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.photo } }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.rating } }),
+    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.hours } }),
+  ]).catch(() => [0, 0, 0, 0, 0]);
+
+  const buildHref = (over: {
+    status?: CenterStatus | "ALL";
+    has?: (typeof activeHas)[number][];
+    sort?: "full" | "new";
+  }) => {
+    const sp = new URLSearchParams();
+    const st = over.status ?? activeStatus;
+    if (st && st !== "ALL") sp.set("status", st);
+    if (q) sp.set("q", q);
+    const hs = over.has ?? activeHas;
+    if (hs.length) sp.set("has", hs.join(","));
+    const so = over.sort ?? sort;
+    if (so === "new") sp.set("sort", "new");
+    const s = sp.toString();
+    return s ? `/panel?${s}` : "/panel";
+  };
+  const toggleHas = (k: (typeof activeHas)[number]) =>
+    activeHas.includes(k) ? activeHas.filter((x) => x !== k) : [...activeHas, k];
 
   const userName = user.role === "OPERATOR" ? OPERATOR_NAME : "Administrator";
+  const chip = "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset transition-colors";
 
   return (
-    <OperatorShell title={`Mərkəzlər (${centers.length})`} userName={userName}>
-      <form method="get" className="mb-5">
-        <div className="relative max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            name="q"
-            defaultValue={query}
-            placeholder="Ad, şəhər, ünvan və ya nömrə ilə axtar…"
-            className="w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-4 text-sm outline-none focus:border-brand-400"
-          />
-        </div>
+    <OperatorShell title={`Mərkəzlər (${total})`} userName={userName}>
+      {/* Status tabs */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {STATUS_FILTERS.map((f) => {
+          const isActive = f.value === "ALL" ? !activeStatus : activeStatus === f.value;
+          return (
+            <Link
+              key={f.value}
+              href={buildHref({ status: f.value })}
+              className={cn(
+                "inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ring-inset transition-colors",
+                isActive ? "bg-brand-600 text-white ring-brand-600" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50",
+              )}
+            >
+              {f.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Completeness quick filters + sort */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {HAS_FILTERS.map((f) => {
+          const on = activeHas.includes(f.key);
+          return (
+            <Link
+              key={f.key}
+              href={buildHref({ has: toggleHas(f.key) })}
+              className={cn(chip, on ? "bg-cyan-600 text-white ring-cyan-600" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50")}
+            >
+              {f.label}
+            </Link>
+          );
+        })}
+        <span className="mx-1 h-4 w-px bg-slate-200" />
+        <Link href={buildHref({ sort: "full" })} className={cn(chip, sort === "full" ? "bg-ink-900 text-white ring-ink-900" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50")}>
+          Ən dolğun əvvəl
+        </Link>
+        <Link href={buildHref({ sort: "new" })} className={cn(chip, sort === "new" ? "bg-ink-900 text-white ring-ink-900" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50")}>
+          Ən yeni
+        </Link>
+      </div>
+
+      <p className="mb-4 text-xs text-slate-500">
+        {activeStatus === "PENDING" ? "Gözləmədə" : "Cəmi"}: <b>{total}</b>
+        {"  ·  "}📞 {nPhone}{"  ·  "}🖼 {nPhoto}{"  ·  "}⭐ {nRating}{"  ·  "}🕐 {nHours}
+        {activeHas.length > 0 && <>{"  —  "}filtrlə uyğun: <b>{centers.length}</b></>}
+      </p>
+
+      <form action="/panel" className="mb-5 flex flex-wrap items-center gap-2">
+        {activeStatus && <input type="hidden" name="status" value={activeStatus} />}
+        {activeHas.length > 0 && <input type="hidden" name="has" value={activeHas.join(",")} />}
+        {sort === "new" && <input type="hidden" name="sort" value="new" />}
+        <Input name="q" defaultValue={q ?? ""} placeholder="Ad, telefon, şəhər və ya ünvan üzrə axtar" className="max-w-xs" />
+        <Button type="submit">Axtar</Button>
       </form>
 
       {centers.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center">
           <Building2 className="mx-auto h-8 w-8 text-slate-300" />
           <p className="mt-2 text-sm text-slate-500">
-            {query ? "Axtarışa uyğun mərkəz tapılmadı." : "Hələ mərkəz yoxdur."}
+            {q || activeHas.length ? "Filtrə uyğun mərkəz tapılmadı." : "Hələ mərkəz yoxdur."}
           </p>
-          <Link
-            href="/panel/yeni"
-            className="mt-4 inline-flex rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-          >
-            İlk mərkəzi əlavə et
+          <Link href="/panel/yeni" className="mt-4 inline-flex rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            Yeni mərkəz əlavə et
           </Link>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="grid gap-5 sm:grid-cols-2">
           {centers.map((c) => (
-            <Link
+            <OperatorCenterCard
               key={c.id}
-              href={`/panel/${c.id}`}
-              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3 transition hover:border-brand-200 hover:shadow-sm"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 ring-1 ring-slate-200">
-                {c.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.logoUrl} alt="" className="h-full w-full object-contain" />
-                ) : (
-                  <Building2 className="h-5 w-5 text-slate-300" />
-                )}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate font-semibold text-ink-900">{c.name}</p>
-                  <Badge tone={statusTone[c.status]}>{statusLabel[c.status]}</Badge>
-                </div>
-                <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-500">
-                  <MapPin className="h-3 w-3" /> {c.city || "—"}
-                  {c.phone ? ` · ${c.phone}` : ""}
-                </p>
-              </div>
-              <span className="text-sm font-medium text-brand-600">Redaktə →</span>
-            </Link>
+              center={c}
+              rating={ratings[c.id]}
+              serviceCount={c._count.services}
+              completeness={completeness(c)}
+            />
           ))}
         </div>
       )}

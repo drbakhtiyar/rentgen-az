@@ -12,7 +12,14 @@ import { getRatingsForCenters } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import type { CenterStatus } from "@/generated/prisma/enums";
-import { Prisma } from "@/generated/prisma/client";
+import {
+  type HasKey,
+  HAS_FILTERS,
+  HAS_WHERE,
+  completeness,
+  parseHas,
+  baseWhere,
+} from "@/lib/center-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -30,52 +37,6 @@ const STATUS_FILTERS: { value: CenterStatus | "ALL"; label: string }[] = [
 ];
 
 const VALID_STATUSES: CenterStatus[] = ["PENDING", "APPROVED", "DEACTIVATED"];
-
-type HasKey = "phone" | "photo" | "rating" | "hours";
-const HAS_FILTERS: { key: HasKey; label: string }[] = [
-  { key: "phone", label: "📞 Telefonlu" },
-  { key: "photo", label: "🖼 Şəkilli" },
-  { key: "rating", label: "⭐ Reytinqli" },
-  { key: "hours", label: "🕐 Saatlı" },
-];
-
-const HAS_WHERE: Record<HasKey, Prisma.CenterProfileWhereInput> = {
-  phone: { phone: { not: "" } },
-  photo: { images: { isEmpty: false } },
-  rating: { googleRating: { not: null } },
-  hours: { NOT: { hours: { equals: Prisma.DbNull } } },
-};
-
-/** Data-completeness score 0–5 — used to surface the richest listings first. */
-function completeness(c: {
-  phone: string;
-  images: string[];
-  googleRating: number | null;
-  hours: unknown;
-  workingHours: string | null;
-  address: string | null;
-}): number {
-  let s = 0;
-  if (c.phone && c.phone.trim() !== "") s++;
-  if (c.images && c.images.length > 0) s++;
-  if (c.googleRating != null) s++;
-  if (c.hours != null || (c.workingHours && c.workingHours.trim() !== "")) s++;
-  if (c.address && c.address.trim() !== "") s++;
-  return s;
-}
-
-function baseWhere(status?: CenterStatus, q?: string): Prisma.CenterProfileWhereInput {
-  const where: Prisma.CenterProfileWhereInput = {};
-  if (status) where.status = status;
-  if (q) {
-    where.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { phone: { contains: q } },
-      { city: { contains: q, mode: "insensitive" } },
-    ];
-  }
-  return where;
-}
 
 async function getCenters(
   status: CenterStatus | undefined,
@@ -119,9 +80,7 @@ export default async function AdminCentersPage({
   const activeStatus = VALID_STATUSES.includes(rawStatus as CenterStatus)
     ? (rawStatus as CenterStatus)
     : undefined;
-  const activeHas = (rawHas ?? "")
-    .split(",")
-    .filter((k): k is HasKey => HAS_FILTERS.some((f) => f.key === k));
+  const activeHas = parseHas(rawHas);
   const sort: "full" | "new" = rawSort === "new" ? "new" : "full";
 
   const centers = await getCenters(activeStatus, q, activeHas, sort);
