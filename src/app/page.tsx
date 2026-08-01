@@ -31,6 +31,7 @@ import {
   countApprovedCentersByService,
   getServiceRequestCounts,
   getRatingsForCenters,
+  getCoveredCities,
 } from "@/lib/queries";
 import { faqJsonLd } from "@/lib/seo";
 import { getHomeFaq } from "@/content/faq";
@@ -42,13 +43,14 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const locale = await getLocale();
-  const [centers, posts, stats, counts, usage, allServices] = await Promise.all([
+  const [centers, posts, stats, counts, usage, allServices, coveredCities] = await Promise.all([
     getFeaturedCenters(6),
     getPublishedPosts(3, locale),
     getPlatformStats(),
     countApprovedCentersByService(),
     getServiceRequestCounts(),
     getActiveServices(),
+    getCoveredCities(),
   ]);
   const d = getDict(locale);
   const homeFaq = getHomeFaq(locale);
@@ -109,7 +111,7 @@ export default async function HomePage() {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <HeroVisual />
+              <HeroVisual activeCities={coveredCities} />
             </div>
           </div>
         </Container>

@@ -1,66 +1,59 @@
 import { cn } from "@/lib/utils";
+import { AZ_MAINLAND, AZ_NAKHCHIVAN, AZ_CITY_COORDS, cityCoords } from "@/lib/az-cities";
 
 /**
- * Decorative Azerbaijan map hero visual. A stylized silhouette (mainland +
- * Nakhchivan exclave) with glowing markers on every city where we have centers.
- * Purely decorative — NOT interactive, no links, no navigation.
- *
- * Border vertices & city coordinates are real [lng, lat] pairs, projected with a
- * single linear projection so markers line up with the silhouette.
+ * Decorative Azerbaijan map hero visual. Real (simplified) border silhouette with
+ * a glowing marker on every city where we have centers — driven by `activeCities`
+ * (canonical city names from the DB). Purely decorative: NOT interactive.
  */
 
-const LNG0 = 44.6;
-const LNG1 = 50.5;
-const LAT0 = 38.3;
-const LAT1 = 42.0;
-const W = 1000;
-const H = 820;
-const px = (lng: number) => ((lng - LNG0) / (LNG1 - LNG0)) * W;
-const py = (lat: number) => ((LAT1 - lat) / (LAT1 - LAT0)) * H;
+// ---- Projection (equirectangular with cos(lat) x-correction), fit to viewBox ----
+const VW = 1000;
+const VH = 1000;
+const PAD = 76;
+const ALL = [...AZ_MAINLAND, ...AZ_NAKHCHIVAN];
+const lo: [number, number] = [Math.min(...ALL.map((p) => p[0])), Math.min(...ALL.map((p) => p[1]))];
+const hi: [number, number] = [Math.max(...ALL.map((p) => p[0])), Math.max(...ALL.map((p) => p[1]))];
+const KX = Math.cos(((lo[1] + hi[1]) / 2) * (Math.PI / 180));
+const gW = (hi[0] - lo[0]) * KX;
+const gH = hi[1] - lo[1];
+const SC = Math.min((VW - 2 * PAD) / gW, (VH - 2 * PAD) / gH);
+const OFFX = (VW - gW * SC) / 2;
+const OFFY = (VH - gH * SC) / 2;
+const px = (lng: number) => OFFX + (lng - lo[0]) * KX * SC;
+const py = (lat: number) => OFFY + (hi[1] - lat) * SC;
+const toPath = (ring: [number, number][]) =>
+  ring.map(([a, b], i) => `${i ? "L" : "M"}${px(a).toFixed(1)} ${py(b).toFixed(1)}`).join(" ") + " Z";
 
-// Simplified mainland outline (clockwise from NW Georgia border).
-const MAINLAND: [number, number][] = [
-  [45.9, 41.6], [46.9, 41.78], [48.0, 41.45], [48.4, 41.6], [48.9, 41.6],
-  [49.1, 41.3], [49.5, 40.85], [49.9, 40.55], [50.4, 40.45], [50.1, 40.28],
-  [49.55, 40.05], [49.2, 39.55], [49.05, 39.1], [48.95, 38.85], [48.85, 38.4],
-  [48.3, 38.6], [48.0, 39.3], [47.3, 39.2], [46.6, 39.15], [46.3, 39.55],
-  [46.0, 39.75], [45.7, 40.2], [45.55, 40.7], [45.5, 41.1], [45.5, 41.4],
-];
-// Nakhchivan exclave.
-const NAKHCHIVAN: [number, number][] = [
-  [45.15, 39.75], [45.6, 39.55], [46.05, 39.25], [45.65, 38.9], [45.05, 39.15], [44.8, 39.65],
-];
+const MAINLAND = toPath(AZ_MAINLAND);
+const NAKHCHIVAN = toPath(AZ_NAKHCHIVAN);
 
-const toPath = (pts: [number, number][]) =>
-  pts.map(([lng, lat], i) => `${i ? "L" : "M"}${px(lng).toFixed(1)} ${py(lat).toFixed(1)}`).join(" ") + " Z";
+// Which cities get a text label (if active). Bakı is the hub; its label sits left
+// of the marker because it's on the eastern tip.
+const LABELS = new Set(["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba"]);
+const HUB = "Bakı";
+const LEFT = new Set(["Bakı"]);
+const DEFAULT_CITIES = ["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Sumqayıt", "Şamaxı"];
 
-// Cities where we have centers. `major` ones get a text label.
-const CITIES: { name: string; lng: number; lat: number; major?: boolean; hub?: boolean; left?: boolean }[] = [
-  { name: "Bakı", lng: 49.87, lat: 40.41, major: true, hub: true, left: true },
-  { name: "Sumqayıt", lng: 49.67, lat: 40.59 },
-  { name: "Gəncə", lng: 46.36, lat: 40.68, major: true },
-  { name: "Mingəçevir", lng: 47.05, lat: 40.77 },
-  { name: "Şəki", lng: 47.17, lat: 41.19, major: true },
-  { name: "Lənkəran", lng: 48.85, lat: 38.75, major: true },
-  { name: "Naxçıvan", lng: 45.41, lat: 39.21, major: true },
-  { name: "Şirvan", lng: 48.92, lat: 39.93 },
-  { name: "Yevlax", lng: 47.15, lat: 40.62 },
-  { name: "Quba", lng: 48.51, lat: 41.36, major: true },
-  { name: "Şamaxı", lng: 48.64, lat: 40.63 },
-  { name: "Bərdə", lng: 47.13, lat: 40.37 },
-  { name: "Salyan", lng: 48.98, lat: 39.6 },
-  { name: "Xaçmaz", lng: 48.81, lat: 41.46 },
-  { name: "Ağdaş", lng: 47.47, lat: 40.65 },
-  { name: "Masallı", lng: 48.66, lat: 39.03 },
-  { name: "Zaqatala", lng: 46.64, lat: 41.63 },
-  { name: "Göyçay", lng: 47.74, lat: 40.65 },
-  { name: "İmişli", lng: 48.06, lat: 39.87 },
-  { name: "Ağcabədi", lng: 47.46, lat: 40.05 },
-];
-
-export function HeroVisual({ className }: { className?: string }) {
-  const mainland = toPath(MAINLAND);
-  const nakhchivan = toPath(NAKHCHIVAN);
+export function HeroVisual({
+  activeCities,
+  className,
+}: {
+  activeCities?: string[];
+  className?: string;
+}) {
+  // Resolve DB city names → coordinates, dedupe, keep only mappable ones.
+  const src = activeCities && activeCities.length ? activeCities : DEFAULT_CITIES;
+  const seen = new Set<string>();
+  const markers: { name: string; x: number; y: number }[] = [];
+  for (const raw of src) {
+    const xy = cityCoords(raw) ?? AZ_CITY_COORDS[raw];
+    if (!xy) continue;
+    const key = `${xy[0]},${xy[1]}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    markers.push({ name: raw.split(/[—–\-(]/)[0].trim(), x: px(xy[0]), y: py(xy[1]) });
+  }
 
   return (
     <div
@@ -77,9 +70,9 @@ export function HeroVisual({ className }: { className?: string }) {
         Azərbaycan
       </span>
 
-      <svg viewBox="0 0 1000 820" className="absolute inset-0 h-full w-full p-6" aria-hidden>
+      <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full p-5" aria-hidden>
         <defs>
-          <radialGradient id="land" cx="62%" cy="42%" r="70%">
+          <radialGradient id="land" cx="60%" cy="40%" r="72%">
             <stop offset="0%" stopColor="rgba(56,150,230,0.30)" />
             <stop offset="55%" stopColor="rgba(40,110,200,0.16)" />
             <stop offset="100%" stopColor="rgba(20,45,90,0.06)" />
@@ -89,50 +82,47 @@ export function HeroVisual({ className }: { className?: string }) {
             <stop offset="100%" stopColor="#2ad4e6" />
           </linearGradient>
           <clipPath id="landClip">
-            <path d={mainland} />
+            <path d={MAINLAND} />
           </clipPath>
         </defs>
 
-        {/* Landmass fills */}
-        <path d={mainland} fill="url(#land)" stroke="url(#edge)" strokeWidth="2.2" strokeLinejoin="round" />
-        <path d={nakhchivan} fill="url(#land)" stroke="url(#edge)" strokeWidth="2.2" strokeLinejoin="round" />
+        <path d={MAINLAND} fill="url(#land)" stroke="url(#edge)" strokeWidth="2.4" strokeLinejoin="round" />
+        <path d={NAKHCHIVAN} fill="url(#land)" stroke="url(#edge)" strokeWidth="2.4" strokeLinejoin="round" />
 
-        {/* Faint graticule clipped to the mainland for a "data" texture */}
-        <g clipPath="url(#landClip)" stroke="rgba(122,190,255,0.14)" strokeWidth="1">
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-            <line key={`v${i}`} x1={(i * W) / 10} y1="0" x2={(i * W) / 10} y2={H} />
+        {/* Faint graticule clipped to the mainland for a subtle "data" texture */}
+        <g clipPath="url(#landClip)" stroke="rgba(122,190,255,0.12)" strokeWidth="1">
+          {Array.from({ length: 11 }).map((_, i) => (
+            <line key={`v${i}`} x1={(i * VW) / 10} y1="0" x2={(i * VW) / 10} y2={VH} />
           ))}
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <line key={`h${i}`} x1="0" y1={(i * H) / 8} x2={W} y2={(i * H) / 8} />
+          {Array.from({ length: 11 }).map((_, i) => (
+            <line key={`h${i}`} x1="0" y1={(i * VH) / 10} x2={VW} y2={(i * VH) / 10} />
           ))}
         </g>
 
-        {/* City markers */}
-        {CITIES.map((c) => {
-          const x = px(c.lng);
-          const y = py(c.lat);
-          const r = c.hub ? 8 : c.major ? 6 : 4.5;
+        {markers.map((m) => {
+          const hub = m.name === HUB;
+          const label = LABELS.has(m.name);
+          const r = hub ? 8 : label ? 6 : 4.5;
+          const left = LEFT.has(m.name);
           return (
-            <g key={c.name}>
-              <circle cx={x} cy={y} r={r * 2.6} fill="rgba(42,212,230,0.12)">
-                {c.hub && (
-                  <animate attributeName="r" values={`${r * 2.2};${r * 3.4};${r * 2.2}`} dur="3.2s" repeatCount="indefinite" />
-                )}
+            <g key={m.name}>
+              <circle cx={m.x} cy={m.y} r={r * 2.6} fill="rgba(42,212,230,0.12)">
+                {hub && <animate attributeName="r" values={`${r * 2.2};${r * 3.4};${r * 2.2}`} dur="3.2s" repeatCount="indefinite" />}
               </circle>
-              <circle cx={x} cy={y} r={r} fill="#2ad4e6" stroke="#eafcff" strokeWidth={c.hub ? 2 : 1.2}>
-                {c.hub && <animate attributeName="opacity" values="1;0.7;1" dur="3.2s" repeatCount="indefinite" />}
+              <circle cx={m.x} cy={m.y} r={r} fill="#2ad4e6" stroke="#eafcff" strokeWidth={hub ? 2 : 1.2}>
+                {hub && <animate attributeName="opacity" values="1;0.7;1" dur="3.2s" repeatCount="indefinite" />}
               </circle>
-              {c.major && (
+              {label && (
                 <text
-                  x={c.left ? x - r - 6 : x + r + 6}
-                  y={y + 4}
-                  textAnchor={c.left ? "end" : "start"}
+                  x={left ? m.x - r - 6 : m.x + r + 6}
+                  y={m.y + 4}
+                  textAnchor={left ? "end" : "start"}
                   fill="rgba(220,240,255,0.92)"
                   fontSize="20"
                   fontWeight="600"
                   fontFamily="system-ui, sans-serif"
                 >
-                  {c.name}
+                  {m.name}
                 </text>
               )}
             </g>
@@ -144,7 +134,7 @@ export function HeroVisual({ className }: { className?: string }) {
         <span className="text-[11px] font-medium text-cyan-300">Bütün Azərbaycan üzrə mərkəzlər</span>
         <span className="flex items-center gap-1.5 text-[11px] text-slate-300">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
-          {CITIES.length} şəhər
+          {markers.length} şəhər
         </span>
       </div>
     </div>

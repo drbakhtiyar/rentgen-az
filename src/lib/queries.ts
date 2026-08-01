@@ -480,6 +480,23 @@ export async function getActiveServices() {
   );
 }
 
+/** Distinct city strings that have at least one APPROVED (live) center.
+ *  Feeds the decorative homepage map — markers appear automatically as new
+ *  cities go live. */
+export async function getCoveredCities(): Promise<string[]> {
+  return safe(
+    async () => {
+      const rows = await prisma.centerProfile.findMany({
+        where: { status: "APPROVED" },
+        select: { city: true },
+        distinct: ["city"],
+      });
+      return rows.map((r) => r.city).filter((c): c is string => !!c);
+    },
+    [] as string[],
+  );
+}
+
 /** A single active service by slug (null if missing or deactivated). */
 export async function getServiceBySlug(slug: string) {
   return safe(
