@@ -17,7 +17,16 @@ const CentersMapView = dynamic(() => import("./centers-map-view"), {
   ),
 });
 
-type SortKey = "recommended" | "price" | "rating" | "distance";
+type SortKey = "recommended" | "price" | "rating" | "googleRating" | "distance";
+
+// Bayesian (weighted) rating so a 5.0 from 2 reviews ranks below a 4.8 from 50.
+// Pulls low-vote scores toward the prior mean; unrated centers sort last (-1).
+const PRIOR_MEAN = 4.2; // typical AZ clinic average
+const PRIOR_WEIGHT = 8; // "phantom" reviews at the prior mean
+function bayesian(avg: number, count: number): number {
+  if (!count || count <= 0) return -1;
+  return (avg * count + PRIOR_MEAN * PRIOR_WEIGHT) / (count + PRIOR_WEIGHT);
+}
 
 export function CentersExplorer({
   centers,
@@ -82,11 +91,32 @@ export function CentersExplorer({
         return pa - pb;
       });
     } else if (sort === "rating") {
-      // Prefer the Google rating (most centers have one); fall back to the
-      // platform's own review score.
+      // "Yüksək reytinq" — the platform's OWN reviews come first (weighted by
+      // vote count), blended with Google as a fallback. Our reviews weigh more
+      // (×1.5) since they're on-platform. Unrated centers go last.
+      const score = (c: CenterWithServices) => {
+        const own = ratings[c.id];
+        const ownCount = (own?.count ?? 0) * 1.5;
+        const gCount = c.googleReviewCount ?? 0;
+        const total = ownCount + gCount;
+        if (total <= 0) return { r: -1, n: 0 };
+        const sum = (own?.avg ?? 0) * ownCount + (c.googleRating ?? 0) * gCount;
+        return {
+          r: (sum + PRIOR_MEAN * PRIOR_WEIGHT) / (total + PRIOR_WEIGHT),
+          n: (own?.count ?? 0) + gCount,
+        };
+      };
+      list.sort((a, b) => {
+        const sa = score(a.c);
+        const sb = score(b.c);
+        if (sb.r !== sa.r) return sb.r - sa.r;
+        return sb.n - sa.n;
+      });
+    } else if (sort === "googleRating") {
+      // Separate sort by Google rating only (weighted by review count).
       const score = (c: CenterWithServices) => ({
-        r: c.googleRating ?? ratings[c.id]?.avg ?? 0,
-        n: c.googleReviewCount ?? ratings[c.id]?.count ?? 0,
+        r: bayesian(c.googleRating ?? 0, c.googleReviewCount ?? 0),
+        n: c.googleReviewCount ?? 0,
       });
       list.sort((a, b) => {
         const sa = score(a.c);
@@ -155,6 +185,7 @@ export function CentersExplorer({
             <option value="recommended">{t.sortRecommended}</option>
             {activeService && <option value="price">{t.sortCheapest}</option>}
             <option value="rating">{t.sortRating}</option>
+            <option value="googleRating">{t.sortGoogleRating}</option>
             <option value="distance">{t.sortNearest}</option>
           </select>
         </label>

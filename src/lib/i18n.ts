@@ -79,6 +79,7 @@ type Dict = {
     sortRecommended: string;
     sortCheapest: string;
     sortRating: string;
+    sortGoogleRating: string;
     sortNearest: string;
   };
   centerDetail: {
@@ -516,6 +517,7 @@ const az: Dict = {
     sortRecommended: "Tövsiyə",
     sortCheapest: "Ən ucuz",
     sortRating: "Yüksək reytinq",
+    sortGoogleRating: "Google reytinqi",
     sortNearest: "Ən yaxın",
   },
   centerDetail: {
@@ -1031,6 +1033,7 @@ const ru: Dict = {
     sortRecommended: "Рекомендуемые",
     sortCheapest: "Дешевле",
     sortRating: "По рейтингу",
+    sortGoogleRating: "Рейтинг Google",
     sortNearest: "Ближайшие",
   },
   centerDetail: {
