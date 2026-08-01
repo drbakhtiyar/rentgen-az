@@ -57,7 +57,17 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **Sitemap xırdalıqları** — RU yalnız `xhtml:link` alternate kimi verilir, öz `<loc>`
   bloku yoxdur (Google-un tövsiyəsi hər dil versiyasına ayrıca `<url>`); sitemap-da
   `x-default` yoxdur (layout-da var); `/paketler` və `/hekimler-ucun` sitemap-da deyil.
-- [ ] **Grow first-party reviews** — patient review invite (SMS/QR after a scan) → drives ⭐ rich snippets + fresh content. Not started.
+- [x] **Rəy dəvəti mühərriki — DONE 2026-08-02.** Müayinə COMPLETED olandan 2 saat
+  sonra pasiyentə SMS + OTP-siz `/rey/davet/[token]` linki. Saatlıq cron. Köhnə 18
+  sorğu susdurulub — dəvət 03.08-dən sonra tamamlananlara gedir.
+- [ ] **Dəvət konversiyasını izlə** — ilk real dəvətlərdən sonra: neçə SMS getdi,
+  neçəsi rəyə çevrildi. `SmsLog.kind = "review_invite"` + `Review.source = "invite"`
+  ilə ölçülür. Aşağı olsa mətni/vaxtı dəyiş.
+- [ ] **Mərkəzlərin öz FAQ-ı** — 246 mərkəzdən yalnız 1-i doldurub. `CenterFaq` +
+  `faqJsonLd` hazırdır. Yalnız YOXLANILA BİLƏN suallar (iş saatı, parkinq, uşaq
+  qəbulu, nəticə formatı) mərkəzin öz saytından doldurula bilər — qiymət/keyfiyyət
+  iddiaları YOX. Bax DECISIONS (saxta rəy qərarı ilə eyni prinsip).
+- **QR plakatlar** — istifadəçi özü edir (3 mərkəzdə sınaqdan keçirilib).
 - [x] **Google Analytics 4** — live (`G-CHQ316PK72`, `NEXT_PUBLIC_GA_ID`). Optional: link GA4 ↔ Search Console (GA Admin → Product Links).
 - [x] **Admin analytics dashboard** — merged into İcmal (`/admin`): pending centers → totals → access funnels.
 - [x] **Search-tracking event (REN-41) — DONE 2026-08-01.** SearchEvent model + TrackSearch on /rentgen-merkezleri; funnel now starts at "Axtarış" (admin İcmal card + row).

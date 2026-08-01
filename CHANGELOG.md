@@ -2,6 +2,27 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-02 — Rəy dəvəti (real rəy axını)
+
+Səbəb: 246 mərkəzdən yalnız 1-ində rəy var. Rəy forması və QR səhifəsi mövcud idi,
+amma **heç kim rəy istəmirdi** — pasiyent sayta geri qayıtmır. Bazada cəmi 18
+tamamlanmış müayinə var (2 mərkəzdə), yəni problem rəy deyil, **soruşmamaq** idi.
+
+- **Sxem:** `AppointmentRequest` → `completedAt`, `reviewInviteSentAt`, `reviewToken`
+  (miqrasiya `20260802120000_review_invite`, prod-a tətbiq olunub → 54 miqrasiya).
+- **`src/lib/review-invite.ts`** — dəvət məntiqi; **saatlıq cron**
+  `/api/cron/review-invites` (:15). Cron seçildi, çünki status 5 fərqli yoldan
+  dəyişir (mərkəz paneli, CRM, admin, mobil app, pasiyent kabineti) — hər çağırış
+  yerinə qarmaq taxmaq qaçırılma riski yaradırdı. `completedAt` bütün bu yollarda
+  yazılır.
+- **`/rey/davet/[token]`** — OTP-siz rəy səhifəsi (`InviteReviewForm`). Bir ekran,
+  bir toxunuş: ulduzlar + istəyə bağlı şərh. `noIndex` (şəxsi link).
+- **Qoruyucular:** 2 saat gecikmə · 30 gün TTL · 60 gündən köhnə sorğuya yox ·
+  eyni (mərkəz+nömrə) cütünə yalnız BİR dəvət · artıq rəy yazana yox (nömrə ilə də
+  yoxlanılır) · rəy qəbul etməyən planda ötürülür · `INVITE_START_AT` = 03.08.
+- **Köhnə 18 sorğu susdurulub** (istifadəçi qərarı) — dəvət yalnız 3 avqustdan
+  sonra tamamlananlara gedir. SmsKind: `review_invite`.
+
 ## 2026-08-02 — SEO təmizliyi: təkrar məzmun + uydurma xidmət iddiaları
 
 Səbəb: 48 saatda indekslənən mərkəz səhifəsi ~10 → 246 oldu (sitemap 188 → 408 URL).

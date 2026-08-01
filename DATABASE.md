@@ -55,7 +55,7 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 - **CenterService** — a center's offering of a Service: `price`/`priceTo` (AZN), `durationMin` (CRM slot blocking). Unique (centerId, serviceId). *The app catalog shows only Services that appear here.*
 
 ### Requests, referrals, files
-- **AppointmentRequest** — the core booking/referral row. patient?/center?/doctor? (all SetNull), `name`/`phone`, `serviceSlug`, note, `preferredDate`, **`status`** (RequestStatus), `completedBy` (CENTER|PATIENT), `patientUpdated`, `resultUrl` (legacy), `reminderSentAt` (CRM dedup), files[]. **Mobile referrals create these rows.**
+- **AppointmentRequest** — the core booking/referral row. patient?/center?/doctor? (all SetNull), `name`/`phone`, `serviceSlug`, note, `preferredDate`, **`status`** (RequestStatus), `completedBy` (CENTER|PATIENT), `patientUpdated`, `resultUrl` (legacy), `reminderSentAt` (CRM dedup), **`completedAt`** (status COMPLETED olan an — 5 yolun hamısında yazılır), **`reviewInviteSentAt`** + **`reviewToken`** (rəy dəvəti dedup + link tokeni, bax `src/lib/review-invite.ts`), files[]. **Mobile referrals create these rows.**
 - **Referral** — older lightweight referral (doctorName/clinic/phone, examType, center?). Distinct from AppointmentRequest.
 - **RentgenFile** — B2 file metadata only (bytes live in Backblaze). `key` (unique B2 object key), fileName, size, contentType, uploadedById, **trash** (`deletedAt`/`deletedById`/`purgeAt` — cron purges). Belongs to a request.
 - **FileAuditLog** — UPLOAD|DOWNLOAD|DELETE audit (medical data: who/when/what).

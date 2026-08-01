@@ -2,6 +2,30 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Saxta rəy YAZILMIR (2026-08-02 — təklif edildi, rədd edildi)
+- **Qərar:** mərkəzlərə uydurma pasiyent rəyi yazılmır; Google rəylərinin mətni
+  saytа köçürülmür. Google reytinqi yalnız **Google-a aid olduğu göstərilərək**
+  ayrıca nişanda göstərilir və bizim `aggregateRating` JSON-LD-mizə QATILMIR.
+- **Niyə:** ⭐ rich snippet `aggregateRating`-dən qidalanır, Google isə onun saytın
+  öz istifadəçilərindən toplanmasını tələb edir — uydurma rəylə qurulmuş reytinq
+  manual action-ın klassik səbəbidir (ulduzlar itir, domenə etimad düşür), yəni
+  məqsədin əksini verir. Google şərh mətnini köçürmək həm başqasının məzmununu
+  təkrar dərc etməkdir, həm də təzəcə təmizlədiyimiz duplicate content problemini
+  geri gətirir. Üstəlik bu tibbi kataloqdur — pasiyent bu rəylərə baxıb qərar verir.
+- **Əvəzinə:** rəy dəvəti mühərriki (aşağıda) + mərkəz QR plakatları + mərkəzin öz
+  FAQ mətni. Rəy azlığının əsl səbəbi trafikdir: bazada cəmi 18 tamamlanmış müayinə.
+
+## Rəy dəvətində OTP YOXDUR; tetikleyici cron-dur
+- **Qərar:** `/rey/davet/[token]` səhifəsi OTP soruşmur — token sahibliyi sübut edir.
+  QR axını (`/rey/[slug]`) isə OTP tələb edir.
+- **Niyə:** QR-i küçədən kimsə skan edə bilər, ona görə orada nömrə təsdiqlənməlidir.
+  Dəvət linkini isə BİZ məhz sorğudakı nömrəyə göndəririk — əlavə OTP yalnız
+  konversiyanı öldürür. Rəy `verified: true`, `source: "invite"`.
+- **Qərar 2:** dəvəti status dəyişən yerdə deyil, **saatlıq cron**-da göndəririk.
+- **Niyə:** status 5 fərqli yoldan COMPLETED olur (mərkəz paneli, CRM, admin, mobil
+  app, pasiyent kabineti). Cron heç birini qaçırmır və 2 saatlıq gecikməni təbii
+  şəkildə verir (pasiyent hələ mərkəzdə ola bilər).
+
 ## Xidmət iddiası SÜBUT tələb edir — sübut yoxdursa, iddia da yoxdur
 - **Qərar:** ayrıca bahalı aparat tələb edən kateqoriyalar (MRT, KT, Mammoqrafiya,
   Densitometriya, Floroskopiya) mərkəzin siyahısında yalnız SÜBUT olduqda qalır.
