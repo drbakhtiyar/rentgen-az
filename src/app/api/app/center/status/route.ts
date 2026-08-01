@@ -65,7 +65,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       data: {
         status,
         ...(status === "CONTACTED" ? { patientUpdated: false } : {}),
-        ...(status === "COMPLETED" ? { completedBy: "CENTER" } : {}),
+        ...(status === "COMPLETED" ? { completedBy: "CENTER", completedAt: new Date() } : {}),
       },
     });
 

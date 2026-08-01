@@ -277,6 +277,7 @@ export async function updateRequestStatusAction(
       where: { id: requestId },
       data: {
         status,
+        ...(status === "COMPLETED" ? { completedAt: new Date() } : {}),
         // Re-contact clears the "patient updated" flag.
         ...(status === "CONTACTED" ? { patientUpdated: false } : {}),
         // Center confirming completion → verified review eligibility.

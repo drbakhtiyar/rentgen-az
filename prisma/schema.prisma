@@ -490,6 +490,10 @@ model AppointmentRequest {
   resultUrl      String? // rentgen faylının linki (köhnə: xarici link)
   resultAddedAt  DateTime?
   reminderSentAt DateTime? // CRM randevu xatırlatma SMS-i göndərilib (dedup üçün)
+  // --- Rəy dəvəti (bax src/lib/review-invite.ts) ---
+  completedAt        DateTime? // status COMPLETED olan an — dəvəti dərhal yox, gecikmə ilə göndərmək üçün
+  reviewInviteSentAt DateTime? // dəvət SMS-i göndərilib (dedup — hər sorğuya bir dəfə)
+  reviewToken        String?   @unique // dəvət linkindəki birdəfəlik token: /rey/davet/<token>
   files          RentgenFile[]
   createdAt     DateTime        @default(now())
 
@@ -497,6 +501,7 @@ model AppointmentRequest {
   @@index([doctorId])
   @@index([status])
   @@index([preferredDate])
+  @@index([reviewInviteSentAt])
 }
 
 // Rentgen faylı (Backblaze B2-də saxlanılır; bazada yalnız metadata).
@@ -571,7 +576,7 @@ model Review {
 model SmsLog {
   id        String   @id @default(cuid())
   phone     String
-  kind      String // "otp" | "center_request" | "patient_status" | "reminder" | "other"
+  kind      String // "otp" | "center_request" | "patient_status" | "reminder" | "review_invite" | "campaign" | "other"
   text      String // göndərilən mətn (OTP kodu maskalanır)
   ok        Boolean
   error     String?

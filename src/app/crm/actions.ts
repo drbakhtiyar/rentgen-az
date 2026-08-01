@@ -202,7 +202,7 @@ export async function rescheduleAppointmentAction(input: {
 
   await prisma.appointmentRequest.update({
     where: { id: input.id },
-    data: { preferredDate: when.date, status },
+    data: { preferredDate: when.date, status, ...(status === "COMPLETED" ? { completedAt: new Date() } : {}) },
   });
 
   await logCrmActivity({ action: "reschedule", detail: `${input.ymd} ${input.time}`, requestId: input.id });

@@ -359,7 +359,7 @@ export async function setRequestStatusAdminAction(
   try {
     const req = await prisma.appointmentRequest.update({
       where: { id: requestId },
-      data: { status },
+      data: { status, ...(status === "COMPLETED" ? { completedAt: new Date() } : {}) },
       select: { phone: true, centerId: true, center: { select: { name: true } } },
     });
     await logAction(admin.id, `request:${status}`, "AppointmentRequest", requestId);

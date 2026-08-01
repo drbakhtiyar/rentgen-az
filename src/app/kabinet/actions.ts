@@ -29,7 +29,7 @@ export async function markServiceReceivedAction(
     if (req.status !== "COMPLETED") {
       await prisma.appointmentRequest.update({
         where: { id: requestId },
-        data: { status: "COMPLETED", completedBy: req.completedBy ?? "PATIENT" },
+        data: { status: "COMPLETED", completedBy: req.completedBy ?? "PATIENT", completedAt: new Date() },
       });
     }
     revalidatePath("/kabinet");

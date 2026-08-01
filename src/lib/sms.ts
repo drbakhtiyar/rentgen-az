@@ -4,7 +4,15 @@ import { env } from "./env";
 import { prisma } from "./db";
 
 export type SendSmsResult = { ok: boolean; error?: string };
-export type SmsKind = "otp" | "center_request" | "patient_status" | "reminder" | "campaign" | "other";
+export type SmsKind =
+  | "otp"
+  | "center_request"
+  | "patient_status"
+  | "reminder"
+  | "campaign"
+  /** Müayinə tamamlandıqdan sonra göndərilən rəy dəvəti (bax lib/review-invite.ts). */
+  | "review_invite"
+  | "other";
 
 /**
  * Pluggable SMS sender. Provider chosen via SMS_PROVIDER env var.

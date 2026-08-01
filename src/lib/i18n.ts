@@ -395,6 +395,12 @@ type Dict = {
     gotoCenter: string;
     pageTitleSuffix: string;
     pageDesc: string;
+    /** Dəvət linki ilə gələn rəy səhifəsi (bax lib/review-invite.ts). */
+    inviteTitle: string;
+    inviteDesc: string;
+    inviteVerifiedNote: string;
+    inviteExpiredTitle: string;
+    inviteExpiredDesc: string;
   };
   referral: {
     doctorLabel: string;
@@ -879,6 +885,14 @@ const az: Dict = {
     send: "Rəyi göndər",
     back: "Geri",
     gotoCenter: "Mərkəzin səhifəsinə keç",
+    inviteTitle: "Müayinəniz necə keçdi?",
+    inviteDesc:
+      "Rəyiniz digər pasiyentlərə düzgün mərkəz seçməkdə kömək edir. Bir dəqiqədən az vaxt aparır.",
+    inviteVerifiedNote:
+      "Bu link yalnız sizə göndərilib — rəyiniz “təsdiqlənmiş müştəri” kimi işarələnəcək.",
+    inviteExpiredTitle: "Link keçərli deyil",
+    inviteExpiredDesc:
+      "Bu rəy linkinin müddəti bitib və ya artıq istifadə olunub. Mərkəzin səhifəsindən rəy yaza bilərsiniz.",
     pageTitleSuffix: " haqqında rəy",
     pageDesc:
       "Xidmətdən istifadə etdiyiniz üçün təşəkkür edirik. Təcrübənizi qiymətləndirin — rəyiniz digər pasiyentlərə kömək edəcək.",
@@ -1394,6 +1408,14 @@ const ru: Dict = {
     send: "Отправить отзыв",
     back: "Назад",
     gotoCenter: "Перейти на страницу центра",
+    inviteTitle: "Как прошло ваше обследование?",
+    inviteDesc:
+      "Ваш отзыв помогает другим пациентам выбрать центр. Это займёт меньше минуты.",
+    inviteVerifiedNote:
+      "Эта ссылка отправлена только вам — отзыв будет отмечен как «проверенный клиент».",
+    inviteExpiredTitle: "Ссылка недействительна",
+    inviteExpiredDesc:
+      "Срок действия ссылки истёк или она уже использована. Оставить отзыв можно на странице центра.",
     pageTitleSuffix: ": ваш отзыв",
     pageDesc:
       "Спасибо, что воспользовались услугой. Оцените ваш опыт — ваш отзыв поможет другим пациентам.",
