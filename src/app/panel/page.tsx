@@ -62,13 +62,14 @@ export default async function PanelHome({
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
   const cb = baseWhere(activeStatus, q);
-  const [total, nPhone, nPhoto, nRating, nHours] = await Promise.all([
+  const [total, nPhone, nMobile, nPhoto, nRating, nHours] = await Promise.all([
     prisma.centerProfile.count({ where: cb }),
-    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.phone } }),
-    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.photo } }),
-    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.rating } }),
-    prisma.centerProfile.count({ where: { ...cb, ...HAS_WHERE.hours } }),
-  ]).catch(() => [0, 0, 0, 0, 0]);
+    prisma.centerProfile.count({ where: { AND: [cb, HAS_WHERE.phone] } }),
+    prisma.centerProfile.count({ where: { AND: [cb, HAS_WHERE.mobile] } }),
+    prisma.centerProfile.count({ where: { AND: [cb, HAS_WHERE.photo] } }),
+    prisma.centerProfile.count({ where: { AND: [cb, HAS_WHERE.rating] } }),
+    prisma.centerProfile.count({ where: { AND: [cb, HAS_WHERE.hours] } }),
+  ]).catch(() => [0, 0, 0, 0, 0, 0]);
 
   const buildHref = (over: {
     status?: CenterStatus | "ALL";
@@ -138,7 +139,7 @@ export default async function PanelHome({
 
       <p className="mb-4 text-xs text-slate-500">
         {activeStatus === "PENDING" ? "Gözləmədə" : "Cəmi"}: <b>{total}</b>
-        {"  ·  "}📞 {nPhone}{"  ·  "}🖼 {nPhoto}{"  ·  "}⭐ {nRating}{"  ·  "}🕐 {nHours}
+        {"  ·  "}📞 {nPhone}{"  ·  "}📱 {nMobile}{"  ·  "}🖼 {nPhoto}{"  ·  "}⭐ {nRating}{"  ·  "}🕐 {nHours}
         {activeHas.length > 0 && <>{"  —  "}filtrlə uyğun: <b>{centers.length}</b></>}
       </p>
 

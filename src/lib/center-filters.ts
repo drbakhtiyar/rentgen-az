@@ -2,17 +2,30 @@ import { Prisma } from "@/generated/prisma/client";
 import type { CenterStatus } from "@/generated/prisma/enums";
 
 /** Data-completeness quick-filter keys shared by the admin & operator center lists. */
-export type HasKey = "phone" | "photo" | "rating" | "hours";
+export type HasKey = "phone" | "mobile" | "landline" | "photo" | "rating" | "hours";
 
 export const HAS_FILTERS: { key: HasKey; label: string }[] = [
   { key: "phone", label: "📞 Telefonlu" },
+  { key: "mobile", label: "📱 Mobil nömrə" },
+  { key: "landline", label: "🏢 Şəhər nömrəsi" },
   { key: "photo", label: "🖼 Şəkilli" },
   { key: "rating", label: "⭐ Reytinqli" },
   { key: "hours", label: "🕐 Saatlı" },
 ];
 
+// Azərbaycan mobil operator prefiksləri (beynəlxalq formatda). OTP SMS yalnız
+// bunlara çatır. Qalan +994 nömrələr şəhər/stasionar sayılır.
+export const AZ_MOBILE_PREFIXES = [
+  "+99410", "+99450", "+99451", "+99455", "+99460", "+99470", "+99477", "+99499",
+];
+const mobileOr: Prisma.CenterProfileWhereInput = {
+  OR: AZ_MOBILE_PREFIXES.map((p) => ({ phone: { startsWith: p } })),
+};
+
 export const HAS_WHERE: Record<HasKey, Prisma.CenterProfileWhereInput> = {
   phone: { phone: { not: "" } },
+  mobile: mobileOr,
+  landline: { AND: [{ phone: { not: "" } }, { NOT: mobileOr }] },
   photo: { images: { isEmpty: false } },
   rating: { googleRating: { not: null } },
   hours: { NOT: { hours: { equals: Prisma.DbNull } } },
