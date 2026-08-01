@@ -2,11 +2,13 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Navigation, Loader2, MapPin, ArrowDownWideNarrow } from "lucide-react";
 import { CenterCard } from "@/components/centers/center-card";
 import type { CenterWithServices } from "@/lib/queries";
 import { distanceKm, formatDistance, hasCoords } from "@/lib/geo";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import type { CenterSort } from "@/lib/rating";
 
 const CentersMapView = dynamic(() => import("./centers-map-view"), {
   ssr: false,
@@ -17,43 +19,40 @@ const CentersMapView = dynamic(() => import("./centers-map-view"), {
   ),
 });
 
-type SortKey = "recommended" | "price" | "rating" | "googleRating" | "distance";
-
-// Bayesian (weighted) rating so a 5.0 from 2 reviews ranks below a 4.8 from 50.
-// Pulls low-vote scores toward the prior mean; unrated centers sort last (-1).
-const PRIOR_MEAN = 4.2; // typical AZ clinic average
-const PRIOR_WEIGHT = 8; // "phantom" reviews at the prior mean
-function bayesian(avg: number, count: number): number {
-  if (!count || count <= 0) return -1;
-  return (avg * count + PRIOR_MEAN * PRIOR_WEIGHT) / (count + PRIOR_WEIGHT);
-}
-
 export function CentersExplorer({
   centers,
   ratings,
   activeService,
+  sort = "recommended",
   locale = DEFAULT_LOCALE,
 }: {
   centers: CenterWithServices[];
   ratings: Record<string, { avg: number; count: number }>;
   /** service slug the patient searched for (enables price sort + highlight) */
   activeService?: string;
+  /** active sort, driven by the URL — ordering & pagination happen server-side.
+   *  The client only reorders the current page for "distance" (needs geo). */
+  sort?: CenterSort;
   locale?: Locale;
 }) {
   const t = getDict(locale).centers;
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = React.useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
-  const [sort, setSort] = React.useState<SortKey>("recommended");
 
-  // Price of the searched service for a given center (null = "ask for price").
-  const priceOf = React.useCallback(
-    (c: CenterWithServices): number | null => {
-      if (!activeService) return null;
-      const cs = c.services.find((s) => s.service.slug === activeService);
-      return cs?.price ?? null;
+  // Navigate on sort change so ordering + pagination stay in sync across pages.
+  const changeSort = React.useCallback(
+    (next: CenterSort) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (next === "recommended") params.delete("sort");
+      else params.set("sort", next);
+      params.delete("page"); // new order → back to page 1
+      const s = params.toString();
+      router.push(`/rentgen-merkezleri${s ? `?${s}` : ""}`);
     },
-    [activeService],
+    [router, searchParams],
   );
 
   const points = React.useMemo(
@@ -76,62 +75,20 @@ export function CentersExplorer({
       c,
       dist: user && hasCoords(c) ? distanceKm(user, { lat: c.lat, lng: c.lng }) : null,
     }));
-    const byDist = (a: (typeof list)[number], b: (typeof list)[number]) => {
-      if (a.dist == null) return 1;
-      if (b.dist == null) return -1;
-      return a.dist - b.dist;
-    };
-    if (sort === "distance") {
-      list.sort(byDist);
-    } else if (sort === "price") {
+    // Server already ordered the full set (recommended / rating / googleRating /
+    // price) and paginated it. The client only reorders the current page by
+    // distance when location is known (the "nearest" flow).
+    if ((sort === "distance" || sort === "recommended") && user) {
       list.sort((a, b) => {
-        // Centers without a set price go last.
-        const pa = priceOf(a.c) ?? Infinity;
-        const pb = priceOf(b.c) ?? Infinity;
-        return pa - pb;
+        if (a.dist == null) return 1;
+        if (b.dist == null) return -1;
+        return a.dist - b.dist;
       });
-    } else if (sort === "rating") {
-      // "Yüksək reytinq" — the platform's OWN reviews come first (weighted by
-      // vote count), blended with Google as a fallback. Our reviews weigh more
-      // (×1.5) since they're on-platform. Unrated centers go last.
-      const score = (c: CenterWithServices) => {
-        const own = ratings[c.id];
-        const ownCount = (own?.count ?? 0) * 1.5;
-        const gCount = c.googleReviewCount ?? 0;
-        const total = ownCount + gCount;
-        if (total <= 0) return { r: -1, n: 0 };
-        const sum = (own?.avg ?? 0) * ownCount + (c.googleRating ?? 0) * gCount;
-        return {
-          r: (sum + PRIOR_MEAN * PRIOR_WEIGHT) / (total + PRIOR_WEIGHT),
-          n: (own?.count ?? 0) + gCount,
-        };
-      };
-      list.sort((a, b) => {
-        const sa = score(a.c);
-        const sb = score(b.c);
-        if (sb.r !== sa.r) return sb.r - sa.r;
-        return sb.n - sa.n;
-      });
-    } else if (sort === "googleRating") {
-      // Separate sort by Google rating only (weighted by review count).
-      const score = (c: CenterWithServices) => ({
-        r: bayesian(c.googleRating ?? 0, c.googleReviewCount ?? 0),
-        n: c.googleReviewCount ?? 0,
-      });
-      list.sort((a, b) => {
-        const sa = score(a.c);
-        const sb = score(b.c);
-        if (sb.r !== sa.r) return sb.r - sa.r;
-        return sb.n - sa.n;
-      });
-    } else if (user) {
-      // "recommended" but location known → nearest first is the useful default.
-      list.sort(byDist);
     }
     return list;
-  }, [centers, user, sort, priceOf, ratings]);
+  }, [centers, user, sort]);
 
-  function findNearby() {
+  const requestLocation = React.useCallback(() => {
     setErr(null);
     if (!("geolocation" in navigator)) {
       setErr("Brauzeriniz geolokasiyanı dəstəkləmir.");
@@ -141,7 +98,6 @@ export function CentersExplorer({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUser({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setSort("distance");
         setLoading(false);
       },
       () => {
@@ -150,6 +106,11 @@ export function CentersExplorer({
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
+  }, []);
+
+  function onNearbyClick() {
+    requestLocation();
+    if (sort !== "distance") changeSort("distance");
   }
 
   return (
@@ -157,7 +118,7 @@ export function CentersExplorer({
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          onClick={findNearby}
+          onClick={onNearbyClick}
           disabled={loading}
           className="inline-flex h-11 items-center gap-2 rounded-full bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
         >
@@ -175,10 +136,10 @@ export function CentersExplorer({
           <select
             value={sort}
             onChange={(e) => {
-              const next = e.target.value as SortKey;
-              setSort(next);
-              // Picking "nearest" without a known location → ask for it.
-              if (next === "distance" && !user) findNearby();
+              const next = e.target.value as CenterSort;
+              // "nearest" needs a location; state persists across the soft nav.
+              if (next === "distance" && !user) requestLocation();
+              changeSort(next);
             }}
             className="h-10 rounded-full border border-slate-200 bg-white px-3 text-sm font-medium text-ink-800 focus:border-brand-400 focus:outline-none"
           >

@@ -20,6 +20,7 @@ import {
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
+import { parseSort, combinedRatingScore, bayesian } from "@/lib/rating";
 
 export const revalidate = 120;
 
@@ -52,18 +53,55 @@ const PAGE_SIZE = 30;
 export default async function CentersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; city?: string; service?: string; page?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    city?: string;
+    service?: string;
+    page?: string;
+    sort?: string;
+  }>;
 }) {
   const sp = await searchParams;
   const filters = { q: sp.q, city: sp.city, service: sp.service };
   const page = Math.max(1, Number(sp.page) || 1);
+  const sort = parseSort(sp.sort);
 
-  const [total, centers] = await Promise.all([
-    countApprovedCenters(filters),
-    getApprovedCenters({ ...filters, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
-  ]);
+  // rating / googleRating / price need the FULL matching set ordered before
+  // paginating — otherwise the order would only hold within a single page.
+  const globalSort = sort === "rating" || sort === "googleRating" || (sort === "price" && !!sp.service);
+
+  let total: number;
+  let centers: Awaited<ReturnType<typeof getApprovedCenters>>;
+  let ratings: Awaited<ReturnType<typeof getRatingsForCenters>>;
+
+  if (globalSort) {
+    const all = await getApprovedCenters({ ...filters, take: 5000, skip: 0 });
+    ratings = await getRatingsForCenters(all.map((c) => c.id));
+    if (sort === "rating") {
+      all.sort((a, b) => {
+        const sa = combinedRatingScore(ratings[a.id], a.googleRating, a.googleReviewCount);
+        const sb = combinedRatingScore(ratings[b.id], b.googleRating, b.googleReviewCount);
+        return sb !== sa ? sb - sa : (b.googleReviewCount ?? 0) - (a.googleReviewCount ?? 0);
+      });
+    } else if (sort === "googleRating") {
+      all.sort((a, b) => {
+        const sa = bayesian(a.googleRating ?? 0, a.googleReviewCount ?? 0);
+        const sb = bayesian(b.googleRating ?? 0, b.googleReviewCount ?? 0);
+        return sb !== sa ? sb - sa : (b.googleReviewCount ?? 0) - (a.googleReviewCount ?? 0);
+      });
+    } else {
+      const priceOf = (c: (typeof all)[number]) =>
+        c.services.find((s) => s.service.slug === sp.service)?.price ?? Infinity;
+      all.sort((a, b) => priceOf(a) - priceOf(b));
+    }
+    total = all.length;
+    centers = all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  } else {
+    total = await countApprovedCenters(filters);
+    centers = await getApprovedCenters({ ...filters, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE });
+    ratings = await getRatingsForCenters(centers.map((c) => c.id));
+  }
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const cityOptions = (await getCitiesWithCenters()).map((c) => ({
     value: c,
     label: c,
@@ -134,6 +172,7 @@ export default async function CentersPage({
                 centers={centers}
                 ratings={ratings}
                 activeService={sp.service}
+                sort={sort}
                 locale={locale}
               />
               {totalPages > 1 && (
@@ -143,6 +182,7 @@ export default async function CentersPage({
                     if (sp.q) params.set("q", sp.q);
                     if (sp.city) params.set("city", sp.city);
                     if (sp.service) params.set("service", sp.service);
+                    if (sort !== "recommended") params.set("sort", sort);
                     if (p > 1) params.set("page", String(p));
                     const href = `/rentgen-merkezleri${params.toString() ? `?${params}` : ""}`;
                     return (
