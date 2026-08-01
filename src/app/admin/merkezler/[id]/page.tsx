@@ -67,6 +67,7 @@ export default async function AdminEditCenterPage({
             name: center.name,
             phone: center.phone,
             whatsapp: center.whatsapp ?? "",
+            landlinePhone: center.landlinePhone ?? "",
             address: center.address ?? "",
             city: center.city ?? "",
             district: center.district ?? "",

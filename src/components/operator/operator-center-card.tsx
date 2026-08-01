@@ -11,6 +11,7 @@ type OperatorCenter = {
   city: string | null;
   address: string | null;
   phone: string;
+  landlinePhone: string | null;
   logoUrl: string | null;
   images: string[];
   workingHours: string | null;
@@ -106,6 +107,12 @@ export function OperatorCenterCard({
                 <span className="text-slate-400 italic">nömrə yox</span>
               )}
             </p>
+            {center.landlinePhone && (
+              <p className="flex items-center gap-1.5 text-xs text-slate-400">
+                <span>🏢</span>
+                <span>{center.landlinePhone} <span className="italic">(şəhər)</span></span>
+              </p>
+            )}
             {center.workingHours && (
               <p className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4 shrink-0 text-brand-500" />

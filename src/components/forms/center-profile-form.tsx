@@ -19,6 +19,7 @@ export type CenterFormDefaults = {
   name?: string;
   phone?: string;
   whatsapp?: string;
+  landlinePhone?: string;
   address?: string;
   city?: string;
   district?: string;
@@ -41,6 +42,7 @@ type SaveInput = {
   name: string;
   phone: string;
   whatsapp: string;
+  landlinePhone: string;
   address: string;
   city: string;
   district: string;
@@ -212,6 +214,7 @@ export function CenterProfileForm({
         name: get("name"),
         phone: get("phone"),
         whatsapp: get("whatsapp"),
+        landlinePhone: get("landlinePhone"),
         address: get("address"),
         city: get("city"),
         district: get("district"),
@@ -381,6 +384,9 @@ export function CenterProfileForm({
           </Field>
           <Field label={c.whatsapp} htmlFor="whatsapp">
             <Input id="whatsapp" name="whatsapp" type="tel" inputMode="tel" defaultValue={defaults?.whatsapp} placeholder="050 123 45 67" />
+          </Field>
+          <Field label={c.landlinePhone} htmlFor="landlinePhone">
+            <Input id="landlinePhone" name="landlinePhone" type="tel" inputMode="tel" defaultValue={defaults?.landlinePhone} placeholder="012 345 67 89" />
           </Field>
         </div>
       </FormSection>

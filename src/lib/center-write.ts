@@ -54,6 +54,7 @@ export type CenterWriteInput = {
   name?: string;
   phone?: string;
   whatsapp?: string;
+  landlinePhone?: string;
   address?: string;
   city?: string;
   district?: string;
@@ -125,6 +126,9 @@ export async function saveCenterLoose(
   const whatsapp = input.whatsapp
     ? normalizePhone(input.whatsapp) ?? input.whatsapp.trim()
     : null;
+  const landlinePhone = input.landlinePhone
+    ? normalizePhone(input.landlinePhone) ?? input.landlinePhone.trim()
+    : null;
 
   // Coordinates: use what was given, else auto-extract from the pasted Google
   // Maps link (short or full). This drives both the mini-map and the precise
@@ -143,6 +147,7 @@ export async function saveCenterLoose(
     name: s(input.name, 120) ?? "Adsız mərkəz",
     phone: phone ?? "",
     whatsapp,
+    landlinePhone,
     address: s(input.address, 240),
     city: s(input.city, 80),
     district: s(input.district, 80),

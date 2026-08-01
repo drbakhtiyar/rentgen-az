@@ -207,6 +207,9 @@ model CenterProfile {
   slug              String       @unique
   phone             String
   whatsapp          String?
+  // İkinci əlaqə nömrəsi (adətən şəhər/stasionar). `phone` OTP üçün mobil olanda
+  // köhnə şəhər nömrəsi burada saxlanır ki, əlaqə imkanı itməsin.
+  landlinePhone     String?
   address           String?
   city              String?
   district          String?

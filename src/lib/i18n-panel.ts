@@ -38,6 +38,7 @@ export type PanelDict = {
     aboutPh: string;
     phoneOfficial: string;
     whatsapp: string;
+    landlinePhone: string;
     cityDistrict: string;
     select: string;
     districtExtra: string;
@@ -383,6 +384,7 @@ const az: PanelDict = {
     aboutPh: "Mərkəz, avadanlıq və xidmətlər haqqında qısa məlumat",
     phoneOfficial: "Rəsmi telefon",
     whatsapp: "WhatsApp nömrəsi",
+    landlinePhone: "Şəhər/əlavə nömrə",
     cityDistrict: "Şəhər / rayon",
     select: "Seçin",
     districtExtra: "Rayon / qəsəbə (əlavə)",
@@ -731,6 +733,7 @@ const ru: PanelDict = {
     aboutPh: "Кратко о центре, оборудовании и услугах",
     phoneOfficial: "Официальный телефон",
     whatsapp: "Номер WhatsApp",
+    landlinePhone: "Городской/доп. номер",
     cityDistrict: "Город / район",
     select: "Выберите",
     districtExtra: "Район / посёлок (доп.)",
