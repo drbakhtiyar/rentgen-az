@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { formatDateAz } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
+import { OPERATOR_NAME, OPERATOR_PHONE } from "@/lib/auth/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +20,21 @@ const ACTION_LABELS: Record<string, string> = {
   "center:APPROVED": "Mərkəz təsdiqləndi",
   "center:DEACTIVATED": "Mərkəz deaktiv edildi",
   "center:PENDING": "Mərkəz gözləməyə qaytarıldı",
+  "center:create": "Mərkəz yaradıldı",
+  "center:edit": "Mərkəz redaktə edildi",
+  "center:delete": "Mərkəz silindi",
   "user:block": "İstifadəçi bloklandı",
   "user:unblock": "İstifadəçi bloku götürüldü",
   "blog:create": "Məqalə yaradıldı",
   "blog:update": "Məqalə yeniləndi",
   "blog:delete": "Məqalə silindi",
 };
+
+/** Operator sentinel nömrəsi jurnalda oxunaqlı ad kimi görünsün. */
+function actorLabel(phone: string | null | undefined): string {
+  if (!phone) return "—";
+  return phone === OPERATOR_PHONE ? `${OPERATOR_NAME} (operator)` : phone;
+}
 
 async function getLogs() {
   try {
@@ -58,7 +68,7 @@ export default async function AdminJurnalPage() {
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
                     {[
-                      log.admin?.phone ?? "—",
+                      actorLabel(log.admin?.phone),
                       log.targetType,
                       formatDateAz(log.createdAt),
                     ]
