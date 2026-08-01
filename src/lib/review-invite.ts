@@ -31,6 +31,14 @@ export const INVITE_DELAY_MS = 2 * 60 * 60 * 1000;
  * əvvəlki sətirlərdə geriyə doldurulduğu üçün yaş `createdAt` ilə ölçülür.)
  */
 export const INVITE_MAX_AGE_DAYS = 60;
+/**
+ * Sistem işə düşməzdən əvvəl tamamlanmış müayinələrə dəvət GETMİR (istifadəçi
+ * qərarı, 2026-08-02): yalnız 3 avqustdan etibarən "tamamlandı" işarələnən
+ * sorğular dəvət alır. Köhnə 18 sorğu ayrıca susdurulub; bu tarix isə həmin
+ * gün ərzində tamamlana biləcəkləri də kənarda saxlayır.
+ * Tarix keçəndən sonra bu yoxlama təsirsizdir — təhlükəsiz silinə bilər.
+ */
+export const INVITE_START_AT = new Date("2026-08-02T20:00:00.000Z"); // 03.08, 00:00 Bakı
 
 export function newReviewToken(): string {
   return randomBytes(16).toString("hex");
@@ -77,7 +85,14 @@ export async function runReviewInvites(
       reviewInviteSentAt: null,
       ...(dryRun
         ? {}
-        : { completedAt: { not: null, lte: new Date(now.getTime() - INVITE_DELAY_MS) } }),
+        : {
+            completedAt: {
+              not: null,
+              // 2 saat gecikmə + sistem başlanğıcından əvvəlkilər kənarda.
+              lte: new Date(now.getTime() - INVITE_DELAY_MS),
+              gte: INVITE_START_AT,
+            },
+          }),
       centerId: { not: null },
       // Çoxdankı müayinə haqqında SMS atmırıq.
       createdAt: { gte: new Date(now.getTime() - INVITE_MAX_AGE_DAYS * 864e5) },
