@@ -13,10 +13,20 @@ export type CenterFaqQuestion = {
 /** The fixed catalogue of questions. Add new ones here — everything else
  *  (editor, public accordion, JSON-LD) picks them up automatically. */
 export const CENTER_FAQ_QUESTIONS: CenterFaqQuestion[] = [
+  // NB: burada əvvəllər "hansı xidmətlər göstərilir?" sualı vardı — çıxarıldı.
+  // Mərkəz səhifəsində onsuz da "Xidmətlər və qiymətlər" cədvəli var; FAQ-da
+  // eyni siyahını təkrarlamaq həmin səhifə DAXİLİNDƏ təkrar məzmun yaradırdı və
+  // `faqJsonLd` onu ikinci dəfə strukturlu data kimi göndərirdi.
+  // (Köhnə cavablar bazada qalır, sadəcə göstərilmir — `answeredFaq` yalnız
+  // tanınan açarları qaytarır.)
   {
-    key: "services",
-    az: "Bu mərkəzdə hansı rentgen və görüntüləmə xidmətləri göstərilir?",
-    ru: "Какие рентген- и визуализационные услуги предоставляет этот центр?",
+    key: "referral",
+    az: "Müayinə üçün həkim göndərişi (arayışı) lazımdırmı?",
+    ru: "Нужно ли направление от врача для обследования?",
+    hint: {
+      az: "Bəli / Xeyr — göndərişsiz də qəbul edilir və s.",
+      ru: "Да / Нет — принимаем и без направления и т.д.",
+    },
   },
   {
     key: "resultsTime",
