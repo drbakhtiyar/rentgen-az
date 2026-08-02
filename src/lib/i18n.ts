@@ -421,6 +421,20 @@ type Dict = {
     noteLabel: string; notePh: string;
     submit: string;
   };
+  /** 404 səhifəsi (src/app/not-found.tsx). */
+  notFoundPage: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    searchCta: string;
+    homeCta: string;
+    citiesTitle: string;
+    linksTitle: string;
+    allCenters: string;
+    allServices: string;
+    allDoctors: string;
+    contact: string;
+  };
   blog: {
     eyebrow: string;
     title: string;
@@ -940,6 +954,20 @@ const az: Dict = {
     noteLabel: "Qeyd",
     notePh: "Əlavə məlumat (istəyə bağlı)",
     submit: "Davam et — pasiyentə təsdiq kodu göndər",
+  },
+  notFoundPage: {
+    eyebrow: "404",
+    title: "Belə səhifə tapılmadı",
+    description:
+      "Axtardığınız səhifə silinib, ünvanı dəyişib və ya heç vaxt olmayıb. Aşağıdakılardan davam edə bilərsiniz.",
+    searchCta: "Mərkəz axtar",
+    homeCta: "Ana səhifə",
+    citiesTitle: "Şəhərlər üzrə mərkəzlər",
+    linksTitle: "Bunlar kömək edə bilər",
+    allCenters: "Bütün rentgen mərkəzləri",
+    allServices: "Xidmətlər kataloqu",
+    allDoctors: "Həkimlər",
+    contact: "Bizimlə əlaqə",
   },
   blog: {
     eyebrow: "Blog",
@@ -1463,6 +1491,20 @@ const ru: Dict = {
     noteLabel: "Заметка",
     notePh: "Дополнительная информация (необязательно)",
     submit: "Продолжить — отправить код пациенту",
+  },
+  notFoundPage: {
+    eyebrow: "404",
+    title: "Страница не найдена",
+    description:
+      "Страница удалена, изменила адрес или никогда не существовала. Можно продолжить отсюда.",
+    searchCta: "Найти центр",
+    homeCta: "На главную",
+    citiesTitle: "Центры по городам",
+    linksTitle: "Это может помочь",
+    allCenters: "Все рентген-центры",
+    allServices: "Каталог услуг",
+    allDoctors: "Врачи",
+    contact: "Связаться с нами",
   },
   blog: {
     eyebrow: "Блог",
