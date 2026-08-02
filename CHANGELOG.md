@@ -2,6 +2,19 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-02 — Bakı mərkəzlərinə FAQ ödəniş cavabı + forma düzəlişi
+
+- **FAQ `payment`** — Bakıdakı **159 mərkəz** (135 APPROVED + 26 PENDING). Mətn 12
+  fərqli ifadədə (heşlə sabit seçim) — eyni cümlə 159 səhifədə təkrarlansaydı
+  `faqJsonLd` təkrar strukturlu data göndərərdi. Öz cavabı olan 2 mərkəzə
+  toxunulmadı. Bu, yoxlanılmış məlumat deyil — bax DECISIONS.
+  Nəticə: FAQ bloku olan mərkəz 2 → 161, FAQ rich snippet üçün uyğunluq yarandı.
+- **Mərkəz formunda şəkil yükləmə görünürlüyü** — düymə var idi, amma kiçik boz
+  həb kimi sətrin sağında, iş saatı cədvəli ilə xəritənin arasında sıxılmışdı;
+  "şəkil yükləmək mümkün deyil" təəssüratı yaradırdı. İndi şəbəkənin içində
+  kəsik-xətli "Şəkil əlavə et" xanası var. Funksionallıq dəyişmədi.
+  (Plan limiti səbəb deyildi: FREE=5, mərkəzlərdə maksimum 2 şəkil.)
+
 ## 2026-08-02 — Xüsusi 404 səhifəsi
 
 Sayt Next-in defolt ingiliscə səhifəsini verirdi ("404: This page could not be

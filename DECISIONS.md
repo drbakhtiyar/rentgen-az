@@ -2,6 +2,21 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Bakı mərkəzlərinə ödəniş cavabı — sahibkarın bazar biliyi ilə doldurulub
+- **Qərar:** Bakıdakı 159 mərkəzin FAQ `payment` cavabı "nağd və kartla ödəniş"
+  kimi doldurulub (istifadəçi qərarı, 2026-08-02: "Bakıda hamı kart istifadə edir").
+- **Bu, YOXLANILMIŞ məlumat DEYİL** — mərkəzdən soruşulmayıb, sahibkarın bazar
+  biliyinə əsaslanan defoltdur. Ona görə burada açıq yazılır: kartla ödəniş qəbul
+  etməyən mərkəz varsa, cavab səhvdir. Mərkəz özü (və ya admin/operator) bir
+  redaktə ilə düzəldə bilər.
+- **Niyə saxta rəydən fərqlidir:** bu, uydurma insan şəhadəti deyil, biznes
+  atributudur; `aggregateRating`-ə qatılmır; səhv olsa nəticəsi kiçikdir və
+  mərkəzin özü düzəldə bilər. Rəy isə mövcud olmayan pasiyentin adından
+  yazılardı — bax aşağıdakı qərar.
+- **İfadə 12 variantda yazılıb** (mərkəz id-sinin heşi ilə sabit seçim): eyni mətn
+  159 səhifədə birebir təkrarlansa, `faqJsonLd` onu eyni strukturlu data kimi
+  göndərərdi. Öz cavabı olan 2 mərkəzə (Smile, Sağlam Ailə 28 May) toxunulmayıb.
+
 ## Saxta rəy YAZILMIR (2026-08-02 — təklif edildi, rədd edildi)
 - **Qərar:** mərkəzlərə uydurma pasiyent rəyi yazılmır; Google rəylərinin mətni
   saytа köçürülmür. Google reytinqi yalnız **Google-a aid olduğu göstərilərək**
