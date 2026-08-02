@@ -25,6 +25,11 @@ Paralel araşdırmanın nəticəsi (`~/rentgen_az_hedef_klinikalar.xlsx`): A qru
   xidmətdə Dental kateqoriyası VƏ YA adda dental/stomatolo/diş/dent/implant/smile.
   PENDING+Dental = 57.
 - Unikal təsvirlər generatorla; mobil nömrəsi olanlara OTP-yə hazır owner.
+- **Dərin zənginləşdirmə (2026-08-03):** Google Places fotoları (media endpoint →
+  Vercel Blob) + sayt loqoları (img[src*=logo] → og:image → apple-touch-icon,
+  <3KB favicon rədd) + tapılmayanlara variant-sorğulu təkrar axtarış. Nəticə:
+  şəkilli 0→33 (61%), loqolu 0→9, placeId 39→41, koordinat +2, telefon +1.
+  Şəkilsiz qalan 21-in çoxunun Google kartında ümumiyyətlə foto yoxdur.
 - İstifadəçi qərarı (2026-08-03): İmaməliyeva (fiziki şəxs), Yeni Qalaaltı Hotel
   (otel) və ATU (domen ölü, zəng tələb edirdi) SİLİNDİ; White Smile PROMAX əlavə
   edilmədi. Yekun: 51 dental PENDING. Baza: 414 mərkəz (248 APPROVED / 166 PENDING).
