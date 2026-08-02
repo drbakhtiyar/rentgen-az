@@ -10,6 +10,7 @@ import { JsonLd } from "@/components/ui/json-ld";
 import { CentersExplorer } from "@/components/map/centers-explorer";
 import { getApprovedCenters, getRatingsForCenters } from "@/lib/queries";
 import { getCityPages, getCityBySlug, getCityStats, cityIntro } from "@/lib/city-pages";
+import { getServicesForCity } from "@/lib/city-service-pages";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
 import { getLocale } from "@/lib/i18n-server";
@@ -61,7 +62,11 @@ export default async function CityPage({
   const city = await getCityBySlug(slug);
   if (!city) notFound();
 
-  const [stats, allCities] = await Promise.all([getCityStats(city.name), getCityPages()]);
+  const [stats, allCities, svcPages] = await Promise.all([
+    getCityStats(city.name),
+    getCityPages(),
+    getServicesForCity(city.name, 14),
+  ]);
 
   // Şəhərin bütün mərkəzləri (sayı azdır — səhifələmə lazım deyil), reytinqə görə.
   const centers = await getApprovedCenters({ city: city.name, take: 200 });
@@ -131,15 +136,36 @@ export default async function CityPage({
                     {locale === "ru" ? "Популярные исследования" : "Ən çox təklif olunan müayinələr"}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {stats.topServices.map((t) => (
-                      <Link
-                        key={t.slug}
-                        href={`/xidmetler/${t.slug}`}
-                        className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-brand-50 hover:text-brand-700"
-                      >
-                        {t.name} <span className="text-slate-400">· {t.count}</span>
-                      </Link>
-                    ))}
+                    {/* Şəhər×xidmət səhifəsi olanlar ora, qalanları ümumi
+                        xidmət səhifəsinə yönəlir. */}
+                    {stats.topServices.map((t) => {
+                      const sp = svcPages.find((p) => p.service.slug === t.slug);
+                      return (
+                        <Link
+                          key={t.slug}
+                          href={
+                            sp
+                              ? `/rentgen-merkezleri/sheher/${city.slug}/${t.slug}`
+                              : `/xidmetler/${t.slug}`
+                          }
+                          className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-brand-50 hover:text-brand-700"
+                        >
+                          {t.name} <span className="text-slate-400">· {t.count}</span>
+                        </Link>
+                      );
+                    })}
+                    {svcPages
+                      .filter((p) => !stats.topServices.some((t) => t.slug === p.service.slug))
+                      .map((p) => (
+                        <Link
+                          key={p.service.slug}
+                          href={`/rentgen-merkezleri/sheher/${city.slug}/${p.service.slug}`}
+                          className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-brand-50 hover:text-brand-700"
+                        >
+                          {p.service.shortName ?? p.service.name}{" "}
+                          <span className="text-slate-400">· {p.count}</span>
+                        </Link>
+                      ))}
                   </div>
                 </div>
               )}

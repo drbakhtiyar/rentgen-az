@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/env";
 import { prisma } from "@/lib/db";
 import { getCityPages } from "@/lib/city-pages";
+import { getCityServicePages } from "@/lib/city-service-pages";
 
 export const revalidate = 3600;
 
@@ -84,6 +85,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           changeFrequency: "weekly",
           // Şəhər səhifələri kataloqun özündən sonra ən vacib giriş nöqtəsidir.
           priority: 0.8,
+        }),
+      );
+    }
+  } catch {
+    /* DB unavailable — skip dynamic entries */
+  }
+
+  // City × service pages (curated headline services only — see city-service-pages.ts)
+  try {
+    for (const p of await getCityServicePages()) {
+      entries.push(
+        ...bilingual(`/rentgen-merkezleri/sheher/${p.city.slug}/${p.service.slug}`, {
+          lastModified: now,
+          changeFrequency: "weekly",
+          priority: 0.75,
         }),
       );
     }
