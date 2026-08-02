@@ -2,6 +2,19 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-02 — FAQ "uşaqlar qəbul edilirmi?" cavabı
+
+Dörd meyar: ad · sayt (pediatriya şöbəsi/ştatda pediatr) · OSM ixtisası · təsvir.
+**42 mərkəz** — 16-sı uşaq müəssisəsi ("ixtisaslaşıb"), 26-sı pediatriya şöbəsi
+olan ümumi müəssisə ("uşaqlar DA qəbul edilir"). İki fərqli cavab növü, 9 ifadə.
+Sayt uyğunluqlarının konteksti əl ilə yoxlanıldı — yalan müsbət yoxdur.
+
+Həmçinin ölçüldü və RƏDD EDİLDİ: **"əlillər üçün giriş"** — OSM-də 1218 tibbi
+obyektdən yalnız 8-ində `wheelchair` teqi var, 350 mərkəzdən 1-i uyğunlaşdı
+(o da etibarsız). Bax DECISIONS.
+
+**FAQ əhatəsi: 279 / 363 mərkəz** (parkinq 241 · ödəniş 177 · uşaq 42).
+
 ## 2026-08-02 — FAQ parkinq cavabı (OpenStreetMap-dən)
 
 İstifadəçi müşahidəsi: mərkəz səhifəsindəki xəritədə "P" nişanları görünür —

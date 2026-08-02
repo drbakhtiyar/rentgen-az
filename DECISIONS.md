@@ -2,6 +2,22 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## "Uşaqlar qəbul edilirmi?" — dörd meyar, iki fərqli cavab
+- **Meyarlar (istifadəçi təklifi + genişləndirmə):** (1) mərkəzin **adında**
+  uşaq/pediatr/kids/детск; (2) **saytında** pediatriya şöbəsi və ya ştatda pediatr
+  (`pediatr|neonatolo|uşaq həkimi|детск`); (3) **OSM** `healthcare:speciality=paediatrics`;
+  (4) mərkəzin **öz təsvirində** eyni açar sözlər. Nəticə: **42 mərkəz**.
+- **İki AYRI cavab növü** — bu vacibdir: adı uşaq müəssisəsi olanlar (16) yalnız
+  uşaqlara xidmət göstərir → "Mərkəz uşaq pasiyentlərə ixtisaslaşıb". Saytında
+  pediatriya şöbəsi olan ümumi müəssisələr (26) → "Uşaq pasiyentlər DƏ qəbul
+  edilir". Hər ikisini eyni cümlə ilə yazsaydıq, hər iki halda yanlış olardı.
+- **Yalan müsbət yoxdur:** 14 sayt uyğunluğunun konteksti əl ilə yoxlanıldı —
+  hamısı həqiqi "Pediatriya şöbəsi" siyahısı və ya ştatdakı pediatr idi (Ege
+  Hospital: "0-16 yaş arası uşaqların"). `pediatr`/`neonatolo` kökləri kifayət
+  qədər özəldir; müqayisə üçün `nağd` kökü "Dr. Nağdəliyev"i tutmuşdu.
+- **Şəbəkə korporativ saytları kənarda** (3+ mərkəz paylaşan domen) — filialın
+  yox, qrupun portfelini sadalayır.
+
 ## "Əlillər üçün giriş" AVTOMATLAŞDIRILMIR — OSM-də data yoxdur (ölçülüb)
 - **Nəticə (2026-08-02 ölçmə):** mərkəzlərin ətrafındakı **1218 tibbi obyektdən
   yalnız 8-ində** `wheelchair` teqi var (5 yes · 1 limited · 2 no), `ramp=yes`
