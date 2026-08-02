@@ -33,7 +33,8 @@ export async function generateMetadata({
   const page = await getCityServicePage(slug, service).catch(() => null);
   if (!page) return buildMetadata({ title: "Səhifə tapılmadı", noIndex: true });
 
-  const svc = page.service.shortName ?? page.service.name;
+  // Başlıqda TAM ad: shortName tək başına yarımçıq oxunur ("Bakıda Panoramik").
+  const svc = page.service.name;
   return buildMetadata({
     title: `${locative(page.city.name)} ${svc}`,
     description:
@@ -72,7 +73,7 @@ export default async function CityServicePage({
 
   const locale = await getLocale();
   const d = getDict(locale);
-  const svc = page.service.shortName ?? page.service.name;
+  const svc = page.service.name;
   const cityLoc = locative(page.city.name);
   const title = `${cityLoc} ${svc}`;
 
