@@ -30,16 +30,32 @@ const DURATION_OPTIONS = [10, 15, 20, 30, 45, 60, 90, 120];
 const azLower = (s: string) => s.toLocaleLowerCase("az");
 const UNCATEGORIZED = "__other__";
 
+export type ServicesPayload = {
+  serviceId: string;
+  enabled: boolean;
+  price: number | null;
+  priceTo: number | null;
+  durationMin: number;
+  note?: string;
+}[];
+
 export function CenterServicesManager({
   initial,
   categories = [],
   categoryLabels = {},
+  onSave,
+  requirePrice = true,
 }: {
   initial: ServiceRow[];
   /** Ordered category keys (catalog order). */
   categories?: string[];
   /** AZ category → localized label. */
   categoryLabels?: Record<string, string>;
+  /** Yadda saxlama əməli. Verilməsə mərkəzin öz action-u işlədilir.
+   *  Operator/admin paneli öz action-unu ötürür (başqa mərkəzi redaktə edir). */
+  onSave?: (rows: ServicesPayload) => Promise<{ ok: boolean; error?: string }>;
+  /** Mərkəzin öz panelində qiymət məcburidir; operator mərhələli işləyir. */
+  requirePrice?: boolean;
 }) {
   const locale = useLocale();
   const t = getPanelDict(locale).center;
@@ -81,22 +97,21 @@ export function CenterServicesManager({
   function save() {
     setError(null);
     // Price is required for every enabled service.
-    const missing = rows.some((r) => r.enabled && (r.price == null || r.price <= 0));
+    const missing = requirePrice && rows.some((r) => r.enabled && (r.price == null || r.price <= 0));
     if (missing) {
       setError(t.svcPriceRequired);
       return;
     }
     startTransition(async () => {
-      const res = await saveCenterServicesAction(
-        rows.map((r) => ({
-          serviceId: r.serviceId,
-          enabled: r.enabled,
-          price: r.price ?? null,
-          priceTo: null, // fixed price only — no per-center range
-          durationMin: r.durationMin ?? 30,
-          note: r.note,
-        })),
-      );
+      const payload: ServicesPayload = rows.map((r) => ({
+        serviceId: r.serviceId,
+        enabled: r.enabled,
+        price: r.price ?? null,
+        priceTo: null, // fixed price only — no per-center range
+        durationMin: r.durationMin ?? 30,
+        note: r.note,
+      }));
+      const res = onSave ? await onSave(payload) : await saveCenterServicesAction(payload);
       if (!res.ok) {
         setError(res.error ?? "Xəta");
         return;

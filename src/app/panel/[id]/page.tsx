@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ListChecks } from "lucide-react";
 import { OperatorShell } from "@/components/operator/operator-shell";
 import { CenterProfileForm } from "@/components/forms/center-profile-form";
 import { updateCenterFlexAction } from "@/app/panel/actions";
@@ -46,6 +46,25 @@ export default async function OperatorEditCenterPage({
         <ArrowLeft className="h-4 w-4" /> Mərkəzlərə qayıt
       </Link>
       <div className="rounded-2xl border border-slate-100 bg-white p-5 sm:p-6">
+
+      <Link
+        href={`/panel/${center.id}/xidmetler`}
+        className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50/60 px-5 py-4 transition hover:border-brand-400 hover:bg-brand-50"
+      >
+        <span className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-brand-600 ring-1 ring-brand-100">
+            <ListChecks className="h-4 w-4" />
+          </span>
+          <span>
+            <span className="block text-sm font-semibold text-ink-900">Xidmətlər və qiymətlər</span>
+            <span className="block text-xs text-slate-600">
+              Xidmət əlavə et / sil və qiymət təyin et
+            </span>
+          </span>
+        </span>
+        <span className="text-sm font-semibold text-brand-600">Aç →</span>
+      </Link>
+
         <CenterProfileForm
           cities={cityOptions}
           mode="edit"
