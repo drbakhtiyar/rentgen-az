@@ -60,7 +60,10 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **Dəvət konversiyasını izlə** — ilk real dəvətlərdən sonra: neçə SMS getdi,
   neçəsi rəyə çevrildi. `SmsLog.kind = "review_invite"` + `Review.source = "invite"`
   ilə ölçülür. Aşağı olsa mətni/vaxtı dəyiş.
-- [ ] **Mərkəzlərin öz FAQ-ı** — 246 mərkəzdən yalnız 1-i doldurub. `CenterFaq` +
+- [x] **FAQ ödəniş + parkinq — DONE 2026-08-02.** 271/363 mərkəzdə FAQ bloku var
+  (ödəniş 177, parkinq 241). Parkinq OSM-dən yoxlanılıb; ödəniş Bakı + şəbəkə
+  filialları üçün fərziyyədir (bax DECISIONS).
+- [ ] **Qalan FAQ sualları** — 246 mərkəzdən yalnız 1-i özü doldurub. `CenterFaq` +
   `faqJsonLd` hazırdır. Yalnız YOXLANILA BİLƏN suallar (iş saatı, parkinq, uşaq
   qəbulu, nəticə formatı) mərkəzin öz saytından doldurula bilər — qiymət/keyfiyyət
   iddiaları YOX. Bax DECISIONS (saxta rəy qərarı ilə eyni prinsip).

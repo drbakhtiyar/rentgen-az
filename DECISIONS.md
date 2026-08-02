@@ -2,6 +2,23 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Parkinq cavabı OpenStreetMap-dən — YOXLANILMIŞ məlumat
+- **Qərar:** FAQ `parking` cavabı OSM-dən Overpass API ilə çəkilir: mərkəzin
+  koordinatı ətrafında `amenity=parking` / `amenity=parking_space` obyektləri
+  axtarılır və məsafəyə görə üç zolağa bölünür — **≤60 m** "ərazisində/həyətində",
+  **60–90 m** "yanında/bitişiyində" (ehtiyatlı ifadə), **90–300 m** "ətraf
+  küçələrdə/yaxınlıqda". Bir neçə parkinq tapılsa cəm halında yazılır.
+- **Niyə üç zolaq:** 60–90 m böyük xəstəxana kampusunda həyət, sıx şəhər blokunda
+  isə QONŞUNUN parkinqi ola bilər — o aralıqda "həyətində" demək iddiadır.
+- **PARKİNQ YOXDUR HEÇ VAXT YAZILMIR.** OSM-də obyekt olmaması parkinqin
+  olmaması demək deyil (Azərbaycan regionlarında OSM əhatəsi natamamdır).
+  Cavab yalnız POZİTİV tapıntıda yazılır; tapılmayan 109 mərkəz boş qalır.
+- **Nəticə:** 350 koordinatlı mərkəzdən **241-də** parkinq tapıldı (72-si ≤90 m).
+  Bu, ödəniş cavabından fərqli olaraq **fərziyyə deyil** — xəritə məlumatıdır.
+- **Texniki:** Overpass başlıqsız POST-a 406, ölkə bbox-una 504 qaytarır. İşləyən
+  üsul: form-kodlanmış `data=` + User-Agent + çoxnöqtəli `around` (40 mərkəzlik
+  dəstələr). Nəticə keşdə: `scratchpad/osm-parking.json` (1728 obyekt).
+
 ## Bakı mərkəzlərinə ödəniş cavabı — sahibkarın bazar biliyi ilə doldurulub
 - **Qərar:** Bakıdakı 159 mərkəzin FAQ `payment` cavabı "nağd və kartla ödəniş"
   kimi doldurulub (istifadəçi qərarı, 2026-08-02: "Bakıda hamı kart istifadə edir").

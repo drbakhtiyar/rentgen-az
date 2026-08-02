@@ -2,6 +2,23 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-02 — FAQ parkinq cavabı (OpenStreetMap-dən)
+
+İstifadəçi müşahidəsi: mərkəz səhifəsindəki xəritədə "P" nişanları görünür —
+onlar OSM-in `amenity=parking` obyektləridir, yəni **sorğulana bilər**.
+
+- **Overpass API** ilə 350 koordinatlı mərkəzin ətrafı taranıb (1728 parkinq
+  obyekti). **241 mərkəzdə** parkinq tapıldı, 238-nə cavab yazıldı.
+- Məsafə zolaqları: ≤60 m "ərazisində" · 60–90 m "yanında" · 90–300 m "ətraf
+  küçələrdə". 17 fərqli ifadə (heşlə sabit seçim).
+- **"Parkinq yoxdur" heç vaxt yazılmır** — OSM boşluğu yoxluq sübutu deyil.
+- Doğrulama: istifadəçinin göstərdiyi Quba nöqtəsində (41.35696, 48.49479)
+  sorğu məhz ekrandakı iki parkinqi tapdı — 28 m və 210 m.
+- Texniki tələlər: Overpass başlıqsız POST-a **406**, ölkə bbox-una **504**;
+  işləyən üsul form-kodlanmış `data=` + User-Agent + çoxnöqtəli `around`.
+
+**FAQ əhatəsi indi: 271 / 363 mərkəz** (ödəniş 177 · parkinq 241 · hər ikisi 147).
+
 ## 2026-08-02 — Bakı mərkəzlərinə FAQ ödəniş cavabı + forma düzəlişi
 
 - **FAQ `payment`** — Bakıdakı **159 mərkəz** (135 APPROVED + 26 PENDING). Mətn 12
