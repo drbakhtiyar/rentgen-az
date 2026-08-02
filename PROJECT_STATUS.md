@@ -13,7 +13,7 @@
 
 The web platform is production-live and used by real centers/doctors/patients. The mobile app (doctor MVP) is functionally complete and end-to-end verified; the center MVP is in progress.
 
-**Live numbers (2026-08-02 prod DB):** 363 centers (**246 APPROVED / 117 PENDING**), 112 active services (15 categories), 17 doctors, 428 users, 18 platform reviews, ~23 cities covered.
+**Live numbers (2026-08-03 prod DB):** 417 centers (**248 APPROVED / 169 PENDING**, PENDING-in 57-si 🦷 dental), 112 active services (15 categories), 17 doctors, 428 users, 18 platform reviews, ~23 cities covered.
 
 ### 2026-08 marketplace expansion (this session — see CHANGELOG)
 - **~305 imaging centers bulk-imported** from Google Places across 20 cities (PENDING),

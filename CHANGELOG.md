@@ -2,6 +2,33 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-03 — Dental klinika importu (54 PENDING) + 🦷 filtr
+
+Paralel araşdırmanın nəticəsi (`~/rentgen_az_hedef_klinikalar.xlsx`): A qrupu —
+20 klinika avadanlıq sitatla təsdiqli; B qrupu — 39 klinika dövlət reyestrində
+2.24+2.27 (stomatologiya + şüa diaqnostikası) lisenziyalı.
+
+- **54 mərkəz PENDING yaradıldı** (5 dublikat ötürüldü). Google Places
+  zənginləşdirməsi: placeId/koordinat/reytinq/iş saatı + telefonu olmayan B
+  qrupuna Google-dan nömrə. Token-kəsişmə qoruyucusu yanlış uyğunlaşmanı kəsir.
+- **Xidmətlər sübuta bağlı** (89-luq şablon YOX): A qrupu sitatdakı modallıqlara
+  görə (3D→3d-tomoqrafiya+cbct, panoram, sefalometrik); B qrupu yalnız
+  dental-rentgen (lisenziya avadanlıq növünü göstərmir); "Qeyri-müəyyən" A
+  sətirləri də yalnız baza. Cihaz modeli `equipment`-ə yazıldı (Sirona
+  Orthophos, Planmeca ProMax…).
+- **Dublikat tutuşları:** placeId 3 tərcümə dublikatını tutdu (Sağlam Diş →
+  SağlamDiş şəbəkəsi, Ömür, Sağlam) — istifadəçinin "Rəqəmsal Diaqnostika
+  Dünyası = Digital Diagnostics World" xəbərdarlığının təsdiqi. Batch daxilində
+  telefon/placeId dedup A∩B təkrarını kəsdi (German Dental "Clınıc" türk ı ilə,
+  Pro Dental).
+- **🦷 Dental filtri** (`center-filters.ts`) admin+operator panellərində:
+  xidmətdə Dental kateqoriyası VƏ YA adda dental/stomatolo/diş/dent/implant/smile.
+  PENDING+Dental = 57.
+- Unikal təsvirlər generatorla; mobil nömrəsi olanlara OTP-yə hazır owner.
+- Admin baxışına saxlanılan hallar: İmaməliyeva (fiziki şəxs lisenziyası),
+  Yeni Qalaaltı Hotel (lisenziyalı, amma otel). Zəng tələb edən: ATU (domen ölü),
+  White Smile PROMAX (siyahıda yox idi).
+
 ## 2026-08-02 — FAQ "uşaqlar qəbul edilirmi?" cavabı
 
 Dörd meyar: ad · sayt (pediatriya şöbəsi/ştatda pediatr) · OSM ixtisası · təsvir.

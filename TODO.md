@@ -20,6 +20,10 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 > ~~Anthropic credit~~ — RESOLVED: `ANTHROPIC_API_KEY` is set in Vercel prod and the AI Yardımçı is live (verified: `/api/app/ai` returns real Haiku answers; ~$0.04 used Jul 19–24).
 
 ## Marketplace data ops (2026-08 bulk import — active)
+- [ ] **54 dental PENDING-i nəzərdən keçir** — `/admin/merkezler?status=PENDING&has=dental`.
+  A qrupu (19-u) sitat-təsdiqli 3D/panoram xidmətlərlə gəlir; B qrupu (35) yalnız
+  dental-rentgen — zəngdə 3D/panoram dəqiqləşdir. Xüsusi baxış: İmaməliyeva
+  (fiziki şəxs), Yeni Qalaaltı Hotel. Mənbə: ~/rentgen_az_hedef_klinikalar.xlsx
 - [x] **APPROVED mərkəzlərin şablon siyahısı təmizləndi (2026-08-02).** 185 mərkəz,
   6 664 sətir: MRT/KT/Mammoqrafiya/Densitometriya/Floroskopiya yalnız SÜBUTLA qalır
   (bax DECISIONS). Sonra 51-lik baza 30–51 aralığına yayıldı (185 mərkəz, 1 796 sətir).
