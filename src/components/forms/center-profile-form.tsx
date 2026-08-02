@@ -420,9 +420,13 @@ export function CenterProfileForm({
           <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder={c.equipmentPh} />
         </Field>
 
-        {/* Gallery */}
+        {/* Gallery — yükləmə düyməsi qəsdən şəbəkənin İÇİNDƏDİR.
+            Əvvəl yalnız sətrin sağında kiçik boz həb vardı; uzun iş saatı
+            cədvəli ilə xəritənin arasında sıxıldığı üçün "şəkil yükləmək
+            mümkün deyil" təəssüratı yaradırdı. İndi həm başlıqda düymə var,
+            həm də şəbəkədə həmişə görünən kəsik-xətli "əlavə et" xanası. */}
         <div>
-          <div className="mb-1.5 flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-medium text-ink-800">
               {c.images}{" "}
               <span className="font-normal text-slate-400">({images.length}/{imgCap})</span>
@@ -439,7 +443,7 @@ export function CenterProfileForm({
               type="button"
               onClick={() => imgRef.current?.click()}
               disabled={uploadingImg || images.length >= imgCap}
-              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-700 hover:border-brand-400 hover:bg-brand-50 disabled:opacity-50"
             >
               {uploadingImg ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -449,28 +453,43 @@ export function CenterProfileForm({
               {c.addImage}
             </button>
           </div>
-          {images.length > 0 ? (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {images.map((img, i) => (
-                <div key={img} className="group relative aspect-video overflow-hidden rounded-lg ring-1 ring-slate-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt={`Şəkil ${i + 1}`} className="h-full w-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setImages((prev) => prev.filter((x) => x !== img))}
-                    className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    aria-label={c.del}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-slate-400">
-              {c.imagesHint}
-            </p>
-          )}
+
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {images.map((img, i) => (
+              <div key={img} className="group relative aspect-video overflow-hidden rounded-lg ring-1 ring-slate-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img} alt={`Şəkil ${i + 1}`} className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setImages((prev) => prev.filter((x) => x !== img))}
+                  className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  aria-label={c.del}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+
+            {images.length < imgCap && (
+              <button
+                type="button"
+                onClick={() => imgRef.current?.click()}
+                disabled={uploadingImg}
+                className="flex aspect-video flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/60 text-slate-500 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50"
+              >
+                {uploadingImg ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Upload className="h-5 w-5" />
+                )}
+                <span className="px-2 text-center text-xs font-semibold leading-tight">
+                  {c.addImage}
+                </span>
+              </button>
+            )}
+          </div>
+
+          <p className="mt-2 text-xs text-slate-400">{c.imagesHint}</p>
         </div>
 
         {allowBanner && (
