@@ -23,9 +23,7 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [x] **APPROVED mərkəzlərin şablon siyahısı təmizləndi (2026-08-02).** 185 mərkəz,
   6 664 sətir: MRT/KT/Mammoqrafiya/Densitometriya/Floroskopiya yalnız SÜBUTLA qalır
   (bax DECISIONS). Sonra 51-lik baza 30–51 aralığına yayıldı (185 mərkəz, 1 796 sətir).
-- [ ] **PENDING mərkəzlərə eyni prosesi tətbiq et.** 117 PENDING hələ 89-luq şablon
-  daşıyır. Təsdiqdən əvvəl eyni sübut qaydası + yayılma tətbiq edilməlidir. Metod
-  CHANGELOG-dadır; sübut keşi `scratchpad/places-types.json` + `website-modalities.json`.
+- [x] **PENDING şablonu təmizləndi — DONE 2026-08-02.** 113 mərkəz, 5 769 sətir.
 - [ ] **Admin-review + approve the PENDING queue.** Use `/admin/merkezler?status=PENDING` with
   the completeness filters + "ən dolğun əvvəl" sort. Delete non-medical junk that slips in.
 - [ ] **Add mobile numbers to landline-only centers.** OTP only reaches AZ mobiles. Centers
@@ -50,13 +48,12 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [x] **RU indexing — DONE (2026-08-01).** Russian now at crawlable `/ru/*` URLs with self-canonical + hreflang (az/ru/x-default), sitemap lists both. Was cookie-only (invisible to Google) → now indexable. See memory `rentgen-az-ru-i18n`.
 - [x] **SEO quick wins (2026-07-31)** — robots anchored (fixed /hekimler + /merkezler-ucun deindex), next/image card cover, aggregateRating JSON-LD (first-party reviews), richer center meta descriptions.
 - [x] **Operator data-entry panel (2026-07-30)** — `/panel` secret-link (role OPERATOR "Nərmin"), loose center create/edit, paste Google link → auto coords+rating+map. Logout fixed 2026-08-01.
-- [ ] **Şəhər lendinq səhifələri** — `/rentgen-merkezleri/[şəhər]` marşrutu YOXDUR; şəhər
-  filtri yalnız `?city=` query-dir və kanonik query-ni ataraq SEO dəyərini sıfırlayır.
-  Ən böyük açıq imkan: "Bakıda MRT", "Sumqayıtda rentgen". Ön şərt (şəhər
-  normallaşdırması) 2026-08-02 BİTDİ — Bakı 134, ≥3 mərkəzi olan ~15 şəhər var.
-- [ ] **Sitemap xırdalıqları** — RU yalnız `xhtml:link` alternate kimi verilir, öz `<loc>`
-  bloku yoxdur (Google-un tövsiyəsi hər dil versiyasına ayrıca `<url>`); sitemap-da
-  `x-default` yoxdur (layout-da var); `/paketler` və `/hekimler-ucun` sitemap-da deyil.
+- [x] **Şəhər lendinq səhifələri — DONE 2026-08-02.** 14 şəhər.
+- [x] **Şəhər × xidmət səhifələri — DONE 2026-08-02.** Yalnız fərqləndirici modallıqlar.
+- [x] **Sitemap düzəlişləri — DONE 2026-08-02.** RU öz `<loc>`-u, `x-default`, 2 səhifə.
+- [ ] **`DEFERRED_SERVICES`-i aç** — klassik rentgen + USM üçün şəhər×xidmət səhifələri.
+  Mərkəzlər öz siyahılarını dəqiqləşdirdikdən SONRA (hazırda hamısında eyni olduğu
+  üçün təkrar məzmun olardı). Bax `src/lib/city-service-pages.ts`.
 - [x] **Rəy dəvəti mühərriki — DONE 2026-08-02.** Müayinə COMPLETED olandan 2 saat
   sonra pasiyentə SMS + OTP-siz `/rey/davet/[token]` linki. Saatlıq cron. Köhnə 18
   sorğu susdurulub — dəvət 03.08-dən sonra tamamlananlara gedir.

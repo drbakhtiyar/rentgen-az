@@ -2,6 +2,37 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-02 — Şəhər / şəhər×xidmət səhifələri + sitemap düzəlişləri
+
+**Şəhər lendinq səhifələri** — `/rentgen-merkezleri/sheher/[slug]`, ≥3 mərkəzi olan
+14 şəhər. Giriş mətni şəhərin ÖZ rəqəmlərindən qurulur (mərkəz sayı, rayonlar,
+həftənin 7 günü işləyənlər, orta Google reytinqi) → hər səhifədə fərqlidir.
+JSON-LD: Breadcrumb + CollectionPage/ItemList. `/rentgen-merkezleri` altına
+"Şəhərlər üzrə mərkəzlər" keçid bloku (Google-un tapması üçün yeganə daxili yol).
+
+**Şəhər × xidmət səhifələri** — `/rentgen-merkezleri/sheher/[city]/[service]`.
+KURASİYA: bütün 112 xidmətə icazə versək 643 kombinasiya yaranır və çoxu
+bir-birinin təkrarı olur ("Bakıda əl rentgeni" ≈ "Bakıda bilək rentgeni" — eyni
+aparat). Ona görə yalnız FƏRQLƏNDİRİCİ modallıqlar: dental (4), MRT (5), KT (4),
+mammoqrafiya, densitometriya. Klassik rentgen proyeksiyaları və USM növləri
+`DEFERRED_SERVICES`-də — hazırda 51-lik bazada hamıda var, yəni Bakıda hər biri
+eyni 115 mərkəzi sadalayardı. Mərkəzlər öz siyahılarını dəqiqləşdirdikcə açılacaq.
+
+**Sitemap** — RU URL-ləri artıq ÖZ `<loc>` bloku ilə verilir (əvvəl yalnız
+`xhtml:link` alternate idi, yəni RU sitemap-da rəsmən yox idi): 424 → **828 `<loc>`,
+413-ü RU**. `x-default` əlavə olundu. `/paketler` + `/hekimler-ucun` əlavə olundu
+(`/bize-qoshul`, `/hekim-qoshul` noindex olduğu üçün qəsdən kənarda).
+
+**117 PENDING mərkəzin şablonu təmizləndi** — 113 mərkəz, **5 769 sətir**. APPROVED
+ilə eyni qaydalar: sübutsuz MRT/KT/Mammoqrafiya/Densitometriya/Floroskopiya silindi
+(115-dən yalnız 3-ünün yeni saytı var idi → sübut demək olar yoxdur; yalnız Baku
+City Hospital Görüntüləmə Mərkəzi MRT+mammoqrafiya saxladı), sonra baza 30–51
+aralığına yayıldı. Fərqli xidmət dəsti: 102/113.
+
+**Deploy qeydi:** `c43ea8a` (şəhər×xidmət) push olunsa da Vercel webhook-u onu
+qaçırdı — səhifələr 404 verirdi. Növbəti push deployu tetiklədi. Belə hallarda
+`list_deployments` ilə son build SHA-sını yoxlamaq lazımdır.
+
 ## 2026-08-02 — Rəy dəvəti (real rəy axını)
 
 Səbəb: 246 mərkəzdən yalnız 1-ində rəy var. Rəy forması və QR səhifəsi mövcud idi,
