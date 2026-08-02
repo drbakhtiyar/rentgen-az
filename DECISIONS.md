@@ -2,6 +2,21 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## "Əlillər üçün giriş" AVTOMATLAŞDIRILMIR — OSM-də data yoxdur (ölçülüb)
+- **Nəticə (2026-08-02 ölçmə):** mərkəzlərin ətrafındakı **1218 tibbi obyektdən
+  yalnız 8-ində** `wheelchair` teqi var (5 yes · 1 limited · 2 no), `ramp=yes`
+  **0**. Bizim 350 mərkəzdən cəmi **1-i** uyğunlaşdı — o da adı fərqli qonşu
+  obyektə (14 m) düşdü, yəni etibarsızdır. Faktiki əhatə: **sıfır**.
+- **Qərar:** bu sual OSM-dən doldurulmur. Parkinqdən fərqli olaraq burada data
+  sadəcə mövcud deyil.
+- **Niyə "təxmin edək" demirik:** səhvin qiyməti asimmetrikdir — əlil arabasındakı
+  pasiyentə "giriş uyğundur" desək və uyğun olmasa, o adam boş yerə yol gedir.
+  Yanlış "uyğun deyil" isə mərkəzi pasiyentdən məhrum edir. Hər iki istiqamətdə
+  fərziyyə qəbuledilməzdir.
+- **Doğru yol:** Nərminin zəng siyahısı — 5 saniyəlik sual, qəti cavab.
+- **Təkrar yoxlamağa ehtiyac yoxdur** — sorğu nəticəsi `scratchpad/osm-health.json`
+  (1218 obyekt) keşdədir.
+
 ## Parkinq cavabı OpenStreetMap-dən — YOXLANILMIŞ məlumat
 - **Qərar:** FAQ `parking` cavabı OSM-dən Overpass API ilə çəkilir: mərkəzin
   koordinatı ətrafında `amenity=parking` / `amenity=parking_space` obyektləri

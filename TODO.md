@@ -63,7 +63,10 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [x] **FAQ ödəniş + parkinq — DONE 2026-08-02.** 271/363 mərkəzdə FAQ bloku var
   (ödəniş 177, parkinq 241). Parkinq OSM-dən yoxlanılıb; ödəniş Bakı + şəbəkə
   filialları üçün fərziyyədir (bax DECISIONS).
-- [ ] **Qalan FAQ sualları** — 246 mərkəzdən yalnız 1-i özü doldurub. `CenterFaq` +
+- [ ] **Qalan FAQ sualları — YALNIZ ZƏNGLƏ.** Ölçülüb: OSM-də `wheelchair` datası
+  praktiki olaraq yoxdur (1218 obyektdən 8-i), mərkəz saytlarında da bu suallar
+  cavablanmır. Nərminin zəng siyahısı: əlil girişi · həkim göndərişi · uşaq qəbulu ·
+  nəticə müddəti. Operator paneli (`/panel/[id]`) FAQ redaktorunu artıq göstərir. `CenterFaq` +
   `faqJsonLd` hazırdır. Yalnız YOXLANILA BİLƏN suallar (iş saatı, parkinq, uşaq
   qəbulu, nəticə formatı) mərkəzin öz saytından doldurula bilər — qiymət/keyfiyyət
   iddiaları YOX. Bax DECISIONS (saxta rəy qərarı ilə eyni prinsip).
