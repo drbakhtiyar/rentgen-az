@@ -25,9 +25,9 @@ Paralel araşdırmanın nəticəsi (`~/rentgen_az_hedef_klinikalar.xlsx`): A qru
   xidmətdə Dental kateqoriyası VƏ YA adda dental/stomatolo/diş/dent/implant/smile.
   PENDING+Dental = 57.
 - Unikal təsvirlər generatorla; mobil nömrəsi olanlara OTP-yə hazır owner.
-- Admin baxışına saxlanılan hallar: İmaməliyeva (fiziki şəxs lisenziyası),
-  Yeni Qalaaltı Hotel (lisenziyalı, amma otel). Zəng tələb edən: ATU (domen ölü),
-  White Smile PROMAX (siyahıda yox idi).
+- İstifadəçi qərarı (2026-08-03): İmaməliyeva (fiziki şəxs), Yeni Qalaaltı Hotel
+  (otel) və ATU (domen ölü, zəng tələb edirdi) SİLİNDİ; White Smile PROMAX əlavə
+  edilmədi. Yekun: 51 dental PENDING. Baza: 414 mərkəz (248 APPROVED / 166 PENDING).
 
 ## 2026-08-02 — FAQ "uşaqlar qəbul edilirmi?" cavabı
 
