@@ -7,15 +7,26 @@ export const revalidate = 3600;
 
 type Entry = MetadataRoute.Sitemap[number];
 
-/** Public page present in both languages → az at `path`, ru at `/ru<path>`,
- *  cross-linked with hreflang so Google indexes both versions. */
+/**
+ * Public page present in both languages → az at `path`, ru at `/ru<path>`.
+ *
+ * Google-un tövsiyəsi: HƏR dil versiyası sitemap-da ÖZ `<url>` bloku kimi
+ * verilməli və hər blok bütün alternativləri (özü daxil) sadalamalıdır. Əvvəl
+ * yalnız AZ `<loc>` yazılırdı, RU isə sadəcə `xhtml:link` kimi görünürdü —
+ * yəni RU URL-ləri sitemap-da rəsmən yox idi. `x-default` də əlavə olundu
+ * (layout-dakı hreflang ilə uyğun olsun deyə).
+ */
 function bilingual(
   path: string,
   opts: Omit<Entry, "url" | "alternates">,
-): Entry {
+): Entry[] {
   const az = `${SITE_URL}${path}`;
   const ru = `${SITE_URL}/ru${path}`;
-  return { url: az, alternates: { languages: { az, ru } }, ...opts };
+  const languages = { az, ru, "x-default": az };
+  return [
+    { url: az, alternates: { languages }, ...opts },
+    { url: ru, alternates: { languages }, ...opts },
+  ];
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -27,6 +38,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/xidmetler",
     "/hekimler",
     "/merkezler-ucun",
+    "/hekimler-ucun",
+    "/paketler",
     "/blog",
     "/faq",
     "/elaqe",
@@ -34,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/istifade-shertleri",
   ];
 
-  const entries: MetadataRoute.Sitemap = staticPaths.map((p) =>
+  const entries: MetadataRoute.Sitemap = staticPaths.flatMap((p) =>
     bilingual(p, {
       lastModified: now,
       changeFrequency: p === "" ? "daily" : "weekly",
@@ -50,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     for (const s of services) {
       entries.push(
-        bilingual(`/xidmetler/${s.slug}`, {
+        ...bilingual(`/xidmetler/${s.slug}`, {
           lastModified: now,
           changeFrequency: "weekly",
           priority: 0.8,
@@ -66,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const cities = await getCityPages();
     for (const c of cities) {
       entries.push(
-        bilingual(`/rentgen-merkezleri/sheher/${c.slug}`, {
+        ...bilingual(`/rentgen-merkezleri/sheher/${c.slug}`, {
           lastModified: now,
           changeFrequency: "weekly",
           // Şəhər səhifələri kataloqun özündən sonra ən vacib giriş nöqtəsidir.
@@ -86,7 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     for (const c of centers) {
       entries.push(
-        bilingual(`/rentgen-merkezleri/${c.slug}`, {
+        ...bilingual(`/rentgen-merkezleri/${c.slug}`, {
           lastModified: c.updatedAt,
           changeFrequency: "weekly",
           priority: 0.7,
@@ -105,7 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     for (const d of doctors) {
       entries.push(
-        bilingual(`/hekimler/${d.id}`, {
+        ...bilingual(`/hekimler/${d.id}`, {
           lastModified: d.updatedAt,
           changeFrequency: "monthly",
           priority: 0.6,
