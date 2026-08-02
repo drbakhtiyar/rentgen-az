@@ -30,6 +30,14 @@ Paralel araşdırmanın nəticəsi (`~/rentgen_az_hedef_klinikalar.xlsx`): A qru
   <3KB favicon rədd) + tapılmayanlara variant-sorğulu təkrar axtarış. Nəticə:
   şəkilli 0→33 (61%), loqolu 0→9, placeId 39→41, koordinat +2, telefon +1.
   Şəkilsiz qalan 21-in çoxunun Google kartında ümumiyyətlə foto yoxdur.
+- **Sayt-skan xidmət yoxlaması (2026-08-03):** dental PENDING saytları modallıq
+  sübutu üçün skan edildi. İki YENİ yalan-müsbət növü tapılıb qoruyucuya çevrildi:
+  (5) dental klinika saytında "ultrasəs" = diş daşı təmizləmə skaleri, USM deyil;
+  (6) dental saytda "3D kompüter tomoqrafiyası" = CBCT, tibbi KT deyil → dental-adlı
+  klinikalara ağır modallıq/USM qaydaları ümumiyyətlə tətbiq edilmir. Ortaq domen
+  (≥2 mərkəz) korporativ sayt kimi istisna (merkeziklinika.az halı). Nəticə: skan
+  sübut vermədi; Megapol-a USM (qarın+tiroid) İSTİFADƏÇİNİN öz müşahidəsi ilə əlavə
+  olundu — istifadəçi təsdiqi skrapdan üstün mənbədir.
 - İstifadəçi qərarı (2026-08-03): İmaməliyeva (fiziki şəxs), Yeni Qalaaltı Hotel
   (otel) və ATU (domen ölü, zəng tələb edirdi) SİLİNDİ; White Smile PROMAX əlavə
   edilmədi. Yekun: 51 dental PENDING. Baza: 414 mərkəz (248 APPROVED / 166 PENDING).
