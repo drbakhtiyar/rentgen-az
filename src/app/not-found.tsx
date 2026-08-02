@@ -21,8 +21,11 @@ import { getDict } from "@/lib/i18n";
  * Ona görə bu səhifə çıxılmaz nöqtə deyil, davam yoludur: axtarışa, şəhər
  * səhifələrinə və əsas kataloqlara keçid verir.
  */
+// `not-found.tsx` yalnız STATİK `metadata` dəstəkləyir (generateMetadata yoxdur),
+// yəni başlıq dilə uyğunlaşa bilmir. Ona görə dildən asılı olmayan başlıq —
+// əks halda RU istifadəçi rusca səhifədə azərbaycanca tab adı görürdü.
 export const metadata: Metadata = buildMetadata({
-  title: "Səhifə tapılmadı",
+  title: "404",
   noIndex: true,
 });
 

@@ -2,6 +2,18 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-02 — Xüsusi 404 səhifəsi
+
+Sayt Next-in defolt ingiliscə səhifəsini verirdi ("404: This page could not be
+found") — nə brend, nə naviqasiya, nə AZ/RU. Halbuki burada 404 NORMAL haldır:
+PENDING mərkəz səhifələri (117), 3-dən az mərkəzi olan şəhərlər, təxirə salınmış
+şəhər×xidmət kombinasiyaları (`DEFERRED_SERVICES`), köhnə linklər.
+
+`src/app/not-found.tsx` — çıxılmaz nöqtə yox, davam yolu: mərkəz axtarışı, əsas
+kataloqlar və şəhər səhifələrinə keçidlər. i18n `notFoundPage` (az+ru), noIndex.
+Başlıq qəsdən dildən asılı deyil ("404") — `not-found.tsx` yalnız statik
+`metadata` dəstəkləyir, ona görə RU səhifədə AZ başlıq görünürdü.
+
 ## 2026-08-02 — Şəhər / şəhər×xidmət səhifələri + sitemap düzəlişləri
 
 **Şəhər lendinq səhifələri** — `/rentgen-merkezleri/sheher/[slug]`, ≥3 mərkəzi olan

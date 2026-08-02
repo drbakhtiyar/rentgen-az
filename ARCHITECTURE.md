@@ -27,6 +27,7 @@ src/
   components/                  # admin ai centers chat dashboard doctors documents forms join layout map partnership rentgen reviews ui viewer
   lib/                         # domain logic (see below)
   generated/prisma/            # generated Prisma client (import from here)
+  not-found.tsx                # qlobal 404 (brendli, az/ru, kataloq+şəhər keçidləri)
   proxy.ts                     # middleware: subdomain routing + route gating
 prisma/schema.prisma           # single schema; 51 migrations
 ```
