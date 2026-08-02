@@ -2,7 +2,7 @@ import { Prisma } from "@/generated/prisma/client";
 import type { CenterStatus } from "@/generated/prisma/enums";
 
 /** Data-completeness quick-filter keys shared by the admin & operator center lists. */
-export type HasKey = "phone" | "mobile" | "landline" | "photo" | "rating" | "hours";
+export type HasKey = "phone" | "mobile" | "landline" | "photo" | "rating" | "hours" | "dental";
 
 export const HAS_FILTERS: { key: HasKey; label: string }[] = [
   { key: "phone", label: "📞 Telefonlu" },
@@ -11,6 +11,9 @@ export const HAS_FILTERS: { key: HasKey; label: string }[] = [
   { key: "photo", label: "🖼 Şəkilli" },
   { key: "rating", label: "⭐ Reytinqli" },
   { key: "hours", label: "🕐 Saatlı" },
+  // Stomatoloji klinikalar — 2026-08 dental importunu (3D tomoqrafiya +
+  // panoramik hədəfli) PENDING növbəsində digərlərindən ayırmaq üçün.
+  { key: "dental", label: "🦷 Dental" },
 ];
 
 // Azərbaycan mobil operator prefiksləri (beynəlxalq formatda). OTP SMS yalnız
@@ -29,6 +32,19 @@ export const HAS_WHERE: Record<HasKey, Prisma.CenterProfileWhereInput> = {
   photo: { images: { isEmpty: false } },
   rating: { googleRating: { not: null } },
   hours: { NOT: { hours: { equals: Prisma.DbNull } } },
+  // Dental sayılır: xidmətlərində "Dental" kateqoriyası VAR və YA adı stomatoloji
+  // klinikaya işarə edir (yeni import olunanlarda xidmət hələ boş ola bilər).
+  dental: {
+    OR: [
+      { services: { some: { service: { category: "Dental" } } } },
+      { name: { contains: "dental", mode: "insensitive" } },
+      { name: { contains: "stomatolo", mode: "insensitive" } },
+      { name: { contains: "diş", mode: "insensitive" } },
+      { name: { contains: "dent", mode: "insensitive" } },
+      { name: { contains: "implant", mode: "insensitive" } },
+      { name: { contains: "smile", mode: "insensitive" } },
+    ],
+  },
 };
 
 /** Data-completeness score 0–5 — surfaces the richest listings first. */
