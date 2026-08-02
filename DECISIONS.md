@@ -16,6 +16,17 @@ Architectural & product decisions that live only in conversation (not obvious fr
 - **İfadə 12 variantda yazılıb** (mərkəz id-sinin heşi ilə sabit seçim): eyni mətn
   159 səhifədə birebir təkrarlansa, `faqJsonLd` onu eyni strukturlu data kimi
   göndərərdi. Öz cavabı olan 2 mərkəzə (Smile, Sağlam Ailə 28 May) toxunulmayıb.
+- **Regiona genişləndirmə YALNIZ şəbəkə filiallarına** (2026-08-02): Bakıda da,
+  regionda da filialı olan şəbəkənin ödəniş infrastrukturu eynidir — bu, "bütün
+  region klinikaları" fərziyyəsindən qat-qat əsaslıdır. Şəbəkə ƏL İLƏ sadalanmayıb,
+  datadan SÜBUTLA aşkarlanıb: (1) eyni sayt domeni, (2) eyni telefon (mərkəzi
+  kommutator), (3) adında "filial" + brend uyğunluğu, (4) eyni iki sözlük brend
+  ifadəsini ən azı 2 Bakı filialı daşıyır. Nəticə: 16 filial (Referans 10,
+  Sağlam Ailə 2, MediClub 1, Diamed 1, İnci 1, Zahra 1).
+- **Kənarlaşdırılan yalan şəbəkələr:** şəhər adını daşıyanlar ("Sumqayıt Hospital"
+  + "Sumqayıt klinika" — müstəqil mərkəzlər), nömrəli dövlət poliklinikaları
+  ("1 saylı", "3 saylı"), hallanmış ümumi sözlər ("Uşaq poliklinikası"×5) və
+  təsadüfi ad oxşarlığı ("Med City" ≠ "City Hospital", "Sağlam Ailə" ≠ "Sağlam Həyat").
 
 ## Saxta rəy YAZILMIR (2026-08-02 — təklif edildi, rədd edildi)
 - **Qərar:** mərkəzlərə uydurma pasiyent rəyi yazılmır; Google rəylərinin mətni

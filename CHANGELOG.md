@@ -9,6 +9,11 @@ Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git
   `faqJsonLd` təkrar strukturlu data göndərərdi. Öz cavabı olan 2 mərkəzə
   toxunulmadı. Bu, yoxlanılmış məlumat deyil — bax DECISIONS.
   Nəticə: FAQ bloku olan mərkəz 2 → 161, FAQ rich snippet üçün uyğunluq yarandı.
+- **Region şəbəkə filialları** — əlavə **16 mərkəz** (Referans 10, Sağlam Ailə 2,
+  MediClub 1, Diamed 1, İnci 1, Zahra 1). Şəbəkələr datadan sübutla aşkarlandı
+  (ortaq domen / ortaq telefon / adında "filial" / 2+ Bakı filialında eyni brend
+  ifadəsi); yalan qruplar (şəhər adı, nömrəli poliklinika, ad oxşarlığı) kəsildi.
+  **Yekun: 177 mərkəzdə ödəniş cavabı** (Bakı 161 + region 16), 14 fərqli ifadə.
 - **Mərkəz formunda şəkil yükləmə görünürlüyü** — düymə var idi, amma kiçik boz
   həb kimi sətrin sağında, iş saatı cədvəli ilə xəritənin arasında sıxılmışdı;
   "şəkil yükləmək mümkün deyil" təəssüratı yaradırdı. İndi şəbəkənin içində
