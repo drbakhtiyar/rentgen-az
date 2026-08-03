@@ -53,8 +53,13 @@ FAYLLAR: mərkəz yükləyir → pasiyent kabinetində, göndərən həkim isə 
 
 DƏSTƏK: Hər paneldə "Söhbətlər"də sancaqlı "Dəstək" (admin) çatı var — hesaba-özəl məsələlər üçün ora yönləndir.`;
 
-/** Ask the assistant. History = prior turns (user/assistant), last one is the new question. */
-export async function askAssistant(history: AiMsg[]): Promise<{ ok: boolean; answer?: string; error?: string }> {
+/** Aşağı səviyyəli Claude çağırışı — fərqli sistem promptları ilə (panel
+ *  yardımçısı, WhatsApp botu). Model/xəta idarəsi bir yerdə qalır. */
+export async function askClaude(
+  system: string,
+  history: AiMsg[],
+  maxTokens = 500,
+): Promise<{ ok: boolean; answer?: string; error?: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return {
@@ -72,8 +77,8 @@ export async function askAssistant(history: AiMsg[]): Promise<{ ok: boolean; ans
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 500,
-        system: SYSTEM_PROMPT,
+        max_tokens: maxTokens,
+        system,
         messages: history,
       }),
     });
@@ -93,4 +98,9 @@ export async function askAssistant(history: AiMsg[]): Promise<{ ok: boolean; ans
     console.error("[ai-assistant] request failed:", (e as Error).message);
     return { ok: false, error: "AI yardımçı hazırda cavab verə bilmir. Bir azdan yenidən cəhd edin." };
   }
+}
+
+/** Ask the assistant. History = prior turns (user/assistant), last one is the new question. */
+export async function askAssistant(history: AiMsg[]): Promise<{ ok: boolean; answer?: string; error?: string }> {
+  return askClaude(SYSTEM_PROMPT, history);
 }

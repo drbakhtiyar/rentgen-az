@@ -788,6 +788,21 @@ model WaitlistSignup {
   @@index([locale])
 }
 
+// WhatsApp botunun "beyni" — admin tərəfindən redaktə olunan bilik bölmələri.
+// Sistem promptu aktiv bölmələrdən sıra ilə yığılır (bax src/lib/wa-bot.ts).
+// Sərt təhlükəsizlik qaydaları kodda saxlanılır və buradan dəyişdirilə bilməz.
+model BotSection {
+  id        String   @id @default(cuid())
+  title     String // bölmənin adı (admin siyahısında görünür)
+  content   String // botun biləcəyi mətn (sistem prompta daxil olur)
+  order     Int      @default(0) // prompt daxilində sıra
+  isActive  Boolean  @default(true) // söndürülmüş bölmə prompta düşmür
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
 model AdminActionLog {
   id         String   @id @default(cuid())
   adminId    String?
