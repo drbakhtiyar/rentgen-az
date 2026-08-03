@@ -235,6 +235,9 @@ model CenterProfile {
   // fayllar silinir. Yeniləmədə null olur.
   planExpiredAt     DateTime?
   apiKey            String?      @unique // Platinum API girişi açarı
+  // Qiymət toplama kampaniyası: WhatsApp-la göndərilən birdəfəlik linkin tokeni
+  // (/q/<token> — girişsiz sürətli qiymət səhifəsi). Bax src/lib/price-invite.ts.
+  priceToken        String?      @unique
 
   // Google rating (fetched via the platform's Places API key from googlePlaceId)
   googlePlaceId     String?

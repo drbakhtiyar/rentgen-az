@@ -18,6 +18,8 @@ export default function robots(): MetadataRoute.Robots {
         "/merkez/",
         "/kabinet",
         "/giris",
+        "/q",
+        "/rey/davet",
         "/api",
       ],
     },

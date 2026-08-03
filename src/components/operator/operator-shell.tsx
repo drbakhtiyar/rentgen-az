@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, Plus } from "lucide-react";
+import { LogOut, Plus, MessageCircle } from "lucide-react";
 
 /**
  * Minimal chrome for the operator (data-entry) panel. Intentionally spartan:
@@ -33,6 +33,12 @@ export function OperatorShell({
             <span className="font-display font-bold text-ink-900">Operator paneli</span>
           </Link>
           <div className="flex items-center gap-3">
+            <Link
+              href="/panel/whatsapp"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#1ebe5b]"
+            >
+              <MessageCircle className="h-4 w-4" /> WhatsApp
+            </Link>
             {showNew && (
               <Link
                 href="/panel/yeni"
