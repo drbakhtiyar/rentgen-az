@@ -57,16 +57,22 @@ export default async function HomePage() {
 
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
-  // Feature the 4 most-used services that at least one approved center offers
-  // (most requests, then most centers offering them).
-  const featuredServices = allServices
-    .filter((s) => (counts[s.slug] ?? 0) > 0)
-    .sort(
-      (a, b) =>
-        (usage[b.slug] ?? 0) - (usage[a.slug] ?? 0) ||
-        (counts[b.slug] ?? 0) - (counts[a.slug] ?? 0),
-    )
-    .slice(0, 4);
+  // Hər ziyarətdə TƏSADÜFİ 4 xidmət — hər biri FƏRQLİ kateqoriyadan
+  // (istifadəçi qərarı, 2026-08-04). Səhifə locale cookie-sinə görə onsuz da
+  // hər sorğuda render olunur, ona görə seçim həqiqətən ziyarət başınadır.
+  // Yalnız ən azı 1 təsdiqlənmiş mərkəzin təklif etdiyi xidmətlər iştirak edir.
+  const eligible = allServices.filter((s) => (counts[s.slug] ?? 0) > 0 && s.category);
+  const byCat = new Map<string, typeof eligible>();
+  for (const s of eligible) byCat.set(s.category!, [...(byCat.get(s.category!) ?? []), s]);
+  const shuffledCats = [...byCat.keys()];
+  for (let i = shuffledCats.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledCats[i], shuffledCats[j]] = [shuffledCats[j], shuffledCats[i]];
+  }
+  const featuredServices = shuffledCats.slice(0, 4).map((c) => {
+    const list = byCat.get(c)!;
+    return list[Math.floor(Math.random() * list.length)];
+  });
 
   return (
     <>

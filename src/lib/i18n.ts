@@ -682,7 +682,7 @@ const az: Dict = {
     statServices: "Xidmət növü",
     statDistricts: "Əhatə olunan rayon",
     servicesEyebrow: "Xidmətlər",
-    servicesTitle: "Bütün dental görüntüləmə xidmətləri",
+    servicesTitle: "Bütün rentgen xidmətləri",
     servicesDesc:
       "Diaqnostika və müalicə planlaması üçün lazım olan rentgen və tomoqrafiya növləri.",
     centerCount: "mərkəz",
@@ -1219,7 +1219,7 @@ const ru: Dict = {
     statServices: "Видов услуг",
     statDistricts: "Охваченных районов",
     servicesEyebrow: "Услуги",
-    servicesTitle: "Все услуги стоматологической визуализации",
+    servicesTitle: "Все рентген-услуги",
     servicesDesc:
       "Виды рентгена и томографии, необходимые для диагностики и планирования лечения.",
     centerCount: "центр.",
