@@ -47,6 +47,9 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [x] **Payriff — LIVE.** `PAYRIFF_MERCHANT`/`PAYRIFF_SECRET` in Vercel prod; callback 200. Verified end-to-end: 3 real 1 AZN top-ups settled (PAID → wallet credited via TOPUP ledger). Whole revenue loop works: center tops up wallet via Payriff → buys storage from balance. (1 abandoned PENDING checkout on 2026-07-20 — harmless.)
 - [ ] **CRM Faza 2** — beyond current Bugün/Təqvim/Pasiyentlər/SMS/Söhbətlər/Jurnal (see memory `rentgen-az-crm`).
 
+- [x] **Qiymət toplama kampaniyası — QURULDU 2026-08-03.** `/panel/whatsapp`
+  (gündə 12) + girişsiz `/q/<token>`. Konversiya 1 həftəyə ölçülməli.
+
 ## Analytics / SEO
 - [x] **Google Search Console** — domain verified; **sitemap submitted 2026-07-31 (Успешно, 188 URLs discovered).**
 - [x] **RU indexing — DONE (2026-08-01).** Russian now at crawlable `/ru/*` URLs with self-canonical + hreflang (az/ru/x-default), sitemap lists both. Was cookie-only (invisible to Google) → now indexable. See memory `rentgen-az-ru-i18n`.

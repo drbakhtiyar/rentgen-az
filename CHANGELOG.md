@@ -2,6 +2,16 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-03 — Qiymət toplama kampaniyası (WhatsApp + /q linki)
+
+Qiymət əhatəsi 4/248 idi; mərkəzlər panelə girmir (3 giriş). Həll: operator
+`/panel/whatsapp`-dan wa.me linkini HAZIR mesajla açır (5 variantlı mətn,
+mərkəzin adı + `/q/<token>` linki), göndəriş jurnala düşür; mərkəz girişsiz
+qiymət yazır → dərhal canlıda. **Gündəlik limit 12** (istifadəçi qərarı) —
+WhatsApp spam-qorunması alətə tikilib. Token = kimlik (rəy dəvəti məntiqi);
+yazılar `center:price_self` kimi izlənir. `priceToken` miqrasiyası prod-da.
+Canlı test: keçərsiz token → "Link keçərli deyil", real token → form ✓.
+
 ## 2026-08-03 — Dental klinika importu (54 PENDING) + 🦷 filtr
 
 Paralel araşdırmanın nəticəsi (`~/rentgen_az_hedef_klinikalar.xlsx`): A qrupu —
