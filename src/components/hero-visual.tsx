@@ -18,7 +18,7 @@ const VARIANT: "rayons" | "dots" = "rayons";
 // ---- Projection (equirectangular with cos(lat) x-correction), fit to viewBox ----
 const VW = 1000;
 const VH = 1000;
-const PAD = 34; // 76 idi — istifadəçi xahişi ilə xəritə ~10% böyüdüldü
+const PAD = 10; // 76→34→10 — istifadəçi xahişi ilə iki dəfə ~10% böyüdüldü
 const ALL_V1 = [...AZ_MAINLAND, ...AZ_NAKHCHIVAN];
 const ALL =
   VARIANT === "rayons" ? AZ_RAYONS.flatMap((r) => r.rings.flat()) : ALL_V1;
@@ -95,7 +95,7 @@ export function HeroVisual({
         Azərbaycan
       </span>
 
-      <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full p-5" aria-hidden>
+      <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full p-2" aria-hidden>
         <defs>
           <radialGradient id="land" cx="60%" cy="40%" r="72%">
             <stop offset="0%" stopColor="rgba(56,150,230,0.30)" />
