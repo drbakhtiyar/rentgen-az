@@ -74,8 +74,10 @@ export async function answerWaMessage(
   const msgs: AiMsg[] = [...history.slice(-10), { role: "user", content: text.slice(0, 1500) }];
   const res = await askClaude(system, msgs, 400);
   if (!res.ok || !res.answer) return { ok: false };
-  const escalate = /operator|əlaqə saxlanılacaq|оператор/i.test(res.answer);
-  return { ok: true, answer: res.answer, escalate };
+  // Markdown → WhatsApp: **qalın** → *qalın*; başlıq işarələri silinir
+  const answer = res.answer.replace(/\*\*(.+?)\*\*/g, "*$1*").replace(/^#+\s*/gm, "").trim();
+  const escalate = /operator|əlaqə saxlanılacaq|оператор/i.test(answer);
+  return { ok: true, answer, escalate };
 }
 
 /** Admin test qutusu üçün — konkret nömrə kontekstini də simulyasiya edə bilir. */
