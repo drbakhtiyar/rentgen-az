@@ -47,9 +47,11 @@ const OUTLINE_PATHS = AZ_OUTLINE.map(toPath);
 
 // Which cities get a text label (if active). Bakı is the hub; its label sits left
 // of the marker because it's on the eastern tip.
-const LABELS = new Set(["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Şamaxı", "Şirvan", "Mingəçevir", "Zaqatala", "Tovuz", "İsmayıllı"]);
+const LABELS = new Set(["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Şamaxı", "Şirvan", "Mingəçevir", "Zaqatala", "Tovuz", "İsmayıllı", "Qusar", "Sumqayıt", "Xankəndi"]);
 const HUB = "Bakı";
-const LEFT = new Set(["Bakı"]);
+const LEFT = new Set(["Bakı", "Qusar"]);
+// Ayrı-ayrı etiketlərə şaquli sürüşmə (sıx zonalarda toqquşmanı açmaq üçün)
+const LABEL_DY: Record<string, number> = { Qusar: -16 };
 const DEFAULT_CITIES = ["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Sumqayıt", "Şamaxı"];
 
 export function HeroVisual({
@@ -160,7 +162,7 @@ export function HeroVisual({
                   <circle cx={m.x} cy={m.y} r={r} fill="#2ad4e6" stroke="#eafcff" strokeWidth={hub ? 2 : 1.1} />
                   <text
                     x={left ? m.x - r - 7 : m.x + r + 7}
-                    y={m.y + 4}
+                    y={m.y + 4 + (LABEL_DY[m.name] ?? 0)}
                     textAnchor={left ? "end" : "start"}
                     fill="rgba(224,242,255,0.95)"
                     fontSize="21"
