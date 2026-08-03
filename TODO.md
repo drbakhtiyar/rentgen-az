@@ -13,6 +13,11 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **Center rating/endorsement (#12)** — deferred by user ("hələ saxla"); decide model (doctor endorsement vs patient review vs favorite).
 
 ## Blocked — waiting on external input
+- [blocked] **WhatsApp Business API (Meta)** — bot kodu hazır və passiv gözləyir.
+  İstifadəçi: Meta Business hesabı + biznes verifikasiyası + nömrənin WABA-ya
+  bağlanması. Sonra Vercel env: `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`,
+  `WHATSAPP_VERIFY_TOKEN` (özümüz uydururuq), `WHATSAPP_APP_SECRET`; Meta-da
+  webhook URL: https://rentgen.az/api/whatsapp/webhook. Bot beyni: /admin/bot.
 - [blocked] **Apple Developer account** ($99/yr) — push code (native APNs) fully built; needs the `.p8` key + `APNS_*` Vercel env to go live, and the account for App Store submission. Biggest blocker for the app.
 - [x] **`GOOGLE_PLACES_API_KEY` — DONE (2026-07-31).** Key (Places API New) in Vercel prod; ~16 centers auto-connected with live Google ratings (shown on cards + detail + app), daily cron refresh + auto-connect of new centers. 7 centers still need their exact Google link (generic names): Vitamin, Kristal, Dental Clinic Naxçıvan, F Clinic, 3DM Yasamal, 3DM Xalqlar, Implant Dentist.
 - [blocked] **Google Play account** ($25) — Android submission (later).

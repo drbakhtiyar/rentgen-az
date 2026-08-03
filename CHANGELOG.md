@@ -2,6 +2,17 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-04 — WhatsApp AI botu + "Bot beyni" admin bölməsi
+
+Mərkəzlərin WhatsApp suallarına avtomatik cavab. Bilik bazası `BotSection`
+cədvəlində — admin `/admin/bot`-da redaktə edir, kod dəyişikliyi olmadan;
+yanındakı CANLI TEST QUTUSU WhatsApp qoşulmadan botu sınayır (mərkəz nömrəsi
+simulyasiyası ilə). Prompt 3 qat: sərt qaydalar (kodda) + aktiv bölmələr +
+yazan mərkəzin öz kart vəziyyəti (nömrə bazadan tanınır; qiymətsizsə /q linki
+verilir). Webhook `/api/whatsapp/webhook` (imza yoxlamalı); söhbət AdminThread-ə
+güzgülənir. `askClaude()` çıxarıldı — panel AI ilə eyni nüvə. 8 başlanğıc bölmə
+seed edildi. **Meta env gələnə qədər webhook passivdir** (aşağıda TODO).
+
 ## 2026-08-03 — Qiymət toplama kampaniyası (WhatsApp + /q linki)
 
 Qiymət əhatəsi 4/248 idi; mərkəzlər panelə girmir (3 giriş). Həll: operator
