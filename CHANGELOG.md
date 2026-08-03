@@ -2,6 +2,16 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-04 — Hero xəritəsi v2: rayon-səviyyəli choropleth
+
+İstifadəçi konsepti: siluet + nöqtələr əvəzinə mərkəzimiz OLAN rayonlar rəngli.
+`src/lib/az-rayons.ts` (avtogenerasiya, geoBoundaries AZE ADM2): 79/79 forma,
+adaptiv sadələşdirmə, 2898 nöqtə + ADM0 dəqiq xarici kontur. EN→AZ ad xəritəsi
+bazadakı `city` ilə üst-üstə düşür → örtük data-driven qalır (yeni şəhər təsdiq
+olunanda rayonu özü yanır). **Köhnə görünüş saxlanılıb** (istifadəçi xahişi):
+`hero-visual.tsx`-də `VARIANT="dots"` bir sətirlə geri qaytarır.
+Qeyd: Şəki yaxınlığındakı tünd ləkə Mingəçevir su anbarıdır — real coğrafiya.
+
 ## 2026-08-04 — WhatsApp AI botu + "Bot beyni" admin bölməsi
 
 Mərkəzlərin WhatsApp suallarına avtomatik cavab. Bilik bazası `BotSection`
