@@ -66,11 +66,13 @@ export default async function HomePage() {
   for (const s of eligible) byCat.set(s.category!, [...(byCat.get(s.category!) ?? []), s]);
   const shuffledCats = [...byCat.keys()];
   for (let i = shuffledCats.length - 1; i > 0; i--) {
+    // eslint-disable-next-line react-hooks/purity -- qəsdən: hər sorğuda fərqli seçim tələbdir (dinamik server komponent)
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledCats[i], shuffledCats[j]] = [shuffledCats[j], shuffledCats[i]];
   }
   const featuredServices = shuffledCats.slice(0, 4).map((c) => {
     const list = byCat.get(c)!;
+    // eslint-disable-next-line react-hooks/purity -- qəsdən: ziyarət-başına təsadüfilik
     return list[Math.floor(Math.random() * list.length)];
   });
 
