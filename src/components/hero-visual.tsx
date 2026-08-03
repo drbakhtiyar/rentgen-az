@@ -18,7 +18,7 @@ const VARIANT: "rayons" | "dots" = "rayons";
 // ---- Projection (equirectangular with cos(lat) x-correction), fit to viewBox ----
 const VW = 1000;
 const VH = 1000;
-const PAD = 76;
+const PAD = 34; // 76 idi — istifadəçi xahişi ilə xəritə ~10% böyüdüldü
 const ALL_V1 = [...AZ_MAINLAND, ...AZ_NAKHCHIVAN];
 const ALL =
   VARIANT === "rayons" ? AZ_RAYONS.flatMap((r) => r.rings.flat()) : ALL_V1;
