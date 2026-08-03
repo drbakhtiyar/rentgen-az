@@ -29,7 +29,7 @@ const gW = (hi[0] - lo[0]) * KX;
 const gH = hi[1] - lo[1];
 const SC = Math.min((VW - 2 * PAD) / gW, (VH - 2 * PAD) / gH);
 const OFFX = (VW - gW * SC) / 2;
-const OFFY = (VH - gH * SC) / 2;
+const OFFY = (VH - gH * SC) / 2 - 26; // xəritə yuxarı sürüşdürülüb (cənub ucu alt zolağa yaxınlaşmasın)
 const px = (lng: number) => OFFX + (lng - lo[0]) * KX * SC;
 const py = (lat: number) => OFFY + (hi[1] - lat) * SC;
 const toPath = (ring: [number, number][]) =>
@@ -85,17 +85,13 @@ export function HeroVisual({
   return (
     <div
       className={cn(
-        "relative aspect-square w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-ink-950",
+        "relative aspect-square w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-ink-950",
         className,
       )}
     >
       <div className="absolute inset-0 bg-grid-dark opacity-40" />
       <div className="glow absolute left-1/4 top-1/3 h-56 w-56 opacity-40" />
       <div className="glow-cyan absolute bottom-8 right-6 h-48 w-48 opacity-40" />
-
-      <span className="absolute left-5 top-4 font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-300/70">
-        Azərbaycan
-      </span>
 
       <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full p-2" aria-hidden>
         <defs>
