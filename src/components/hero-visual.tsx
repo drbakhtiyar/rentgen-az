@@ -47,7 +47,7 @@ const OUTLINE_PATHS = AZ_OUTLINE.map(toPath);
 
 // Which cities get a text label (if active). Bakı is the hub; its label sits left
 // of the marker because it's on the eastern tip.
-const LABELS = new Set(["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Şamaxı", "Şirvan", "Mingəçevir", "Zaqatala"]);
+const LABELS = new Set(["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Şamaxı", "Şirvan", "Mingəçevir", "Zaqatala", "Tovuz", "İsmayıllı"]);
 const HUB = "Bakı";
 const LEFT = new Set(["Bakı"]);
 const DEFAULT_CITIES = ["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Sumqayıt", "Şamaxı"];
