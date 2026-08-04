@@ -2,6 +2,78 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Platforma əlaqəsi YALNIZ yazışma ilə (WhatsApp) — telefon saytda göstərilmir
+- **Qərar (2026-08-04):** platformanın telefon nömrəsi saytın heç yerində göstərilmir;
+  əlaqə kanalları: WhatsApp yazışması + info@rentgen.az. Nömrə alınanda yalnız
+  WhatsApp düyməsinə bağlanacaq (`/elaqe`), zəng üçün dərc edilməyəcək.
+- **Səbəb:** istifadəçi: "zənglər gəlməsin, ancaq WhatsApp üzərindən yazacağıq".
+- **Nəticə:** `/elaqe` WhatsApp düyməsi müvəqqəti saxta nömrədədir (wa.me/994500000000);
+  real nömrə gələndə TƏK yenilənməli yer oradır. Mərkəzlərin öz nömrələri isə
+  səhifələrində qalır — qərar yalnız platformanın öz nömrəsinə aiddir.
+
+## Tokenli link = sahiblik sübutu (OTP YOX) — /q və /rey/davet nümunəsi
+- **Qərar:** girişsiz formalarda (qiymət formu `/q/<token>`, rəy dəvəti
+  `/rey/davet/<token>`) OTP istifadə olunmur. Link mərkəzin/pasiyentin ÖZ nömrəsinə
+  göndərilir → linkə sahib olmaq nömrəyə sahib olmağı sübut edir.
+- **Səbəb:** OTP əlavə sürtünmə yaradır və konversiyanı öldürür; təhdid modeli zəifdir
+  (token uzun, təsadüfi, unikal; yalnız öz obyektinə yazır).
+- **Nəticə:** tokenlər `@unique` sahələrdə saxlanır (`CenterProfile.priceToken`,
+  `AppointmentRequest.reviewToken`); marşrutlar `robots.ts`-də disallow-dur.
+
+## WhatsApp toplu göndəriş limiti — gündə 12
+- **Qərar:** operator qiymət kampaniyasında (`/panel/whatsapp`) gündəlik göndərmə
+  limiti 12 mərkəzdir; mesaj mətni 5 variantdan fırlanır; sıralama APPROVED əvvəl,
+  sonra Google rəy sayı.
+- **Səbəb:** yeni/adi nömrədən kütləvi eyni-mətnli wa.me göndərişləri WhatsApp-ın
+  spam-blok həddinə düşə bilər; istifadəçi limiti özü 12 seçdi.
+- **Nəticə:** göndəriş `AdminActionLog` (`center:wa_price_invite`) ilə qeydə alınır —
+  gündəlik say və dedup oradan hesablanır.
+
+## Bot beyni DB-də (admin redaktə edir), sərt qaydalar kodda
+- **Qərar:** WhatsApp botunun bilik bazası `BotSection` cədvəlindədir və `/admin/bot`
+  səhifəsindən kod dəyişikliyi olmadan redaktə olunur; dəyişilməz təhlükəsizlik
+  qaydaları (qiymət uydurma, tibbi məsləhət vermə və s.) isə kodda `HARD_RULES`-dadır.
+- **Səbəb:** istifadəçi: "mən hamısını görüm, ehtiyac olsa edit edim" — amma
+  qoruyucu qaydalar təsadüfən silinə bilməməlidir.
+- **Nəticə:** yeni funksiya əlavə olunanda bot bölmələri `/admin/bot`-dan yenilənir
+  (kod yox); canlı test qutusu WhatsApp qoşulmadan cavabları sınayır.
+
+## Daxili linklər random, amma kateqoriya-fərqli (footer + ana səhifə)
+- **Qərar:** footer 6 və ana səhifə 4 xidmət linki hər renderde təsadüfi seçilir,
+  hər element FƏRQLİ kateqoriyadan (`src/lib/random-services.ts`).
+- **Səbəb:** sabit siyahı ya çox uzun olur, ya həmişə eyni səhifələrə link verir;
+  rotasiya zamanla BÜTÜN 112 xidmət səhifəsinə daxili link paylayır (SEO), kateqoriya
+  şərti isə eyni tipli 6 dental linkin yığılmasının qarşısını alır.
+- **Nəticə:** renderdə `Math.random` qəsdəndir (ziyarət-başına müxtəliflik) — bunu
+  "deterministik olmalıdır" deyə refaktor ETMƏ.
+
+## Hero xəritəsi v2 rayon-choropleth; köhnə variant SAXLANILIR
+- **Qərar:** hero xəritəsi rayon-səviyyəli choropleth-dir (mərkəzimiz olan rayonlar
+  yanır, `az-rayons.ts` avtogenerasiya); köhnə siluet+nöqtə görünüşü silinməyib —
+  `hero-visual.tsx`-də `VARIANT="dots"` bir sətirlə geri qayıdır.
+- **Səbəb:** istifadəçi: "bu versiyanı da yadda saxla, birdən yenisi xoşuma gəlməz".
+- **Nəticə:** hero başlığı da ölkə-səviyyəlidir ("Azərbaycanda … tapın", 2026-08-04;
+  meta title + OG şəkil də eyni cür) — "Bakıda" formasına qaytarma.
+
+## Bloq cover siyasəti: yeni yazılar brend vektor seriyası
+- **Qərar:** köhnə 12 dental yazının cover-ləri AI-foto idi (təkrarlana bilmir);
+  2026-08-04-dən yeni yazıların cover-ləri brend üslubunda vektor SVG→webp-dir
+  (ink fon + grid + neon-siyan ikonoqrafiya), Vercel Blob `blog-covers/<slug>-v2.webp`.
+- **Texniki dərslər:** (1) SVG `objectBoundingBox` qradiyenti üfüqi/şaquli `<line>`-da
+  render olunmur (sıfır bbox) → `userSpaceOnUse` işlət; (2) Blob CDN üzərinə-yazmada
+  köhnə keşi verir → yenilənəndə YOL ADINI dəyiş (`-v2`), keşin bitməsini gözləmə.
+- **Nəticə:** yeni yazı üçün eyni seriya davam etdirilməlidir (nümunə üslub: MRT
+  halqaları, qalxan+ana, USM ötürücüsü…). RU yazıları ayrı slug + `locale:"ru"`.
+
+## İstifadəçi təsdiqi SÜBUTDUR (sübut qaydasının əlavəsi)
+- **Qərar:** "sübut yoxdursa, iddia da yoxdur" qaydasında istifadəçinin (Dr. Bəxtiyar)
+  şəxsi təsdiqi tam sübut sayılır — məs. Megapol USM ("saytında gördüm"), Dentinn və
+  Dent-Inn-ə panoram rentgen, Dent-Inn≠Dentinn (ad oxşarlığına baxmayaraq ayrı
+  klinikalardır — "oxşar olsa da fərqli yerlərdi").
+- **Səbəb:** sahibkar yerli bazarı birbaşa tanıyır; bu, veb-sübutdan zəif deyil.
+- **Nəticə:** belə təsdiqlə əlavə olunan xidməti sonrakı "sübutsuz iddia" təmizliyi
+  SİLMƏMƏLİDİR.
+
 ## "Uşaqlar qəbul edilirmi?" — dörd meyar, iki fərqli cavab
 - **Meyarlar (istifadəçi təklifi + genişləndirmə):** (1) mərkəzin **adında**
   uşaq/pediatr/kids/детск; (2) **saytında** pediatriya şöbəsi və ya ştatda pediatr

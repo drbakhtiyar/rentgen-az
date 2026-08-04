@@ -13,7 +13,7 @@
 
 The web platform is production-live and used by real centers/doctors/patients. The mobile app (doctor MVP) is functionally complete and end-to-end verified; the center MVP is in progress.
 
-**Live numbers (2026-08-03 prod DB):** 414 centers (**248 APPROVED / 166 PENDING**, PENDING-in 54-ü 🦷 dental), 112 active services (15 categories), 17 doctors, 428 users, 18 platform reviews, ~23 cities covered.
+**Live numbers (2026-08-04 prod DB):** 418 centers (**292 APPROVED / 126 PENDING**, PENDING-də 🦷 dental qrup), 112 active services (15 categories), 17 doctors, 482 users, 30 published blog posts (18 AZ + 12 RU), 24 cities with APPROVED centers.
 
 ### 2026-08 marketplace expansion (this session — see CHANGELOG)
 - **~305 imaging centers bulk-imported** from Google Places across 20 cities (PENDING),
@@ -34,6 +34,24 @@ The web platform is production-live and used by real centers/doctors/patients. T
   dup listings this session.
 - **Homepage hero** → data-driven Azerbaijan map (marker per city with an APPROVED center).
 - **TƏBİB logo** stored at stable Blob URL `shared/tabib-logo.png` for state hospitals.
+
+### 2026-08-03/04 blok (bax CHANGELOG — hamısı canlıda)
+- **Dental klinika importu:** ~/rentgen_az_hedef_klinikalar.xlsx-dən 54 PENDING (sonra 3
+  istifadəçi qərarı ilə silindi, +fərdi əlavələr: Swissdent, Piccasa, Dentinn, Dent-Inn);
+  🦷 Dental filtri admin/operator siyahılarında; dərin zənginləşdirmə (33 foto, 9 loqo).
+- **Qiymət toplama kampaniyası:** `/panel/whatsapp` (Nərmin, gündə 12 wa.me göndərişi) +
+  girişsiz `/q/<token>` qiymət formu. Konversiya ~1 həftəyə ölçülməli.
+- **WhatsApp AI botu:** webhook + `/admin/bot` "Bot beyni" (BotSection DB) + canlı test
+  qutusu. **Meta env-ləri gələnə qədər PASSİV** (bax TODO blocked).
+- **Rəy dəvəti mühərriki:** COMPLETED müayinədən 2 saat sonra SMS + OTP-siz
+  `/rey/davet/<token>`; yalnız 03.08 20:00 UTC-dən sonra tamamlananlara.
+- **Hero xəritəsi v2:** rayon-səviyyəli choropleth (79 rayon, `az-rayons.ts`), 15 şəhər
+  etiketi; köhnə variant `VARIANT="dots"` ilə saxlanılıb. Başlıq: "Azərbaycanda … tapın".
+- **Bloq:** +6 qeyri-dental SEO yazısı (MRT, KT-MRT fərqi, hamiləlik, USM hazırlıq,
+  mammoqrafiya, DEXA) — brend vektor cover-lərlə.
+- **Əlaqə:** platforma telefonu saytdan çıxarıldı (yalnız WhatsApp yazışması —
+  nömrə gözlənilir); **info@rentgen.az** canlı (ImprovMX → gmail, yalnız qəbul).
+- **/telimat:** mərkəzlər üçün gizli (noindex) istifadə təlimatı, redizayn edilib.
 
 ### 2026-08-02 SEO təmizliyi (data-only — bax CHANGELOG/DECISIONS)
 Sayt 48 saatda ~10 → 246 indekslənən mərkəz səhifəsinə çıxdı; audit kütləvi təkrar məzmun
@@ -81,11 +99,17 @@ centers need a mobile before they can OTP-login. See TODO.md.
 - DICOM viewer 4th quadrant + public launch pending.
 
 ## Waiting on external input (blocked-pending)
-- `GOOGLE_PLACES_API_KEY` (Google rating) — user to create.
-- Anthropic credit top-up (AI helper) — cheap.
+- **Platforma WhatsApp nömrəsi** — istifadəçi alıb verəcək → `/elaqe` düyməsi (hazırda
+  saxta wa.me/994500000000) + WhatsApp Business profili + Nərminin kampaniya nömrəsi.
+- **Meta WhatsApp Cloud API** — 4 env (`WHATSAPP_TOKEN/PHONE_ID/VERIFY_TOKEN/APP_SECRET`)
+  → bot canlanır. Webhook URL: /api/whatsapp/webhook.
 - Apple Developer ($99/yr) + Google Play ($25) accounts for app store submission.
 
 ## Critical operational notes
 - **Same Supabase DB powers site + mobile app.** Never reset the DB password without updating Vercel `DATABASE_URL` + `DIRECT_URL` (else the live site 500s). Supabase `pg_pgrst_no_exposed_schemas` 503 logs are harmless (PostgREST/Data API is unused).
 - Deploy = push to `main` (Vercel). Migrations: `npm run db:migrate:dev -- --name X`.
+- **Deploy yoxlaması SHA ilə:** "canlıda görünmür" şübhəsində `since`-timestamp
+  müqayisəsinə güvənmə (bir dəfə yalançı "webhook işləmir" diaqnozu verdi) — canlı
+  deployment-in commit SHA-sını `git log` ilə tutuşdur. Sessiyasız qorunan marşrut
+  (məs. /panel) 307 qaytarır — bunu marşrutun mövcudluğu kimi oxuma (BUILDING ola bilər).
 - User directives (persistent): **always commit & push every change; don't ask for small decisions, act; never delete without asking; touch only what's requested.**

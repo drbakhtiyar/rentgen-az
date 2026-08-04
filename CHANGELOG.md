@@ -2,6 +2,25 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-04 — Əlaqə/brend cilası: telefon çıxarıldı, /telimat, random xidmət blokları, info@, hero başlığı
+
+- **Platforma telefon nömrəsi saytdan çıxarıldı** (istifadəçi qərarı: "zənglər gəlməsin,
+  ancaq WhatsApp üzərindən yazacağıq") — footer + `/elaqe` telefon kartı silindi.
+  `/elaqe` WhatsApp düyməsi hələ saxta `wa.me/994500000000`-dadır — real nömrə gələndə
+  dəyişdiriləcək (TODO blocked).
+- **`/telimat`** — mərkəzlər üçün gizli istifadə təlimatı (paketlər, status axını, CRM,
+  qiymət/rəy linkləri). İndeksdən tam kənar: `noIndex` meta + `robots.ts` disallow +
+  sitemap-da yoxdur; link yalnız əl ilə paylaşılır. Sonra vizual redizayn: tünd hero
+  (grid+glow, nömrəli TOC çipləri), qradiyent bölmə kartları, bağlantılı addım xətti.
+- **Ana səhifə xidmət bölməsi**: başlıq "Bütün rentgen xidmətləri" + hər ziyarətdə
+  təsadüfi 4 kart (hər biri FƏRQLİ kateqoriyadan); **footer**: dental-only 7 xidmət →
+  təsadüfi 6 (yenə kateqoriya-fərqli). Ortaq köməkçi `src/lib/random-services.ts`.
+- **info@rentgen.az** — ImprovMX yönləndirmə (variant A): Vercel DNS-də MX
+  `mx1/mx2.improvmx.com` + SPF TXT; məktublar dr.bakhtiyar.aliyev@gmail.com-a gedir.
+  Status: Active (yoxlanılıb). Göndərmə (SMTP) qurulmayıb — yalnız qəbul.
+- **Hero başlığı ölkə-səviyyəli**: "Bakıda … tapın" → "Azərbaycanda … tapın" (AZ+RU),
+  eyni ifadə meta title + OG şəkildə də dəyişdirildi (306+ mərkəz artıq 23 şəhərdədir).
+
 ## 2026-08-04 — Bloq: 6 yeni qeyri-dental SEO yazısı
 
 Mövcud 12 AZ yazının hamısı dental idi — kataloq isə çoxdan ümumi görüntüləməni

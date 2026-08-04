@@ -76,6 +76,10 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **Dəvət konversiyasını izlə** — ilk real dəvətlərdən sonra: neçə SMS getdi,
   neçəsi rəyə çevrildi. `SmsLog.kind = "review_invite"` + `Review.source = "invite"`
   ilə ölçülür. Aşağı olsa mətni/vaxtı dəyiş.
+- [ ] **6 yeni bloq yazısının RU versiyaları** (istəyə bağlı — istifadəçi istəməyib,
+  amma köhnə 12 yazının hamısının RU-su var). Ayrı slug + `locale:"ru"`; cover eyni
+  qala bilər. Yazılar: mrt-nedir-nece-cekilir, kt-ve-mrt-ferqi, hamilelikde-rentgen-olarmi,
+  qarin-usm-hazirliq, mammoqrafiya-nece-yasdan, densitometriya-dexa-nedir.
 - [x] **FAQ ödəniş + parkinq — DONE 2026-08-02.** 271/363 mərkəzdə FAQ bloku var
   (ödəniş 177, parkinq 241). Parkinq OSM-dən yoxlanılıb; ödəniş Bakı + şəbəkə
   filialları üçün fərziyyədir (bax DECISIONS).

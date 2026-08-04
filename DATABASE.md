@@ -80,5 +80,17 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 - **SignupAttempt** / **WaitlistSignup** — incomplete signups / waitlist.
 - **CenterEvent** / **DoctorEvent** — view analytics.
 - **BlogPost**, **City**, **SeoSetting**, **AdminActionLog** — content, geo, SEO, admin audit.
+  BlogPost: `slug` unique **per-locale deyil, qlobal** — AZ və RU yazıların slugları
+  FƏRQLİDİR (`locale` "az"|"ru"); `content` markdown (`##` H2), `coverImage` Vercel Blob
+  URL (yeni seriya `blog-covers/<slug>-v2.webp`, brend vektor üslub — bax DECISIONS).
+  AdminActionLog həm audit, həm əməliyyat sayğacıdır (məs. `center:wa_price_invite`
+  gündəlik WhatsApp limitini hesablayır; `center:price_self` — mərkəzin /q özü-yazması).
+- **BotSection** (2026-08-04) — WhatsApp botunun redaktə olunan bilik bazası: `title`,
+  `content`, `order`, `isActive`. `/admin/bot`-dan idarə olunur; sərt qaydalar kodda
+  (`src/lib/wa-bot.ts` `HARD_RULES`).
+
+**Bu sessiyanın sahə əlavələri:** `CenterProfile.priceToken` (`@unique`, girişsiz
+/q qiymət formu tokeni), `AppointmentRequest.completedAt`/`reviewInviteSentAt`/
+`reviewToken` (rəy dəvəti axını — bax `src/lib/review-invite.ts`).
 
 > When in doubt, `prisma/schema.prisma` is the source of truth — every model carries AZ comments explaining intent.

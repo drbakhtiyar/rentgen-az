@@ -1,11 +1,16 @@
-# Rentgen.az — Dental rentgen & 3D tomoqrafiya platforması
+# Rentgen.az — Azərbaycanın rentgen/diaqnostika marketpleysi
 
-Azərbaycanda (xüsusilə Bakıda) dental rentgen, panoramik rentgen, sefalometrik
-rentgen və 3D dental tomoqrafiya (CBCT) xidmətləri üçün axtarış, qeydiyyat və
-idarəetmə platforması.
+Azərbaycanda rentgen, KT, MRT, USM, mammoqrafiya, densitometriya və dental
+görüntüləmə (panoramik, CBCT) mərkəzləri üçün axtarış, qeydiyyat və idarəetmə
+platforması. Canlı: https://rentgen.az (+ CRM: https://crm.rentgen.az).
 
-Üç istifadəçi rolu: **Pasiyent**, **Rentgen mərkəzi**, **Admin**. Giriş parolsuz —
-telefon nömrəsi + OTP (birdəfəlik kod).
+Rollar (enum `Role`): **PATIENT · CENTER · DOCTOR · ASSISTANT · ADMIN** (+ gizli-link
+OPERATOR data-entry paneli `/panel`). Giriş parolsuz — telefon + OTP (birdəfəlik kod).
+
+> **Layihəyə davam edən AI/insan üçün:** əvvəlcə `PROJECT_STATUS.md`, sonra
+> `ARCHITECTURE.md` · `DATABASE.md` · `API.md` · `DECISIONS.md` · `TODO.md` ·
+> `CHANGELOG.md` oxu — bütün vəziyyət, qərarlar və yarımçıq işlər oradadır.
+> Next.js 16 fərqləri üçün: `AGENTS.md`.
 
 ## Texnologiyalar
 
