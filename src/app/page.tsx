@@ -38,12 +38,13 @@ import { getHomeFaq } from "@/content/faq";
 import { formatDateAz } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
+import { pickCrossCategoryRandom } from "@/lib/random-services";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
   const locale = await getLocale();
-  const [centers, posts, stats, counts, usage, allServices, coveredCities] = await Promise.all([
+  const [centers, posts, stats, counts, , allServices, coveredCities] = await Promise.all([
     getFeaturedCenters(6),
     getPublishedPosts(3, locale),
     getPlatformStats(),
@@ -58,23 +59,12 @@ export default async function HomePage() {
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
 
   // Hər ziyarətdə TƏSADÜFİ 4 xidmət — hər biri FƏRQLİ kateqoriyadan
-  // (istifadəçi qərarı, 2026-08-04). Səhifə locale cookie-sinə görə onsuz da
-  // hər sorğuda render olunur, ona görə seçim həqiqətən ziyarət başınadır.
-  // Yalnız ən azı 1 təsdiqlənmiş mərkəzin təklif etdiyi xidmətlər iştirak edir.
-  const eligible = allServices.filter((s) => (counts[s.slug] ?? 0) > 0 && s.category);
-  const byCat = new Map<string, typeof eligible>();
-  for (const s of eligible) byCat.set(s.category!, [...(byCat.get(s.category!) ?? []), s]);
-  const shuffledCats = [...byCat.keys()];
-  for (let i = shuffledCats.length - 1; i > 0; i--) {
-    // eslint-disable-next-line react-hooks/purity -- qəsdən: hər sorğuda fərqli seçim tələbdir (dinamik server komponent)
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledCats[i], shuffledCats[j]] = [shuffledCats[j], shuffledCats[i]];
-  }
-  const featuredServices = shuffledCats.slice(0, 4).map((c) => {
-    const list = byCat.get(c)!;
-    // eslint-disable-next-line react-hooks/purity -- qəsdən: ziyarət-başına təsadüfilik
-    return list[Math.floor(Math.random() * list.length)];
-  });
+  // (istifadəçi qərarı). Yalnız ən azı 1 təsdiqlənmiş mərkəzin təklif etdiyi
+  // xidmətlər iştirak edir. Ortaq məntiq: src/lib/random-services.ts.
+  const featuredServices = pickCrossCategoryRandom(
+    allServices.filter((s) => (counts[s.slug] ?? 0) > 0),
+    4,
+  );
 
   return (
     <>

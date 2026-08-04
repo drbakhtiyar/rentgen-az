@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { getActiveServices } from "@/lib/queries";
+import { pickCrossCategoryRandom } from "@/lib/random-services";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 
@@ -33,9 +34,10 @@ export async function SiteFooter() {
       ],
     },
   ];
-  const footerServices = (await getActiveServices())
-    .filter((s) => s.featured)
-    .slice(0, 6);
+  // Hər renderde fərqli 6 xidmət — hər biri fərqli kateqoriyadan. Əvvəl yalnız
+  // `featured` (7 dental) göstərilirdi; random rotasiya həm siyahını qısa saxlayır,
+  // həm də zamanla bütün xidmət səhifələrinə footer linki paylayır.
+  const footerServices = pickCrossCategoryRandom(await getActiveServices(), 6);
   return (
     <footer className="relative mt-auto overflow-hidden bg-ink-950 text-slate-300">
       <div className="pointer-events-none absolute inset-0 bg-grid-dark opacity-40" />
