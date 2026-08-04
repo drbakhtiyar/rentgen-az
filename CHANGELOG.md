@@ -2,6 +2,20 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-04 — Bloq: 6 yeni qeyri-dental SEO yazısı
+
+Mövcud 12 AZ yazının hamısı dental idi — kataloq isə çoxdan ümumi görüntüləməni
+əhatə edir. 6 sual-yönümlü yazı (Google axtarış niyyətinə uyğun, hərəsi FAQ
+bölməsi + xidmət/şəhər səhifələrinə daxili linklərlə): `mrt-nedir-nece-cekilir`,
+`kt-ve-mrt-ferqi`, `hamilelikde-rentgen-olarmi`, `qarin-usm-hazirliq`,
+`mammoqrafiya-nece-yasdan`, `densitometriya-dexa-nedir`. Yalnız DB (BlogPost) —
+kod dəyişikliyi yoxdur; sitemap avtomatik götürür. Cover-lər: köhnə seriya
+AI-foto idi, yenilər brend üslubunda (ink + neon-siyan) vektor SVG→webp,
+Vercel Blob `blog-covers/*-v2.webp`. SVG dərsi: `objectBoundingBox` qradiyenti
+üfüqi/şaquli `<line>`-larda render olunmur (sıfır bbox) → `userSpaceOnUse`;
+Blob CDN köhnə keşi üçün yol adı dəyişdirildi (`-v2`). Daxili link slugları
+DB ilə tutuşdurulub (21/21 mövcud). RU versiyaları yazılmayıb (istənilməyib).
+
 ## 2026-08-04 — Hero xəritəsi v2: rayon-səviyyəli choropleth
 
 İstifadəçi konsepti: siluet + nöqtələr əvəzinə mərkəzimiz OLAN rayonlar rəngli.
