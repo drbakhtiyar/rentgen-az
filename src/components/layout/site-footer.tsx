@@ -64,9 +64,6 @@ export async function SiteFooter() {
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-brand-400" /> info@rentgen.az
               </p>
-              <p className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-brand-400" /> +994 50 000 00 00
-              </p>
             </div>
           </div>
 

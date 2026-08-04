@@ -1,5 +1,4 @@
 import {
-  Phone,
   Mail,
   MapPin,
   MessageCircle,
@@ -35,7 +34,6 @@ export default async function ContactPage() {
   const locale = await getLocale();
   const c = getDict(locale).contact;
   const contactItems = [
-    { icon: Phone, title: c.phone, value: "+994 50 000 00 00", href: "tel:+994500000000" },
     { icon: Mail, title: c.email, value: "info@rentgen.az", href: "mailto:info@rentgen.az" },
     { icon: MapPin, title: c.address, value: c.addressValue },
     { icon: Clock, title: c.hours, value: c.hoursValue },
