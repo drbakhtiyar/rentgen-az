@@ -4,9 +4,9 @@ import { SITE_URL } from "./env";
 export const SITE = {
   name: "Rentgen.az",
   shortName: "Rentgen.az",
-  title: "Rentgen.az — Bakıda dental rentgen və 3D tomoqrafiya mərkəzləri",
+  title: "Rentgen.az — Azərbaycanda dental rentgen və 3D tomoqrafiya mərkəzləri",
   description:
-    "Bakıda və Azərbaycanda dental rentgen, panoramik rentgen, sefalometrik rentgen və 3D dental tomoqrafiya (CBCT) mərkəzlərini tapın. Xidmət və rayona görə axtarın, birbaşa əlaqə saxlayın.",
+    "Azərbaycanda dental rentgen, panoramik rentgen, sefalometrik rentgen və 3D dental tomoqrafiya (CBCT) mərkəzlərini tapın. Xidmət və rayona görə axtarın, birbaşa əlaqə saxlayın.",
   locale: "az_AZ",
   twitter: "@rentgenaz",
   defaultOg: "/og-default.png",

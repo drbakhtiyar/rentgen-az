@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFileSync } from "fs";
 import { join } from "path";
 
-export const alt = "Rentgen.az — Bakıda dental rentgen və 3D tomoqrafiya mərkəzləri";
+export const alt = "Rentgen.az — Azərbaycanda dental rentgen və 3D tomoqrafiya mərkəzləri";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -37,7 +37,7 @@ export default function OgImage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ fontSize: 64, fontWeight: 800, lineHeight: 1.1, maxWidth: 980 }}>
-            Bakıda dental rentgen və 3D tomoqrafiya mərkəzini tapın
+            Azərbaycanda dental rentgen və 3D tomoqrafiya mərkəzini tapın
           </div>
           <div style={{ fontSize: 30, color: "#9fb4d6", maxWidth: 900 }}>
             Panoramik, sefalometrik rentgen, CBCT və implant öncəsi tomoqrafiya — təsdiqlənmiş mərkəzlər

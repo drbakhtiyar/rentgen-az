@@ -498,7 +498,7 @@ const az: Dict = {
   },
   hero: {
     badge: "Azərbaycanın rentgen platforması",
-    titleA: "Bakıda ",
+    titleA: "Azərbaycanda ",
     titleHighlight: "rentgen",
     titleB: " və 3D tomoqrafiya mərkəzini tapın",
     subtitle:
@@ -1036,7 +1036,7 @@ const ru: Dict = {
   },
   hero: {
     badge: "Рентген-платформа Азербайджана",
-    titleA: "Найдите в Баку центр ",
+    titleA: "Найдите в Азербайджане центр ",
     titleHighlight: "рентгена",
     titleB: " и 3D-томографии",
     subtitle:
