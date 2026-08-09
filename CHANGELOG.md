@@ -2,6 +2,23 @@
 
 Reverse-chronological.
 
+## 2026-08-10 — FAQ restrukturu + qeydiyyat şəhər siyahısı təmizliyi + Axiora nişanı
+
+- **FAQ** (`/faq`): köhnə 14 dental-dövr sualı → **53 sual × 2 dil**, çip-naviqasiyalı
+  tək səhifə (istifadəçi 3 varinatdan bunu seçdi). Sıra: "Platforma haqqında" (10 sual)
+  → MRT · KT · USM · Mammoqrafiya · DEXA · Klassik rentgen · Dental (6–7 sual hərəsi).
+  `src/content/faq.ts` bölmə strukturu (`getFaqSections`), `faq-sections.tsx` yapışqan
+  çip zolağı (IntersectionObserver aktiv çip; bütün bölmələr həmişə DOM-da — SEO).
+  Ana səhifə teaseri = platforma ilk 6. Köhnə dental suallar Dental bölməsinə köçdü.
+- **Qeydiyyat şəhər siyahısı**: `CITY_NAMES`-dən 12 "Bakı — rayon" seçimi çıxarıldı
+  (08-02 qaydası: city yalnız şəhər). Bəyaz Diş (beyaz-dis-2, özü qeydiyyatdan keçmişdi)
+  normallaşdırıldı: city=Bakı, district=Nərimanov, "Gənclik metrosu" ünvana keçdi.
+- **Axiora**: footer alt zolağının ortasında A-loqo + AXIORA → axiora.az
+  (əvvəl "An AXIORA Company", sonra istifadəçi istəyi ilə yalnız "AXIORA");
+  Organization JSON-LD-yə parentOrganization. Eyni nişan analizler.az və implant.az-a da
+  qoyuldu. implant Vercel-i git-ə bağlıdır (köhnə CLI-only qeydi düzəldildi);
+  jafarnajafov/implant upstream remote-u istifadəçi istəyi ilə tam kəsildi.
+
 ## 2026-08-09 — Platforma WhatsApp nömrəsi canlıda: +994 99 580 13 13
 
 Nömrə gəldi və hər lazımi yerə yayıldı — mərkəzi mənbə `src/lib/constants.ts`
