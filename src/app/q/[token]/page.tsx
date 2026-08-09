@@ -58,8 +58,8 @@ export default async function QuickPricePage({
           </p>
         </div>
         <Card className="p-6 sm:p-8">
-          {target.rows.length > 0 ? (
-            <QuickPriceForm token={token} rows={target.rows} />
+          {target.rows.length > 0 || target.addable.length > 0 ? (
+            <QuickPriceForm token={token} rows={target.rows} addable={target.addable} />
           ) : (
             <p className="text-center text-sm text-slate-500">
               Xidmət siyahınız hələ boşdur — əvvəlcə rentgen.az komandası ilə xidmətlərinizi

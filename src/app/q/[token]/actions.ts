@@ -14,30 +14,51 @@ export type PriceSaveState = { ok: boolean; error?: string; saved?: number };
 export async function savePricesAction(input: {
   token: string;
   prices: { centerServiceId: string; price: number | null }[];
+  /** "+" ilə kataloqdan seçilmiş YENİ xidmətlər (qiymət istəyə bağlıdır). */
+  additions?: { serviceId: string; price: number | null }[];
 }): Promise<PriceSaveState> {
   const target = await resolvePriceToken(input.token).catch(() => null);
   if (!target) return { ok: false, error: "Bu link artıq keçərli deyil." };
 
+  const okPrice = (p: number | null) =>
+    p != null && Number.isInteger(p) && p >= 1 && p <= 10000;
+
   const valid = new Set(target.rows.map((r) => r.centerServiceId));
-  const updates = input.prices.filter(
-    (p) =>
-      valid.has(p.centerServiceId) &&
-      p.price != null &&
-      Number.isInteger(p.price) &&
-      p.price >= 1 &&
-      p.price <= 10000,
-  );
-  if (!updates.length) return { ok: false, error: "Ən azı bir xidmətə qiymət yazın." };
+  const updates = input.prices.filter((p) => valid.has(p.centerServiceId) && okPrice(p.price));
+
+  // Yeni xidmətlər: yalnız kataloqda mövcud + mərkəzdə hələ olmayan.
+  const addableIds = new Set(target.addable.map((a) => a.serviceId));
+  const seen = new Set<string>();
+  const additions = (input.additions ?? []).filter((a) => {
+    if (!addableIds.has(a.serviceId) || seen.has(a.serviceId)) return false;
+    seen.add(a.serviceId);
+    return true;
+  });
+
+  if (!updates.length && !additions.length)
+    return { ok: false, error: "Ən azı bir xidmətə qiymət yazın və ya xidmət əlavə edin." };
 
   try {
-    await prisma.$transaction(
-      updates.map((u) =>
+    await prisma.$transaction([
+      ...updates.map((u) =>
         prisma.centerService.update({
           where: { id: u.centerServiceId },
           data: { price: u.price, priceTo: null },
         }),
       ),
-    );
+      ...(additions.length
+        ? [
+            prisma.centerService.createMany({
+              data: additions.map((a) => ({
+                centerId: target.centerId,
+                serviceId: a.serviceId,
+                price: okPrice(a.price) ? a.price : null,
+              })),
+              skipDuplicates: true,
+            }),
+          ]
+        : []),
+    ]);
     // İz: mərkəz özü yazdı (adminId yoxdur).
     await prisma.adminActionLog
       .create({
@@ -45,13 +66,13 @@ export async function savePricesAction(input: {
           action: "center:price_self",
           targetType: "CenterProfile",
           targetId: target.centerId,
-          meta: { via: "q-link", count: updates.length },
+          meta: { via: "q-link", count: updates.length, added: additions.length },
         },
       })
       .catch(() => null);
     revalidatePath(`/rentgen-merkezleri/${target.slug}`);
     revalidatePath("/rentgen-merkezleri");
-    return { ok: true, saved: updates.length };
+    return { ok: true, saved: updates.length + additions.length };
   } catch {
     return { ok: false, error: "Texniki xəta. Yenidən cəhd edin." };
   }

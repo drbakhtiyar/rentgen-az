@@ -210,6 +210,8 @@ export type PriceTarget = {
   centerName: string;
   slug: string;
   rows: { centerServiceId: string; serviceName: string; category: string | null; price: number | null }[];
+  /** Kataloqda olub mərkəzin siyahısında OLMAYAN xidmətlər — "+" ilə əlavə üçün. */
+  addable: { serviceId: string; name: string; category: string | null }[];
 };
 
 /** Token → mərkəz + xidmət sətirləri (qiymət formu üçün). */
@@ -220,7 +222,7 @@ export async function resolvePriceToken(token: string): Promise<PriceTarget | nu
     select: {
       id: true, name: true, slug: true, status: true,
       services: {
-        select: { id: true, price: true, service: { select: { name: true, category: true, featured: true, order: true } } },
+        select: { id: true, serviceId: true, price: true, service: { select: { name: true, category: true, featured: true, order: true } } },
         orderBy: { service: { order: "asc" } },
       },
     },
@@ -229,5 +231,18 @@ export async function resolvePriceToken(token: string): Promise<PriceTarget | nu
   const rows = [...c.services]
     .sort((a, b) => Number(b.service.featured) - Number(a.service.featured))
     .map((s) => ({ centerServiceId: s.id, serviceName: s.service.name, category: s.service.category, price: s.price }));
-  return { centerId: c.id, centerName: c.name, slug: c.slug, rows };
+
+  // Mərkəz göstərdiyimizdən ÇOX xidmət verə bilər — kataloqun qalanını "+" ilə
+  // özü əlavə edib qiymət yazsın (istifadəçi istəyi, 2026-08-10).
+  const have = new Set(c.services.map((s) => s.serviceId));
+  const all = await prisma.service.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, category: true },
+    orderBy: { order: "asc" },
+  });
+  const addable = all
+    .filter((s) => !have.has(s.id))
+    .map((s) => ({ serviceId: s.id, name: s.name, category: s.category }));
+
+  return { centerId: c.id, centerName: c.name, slug: c.slug, rows, addable };
 }
