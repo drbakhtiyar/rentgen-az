@@ -357,20 +357,10 @@ export function getService(slug: string) {
  * şəhərləri dinamik göstərir (getCitiesWithCenters).
  */
 const CITY_NAMES: string[] = [
-  // Bakı və rayonları
+  // Bakı — TƏK dəyər. "Bakı — Nərimanov" tipli rayon seçimləri 2026-08-10-da
+  // çıxarıldı: 08-02 normallaşdırmasına görə `city` yalnız şəhər saxlayır,
+  // rayon `district` sahəsindədir (bax DECISIONS). Rayon seçimlərini geri qaytarma.
   "Bakı",
-  "Bakı — Binəqədi",
-  "Bakı — Qaradağ",
-  "Bakı — Xəzər",
-  "Bakı — Xətai",
-  "Bakı — Yasamal",
-  "Bakı — Nərimanov",
-  "Bakı — Nəsimi",
-  "Bakı — Nizami",
-  "Bakı — Pirallahı",
-  "Bakı — Sabunçu",
-  "Bakı — Səbail",
-  "Bakı — Suraxanı",
   // Respublika əhəmiyyətli şəhərlər
   "Sumqayıt",
   "Gəncə",
