@@ -1,6 +1,15 @@
 # CHANGELOG
 
-Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
+Reverse-chronological.
+
+## 2026-08-09 — Platforma WhatsApp nömrəsi canlıda: +994 99 580 13 13
+
+Nömrə gəldi və hər lazımi yerə yayıldı — mərkəzi mənbə `src/lib/constants.ts`
+(`PLATFORM_WHATSAPP` / `_DISPLAY` / `_URL`): `/elaqe` düyməsi (saxta wa.me/994500000000
+əvəzləndi, nömrə görünür), footer WhatsApp sətri, `/telimat` dəstək bölməsi,
+Organization JSON-LD `contactPoint`+`email`. Yalnız YAZIŞMA — `tel:` linki qəsdən
+yoxdur (DECISIONS: yalnız-WhatsApp əlaqə). Bot beyninə DB-də "Əlaqə məlumatları"
+bölməsi əlavə edildi. Qalan: WhatsApp Business profili (istifadəçi) + Meta env-lər. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
 ## 2026-08-04 — Əlaqə/brend cilası: telefon çıxarıldı, /telimat, random xidmət blokları, info@, hero başlığı
 

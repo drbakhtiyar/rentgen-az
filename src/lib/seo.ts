@@ -98,6 +98,11 @@ export function organizationJsonLd() {
     description: SITE.description,
     areaServed: "AZ",
     email: "info@rentgen.az",
+    parentOrganization: {
+      "@type": "Organization",
+      name: "Axiora MMC",
+      url: "https://axiora.az",
+    },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",

@@ -13,10 +13,11 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **Center rating/endorsement (#12)** — deferred by user ("hələ saxla"); decide model (doctor endorsement vs patient review vs favorite).
 
 ## Blocked — waiting on external input
-- [blocked] **Platforma WhatsApp nömrəsi** — istifadəçi bu gün alıb verəcək (2026-08-04).
-  Gələndə: /elaqe WhatsApp düyməsi (hazırda saxta wa.me/994500000000-a bağlıdır) +
-  WhatsApp Business profili (rentgen.az adı, loqo) + Nərminin qiymət kampaniyası
-  bu nömrədən gedir; sonradan Meta Cloud API-yə bağlanıb bot nömrəsi də olacaq.
+- [x] **Platforma WhatsApp nömrəsi — GƏLDİ 2026-08-09: +994 99 580 13 13.**
+  Sayta yayıldı (`PLATFORM_WHATSAPP*` konstantları): /elaqe düyməsi, footer, /telimat,
+  Organization JSON-LD, bot beynində "Əlaqə məlumatları" bölməsi (DB). Qalan (istifadəçi
+  tərəfi): WhatsApp Business profili (rentgen.az adı, loqo) + Nərminin kampaniyası bu
+  nömrədən; sonra Meta Cloud API-yə bağlanır (aşağıdakı blocked).
 - [blocked] **WhatsApp Business API (Meta)** — bot kodu hazır və passiv gözləyir.
   İstifadəçi: Meta Business hesabı + biznes verifikasiyası + nömrənin WABA-ya
   bağlanması. Sonra Vercel env: `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`,

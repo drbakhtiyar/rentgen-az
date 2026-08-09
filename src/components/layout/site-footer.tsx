@@ -118,6 +118,44 @@ export async function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row">
           <p>© {year} Rentgen.az — {d.footer.rights}</p>
+          {/* Axiora MMC — layihənin sahibi olan çətir şirkət (axiora.az) */}
+          <a
+            href="https://axiora.az"
+            target="_blank"
+            rel="noopener"
+            title="Axiora MMC"
+            className="group flex items-center gap-2 transition-colors hover:text-slate-300"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 100 100"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              className="shrink-0"
+            >
+              <defs>
+                <linearGradient
+                  id="axgrad-rf"
+                  x1="20"
+                  y1="10"
+                  x2="55"
+                  y2="95"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stopColor="#00C2FF" />
+                  <stop offset="1" stopColor="#2563EB" />
+                </linearGradient>
+              </defs>
+              <path d="M50 14 L84 88" stroke="#e2e8f0" strokeWidth="15" strokeLinecap="round" />
+              <path d="M50 14 L16 88" stroke="url(#axgrad-rf)" strokeWidth="15" strokeLinecap="round" />
+              <circle cx="52" cy="66" r="9.5" fill="#2563EB" />
+            </svg>
+            <span className="whitespace-nowrap">
+              An <span className="font-semibold tracking-[0.18em] text-slate-300 group-hover:text-white">AXIORA</span> Company
+            </span>
+          </a>
           <p className="text-center sm:whitespace-nowrap sm:text-right">
             {d.footer.disclaimer}
           </p>
