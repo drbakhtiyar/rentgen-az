@@ -812,7 +812,7 @@ const az: Dict = {
     eyebrow: "Kömək mərkəzi",
     title: "Tez-tez verilən suallar",
     description:
-      "Dental rentgen, 3D tomoqrafiya, qiymət, qeydiyyat və OTP giriş haqqında ən çox verilən sualların cavabları.",
+      "Platformanın işləməsi, həmçinin rentgen, KT, MRT, USM, mammoqrafiya, densitometriya və dental görüntüləmə haqqında ən çox verilən sualların cavabları.",
   },
   smartSearch: {
     placeholder: "Nə axtarırsınız? Məs: panoramik, Nərimanov, CBCT…",
@@ -1349,7 +1349,7 @@ const ru: Dict = {
     eyebrow: "Центр помощи",
     title: "Часто задаваемые вопросы",
     description:
-      "Ответы на частые вопросы о дентальном рентгене, 3D-томографии, ценах, регистрации и входе по OTP.",
+      "Ответы на частые вопросы о работе платформы, а также о рентгене, КТ, МРТ, УЗИ, маммографии, денситометрии и дентальной визуализации.",
   },
   smartSearch: {
     placeholder: "Что вы ищете? Напр.: панорамный, Нариманов, КЛКТ…",

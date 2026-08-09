@@ -1,23 +1,25 @@
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
-import { FaqAccordion } from "@/components/faq-accordion";
+import { FaqSections } from "@/components/faq-sections";
 import { JsonLd } from "@/components/ui/json-ld";
-import { getAllFaq } from "@/content/faq";
+import { getFaqSections, getAllFaq } from "@/content/faq";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 
 export const metadata = buildMetadata({
-  title: "Tez-tez verilən suallar — dental rentgen və 3D tomoqrafiya",
+  title: "Tez-tez verilən suallar — rentgen, KT, MRT, USM",
   description:
-    "Dental rentgen, panoramik və sefalometrik rentgen, 3D tomoqrafiya (CBCT), implant tomoqrafiyası, qiymət, qeydiyyat və OTP giriş haqqında tez-tez verilən suallar.",
+    "Rentgen.az platforması, rentgen, KT, MRT, USM, mammoqrafiya, densitometriya və dental görüntüləmə haqqında tez-tez verilən suallar: hazırlıq, təhlükəsizlik, qiymət və qeydiyyat.",
   path: "/faq",
   keywords: [
-    "dental rentgen sualları",
-    "3D tomoqrafiya nədir",
-    "panoramik rentgen",
-    "implant tomoqrafiyası",
-    "CBCT qiymət",
+    "rentgen sualları",
+    "MRT zərərlidirmi",
+    "KT ilə MRT fərqi",
+    "USM hazırlıq",
+    "mammoqrafiya neçə yaşdan",
+    "densitometriya nədir",
+    "dental rentgen",
     "OTP giriş",
   ],
 });
@@ -25,7 +27,7 @@ export const metadata = buildMetadata({
 export default async function FaqPage() {
   const locale = await getLocale();
   const t = getDict(locale).faqPage;
-  const items = getAllFaq(locale);
+  const sections = getFaqSections(locale);
 
   return (
     <>
@@ -35,7 +37,7 @@ export default async function FaqPage() {
             { name: "Ana səhifə", path: "/" },
             { name: t.title, path: "/faq" },
           ]),
-          faqJsonLd(items),
+          faqJsonLd(getAllFaq(locale)),
         ]}
       />
       <PageHeader
@@ -49,9 +51,10 @@ export default async function FaqPage() {
       />
       <Section>
         <Container>
-          <div className="mx-auto max-w-3xl">
-            <FaqAccordion items={items} />
-          </div>
+          <FaqSections
+            sections={sections}
+            countSuffix={locale === "ru" ? "вопросов" : "sual"}
+          />
         </Container>
       </Section>
     </>
