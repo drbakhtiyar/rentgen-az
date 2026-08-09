@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { MessageCircle, Info } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Card } from "@/components/ui/card";
@@ -23,14 +24,39 @@ export const metadata: Metadata = buildMetadata({
  * gündə WA_DAILY_LIMIT keçə bilməz. Bax `src/lib/price-invite.ts`.
  */
 export default async function AdminWhatsappPage(props: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; tab?: string }>;
 }) {
   const admin = await requireRole("ADMIN", "/admin/whatsapp");
-  const { q = "" } = await props.searchParams;
-  const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(), sentToday()]);
+  const { q = "", tab } = await props.searchParams;
+  const kind = tab === "faq" ? ("faq" as const) : ("price" as const);
+  const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(kind), sentToday()]);
 
   return (
-    <AdminShell title="WhatsApp qiymət dəvətləri" userName={admin.phone}>
+    <AdminShell title="WhatsApp dəvətləri" userName={admin.phone}>
+      {/* Kampaniya tabları — qiymət və FAQ dəvətləri (ortaq gündəlik limit) */}
+      <div className="mb-4 flex gap-2">
+        <Link
+          href="/admin/whatsapp"
+          className={
+            kind === "price"
+              ? "rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
+              : "rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300"
+          }
+        >
+          💰 Qiymət dəvətləri
+        </Link>
+        <Link
+          href="/admin/whatsapp?tab=faq"
+          className={
+            kind === "faq"
+              ? "rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
+              : "rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300"
+          }
+        >
+          ❓ FAQ dəvətləri
+        </Link>
+      </div>
+
       <Card className="mb-5 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="font-display text-lg font-bold text-ink-900">
@@ -52,7 +78,7 @@ export default async function AdminWhatsappPage(props: {
         </div>
       </Card>
 
-      <WaSearch q={q} basePath="/admin/whatsapp" />
+      <WaSearch q={q} basePath="/admin/whatsapp" kind={kind} extraParams={kind === "faq" ? { tab: "faq" } : {}} />
 
       {candidates.length > 0 ? (
         <div className="space-y-3">
@@ -66,6 +92,7 @@ export default async function AdminWhatsappPage(props: {
               waPhone={c.waPhone}
               waUrl={c.waUrl}
               reviews={c.googleReviewCount}
+              kind={kind}
             />
           ))}
         </div>

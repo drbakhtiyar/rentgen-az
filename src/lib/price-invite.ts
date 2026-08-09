@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { SITE_URL } from "@/lib/env";
 import { AZ_MOBILE_PREFIXES } from "@/lib/center-filters";
+import { CENTER_FAQ_KEYS, parseFaqAnswers } from "@/content/center-faq";
 
 /**
  * Qiymət toplama kampaniyası — WhatsApp üzərindən.
@@ -27,6 +28,14 @@ import { AZ_MOBILE_PREFIXES } from "@/lib/center-filters";
 export const WA_DAILY_LIMIT = 12;
 /** Jurnalda göndəriş qeydinin `action` açarı. */
 export const WA_LOG_ACTION = "center:wa_price_invite";
+/** FAQ dəvəti üçün jurnal açarı (2026-08-10 — ikinci kampaniya). */
+export const WA_FAQ_LOG_ACTION = "center:wa_faq_invite";
+
+/** Kampaniya növü: qiymət və ya FAQ dəvəti. Limit HƏR İKİSİ ÜÇÜN ORTAQDIR —
+ *  nömrəni qoruyan gündəlik 12 ümumi göndərişə aiddir, mesajın mövzusuna yox. */
+export type WaKind = "price" | "faq";
+export const waAction = (kind: WaKind) =>
+  kind === "faq" ? WA_FAQ_LOG_ACTION : WA_LOG_ACTION;
 
 const mobileOr = AZ_MOBILE_PREFIXES.map((p) => ({ whatsapp: { startsWith: p } }));
 const mobilePhoneOr = AZ_MOBILE_PREFIXES.map((p) => ({ phone: { startsWith: p } }));
@@ -38,10 +47,13 @@ export function bakuDayStart(now = new Date()): Date {
   return new Date(baku.getTime() - 4 * 3600_000);
 }
 
-/** Bu gün neçə göndəriş olub. */
+/** Bu gün neçə göndəriş olub — HƏR İKİ kampaniya birlikdə (ortaq limit). */
 export async function sentToday(): Promise<number> {
   return prisma.adminActionLog.count({
-    where: { action: WA_LOG_ACTION, createdAt: { gte: bakuDayStart() } },
+    where: {
+      action: { in: [WA_LOG_ACTION, WA_FAQ_LOG_ACTION] },
+      createdAt: { gte: bakuDayStart() },
+    },
   });
 }
 
@@ -74,6 +86,20 @@ export function waMessage(centerName: string, qUrl: string, seed: string): strin
   return V[hash(seed) % V.length];
 }
 
+/**
+ * FAQ dəvəti mesajı — 3-4 cümləlik, ƏHƏMİYYƏTİ vurğulayan variantlar
+ * (istifadəçi istəyi: "niyə vacibdir" mütləq izah olunsun).
+ */
+export function waFaqMessage(centerName: string, fUrl: string, seed: string): string {
+  const V = [
+    `Salam! ${centerName} — rentgen.az-dakı səhifənizdə pasiyentlərin ən çox soruşduğu 10 sualın (ödəniş üsulu, əlil arabası ilə giriş, parkinq, nəticə müddəti və s.) cavab bölməsi var. Bu cavablar dolu olanda pasiyent sizə zəng etmədən qərar verir və müraciət sayı nəzərəçarpacaq artır — həm də səhifəniz Google-da bu suallarla axtarışda önə çıxır. Doldurmaq cəmi 2-3 dəqiqə çəkir, giriş tələb olunmur: ${fUrl}`,
+    `Salam, ${centerName}! Pasiyentlər mərkəz seçəndə əvvəlcə praktik suallara baxır: ödəniş nə ilə olur, parkinq varmı, əlil arabası ilə giriş mümkündürmü, nəticə nə vaxt hazır olur. rentgen.az səhifənizdə bu 10 sualın cavab yeri hazırdır — dolu olan səhifələr həm daha çox müraciət alır, həm Google axtarışında irəli düşür. 2 dəqiqənizi ayırın, girişsiz doldurulur: ${fUrl}`,
+    `Salam! rentgen.az-da ${centerName} səhifəsinə baxan pasiyentlərin ən çox axtardığı məlumat 10 praktik sualın cavabıdır — ödəniş üsulları, əlil girişi, parkinq, uşaq qəbulu, nəticə müddəti. Cavabları siz yazın ki, pasiyent zəngə ehtiyac duymadan sizi seçsin — bu bölməsi dolu mərkəzlərə müraciət daha çox olur. Link girişsizdir, 2-3 dəqiqə çəkir: ${fUrl}`,
+    `Salam, ${centerName}! Mərkəzinizin rentgen.az səhifəsində "Tez-tez verilən suallar" bölməsi pasiyentin qərarına ən çox təsir edən hissədir: ödəniş, parkinq, əlil arabası ilə giriş, nəticənin forması və müddəti. Bu 10 cavabı dolduran mərkəzlər həm pasiyentə əziyyət vermir, həm də Google-da həmin suallarla tapılır. Doldurma linki (girişsiz, 2 dəqiqə): ${fUrl}`,
+  ];
+  return V[hash(seed) % V.length];
+}
+
 /** Mərkəzin tokenini qaytarır, yoxdursa yaradır. */
 export async function ensurePriceToken(centerId: string): Promise<string> {
   const c = await prisma.centerProfile.findUnique({ where: { id: centerId }, select: { priceToken: true } });
@@ -83,17 +109,43 @@ export async function ensurePriceToken(centerId: string): Promise<string> {
   return token;
 }
 
+const isMobileNum = (p: string | null) =>
+  !!p && AZ_MOBILE_PREFIXES.some((x) => p.startsWith(x));
+
+type CenterLite = {
+  id: string; name: string; city: string | null; status: string;
+  phone: string; whatsapp: string | null;
+  googleReviewCount: number | null; priceToken: string | null;
+};
+
+/** Mərkəz → göndərişə hazır sətir (link + hazır mesaj, kampaniyaya görə). */
+async function toCandidate(c: CenterLite, kind: WaKind): Promise<WaCandidate> {
+  const waPhone = isMobileNum(c.whatsapp) ? c.whatsapp! : c.phone;
+  const token = c.priceToken ?? (await ensurePriceToken(c.id));
+  const url = `${SITE_URL}/${kind === "faq" ? "f" : "q"}/${token}`;
+  const msg = kind === "faq" ? waFaqMessage(c.name, url, c.id) : waMessage(c.name, url, c.id);
+  return {
+    centerId: c.id, name: c.name, city: c.city, status: c.status,
+    waPhone, qUrl: url,
+    waUrl: `https://wa.me/${waPhone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`,
+    googleReviewCount: c.googleReviewCount,
+  };
+}
+
 /**
- * Bugünkü partiya: qiyməti OLMAYAN, mobil WhatsApp/telefonu OLAN, hələ
- * GÖNDƏRİLMƏMİŞ mərkəzlər. APPROVED əvvəl (qiymət dərhal canlıda görünür),
- * sonra PENDING; hər qrupda böyüklər (Google rəy sayı) əvvəl.
+ * Bugünkü partiya. "price": qiyməti OLMAYAN mərkəzlər; "faq": FAQ cavablarının
+ * yarıdan azı dolu olan mərkəzlər. Hər ikisində: mobil nömrə + həmin kampaniya
+ * üzrə hələ göndərilməyib. APPROVED əvvəl, sonra Google rəy sayı.
+ * `remaining` ortaq limitdən gəlir (qiymət+FAQ birlikdə gündə 12).
  */
-export async function todaysBatch(): Promise<{ remaining: number; candidates: WaCandidate[] }> {
+export async function todaysBatch(
+  kind: WaKind = "price",
+): Promise<{ remaining: number; candidates: WaCandidate[] }> {
   const used = await sentToday();
   const remaining = Math.max(0, WA_DAILY_LIMIT - used);
 
   const alreadySent = await prisma.adminActionLog.findMany({
-    where: { action: WA_LOG_ACTION },
+    where: { action: waAction(kind) },
     select: { targetId: true },
   });
   const sentIds = new Set(alreadySent.map((l) => l.targetId).filter(Boolean));
@@ -103,17 +155,25 @@ export async function todaysBatch(): Promise<{ remaining: number; candidates: Wa
       status: { in: ["APPROVED", "PENDING"] },
       OR: [...mobileOr, ...mobilePhoneOr],
       services: { some: {} },
-      NOT: { services: { some: { price: { not: null } } } },
+      ...(kind === "price"
+        ? { NOT: { services: { some: { price: { not: null } } } } }
+        : {}),
     },
     select: {
       id: true, name: true, city: true, status: true, phone: true, whatsapp: true,
       googleReviewCount: true, priceToken: true,
+      ...(kind === "faq" ? { faqAnswers: true } : {}),
     },
   });
 
-  const isMobile = (p: string | null) => !!p && AZ_MOBILE_PREFIXES.some((x) => p.startsWith(x));
   const pool = centers
     .filter((c) => !sentIds.has(c.id))
+    .filter((c) =>
+      kind === "faq"
+        ? Object.keys(parseFaqAnswers((c as { faqAnswers?: unknown }).faqAnswers)).length <
+          CENTER_FAQ_KEYS.length / 2
+        : true,
+    )
     .sort((a, b) => {
       if (a.status !== b.status) return a.status === "APPROVED" ? -1 : 1;
       return (b.googleReviewCount ?? 0) - (a.googleReviewCount ?? 0);
@@ -121,18 +181,7 @@ export async function todaysBatch(): Promise<{ remaining: number; candidates: Wa
     .slice(0, remaining);
 
   const candidates: WaCandidate[] = [];
-  for (const c of pool) {
-    const waPhone = isMobile(c.whatsapp) ? c.whatsapp! : c.phone;
-    const token = c.priceToken ?? (await ensurePriceToken(c.id));
-    const qUrl = `${SITE_URL}/q/${token}`;
-    const msg = waMessage(c.name, qUrl, c.id);
-    candidates.push({
-      centerId: c.id, name: c.name, city: c.city, status: c.status,
-      waPhone, qUrl,
-      waUrl: `https://wa.me/${waPhone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`,
-      googleReviewCount: c.googleReviewCount,
-    });
-  }
+  for (const c of pool) candidates.push(await toCandidate(c, kind));
   return { remaining, candidates };
 }
 
@@ -146,9 +195,9 @@ function fold(s: string): string {
 }
 
 export type WaSearchResult = WaCandidate & {
-  /** Bu mərkəzə əvvəl göndərilibsə — nə vaxt. */
+  /** Bu mərkəzə (bu kampaniya üzrə) əvvəl göndərilibsə — nə vaxt. */
   alreadySentAt: Date | null;
-  /** Artıq qiyməti var (kampaniyaya ehtiyacı yoxdur). */
+  /** Artıq dolu sayılır: price→qiyməti var, faq→cavabların çoxu yazılıb. */
   hasPrices: boolean;
 };
 
@@ -159,7 +208,10 @@ export type WaSearchResult = WaCandidate & {
  * "qiyməti var" vəziyyətləri gizlədilmir — nişanla göstərilir, qərar insandadır.
  * Gündəlik limit burada da eyni sayğacdan işləyir (markWaSentAction).
  */
-export async function searchWaCandidates(q: string): Promise<WaSearchResult[]> {
+export async function searchWaCandidates(
+  q: string,
+  kind: WaKind = "price",
+): Promise<WaSearchResult[]> {
   const needle = fold(q.trim());
   if (needle.length < 2) return [];
 
@@ -170,17 +222,16 @@ export async function searchWaCandidates(q: string): Promise<WaSearchResult[]> {
     },
     select: {
       id: true, name: true, city: true, status: true, phone: true, whatsapp: true,
-      googleReviewCount: true, priceToken: true,
+      googleReviewCount: true, priceToken: true, faqAnswers: true,
       services: { where: { price: { not: null } }, select: { id: true }, take: 1 },
     },
   });
 
-  const isMobile = (p: string | null) => !!p && AZ_MOBILE_PREFIXES.some((x) => p.startsWith(x));
   const matches = centers.filter((c) => fold(c.name).includes(needle)).slice(0, 10);
   if (matches.length === 0) return [];
 
   const sentLogs = await prisma.adminActionLog.findMany({
-    where: { action: WA_LOG_ACTION, targetId: { in: matches.map((c) => c.id) } },
+    where: { action: waAction(kind), targetId: { in: matches.map((c) => c.id) } },
     select: { targetId: true, createdAt: true },
     orderBy: { createdAt: "desc" },
   });
@@ -189,17 +240,14 @@ export async function searchWaCandidates(q: string): Promise<WaSearchResult[]> {
 
   const out: WaSearchResult[] = [];
   for (const c of matches) {
-    const waPhone = isMobile(c.whatsapp) ? c.whatsapp! : c.phone;
-    const token = c.priceToken ?? (await ensurePriceToken(c.id));
-    const qUrl = `${SITE_URL}/q/${token}`;
-    const msg = waMessage(c.name, qUrl, c.id);
+    const filled =
+      kind === "faq"
+        ? Object.keys(parseFaqAnswers(c.faqAnswers)).length >= CENTER_FAQ_KEYS.length / 2
+        : c.services.length > 0;
     out.push({
-      centerId: c.id, name: c.name, city: c.city, status: c.status,
-      waPhone, qUrl,
-      waUrl: `https://wa.me/${waPhone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`,
-      googleReviewCount: c.googleReviewCount,
+      ...(await toCandidate(c, kind)),
       alreadySentAt: sentAt.get(c.id) ?? null,
-      hasPrices: c.services.length > 0,
+      hasPrices: filled,
     });
   }
   return out;
@@ -213,6 +261,25 @@ export type PriceTarget = {
   /** Kataloqda olub mərkəzin siyahısında OLMAYAN xidmətlər — "+" ilə əlavə üçün. */
   addable: { serviceId: string; name: string; category: string | null }[];
 };
+
+export type FaqTarget = {
+  centerId: string;
+  centerName: string;
+  slug: string;
+  /** Mövcud cavablar (yalnız tanınan açarlar). */
+  answers: Record<string, string>;
+};
+
+/** Token → mərkəz + mövcud FAQ cavabları (/f formu üçün; eyni token). */
+export async function resolveFaqToken(token: string): Promise<FaqTarget | null> {
+  if (!/^[a-f0-9]{32}$/.test(token)) return null;
+  const c = await prisma.centerProfile.findUnique({
+    where: { priceToken: token },
+    select: { id: true, name: true, slug: true, status: true, faqAnswers: true },
+  });
+  if (!c || c.status === "DEACTIVATED") return null;
+  return { centerId: c.id, centerName: c.name, slug: c.slug, answers: parseFaqAnswers(c.faqAnswers) };
+}
 
 /** Token → mərkəz + xidmət sətirləri (qiymət formu üçün). */
 export async function resolvePriceToken(token: string): Promise<PriceTarget | null> {

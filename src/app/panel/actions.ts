@@ -122,14 +122,24 @@ export async function saveCenterServicesFlexAction(
 }
 
 /**
- * WhatsApp qiymət dəvəti göndərişini jurnala yazır (gündəlik kvota bu qeydlərlə
+ * WhatsApp dəvəti göndərişini jurnala yazır (gündəlik ORTAQ kvota bu qeydlərlə
  * sayılır — bax src/lib/price-invite.ts). Düyməyə basılanda çağırılır.
+ * kind: "price" (qiymət dəvəti) | "faq" (FAQ dəvəti).
  */
-export async function markWaSentAction(centerId: string): Promise<{ ok: boolean }> {
+export async function markWaSentAction(
+  centerId: string,
+  kind: "price" | "faq" = "price",
+): Promise<{ ok: boolean }> {
   const actor = await requireRole(["OPERATOR", "ADMIN"]);
   try {
     await prisma.adminActionLog.create({
-      data: { adminId: actor.id, action: "center:wa_price_invite", targetType: "CenterProfile", targetId: centerId, meta: { via: "panel" } },
+      data: {
+        adminId: actor.id,
+        action: kind === "faq" ? "center:wa_faq_invite" : "center:wa_price_invite",
+        targetType: "CenterProfile",
+        targetId: centerId,
+        meta: { via: "panel" },
+      },
     });
     return { ok: true };
   } catch {

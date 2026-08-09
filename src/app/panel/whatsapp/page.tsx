@@ -24,15 +24,16 @@ export const metadata: Metadata = buildMetadata({
  * spam siqnalı yaranmasın. Bax `src/lib/price-invite.ts`.
  */
 export default async function OperatorWhatsappPage(props: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; tab?: string }>;
 }) {
   const user = await requireRole(["OPERATOR", "ADMIN"], "/panel");
-  const { q = "" } = await props.searchParams;
-  const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(), sentToday()]);
+  const { q = "", tab } = await props.searchParams;
+  const kind = tab === "faq" ? ("faq" as const) : ("price" as const);
+  const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(kind), sentToday()]);
 
   return (
     <OperatorShell
-      title="WhatsApp qiymət dəvətləri"
+      title="WhatsApp dəvətləri"
       userName={user.role === "OPERATOR" ? OPERATOR_NAME : "Administrator"}
     >
       <Link
@@ -41,6 +42,30 @@ export default async function OperatorWhatsappPage(props: {
       >
         <ArrowLeft className="h-4 w-4" /> Mərkəzlərə qayıt
       </Link>
+
+      {/* Kampaniya tabları — qiymət və FAQ dəvətləri (ortaq gündəlik limit) */}
+      <div className="mb-4 flex gap-2">
+        <Link
+          href="/panel/whatsapp"
+          className={
+            kind === "price"
+              ? "rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
+              : "rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300"
+          }
+        >
+          💰 Qiymət dəvətləri
+        </Link>
+        <Link
+          href="/panel/whatsapp?tab=faq"
+          className={
+            kind === "faq"
+              ? "rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
+              : "rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300"
+          }
+        >
+          ❓ FAQ dəvətləri
+        </Link>
+      </div>
 
       <Card className="mb-5 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -62,7 +87,7 @@ export default async function OperatorWhatsappPage(props: {
         </div>
       </Card>
 
-      <WaSearch q={q} basePath="/panel/whatsapp" />
+      <WaSearch q={q} basePath="/panel/whatsapp" kind={kind} extraParams={kind === "faq" ? { tab: "faq" } : {}} />
 
       {candidates.length > 0 ? (
         <div className="space-y-3">
@@ -76,6 +101,7 @@ export default async function OperatorWhatsappPage(props: {
               waPhone={c.waPhone}
               waUrl={c.waUrl}
               reviews={c.googleReviewCount}
+              kind={kind}
             />
           ))}
         </div>

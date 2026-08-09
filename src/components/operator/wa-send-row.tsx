@@ -19,6 +19,7 @@ export function WaSendRow({
   waUrl,
   reviews,
   note,
+  kind = "price",
 }: {
   centerId: string;
   name: string;
@@ -29,6 +30,8 @@ export function WaSendRow({
   reviews: number | null;
   /** Xəbərdarlıq nişanı (məs. "artıq göndərilib") — göndərməyi bloklamır. */
   note?: string;
+  /** Kampaniya növü — jurnal qeydi buna görə yazılır. */
+  kind?: "price" | "faq";
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
@@ -36,7 +39,7 @@ export function WaSendRow({
 
   async function go() {
     setPending(true);
-    const res = await markWaSentAction(centerId);
+    const res = await markWaSentAction(centerId, kind);
     setPending(false);
     if (res.ok) {
       setSent(true);

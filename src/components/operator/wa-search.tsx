@@ -9,12 +9,26 @@ import { searchWaCandidates } from "@/lib/price-invite";
  * server renderli; nəticələr eyni WaSendRow ilə çıxır, göndəriş eyni ortaq
  * limitə sayılır. "Göndərilib"/"qiyməti var" hallar nişanla bildirilir.
  */
-export async function WaSearch({ q, basePath }: { q: string; basePath: string }) {
-  const results = q.trim().length >= 2 ? await searchWaCandidates(q) : [];
+export async function WaSearch({
+  q,
+  basePath,
+  kind = "price",
+  extraParams = {},
+}: {
+  q: string;
+  basePath: string;
+  kind?: "price" | "faq";
+  /** Formada gizli saxlanacaq əlavə query parametrləri (məs. tab). */
+  extraParams?: Record<string, string>;
+}) {
+  const results = q.trim().length >= 2 ? await searchWaCandidates(q, kind) : [];
 
   return (
     <Card className="mb-5 p-5">
       <form action={basePath} className="flex items-center gap-2">
+        {Object.entries(extraParams).map(([k, v]) => (
+          <input key={k} type="hidden" name={k} value={v} />
+        ))}
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
@@ -46,11 +60,14 @@ export async function WaSearch({ q, basePath }: { q: string; basePath: string })
                 waPhone={c.waPhone}
                 waUrl={c.waUrl}
                 reviews={c.googleReviewCount}
+                kind={kind}
                 note={
                   c.alreadySentAt
                     ? `⚠ artıq göndərilib (${c.alreadySentAt.toLocaleDateString("az-AZ")})`
                     : c.hasPrices
-                      ? "qiymətləri artıq var"
+                      ? kind === "faq"
+                        ? "cavabların çoxu artıq dolu"
+                        : "qiymətləri artıq var"
                       : undefined
                 }
               />
