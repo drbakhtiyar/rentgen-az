@@ -152,8 +152,8 @@ export async function SiteFooter() {
               <path d="M50 14 L16 88" stroke="url(#axgrad-rf)" strokeWidth="15" strokeLinecap="round" />
               <circle cx="52" cy="66" r="9.5" fill="#2563EB" />
             </svg>
-            <span className="whitespace-nowrap">
-              <span className="font-semibold tracking-[0.18em] text-slate-300 group-hover:text-white">AXIORA</span> LLC
+            <span className="font-semibold tracking-[0.18em] text-slate-300 group-hover:text-white">
+              AXIORA
             </span>
           </a>
           <p className="text-center sm:whitespace-nowrap sm:text-right">
