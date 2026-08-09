@@ -14,6 +14,8 @@ import type { Locale } from "@/lib/i18n";
 export type FaqSection = {
   key: string;
   title: string;
+  /** Çip zolağı üçün qısa ad (tam başlıq bölmə başlığında qalır). */
+  chip: string;
   items: FaqItem[];
 };
 
@@ -309,14 +311,14 @@ const DENTAL_AZ: FaqItem[] = [
 ];
 
 const SECTIONS_AZ: FaqSection[] = [
-  { key: "platforma", title: "Platforma haqqında", items: PLATFORM_AZ },
-  { key: "mrt", title: "MRT", items: MRT_AZ },
-  { key: "kt", title: "KT (kompüter tomoqrafiyası)", items: KT_AZ },
-  { key: "usm", title: "USM (ultrasəs)", items: USM_AZ },
-  { key: "mammoqrafiya", title: "Mammoqrafiya", items: MAMMO_AZ },
-  { key: "dexa", title: "Densitometriya (DEXA)", items: DEXA_AZ },
-  { key: "rentgen", title: "Klassik rentgen", items: XRAY_AZ },
-  { key: "dental", title: "Dental görüntüləmə", items: DENTAL_AZ },
+  { key: "platforma", chip: "Platforma", title: "Platforma haqqında", items: PLATFORM_AZ },
+  { key: "mrt", chip: "MRT", title: "MRT", items: MRT_AZ },
+  { key: "kt", chip: "KT", title: "KT (kompüter tomoqrafiyası)", items: KT_AZ },
+  { key: "usm", chip: "USM", title: "USM (ultrasəs)", items: USM_AZ },
+  { key: "mammoqrafiya", chip: "Mammoqrafiya", title: "Mammoqrafiya", items: MAMMO_AZ },
+  { key: "dexa", chip: "DEXA", title: "Densitometriya (DEXA)", items: DEXA_AZ },
+  { key: "rentgen", chip: "Rentgen", title: "Klassik rentgen", items: XRAY_AZ },
+  { key: "dental", chip: "Dental", title: "Dental görüntüləmə", items: DENTAL_AZ },
 ];
 
 /* ============================== RU ============================== */
@@ -611,14 +613,14 @@ const DENTAL_RU: FaqItem[] = [
 ];
 
 const SECTIONS_RU: FaqSection[] = [
-  { key: "platforma", title: "О платформе", items: PLATFORM_RU },
-  { key: "mrt", title: "МРТ", items: MRT_RU },
-  { key: "kt", title: "КТ (компьютерная томография)", items: KT_RU },
-  { key: "usm", title: "УЗИ", items: USM_RU },
-  { key: "mammoqrafiya", title: "Маммография", items: MAMMO_RU },
-  { key: "dexa", title: "Денситометрия (DEXA)", items: DEXA_RU },
-  { key: "rentgen", title: "Классический рентген", items: XRAY_RU },
-  { key: "dental", title: "Дентальная визуализация", items: DENTAL_RU },
+  { key: "platforma", chip: "Платформа", title: "О платформе", items: PLATFORM_RU },
+  { key: "mrt", chip: "МРТ", title: "МРТ", items: MRT_RU },
+  { key: "kt", chip: "КТ", title: "КТ (компьютерная томография)", items: KT_RU },
+  { key: "usm", chip: "УЗИ", title: "УЗИ", items: USM_RU },
+  { key: "mammoqrafiya", chip: "Маммография", title: "Маммография", items: MAMMO_RU },
+  { key: "dexa", chip: "DEXA", title: "Денситометрия (DEXA)", items: DEXA_RU },
+  { key: "rentgen", chip: "Рентген", title: "Классический рентген", items: XRAY_RU },
+  { key: "dental", chip: "Дентал", title: "Дентальная визуализация", items: DENTAL_RU },
 ];
 
 /* ============================ Exports ============================ */

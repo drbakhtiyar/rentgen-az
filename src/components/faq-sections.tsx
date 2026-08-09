@@ -43,22 +43,23 @@ export function FaqSections({
 
   return (
     <div className="mx-auto max-w-3xl">
-      {/* Yapışqan çip zolağı */}
+      {/* Yapışqan çip zolağı — sürüşmə YOXDUR: qısa adlarla bükülür,
+          hamısı həmişə görünür (istifadəçi rəyi: yan skrol narahat idi) */}
       <div className="sticky top-16 z-20 -mx-4 mb-8 border-b border-slate-200/70 bg-white/85 px-4 py-3 backdrop-blur-sm sm:top-[68px]">
-        <div className="flex gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-wrap justify-center gap-2">
           {sections.map((s) => (
             <button
               key={s.key}
               type="button"
               onClick={() => scrollTo(s.key)}
               className={cn(
-                "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors sm:text-sm",
+                "whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors sm:text-sm",
                 active === s.key
                   ? "border-brand-600 bg-brand-600 text-white"
                   : "border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700",
               )}
             >
-              {s.title}
+              {s.chip}
             </button>
           ))}
         </div>
