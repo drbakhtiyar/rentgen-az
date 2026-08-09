@@ -153,7 +153,7 @@ export async function SiteFooter() {
               <circle cx="52" cy="66" r="9.5" fill="#2563EB" />
             </svg>
             <span className="whitespace-nowrap">
-              An <span className="font-semibold tracking-[0.18em] text-slate-300 group-hover:text-white">AXIORA</span> Company
+              <span className="font-semibold tracking-[0.18em] text-slate-300 group-hover:text-white">AXIORA</span> LLC
             </span>
           </a>
           <p className="text-center sm:whitespace-nowrap sm:text-right">
