@@ -480,6 +480,14 @@ export const DENTAL_SPECIALIZATIONS: string[] = [
   "Radioloq (Diş radiologiyası)",
 ];
 
+/**
+ * Platformanın rəsmi WhatsApp nömrəsi (2026-08-09). YALNIZ yazışma üçün —
+ * zəng nömrəsi kimi (tel:) heç yerdə göstərilmir (bax DECISIONS: yalnız-WhatsApp əlaqə).
+ */
+export const PLATFORM_WHATSAPP = "+994995801313";
+export const PLATFORM_WHATSAPP_DISPLAY = "+994 99 580 13 13";
+export const PLATFORM_WHATSAPP_URL = `https://wa.me/${PLATFORM_WHATSAPP.replace(/\D/g, "")}`;
+
 export const MAIN_NAV: { label: string; href: string }[] = [
   { label: "Rentgen mərkəzləri", href: "/rentgen-merkezleri" },
   { label: "Xidmətlər", href: "/xidmetler" },

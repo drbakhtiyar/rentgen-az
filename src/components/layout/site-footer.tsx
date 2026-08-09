@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, MessageCircle } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { getActiveServices } from "@/lib/queries";
 import { pickCrossCategoryRandom } from "@/lib/random-services";
+import { PLATFORM_WHATSAPP_DISPLAY, PLATFORM_WHATSAPP_URL } from "@/lib/constants";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 
@@ -65,6 +66,17 @@ export async function SiteFooter() {
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-brand-400" /> info@rentgen.az
+              </p>
+              <p className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-brand-400" />
+                <a
+                  href={PLATFORM_WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener"
+                  className="transition-colors hover:text-white"
+                >
+                  {PLATFORM_WHATSAPP_DISPLAY} (WhatsApp)
+                </a>
               </p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL } from "./env";
+import { PLATFORM_WHATSAPP } from "./constants";
 
 export const SITE = {
   name: "Rentgen.az",
@@ -96,6 +97,13 @@ export function organizationJsonLd() {
     logo: `${SITE_URL}/logo.png`,
     description: SITE.description,
     areaServed: "AZ",
+    email: "info@rentgen.az",
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      telephone: PLATFORM_WHATSAPP,
+      availableLanguage: ["az", "ru"],
+    },
   };
 }
 

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { buildMetadata } from "@/lib/seo";
+import { PLATFORM_WHATSAPP_DISPLAY } from "@/lib/constants";
 
 export const dynamic = "force-static";
 
@@ -327,7 +328,9 @@ export default function TelimatPage() {
             <Block id="destek" n="10 · Yanınızdayıq" icon={<MessageCircle />} title="Dəstək">
               <Li title="Panel çatı">Söhbətlər bölməsində sancaqlı «Dəstək» — birbaşa bizə yazın;</Li>
               <Li title="AI Yardımçı">oradaca — sistem suallarına dərhal cavab verir;</Li>
-              <Li title="E-poçt">info@rentgen.az · WhatsApp: sizə yazdığımız nömrə.</Li>
+              <Li title="E-poçt">
+                info@rentgen.az · WhatsApp: {PLATFORM_WHATSAPP_DISPLAY}
+              </Li>
             </Block>
           </div>
 

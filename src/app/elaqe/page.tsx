@@ -11,6 +11,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { AppointmentForm } from "@/components/forms/appointment-form";
 import { getApprovedDoctors, getActiveServices } from "@/lib/queries";
+import { PLATFORM_WHATSAPP_DISPLAY, PLATFORM_WHATSAPP_URL } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
@@ -116,11 +117,12 @@ export default async function ContactPage() {
                         WhatsApp
                       </div>
                       <div className="text-sm font-medium text-ink-900 sm:text-base">
-                        {c.whatsappDesc}
+                        {PLATFORM_WHATSAPP_DISPLAY}
                       </div>
+                      <div className="text-xs text-slate-500">{c.whatsappDesc}</div>
                     </div>
                     <ButtonLink
-                      href="https://wa.me/994500000000"
+                      href={PLATFORM_WHATSAPP_URL}
                       variant="whatsapp"
                       size="sm"
                     >
