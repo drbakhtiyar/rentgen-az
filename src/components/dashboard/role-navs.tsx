@@ -24,6 +24,7 @@ import {
   UserCog,
   AlertCircle,
   Bot,
+  MessageCircle,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -76,6 +77,7 @@ export const adminNav: NavItem[] = [
   { label: "Söhbətlər", href: "/admin/sohbetler", icon: <MessageSquare /> },
   { label: "AI Yardımçı", href: "/admin/ai", icon: <Sparkles /> },
   { label: "Bot beyni", href: "/admin/bot", icon: <Bot /> },
+  { label: "WhatsApp dəvətləri", href: "/admin/whatsapp", icon: <MessageCircle /> },
   { label: "Mərkəzlər", href: "/admin/merkezler", icon: <Building2 /> },
   { label: "Pasiyentlər", href: "/admin/pasiyentler", icon: <Users /> },
   { label: "Həkimlər", href: "/admin/hekimler", icon: <Stethoscope /> },
