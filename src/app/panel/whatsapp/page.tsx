@@ -4,6 +4,7 @@ import { ArrowLeft, MessageCircle, Info } from "lucide-react";
 import { OperatorShell } from "@/components/operator/operator-shell";
 import { Card } from "@/components/ui/card";
 import { WaSendRow } from "@/components/operator/wa-send-row";
+import { WaSearch } from "@/components/operator/wa-search";
 import { todaysBatch, sentToday, WA_DAILY_LIMIT } from "@/lib/price-invite";
 import { requireRole } from "@/lib/auth/rbac";
 import { OPERATOR_NAME } from "@/lib/auth/operator";
@@ -22,8 +23,11 @@ export const metadata: Metadata = buildMetadata({
  * Gündə maksimum WA_DAILY_LIMIT göndəriş — limit alətə tikilib ki, WhatsApp
  * spam siqnalı yaranmasın. Bax `src/lib/price-invite.ts`.
  */
-export default async function OperatorWhatsappPage() {
+export default async function OperatorWhatsappPage(props: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const user = await requireRole(["OPERATOR", "ADMIN"], "/panel");
+  const { q = "" } = await props.searchParams;
   const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(), sentToday()]);
 
   return (
@@ -57,6 +61,8 @@ export default async function OperatorWhatsappPage() {
           </span>
         </div>
       </Card>
+
+      <WaSearch q={q} basePath="/panel/whatsapp" />
 
       {candidates.length > 0 ? (
         <div className="space-y-3">

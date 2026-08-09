@@ -136,6 +136,75 @@ export async function todaysBatch(): Promise<{ remaining: number; candidates: Wa
   return { remaining, candidates };
 }
 
+/** "Bəyaz Diş" ~ "beyaz dis" — axtarış üçün diakritik-həssas olmayan fold. */
+function fold(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/ə/g, "e").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ç/g, "c")
+    .replace(/ö/g, "o").replace(/ü/g, "u").replace(/ğ/g, "g")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+export type WaSearchResult = WaCandidate & {
+  /** Bu mərkəzə əvvəl göndərilibsə — nə vaxt. */
+  alreadySentAt: Date | null;
+  /** Artıq qiyməti var (kampaniyaya ehtiyacı yoxdur). */
+  hasPrices: boolean;
+};
+
+/**
+ * Ad üzrə əl ilə mərkəz axtarışı — avtomatik 12-liyə düşməyən mərkəzi operator/
+ * admin özü seçib göndərə bilsin (istifadəçi istəyi, 2026-08-10). Yalnız mobil
+ * WhatsApp/telefonu olanlar çıxır (əks halda wa.me işləmir). "Göndərilib" və
+ * "qiyməti var" vəziyyətləri gizlədilmir — nişanla göstərilir, qərar insandadır.
+ * Gündəlik limit burada da eyni sayğacdan işləyir (markWaSentAction).
+ */
+export async function searchWaCandidates(q: string): Promise<WaSearchResult[]> {
+  const needle = fold(q.trim());
+  if (needle.length < 2) return [];
+
+  const centers = await prisma.centerProfile.findMany({
+    where: {
+      status: { in: ["APPROVED", "PENDING"] },
+      OR: [...mobileOr, ...mobilePhoneOr],
+    },
+    select: {
+      id: true, name: true, city: true, status: true, phone: true, whatsapp: true,
+      googleReviewCount: true, priceToken: true,
+      services: { where: { price: { not: null } }, select: { id: true }, take: 1 },
+    },
+  });
+
+  const isMobile = (p: string | null) => !!p && AZ_MOBILE_PREFIXES.some((x) => p.startsWith(x));
+  const matches = centers.filter((c) => fold(c.name).includes(needle)).slice(0, 10);
+  if (matches.length === 0) return [];
+
+  const sentLogs = await prisma.adminActionLog.findMany({
+    where: { action: WA_LOG_ACTION, targetId: { in: matches.map((c) => c.id) } },
+    select: { targetId: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const sentAt = new Map<string, Date>();
+  for (const l of sentLogs) if (l.targetId && !sentAt.has(l.targetId)) sentAt.set(l.targetId, l.createdAt);
+
+  const out: WaSearchResult[] = [];
+  for (const c of matches) {
+    const waPhone = isMobile(c.whatsapp) ? c.whatsapp! : c.phone;
+    const token = c.priceToken ?? (await ensurePriceToken(c.id));
+    const qUrl = `${SITE_URL}/q/${token}`;
+    const msg = waMessage(c.name, qUrl, c.id);
+    out.push({
+      centerId: c.id, name: c.name, city: c.city, status: c.status,
+      waPhone, qUrl,
+      waUrl: `https://wa.me/${waPhone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`,
+      googleReviewCount: c.googleReviewCount,
+      alreadySentAt: sentAt.get(c.id) ?? null,
+      hasPrices: c.services.length > 0,
+    });
+  }
+  return out;
+}
+
 export type PriceTarget = {
   centerId: string;
   centerName: string;

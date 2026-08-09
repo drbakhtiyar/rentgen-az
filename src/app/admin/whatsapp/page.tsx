@@ -3,6 +3,7 @@ import { MessageCircle, Info } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Card } from "@/components/ui/card";
 import { WaSendRow } from "@/components/operator/wa-send-row";
+import { WaSearch } from "@/components/operator/wa-search";
 import { todaysBatch, sentToday, WA_DAILY_LIMIT } from "@/lib/price-invite";
 import { requireRole } from "@/lib/auth/rbac";
 import { buildMetadata } from "@/lib/seo";
@@ -21,8 +22,11 @@ export const metadata: Metadata = buildMetadata({
  * Kim göndərirsə göndərsin, sayğac ORTAQDIR — admin + operator birlikdə
  * gündə WA_DAILY_LIMIT keçə bilməz. Bax `src/lib/price-invite.ts`.
  */
-export default async function AdminWhatsappPage() {
+export default async function AdminWhatsappPage(props: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const admin = await requireRole("ADMIN", "/admin/whatsapp");
+  const { q = "" } = await props.searchParams;
   const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(), sentToday()]);
 
   return (
@@ -47,6 +51,8 @@ export default async function AdminWhatsappPage() {
           </span>
         </div>
       </Card>
+
+      <WaSearch q={q} basePath="/admin/whatsapp" />
 
       {candidates.length > 0 ? (
         <div className="space-y-3">

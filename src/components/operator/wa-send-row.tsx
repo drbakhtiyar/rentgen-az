@@ -18,6 +18,7 @@ export function WaSendRow({
   waPhone,
   waUrl,
   reviews,
+  note,
 }: {
   centerId: string;
   name: string;
@@ -26,6 +27,8 @@ export function WaSendRow({
   waPhone: string;
   waUrl: string;
   reviews: number | null;
+  /** Xəbərdarlıq nişanı (məs. "artıq göndərilib") — göndərməyi bloklamır. */
+  note?: string;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
@@ -51,6 +54,11 @@ export function WaSendRow({
             .filter(Boolean)
             .join(" · ")}
         </p>
+        {note && (
+          <span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+            {note}
+          </span>
+        )}
       </div>
       <button
         type="button"
