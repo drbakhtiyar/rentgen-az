@@ -88,6 +88,12 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
         <GoogleAnalytics />
+        {/* Axiora panel analitikası (layihələrarası mini-izləyici). */}
+        <Script
+          src="https://axiora.az/a.js"
+          data-project="rentgen.az"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
