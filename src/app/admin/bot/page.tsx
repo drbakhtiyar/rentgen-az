@@ -5,6 +5,9 @@ import { BotBrain, type BotSectionRow } from "@/components/admin/bot-brain";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { waConfigured } from "@/lib/whatsapp";
+import { botTestToken } from "@/lib/wa-bot";
+import { CopyField } from "@/components/admin/copy-field";
+import { SITE_URL } from "@/lib/env";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -57,6 +60,19 @@ export default async function AdminBotPage() {
           təhlükəsizlik təminatıdır.
         </p>
       </Card>
+
+      {/* Paylaşıla bilən sınaq linki — linki alan hər kəs girişsiz botla
+          test rejimində danışır (istifadəçi istəyi, 2026-08-10). */}
+      <Card className="mb-5 p-5">
+        <p className="font-display text-base font-bold text-ink-900">🔗 Bot sınaq linki</p>
+        <p className="mt-1 mb-3 text-sm text-slate-600">
+          Bu linki istədiyiniz adama göndərin — girişsiz açılır, botla WhatsApp-vari
+          çatda danışır. Cavablar real botla eyni mühərrikdən gəlir, heç bir real
+          mesaj göndərilmir.
+        </p>
+        <CopyField value={`${SITE_URL}/bot-sinaq/${botTestToken()}`} />
+      </Card>
+
       <BotBrain sections={sections} />
     </AdminShell>
   );

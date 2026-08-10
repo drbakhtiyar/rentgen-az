@@ -1,5 +1,7 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { env } from "@/lib/env";
 import { askClaude, type AiMsg } from "@/lib/ai-assistant";
 
 /**
@@ -92,6 +94,17 @@ export async function testBotAnswer(
   const system = [HARD_RULES, knowledge, ctx].filter(Boolean).join("\n\n---\n\n");
   const res = await askClaude(system, [{ role: "user", content: question.slice(0, 1500) }], 400);
   return { ...res, systemChars: system.length };
+}
+
+/**
+ * Bot sınaq səhifəsinin gizli tokeni — DB-siz, ADMIN_ACCESS_KEY-dən törədilir
+ * (açar rotasiya olunsa link də dəyişir, bu qəsdəndir). Link: /bot-sinaq/<token>.
+ */
+export function botTestToken(): string {
+  return createHash("sha256")
+    .update(`bot-sinaq:${env.adminAccessKey}`)
+    .digest("hex")
+    .slice(0, 24);
 }
 
 export { HARD_RULES };

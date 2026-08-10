@@ -22,6 +22,7 @@ export default function robots(): MetadataRoute.Robots {
         "/f/",
         "/m/",
         "/telimat",
+        "/bot-sinaq",
         "/rey/davet",
         "/api",
       ],
