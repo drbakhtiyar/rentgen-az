@@ -61,6 +61,7 @@ export async function WaSearch({
                 waUrl={c.waUrl}
                 reviews={c.googleReviewCount}
                 kind={kind}
+                reason={c.reason}
                 note={
                   c.alreadySentAt
                     ? `⚠ artıq göndərilib (${c.alreadySentAt.toLocaleDateString("az-AZ")})`

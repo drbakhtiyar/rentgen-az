@@ -366,20 +366,44 @@ export async function searchWaCandidates(
   const sentAt = new Map<string, Date>();
   for (const l of sentLogs) if (l.targetId && !sentAt.has(l.targetId)) sentAt.set(l.targetId, l.createdAt);
 
+  // Axtarış nəticəsində də seçim konteksti görünsün (istifadəçi rəyi:
+  // "axtardım, amma FAQ-ın neçəsi dolu olduğu görünmür").
+  const svcCounts = await prisma.centerService.groupBy({
+    by: ["centerId"],
+    where: { centerId: { in: matches.map((c) => c.id) } },
+    _count: true,
+  });
+  const svcCount = new Map(svcCounts.map((s) => [s.centerId, s._count]));
+
   const out: WaSearchResult[] = [];
   for (const c of matches) {
+    const faqCount = Object.keys(parseFaqAnswers(c.faqAnswers)).length;
+    const activated = !c.user.phone.startsWith("placeholder:");
     const filled =
       kind === "faq"
-        ? Object.keys(parseFaqAnswers(c.faqAnswers)).length >= CENTER_FAQ_KEYS.length / 2
+        ? faqCount >= CENTER_FAQ_KEYS.length / 2
         : kind === "cabinet"
-          ? !c.user.phone.startsWith("placeholder:")
+          ? activated
           : kind === "card"
             ? false
             : c.services.length > 0;
+    const reason =
+      kind === "faq"
+        ? `FAQ ${faqCount}/${CENTER_FAQ_KEYS.length} dolu`
+        : kind === "price"
+          ? c.services.length > 0
+            ? "qiyməti artıq var"
+            : "qiyməti yoxdur"
+          : kind === "card"
+            ? `${svcCount.get(c.id) ?? 0} xidmət siyahıdadır`
+            : activated
+              ? "kabinet artıq aktivdir"
+              : "kabinet hələ aktivləşməyib";
     out.push({
       ...(await toCandidate(c, kind)),
       alreadySentAt: sentAt.get(c.id) ?? null,
       hasPrices: filled,
+      reason,
     });
   }
   return out;
