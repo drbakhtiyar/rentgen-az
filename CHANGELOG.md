@@ -2,6 +2,15 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-10 — Bloq: +3 yeni mövzu (AZ+RU dərhal birlikdə)
+
+Toxunulmamış mövzular, hər biri iki dildə: ağciyər rentgeni/KT
+(`agciyer-rentgeni-ne-gosterir` / `chto-pokazyvaet-rentgen-legkih`), tiroid USM
+(`tiroid-usm-kime-lazimdir` / `uzi-shchitovidnoy-zhelezy`), uşaqlarda görüntüləmə
+təhlükəsizliyi (`usaqlarda-goruntuleme-tehlukesizdirmi` / `rentgen-detyam-bezopasno-li`).
+3 yeni brend vektor cover (ağciyər · tiroid+doppler · uşaq+qalxan) Blob-da,
+AZ/RU cütlükləri cover-i paylaşır. Bloq cəmi: 21 AZ + 21 RU.
+
 ## 2026-08-10 — Bloq: 6 qeyri-dental yazının RU versiyaları
 
 AZ yazıların rusca qarşılıqları ayrı sluglarla (chto-takoe-mrt, kt-ili-mrt-raznica,
