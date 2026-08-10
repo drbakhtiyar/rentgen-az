@@ -17,7 +17,7 @@ export async function WaSearch({
 }: {
   q: string;
   basePath: string;
-  kind?: "price" | "faq";
+  kind?: "price" | "faq" | "card" | "cabinet";
   /** Formada gizli saxlanacaq əlavə query parametrləri (məs. tab). */
   extraParams?: Record<string, string>;
 }) {

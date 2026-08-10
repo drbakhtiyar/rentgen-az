@@ -128,14 +128,18 @@ export async function saveCenterServicesFlexAction(
  */
 export async function markWaSentAction(
   centerId: string,
-  kind: "price" | "faq" = "price",
+  kind: "price" | "faq" | "card" | "cabinet" = "price",
 ): Promise<{ ok: boolean }> {
   const actor = await requireRole(["OPERATOR", "ADMIN"]);
   try {
     await prisma.adminActionLog.create({
       data: {
         adminId: actor.id,
-        action: kind === "faq" ? "center:wa_faq_invite" : "center:wa_price_invite",
+        action:
+          kind === "faq" ? "center:wa_faq_invite"
+          : kind === "card" ? "center:wa_card_invite"
+          : kind === "cabinet" ? "center:wa_cabinet_invite"
+          : "center:wa_price_invite",
         targetType: "CenterProfile",
         targetId: centerId,
         meta: { via: "panel" },

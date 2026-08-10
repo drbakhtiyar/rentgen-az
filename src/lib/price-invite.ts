@@ -30,12 +30,21 @@ export const WA_DAILY_LIMIT = 12;
 export const WA_LOG_ACTION = "center:wa_price_invite";
 /** FAQ dəvəti üçün jurnal açarı (2026-08-10 — ikinci kampaniya). */
 export const WA_FAQ_LOG_ACTION = "center:wa_faq_invite";
+/** Kart (xidmət təsdiqi + qiymət + saat) dəvəti — 2026-08-10, üçüncü kampaniya. */
+export const WA_CARD_LOG_ACTION = "center:wa_card_invite";
+/** Kabinet aktivləşdirmə dəvəti — 2026-08-10, dördüncü kampaniya. */
+export const WA_CABINET_LOG_ACTION = "center:wa_cabinet_invite";
 
-/** Kampaniya növü: qiymət və ya FAQ dəvəti. Limit HƏR İKİSİ ÜÇÜN ORTAQDIR —
- *  nömrəni qoruyan gündəlik 12 ümumi göndərişə aiddir, mesajın mövzusuna yox. */
-export type WaKind = "price" | "faq";
-export const waAction = (kind: WaKind) =>
-  kind === "faq" ? WA_FAQ_LOG_ACTION : WA_LOG_ACTION;
+/** Kampaniya növü. Limit HAMISI ÜÇÜN ORTAQDIR — nömrəni qoruyan gündəlik 12
+ *  ümumi göndərişə aiddir, mesajın mövzusuna yox. */
+export type WaKind = "price" | "faq" | "card" | "cabinet";
+const WA_ACTIONS: Record<WaKind, string> = {
+  price: WA_LOG_ACTION,
+  faq: WA_FAQ_LOG_ACTION,
+  card: WA_CARD_LOG_ACTION,
+  cabinet: WA_CABINET_LOG_ACTION,
+};
+export const waAction = (kind: WaKind) => WA_ACTIONS[kind];
 
 const mobileOr = AZ_MOBILE_PREFIXES.map((p) => ({ whatsapp: { startsWith: p } }));
 const mobilePhoneOr = AZ_MOBILE_PREFIXES.map((p) => ({ phone: { startsWith: p } }));
@@ -47,11 +56,11 @@ export function bakuDayStart(now = new Date()): Date {
   return new Date(baku.getTime() - 4 * 3600_000);
 }
 
-/** Bu gün neçə göndəriş olub — HƏR İKİ kampaniya birlikdə (ortaq limit). */
+/** Bu gün neçə göndəriş olub — BÜTÜN kampaniyalar birlikdə (ortaq limit). */
 export async function sentToday(): Promise<number> {
   return prisma.adminActionLog.count({
     where: {
-      action: { in: [WA_LOG_ACTION, WA_FAQ_LOG_ACTION] },
+      action: { in: Object.values(WA_ACTIONS) },
       createdAt: { gte: bakuDayStart() },
     },
   });
@@ -100,6 +109,33 @@ export function waFaqMessage(centerName: string, fUrl: string, seed: string): st
   return V[hash(seed) % V.length];
 }
 
+/**
+ * Kart dəvəti mesajı — xidmət təsdiqi + qiymət + iş saatları bir linkdə;
+ * foto/loqo elə WhatsApp çatına istənilir. Əhəmiyyət vurğulanır.
+ */
+export function waCardMessage(centerName: string, mUrl: string, seed: string): string {
+  const V = [
+    `Salam! ${centerName} — rentgen.az kataloqunda səhifəniz hazırdır, amma xidmət siyahınızı dəqiqləşdirmək üçün sizin təsdiqiniz lazımdır. Bu linkdə göstərmədiyiniz xidmətləri silə, çatışmayanları əlavə edə, qiymət və iş saatlarınızı qeyd edə bilərsiniz — dəqiq kart pasiyentə inam verir və müraciəti artırır. 3-4 dəqiqə çəkir, giriş tələb olunmur: ${mUrl} Loqo və binanızın fotosunu isə elə bu çata göndərin — biz yerləşdirək.`,
+    `Salam, ${centerName}! rentgen.az-da kartınızdakı xidmət siyahısını yalnız siz dəqiq bilirsiniz — linkdə artıq olanları çıxarın, olmayanları əlavə edin, qiymət və iş qrafikinizi yazın. Siyahısı dəqiq, qiyməti görünən mərkəzlər axtarışda önə çıxır və pasiyent zəng etmədən seçim edir. Girişsiz, 3-4 dəqiqə: ${mUrl} Bir də loqo və giriş fotosunu bu çata atsanız, kartınıza əlavə edərik.`,
+    `Salam! ${centerName} üçün rentgen.az-da özünüidarə linki hazırladıq: xidmətlərinizi təsdiqləyin (sil/əlavə et), qiymətləri və iş saatlarını qeyd edin — hamısı bir səhifədə, girişsiz. Kartı dolu olan mərkəzlərə pasiyent müraciəti nəzərəçarpacaq dərəcədə çoxdur: ${mUrl} Loqo və bina şəklinizi də elə buradaca WhatsApp-la göndərə bilərsiniz.`,
+  ];
+  return V[hash(seed) % V.length];
+}
+
+/**
+ * Kabinet dəvəti mesajı — GENİŞ izah (istifadəçi istəyi): girişin nə qədər asan
+ * olduğu + kabinetin nə verdiyi. Link izah səhifəsinə aparır.
+ */
+export function waCabinetMessage(centerName: string, seed: string): string {
+  const url = `${SITE_URL}/merkez-kabineti`;
+  const V = [
+    `Salam! ${centerName} — rentgen.az-da səhifəniz artıq mövcuddur və pasiyentlər ona baxır. Sizin üçün pulsuz idarəetmə kabineti də hazırdır: giriş çox asandır — kartınızdakı telefon nömrəsi + SMS kod, heç bir parol yoxdur. Kabinetdə pasiyent sorğularını qəbul edir, xidmət və qiymətlərinizi özünüz yeniləyir, foto-loqo əlavə edir, rəylərə cavab verirsiniz. Ətraflı və giriş: ${url}`,
+    `Salam, ${centerName}! rentgen.az-dakı səhifənizi özünüz idarə edə bilərsiniz — kabinet pulsuzdur və girişi 30 saniyə çəkir: telefon nömrəniz + SMS kod (parol yaddaşda saxlamalı deyilsiniz). İçəridə: gələn pasiyent sorğuları, xidmət-qiymət redaktəsi, iş qrafiki, foto və rəy idarəsi. Niyə vacibdir və necə girməli — burada izah etmişik: ${url}`,
+    `Salam! ${centerName} üçün xoş xəbər: rentgen.az səhifənizin idarəçiliyini sizə veririk. Kabinetə giriş parolsuz-filansızdır — kartdakı nömrəyə SMS kod gəlir, daxil olursunuz. Pasiyent müraciətlərini bir yerdə görmək, qiymətləri anında dəyişmək, foto əlavə etmək və rəylərə cavab vermək — hamısı pulsuzdur. Bir dəqiqəlik izah: ${url}`,
+  ];
+  return V[hash(seed) % V.length];
+}
+
 /** Mərkəzin tokenini qaytarır, yoxdursa yaradır. */
 export async function ensurePriceToken(centerId: string): Promise<string> {
   const c = await prisma.centerProfile.findUnique({ where: { id: centerId }, select: { priceToken: true } });
@@ -121,9 +157,21 @@ type CenterLite = {
 /** Mərkəz → göndərişə hazır sətir (link + hazır mesaj, kampaniyaya görə). */
 async function toCandidate(c: CenterLite, kind: WaKind): Promise<WaCandidate> {
   const waPhone = isMobileNum(c.whatsapp) ? c.whatsapp! : c.phone;
-  const token = c.priceToken ?? (await ensurePriceToken(c.id));
-  const url = `${SITE_URL}/${kind === "faq" ? "f" : "q"}/${token}`;
-  const msg = kind === "faq" ? waFaqMessage(c.name, url, c.id) : waMessage(c.name, url, c.id);
+  let url = `${SITE_URL}/merkez-kabineti`;
+  let msg: string;
+  if (kind === "cabinet") {
+    msg = waCabinetMessage(c.name, c.id);
+  } else {
+    const token = c.priceToken ?? (await ensurePriceToken(c.id));
+    const path = kind === "faq" ? "f" : kind === "card" ? "m" : "q";
+    url = `${SITE_URL}/${path}/${token}`;
+    msg =
+      kind === "faq"
+        ? waFaqMessage(c.name, url, c.id)
+        : kind === "card"
+          ? waCardMessage(c.name, url, c.id)
+          : waMessage(c.name, url, c.id);
+  }
   return {
     centerId: c.id, name: c.name, city: c.city, status: c.status,
     waPhone, qUrl: url,
@@ -133,10 +181,13 @@ async function toCandidate(c: CenterLite, kind: WaKind): Promise<WaCandidate> {
 }
 
 /**
- * Bugünkü partiya. "price": qiyməti OLMAYAN mərkəzlər; "faq": FAQ cavablarının
- * yarıdan azı dolu olan mərkəzlər. Hər ikisində: mobil nömrə + həmin kampaniya
- * üzrə hələ göndərilməyib. APPROVED əvvəl, sonra Google rəy sayı.
- * `remaining` ortaq limitdən gəlir (qiymət+FAQ birlikdə gündə 12).
+ * Bugünkü partiya. Kampaniya meyarları:
+ *   price   — qiyməti OLMAYAN mərkəzlər;
+ *   faq     — FAQ cavablarının yarıdan azı dolu;
+ *   card    — xidmət siyahısı təsdiqi (hamı; şablon siyahılar üçün əsas);
+ *   cabinet — sahibi hələ aktivləşməyib (owner telefon placeholder-dir).
+ * Hamısında: mobil nömrə + həmin kampaniya üzrə hələ göndərilməyib.
+ * APPROVED əvvəl, sonra Google rəy sayı. `remaining` ortaq limitdən gəlir.
  */
 export async function todaysBatch(
   kind: WaKind = "price",
@@ -157,6 +208,9 @@ export async function todaysBatch(
       services: { some: {} },
       ...(kind === "price"
         ? { NOT: { services: { some: { price: { not: null } } } } }
+        : {}),
+      ...(kind === "cabinet"
+        ? { user: { phone: { startsWith: "placeholder:" } } }
         : {}),
     },
     select: {
@@ -223,6 +277,7 @@ export async function searchWaCandidates(
     select: {
       id: true, name: true, city: true, status: true, phone: true, whatsapp: true,
       googleReviewCount: true, priceToken: true, faqAnswers: true,
+      user: { select: { phone: true } },
       services: { where: { price: { not: null } }, select: { id: true }, take: 1 },
     },
   });
@@ -243,7 +298,11 @@ export async function searchWaCandidates(
     const filled =
       kind === "faq"
         ? Object.keys(parseFaqAnswers(c.faqAnswers)).length >= CENTER_FAQ_KEYS.length / 2
-        : c.services.length > 0;
+        : kind === "cabinet"
+          ? !c.user.phone.startsWith("placeholder:")
+          : kind === "card"
+            ? false
+            : c.services.length > 0;
     out.push({
       ...(await toCandidate(c, kind)),
       alreadySentAt: sentAt.get(c.id) ?? null,
@@ -269,6 +328,22 @@ export type FaqTarget = {
   /** Mövcud cavablar (yalnız tanınan açarlar). */
   answers: Record<string, string>;
 };
+
+export type CardTarget = PriceTarget & {
+  /** Mövcud iş qrafiki (Json-dan, null = qeyd olunmayıb). */
+  hours: unknown;
+};
+
+/** Token → tam kart (/m formu üçün: xidmətlər + qiymətlər + saatlar). */
+export async function resolveCardToken(token: string): Promise<CardTarget | null> {
+  const base = await resolvePriceToken(token);
+  if (!base) return null;
+  const c = await prisma.centerProfile.findUnique({
+    where: { id: base.centerId },
+    select: { hours: true },
+  });
+  return { ...base, hours: c?.hours ?? null };
+}
 
 /** Token → mərkəz + mövcud FAQ cavabları (/f formu üçün; eyni token). */
 export async function resolveFaqToken(token: string): Promise<FaqTarget | null> {

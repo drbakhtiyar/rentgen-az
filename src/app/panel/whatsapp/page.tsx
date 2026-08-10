@@ -28,7 +28,11 @@ export default async function OperatorWhatsappPage(props: {
 }) {
   const user = await requireRole(["OPERATOR", "ADMIN"], "/panel");
   const { q = "", tab } = await props.searchParams;
-  const kind = tab === "faq" ? ("faq" as const) : ("price" as const);
+  const kind =
+    tab === "faq" ? ("faq" as const)
+    : tab === "card" ? ("card" as const)
+    : tab === "cabinet" ? ("cabinet" as const)
+    : ("price" as const);
   const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(kind), sentToday()]);
 
   return (
@@ -43,28 +47,28 @@ export default async function OperatorWhatsappPage(props: {
         <ArrowLeft className="h-4 w-4" /> Mərkəzlərə qayıt
       </Link>
 
-      {/* Kampaniya tabları — qiymət və FAQ dəvətləri (ortaq gündəlik limit) */}
-      <div className="mb-4 flex gap-2">
-        <Link
-          href="/panel/whatsapp"
-          className={
-            kind === "price"
-              ? "rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
-              : "rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300"
-          }
-        >
-          💰 Qiymət dəvətləri
-        </Link>
-        <Link
-          href="/panel/whatsapp?tab=faq"
-          className={
-            kind === "faq"
-              ? "rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
-              : "rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300"
-          }
-        >
-          ❓ FAQ dəvətləri
-        </Link>
+      {/* Kampaniya tabları — 4 dəvət növü (ortaq gündəlik limit) */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(
+          [
+            ["price", "💰 Qiymət", "/panel/whatsapp"],
+            ["faq", "❓ FAQ", "/panel/whatsapp?tab=faq"],
+            ["card", "📋 Kart (xidmət təsdiqi)", "/panel/whatsapp?tab=card"],
+            ["cabinet", "🔑 Kabinet", "/panel/whatsapp?tab=cabinet"],
+          ] as const
+        ).map(([k, label, href]) => (
+          <Link
+            key={k}
+            href={href}
+            className={
+              kind === k
+                ? "rounded-full bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
+                : "rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300"
+            }
+          >
+            {label}
+          </Link>
+        ))}
       </div>
 
       <Card className="mb-5 p-5">
@@ -87,7 +91,7 @@ export default async function OperatorWhatsappPage(props: {
         </div>
       </Card>
 
-      <WaSearch q={q} basePath="/panel/whatsapp" kind={kind} extraParams={kind === "faq" ? { tab: "faq" } : {}} />
+      <WaSearch q={q} basePath="/panel/whatsapp" kind={kind} extraParams={kind === "price" ? {} : { tab: kind }} />
 
       {candidates.length > 0 ? (
         <div className="space-y-3">

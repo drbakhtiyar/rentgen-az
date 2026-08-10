@@ -31,7 +31,7 @@ export function WaSendRow({
   /** Xəbərdarlıq nişanı (məs. "artıq göndərilib") — göndərməyi bloklamır. */
   note?: string;
   /** Kampaniya növü — jurnal qeydi buna görə yazılır. */
-  kind?: "price" | "faq";
+  kind?: "price" | "faq" | "card" | "cabinet";
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
