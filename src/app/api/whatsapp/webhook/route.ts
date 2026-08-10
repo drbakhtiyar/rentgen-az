@@ -82,8 +82,27 @@ export async function POST(request: Request): Promise<Response> {
     const msgs =
       body.entry?.flatMap((e) => e.changes ?? []).flatMap((c) => c.value?.messages ?? []) ?? [];
     for (const m of msgs.slice(0, 3)) {
-      if (m.type !== "text" || !m.text?.body) continue;
       if (!waConfigured()) continue;
+
+      // Mətn olmayan mesajlara SABİT cavablar — AI-a getmir, bot beynindən
+      // asılı deyil (istifadəçi qərarı, 2026-08-11). Səs oxunmur; şəkil isə
+      // arzuolunandır (loqo/foto kampaniyası) — təşəkkür + komanda emalı.
+      if (m.type === "audio" || m.type === "video") {
+        const canned =
+          "Bağışlayın, səsli və video mesajları oxuya bilmirəm 🙏 Zəhmət olmasa fikrinizi yazı ilə göndərin — dərhal cavablandırım.";
+        await sendWaText(m.from, canned);
+        await mirror(m.from, m.type === "audio" ? "[səsli mesaj]" : "[video]", canned);
+        continue;
+      }
+      if (m.type === "image" || m.type === "document") {
+        const canned =
+          "Faylınızı aldıq, təşəkkürlər! 🙏 Komandamız baxıb kartınıza yerləşdirəcək. Əlavə sualınız olsa, yazın.";
+        await sendWaText(m.from, canned);
+        await mirror(m.from, m.type === "image" ? "[şəkil göndərildi]" : "[sənəd göndərildi]", canned);
+        continue;
+      }
+      if (m.type !== "text" || !m.text?.body) continue;
+
       const res = await answerWaMessage(m.from, m.text.body);
       if (res.ok && res.answer) {
         await sendWaText(m.from, res.answer);
