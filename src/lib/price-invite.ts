@@ -75,6 +75,8 @@ export type WaCandidate = {
   waUrl: string;
   qUrl: string;
   googleReviewCount: number | null;
+  /** "Niyə məhz bu mərkəz?" — operatora görünən seçim səbəbi. */
+  reason?: string;
 };
 
 function hash(s: string): number {
@@ -180,14 +182,31 @@ async function toCandidate(c: CenterLite, kind: WaKind): Promise<WaCandidate> {
   };
 }
 
+/** Mərkəzə hər hansı kampaniyadan son dəvətin tarixi + link formlarına reaksiyası. */
+const SELF_ACTIONS = ["center:price_self", "center:faq_self", "center:card_self"];
+const COOLDOWN_DAYS = 7;
+
 /**
- * Bugünkü partiya. Kampaniya meyarları:
- *   price   — qiyməti OLMAYAN mərkəzlər;
- *   faq     — FAQ cavablarının yarıdan azı dolu;
- *   card    — xidmət siyahısı təsdiqi (hamı; şablon siyahılar üçün əsas);
- *   cabinet — sahibi hələ aktivləşməyib (owner telefon placeholder-dir).
- * Hamısında: mobil nömrə + həmin kampaniya üzrə hələ göndərilməyib.
- * APPROVED əvvəl, sonra Google rəy sayı. `remaining` ortaq limitdən gəlir.
+ * Bugünkü partiya — MƏNTİQLİ NÖVBƏ (istifadəçi istəyi, 2026-08-10):
+ * təsadüfi siyahı yox, hər mərkəz üçün görünən SƏBƏBLƏ sıralanmış təkliflər.
+ *
+ * Ümumi qaydalar (bütün tablar):
+ *   - Soyuma: son 7 gündə HƏR HANSI kampaniyadan mesaj alan mərkəz heç bir
+ *     tabda təklif olunmur — eyni nömrəyə dalbadal fərqli mövzular yazmayaq.
+ *   - Linkə əvvəl reaksiya vermiş mərkəz (price/faq/card_self) İRƏLİ çəkilir —
+ *     cavab verən nömrəyə yazmaq həm nəzakətli, həm nəticəlidir.
+ *   - APPROVED (canlı səhifə) PENDING-dən əvvəl; bərabərlikdə böyük mərkəz
+ *     (Google rəy sayı) əvvəl — təsir ən çox orada görünür.
+ *
+ * Tab-spesifik məntiq:
+ *   card    — hələ kart dəvəti almayıb və özü kartını təsdiqləməyib; ŞABLON
+ *             ŞÜBHƏSİ (25+ xidmət — toplu importdan qalma) ən yuxarı.
+ *   price   — qiyməti yoxdur; kart dəvəti son 14 gündə gedibsə GÖZLƏYİR
+ *             (kart linkində qiymət yeri onsuz da var — təkrar yazmayaq).
+ *   faq     — cavabların yarıdan azı dolu; kartı/qiyməti həll etmiş (reaksiya
+ *             vermiş) mərkəzlər əvvəl — funnel: kart → qiymət → FAQ.
+ *   cabinet — sahibi hələ aktivləşməyib; linklərə reaksiya verənlər əvvəl
+ *             (onlar kabinetə bir addımdadır) — funnel-in son pilləsi.
  */
 export async function todaysBatch(
   kind: WaKind = "price",
@@ -195,11 +214,32 @@ export async function todaysBatch(
   const used = await sentToday();
   const remaining = Math.max(0, WA_DAILY_LIMIT - used);
 
-  const alreadySent = await prisma.adminActionLog.findMany({
-    where: { action: waAction(kind) },
-    select: { targetId: true },
+  // Bütün dəvət + reaksiya jurnalı bir sorğuda — mərkəz üzrə qruplaşdırırıq.
+  const logs = await prisma.adminActionLog.findMany({
+    where: { action: { in: [...Object.values(WA_ACTIONS), ...SELF_ACTIONS] } },
+    select: { action: true, targetId: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
   });
-  const sentIds = new Set(alreadySent.map((l) => l.targetId).filter(Boolean));
+  const sentThisKind = new Set<string>();
+  const lastAnyInvite = new Map<string, Date>();
+  const lastCardInvite = new Map<string, Date>();
+  const responded = new Set<string>();
+  const didCardSelf = new Set<string>();
+  for (const l of logs) {
+    if (!l.targetId) continue;
+    if (l.action === waAction(kind)) sentThisKind.add(l.targetId);
+    if (Object.values(WA_ACTIONS).includes(l.action)) {
+      if (!lastAnyInvite.has(l.targetId)) lastAnyInvite.set(l.targetId, l.createdAt);
+      if (l.action === WA_CARD_LOG_ACTION && !lastCardInvite.has(l.targetId))
+        lastCardInvite.set(l.targetId, l.createdAt);
+    }
+    if (SELF_ACTIONS.includes(l.action)) {
+      responded.add(l.targetId);
+      if (l.action === "center:card_self") didCardSelf.add(l.targetId);
+    }
+  }
+  const daysAgo = (d: Date | undefined) =>
+    d ? (Date.now() - d.getTime()) / 86_400_000 : Infinity;
 
   const centers = await prisma.centerProfile.findMany({
     where: {
@@ -215,27 +255,60 @@ export async function todaysBatch(
     },
     select: {
       id: true, name: true, city: true, status: true, phone: true, whatsapp: true,
-      googleReviewCount: true, priceToken: true,
-      ...(kind === "faq" ? { faqAnswers: true } : {}),
+      googleReviewCount: true, priceToken: true, faqAnswers: true,
+      _count: { select: { services: true } },
     },
   });
 
-  const pool = centers
-    .filter((c) => !sentIds.has(c.id))
-    .filter((c) =>
-      kind === "faq"
-        ? Object.keys(parseFaqAnswers((c as { faqAnswers?: unknown }).faqAnswers)).length <
-          CENTER_FAQ_KEYS.length / 2
-        : true,
+  type Scored = { c: (typeof centers)[number]; score: number; reason: string };
+  const scored: Scored[] = [];
+  for (const c of centers) {
+    if (sentThisKind.has(c.id)) continue;
+    if (daysAgo(lastAnyInvite.get(c.id)) < COOLDOWN_DAYS) continue; // soyuma
+
+    const faqCount = Object.keys(parseFaqAnswers(c.faqAnswers)).length;
+    const svc = c._count.services;
+    const live = c.status === "APPROVED";
+    const big = (c.googleReviewCount ?? 0) >= 100;
+    const reacted = responded.has(c.id);
+    let score = (live ? 3 : 0) + (reacted ? 2 : 0);
+    const why: string[] = [];
+
+    if (kind === "card") {
+      if (didCardSelf.has(c.id)) continue; // kartını artıq özü təsdiqləyib
+      if (svc >= 25) { score += 3; why.push(`${svc} xidmət — şablon təsdiqi vacibdir`); }
+      if (live && !why.length) why.push("canlı səhifə — dəqiqlik pasiyentə görünür");
+    } else if (kind === "price") {
+      if (daysAgo(lastCardInvite.get(c.id)) < 14) continue; // kart linki hələ təzədir
+      why.push("qiyməti yoxdur");
+      if (big) why.push(`${c.googleReviewCount} rəylik mərkəz — qiymət ən çox burada işləyir`);
+    } else if (kind === "faq") {
+      if (faqCount >= CENTER_FAQ_KEYS.length / 2) continue;
+      why.push(`FAQ ${faqCount}/${CENTER_FAQ_KEYS.length} dolu`);
+      if (reacted) why.push("əvvəlki linkə cavab verib");
+    } else {
+      // cabinet
+      if (reacted) { score += 2; why.push("linkə reaksiya verib — kabinetə bir addımdadır"); }
+      else if (big) why.push("böyük mərkəz — kabinetdən ən çox o qazanar");
+    }
+    if (big) score += 1;
+    if (!why.length && reacted) why.push("əvvəlki linkə cavab verib");
+    if (!why.length) why.push(live ? "canlı səhifə" : "təsdiq gözləyir");
+
+    scored.push({ c, score, reason: why.join(" · ") });
+  }
+
+  const pool = scored
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (b.c.googleReviewCount ?? 0) - (a.c.googleReviewCount ?? 0),
     )
-    .sort((a, b) => {
-      if (a.status !== b.status) return a.status === "APPROVED" ? -1 : 1;
-      return (b.googleReviewCount ?? 0) - (a.googleReviewCount ?? 0);
-    })
     .slice(0, remaining);
 
   const candidates: WaCandidate[] = [];
-  for (const c of pool) candidates.push(await toCandidate(c, kind));
+  for (const s of pool)
+    candidates.push({ ...(await toCandidate(s.c, kind)), reason: s.reason });
   return { remaining, candidates };
 }
 

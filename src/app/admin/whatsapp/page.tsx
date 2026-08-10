@@ -77,7 +77,7 @@ export default async function AdminWhatsappPage(props: {
             basın, mətni dəyişməyin (hər mərkəzə fərqli variant düşür). Dalbadal yox,
             arada 2-3 dəqiqə fasilə ilə göndərin. Cavab yazana mütləq cavab verin —
             ikitərəfli söhbət nömrəni qoruyur. Limit operatorla ORTAQDIR: kim göndərsə,
-            sayğac artır. Günlük limit dolanda sabah davam edin.
+            sayğac artır. Günlük limit dolanda sabah davam edin. Sıralama məntiqlidir: hər sətirdə seçim səbəbi yazılır; son 7 gündə hər hansı dəvət alan mərkəz heç bir tabda təklif olunmur (soyuma); kart dəvəti gedən mərkəzə 14 gün qiymət dəvəti çıxmır (kart linkində qiymət yeri var); linkə cavab verənlər irəli çəkilir.
           </span>
         </div>
       </Card>
@@ -97,6 +97,7 @@ export default async function AdminWhatsappPage(props: {
               waUrl={c.waUrl}
               reviews={c.googleReviewCount}
               kind={kind}
+              reason={c.reason}
             />
           ))}
         </div>

@@ -20,6 +20,7 @@ export function WaSendRow({
   reviews,
   note,
   kind = "price",
+  reason,
 }: {
   centerId: string;
   name: string;
@@ -32,6 +33,8 @@ export function WaSendRow({
   note?: string;
   /** Kampaniya növü — jurnal qeydi buna görə yazılır. */
   kind?: "price" | "faq" | "card" | "cabinet";
+  /** Niyə məhz bu mərkəz təklif olunur — operator üçün məntiq izahı. */
+  reason?: string;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
@@ -57,6 +60,9 @@ export function WaSendRow({
             .filter(Boolean)
             .join(" · ")}
         </p>
+        {reason && (
+          <p className="mt-1 text-[11px] font-medium text-brand-600">↳ {reason}</p>
+        )}
         {note && (
           <span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
             {note}
