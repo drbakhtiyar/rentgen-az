@@ -11,6 +11,12 @@ const URL_RE =
   /(https?:\/\/[^\s]+|(?:www\.)?rentgen\.az(?:\/[^\s]*)?|wa\.me\/[^\s]+|crm\.rentgen\.az(?:\/[^\s]*)?)/g;
 
 function renderRich(text: string): React.ReactNode[] {
+  // *link* halında ulduzlar URL-ə qarışıb 404 verirdi — linki bürüyən
+  // ulduzları əvvəlcədən silirik (link onsuz da vizual seçilir).
+  text = text.replace(
+    /\*((?:https?:\/\/|www\.|crm\.|wa\.me\/|rentgen\.az)[^\s*]+)\*/g,
+    "$1",
+  );
   const out: React.ReactNode[] = [];
   let key = 0;
   const boldify = (chunk: string) =>
@@ -22,7 +28,7 @@ function renderRich(text: string): React.ReactNode[] {
     if (URL_RE.test(seg) && !/\s/.test(seg)) {
       URL_RE.lastIndex = 0;
       // sondakı durğu işarəsi linkə düşməsin
-      const m = seg.match(/^([^]*?)([.,;:!?)]*)$/)!;
+      const m = seg.match(/^([^]*?)([.,;:!?)*]*)$/)!;
       const href = m[1].startsWith("http") ? m[1] : `https://${m[1]}`;
       out.push(
         <a
