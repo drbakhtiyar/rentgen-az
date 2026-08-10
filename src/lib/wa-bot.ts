@@ -116,11 +116,19 @@ function tokenMatches(token: string, nameFold: string, nameWords: string[]): boo
   return nameWords.some((w) => lev(w, token) <= tol);
 }
 
-const LOOKUP_STOPWORDS = new Set([
-  "salam", "klinika", "klinikasi", "merkez", "merkezi", "mərkəz", "mərkəzi",
-  "nomre", "nomresi", "nömrə", "nömrəsi", "yeni", "kohne", "köhnə", "baki",
-  "bakı", "sumqayit", "gence", "gəncə", "dis", "diş", "dental", "tibb",
-]);
+// Ad OLMAYAN köməkçi sözlərin kökləri — prefiks yoxlaması ilə süzülür
+// ("merkezin", "nomresini", "deyishmek" kimi hallanmış formaları da tutsun).
+const LOOKUP_STOP_ROOTS = [
+  "salam", "klinik", "merkez", "nomre", "yeni", "kohne", "baki", "sumqayit",
+  "gence", "dis", "dental", "tibb", "istey", "deyis", "elave", "etmek", "edim",
+  "edin", "eded", "olar", "gonder", "yazin", "yazmaq", "zeng", "qiymet",
+  "xidmet", "sekil", "foto", "kabinet", "giris", "sistem", "sayt", "rentgen",
+  "problem", "kod", "sms", "mobil", "necə", "nece", "lazim", "haqqinda",
+  "bilm", "kömek", "komek", "hansi", "bura", "sizin", "bizim", "melumat",
+  "almaq", "verin", "vermek", "tesekkur", "teshekkur", "sagol", "xeyr", "beli",
+  "cavab", "sual", "amma", "ancaq", "sonra", "evvel", "zehmet", "olmasa",
+];
+const isStopword = (w: string) => LOOKUP_STOP_ROOTS.some((r) => w.startsWith(r));
 
 /**
  * İstifadəçinin yazdığı (çox vaxt natamam/səhv) mərkəz adını BAZADA axtarır və
@@ -148,7 +156,7 @@ async function nameLookupContext(texts: string[]): Promise<string> {
         .join(" ")
         .split(/[^a-zA-Zəıöüçşğa-яА-Я]+/)
         .map((w) => fold(w))
-        .filter((w) => w.length >= 3 && !LOOKUP_STOPWORDS.has(w)),
+        .filter((w) => w.length >= 3 && !isStopword(w)),
     ),
   ];
   if (!tokens.length) return "";
@@ -170,7 +178,18 @@ async function nameLookupContext(texts: string[]): Promise<string> {
     .filter((x) => x.hits >= Math.min(2, tokens.length))
     .sort((a, b) => b.hits - a.hits)
     .slice(0, 3);
-  if (!scored.length) return "";
+  if (!scored.length) {
+    return [
+      `MƏRKƏZ AD AXTARIŞI: bazada "${tokens.join(" ")}" sözlərinə uyğun mərkəz TAPILMADI.`,
+      "QAYDA: istifadəçi bu sözlərlə MƏRKƏZ ADI nəzərdə tutursa (dəyişiklik/giriş/kart istəyir), axına DAVAM ETMƏ və bu cavabı ver:",
+      '"Bu adla mərkəz sistemimizdə tapılmadı. Davam etmək üçün:',
+      "1. Adı bir az fərqli / tam yazın",
+      "2. rentgen.az-da mərkəzinizin səhifəsini açıb linkini bura göndərin",
+      '3. Mərkəziniz saytda hələ yoxdursa — yeni mərkəz kimi qeydə alaq ("yeni" yazın)',
+      'Sadəcə nömrəni yazın."',
+      "(Sözlər adi söhbət sözləridirsə — mərkəz adı deyilsə — bu bloku nəzərə alma, suala normal cavab ver.)",
+    ].join("\n");
+  }
 
   return [
     "MƏRKƏZ AD AXTARIŞI (bazadan — istifadəçinin yazdığı ada ən uyğun mərkəzlər):",
