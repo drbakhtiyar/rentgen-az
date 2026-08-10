@@ -38,7 +38,7 @@ export async function generateMetadata({
   if (svc) titleParts.unshift(svc.name);
   if (sp.city) titleParts.push(sp.city);
   return buildMetadata({
-    title: `${titleParts.join(" — ")}${sp.city ? "" : " | Bakı"}`,
+    title: `${titleParts.join(" — ")}${sp.city ? "" : " | Azərbaycan"}`,
     description:
       "Bakı və Azərbaycanda təsdiqlənmiş dental rentgen və 3D tomoqrafiya mərkəzləri. Xidmət və rayona görə axtarın, birbaşa əlaqə saxlayın.",
     path: "/rentgen-merkezleri",

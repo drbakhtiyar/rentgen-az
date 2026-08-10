@@ -218,8 +218,8 @@ const generic = (name: string, category: string | undefined, locale: Locale): Se
   if (locale === "ru") return genericRu(name, m);
   const low = name.toLowerCase();
   return {
-    metaTitle: `${name} — Bakıda qiymət və mərkəzlər | Rentgen.az`,
-    metaDescription: `${name} xidmətini Bakıda göstərən təsdiqlənmiş mərkəzlər. Qiymətləri müqayisə edin, ünvan və əlaqə məlumatını tapın, birbaşa növbə yazın.`,
+    metaTitle: `${name} — qiymətlər və mərkəzlər | Rentgen.az`,
+    metaDescription: `${name} xidmətini göstərən təsdiqlənmiş mərkəzlər — Bakı və bütün bölgələr üzrə. Qiymətləri müqayisə edin, ünvan və əlaqə məlumatını tapın, birbaşa növbə yazın.`,
     keywords: [name, `${name} Bakı`, `${name} qiyməti`, m.word, "Bakı", "Rentgen.az"],
     intro: `${name} — ${m.long} üsuludur. Rentgen.az vasitəsilə Bakıda ${low} xidməti göstərən mərkəzləri tapa, qiymətləri müqayisə edə və birbaşa əlaqə saxlaya bilərsiniz.`,
     sections: [

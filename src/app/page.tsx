@@ -243,7 +243,8 @@ export default async function HomePage() {
               </ButtonLink>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            {/* Mobil: 2 sütun + kiçik kartlar (skrol azalır — istifadəçi istəyi) */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <FeatureTile icon={<Search />} title={d.home.tile1t} text={d.home.tile1d} />
               <FeatureTile icon={<MessageCircle />} title={d.home.tile2t} text={d.home.tile2d} />
               <FeatureTile icon={<ShieldCheck />} title={d.home.tile3t} text={d.home.tile3d} />
@@ -427,12 +428,12 @@ function FeatureTile({
   text: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600/20 text-cyan-300 [&>svg]:h-5 [&>svg]:w-5">
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm sm:p-5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600/20 text-cyan-300 sm:h-10 sm:w-10 sm:rounded-xl [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
         {icon}
       </div>
-      <h3 className="mt-3 font-semibold text-white">{title}</h3>
-      <p className="mt-1 text-sm text-slate-400">{text}</p>
+      <h3 className="mt-2 text-sm font-semibold text-white sm:mt-3 sm:text-base">{title}</h3>
+      <p className="mt-1 text-xs text-slate-400 sm:text-sm">{text}</p>
     </div>
   );
 }

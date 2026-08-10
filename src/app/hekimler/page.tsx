@@ -17,7 +17,7 @@ import { CITIES, DENTAL_SPECIALIZATIONS } from "@/lib/constants";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Həkimlər — dental həkim kataloqu",
+  title: "Həkimlər — təsdiqlənmiş həkim kataloqu",
   description:
     "Azərbaycanda dental həkimlər: ixtisas, klinika və şəhərə görə tapın. Təsdiqlənmiş həkim profilləri — Rentgen.az.",
   path: "/hekimler",

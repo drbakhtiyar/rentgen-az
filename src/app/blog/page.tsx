@@ -14,7 +14,7 @@ import { getDict } from "@/lib/i18n";
 export const revalidate = 300;
 
 export const metadata = buildMetadata({
-  title: "Blog — dental rentgen və tomoqrafiya məqalələri",
+  title: "Blog — rentgen, KT, MRT və USM haqqında məqalələr",
   description:
     "Dental rentgen, 3D tomoqrafiya, CBCT, panoramik və sefalometrik rentgen haqqında faydalı və etibarlı məqalələr.",
   path: "/blog",

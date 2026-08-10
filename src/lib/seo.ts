@@ -5,9 +5,9 @@ import { PLATFORM_WHATSAPP } from "./constants";
 export const SITE = {
   name: "Rentgen.az",
   shortName: "Rentgen.az",
-  title: "Rentgen.az — Azərbaycanda dental rentgen və 3D tomoqrafiya mərkəzləri",
+  title: "Rentgen.az — Azərbaycanda rentgen, KT, MRT və USM mərkəzləri",
   description:
-    "Azərbaycanda dental rentgen, panoramik rentgen, sefalometrik rentgen və 3D dental tomoqrafiya (CBCT) mərkəzlərini tapın. Xidmət və rayona görə axtarın, birbaşa əlaqə saxlayın.",
+    "Azərbaycanda rentgen, KT, MRT, USM, mammoqrafiya və dental tomoqrafiya (CBCT) mərkəzlərini tapın. Xidmətə, şəhərə və qiymətə görə axtarın, birbaşa əlaqə saxlayın.",
   locale: "az_AZ",
   twitter: "@rentgenaz",
   defaultOg: "/og-default.png",
@@ -167,7 +167,7 @@ export function medicalBusinessJsonLd(center: {
 }) {
   return {
     "@context": "https://schema.org",
-    "@type": ["MedicalBusiness", "LocalBusiness", "Dentist"],
+    "@type": ["MedicalBusiness", "LocalBusiness", "MedicalClinic"],
     name: center.name,
     url: canonical(`/rentgen-merkezleri/${center.slug}`),
     telephone: center.phone,

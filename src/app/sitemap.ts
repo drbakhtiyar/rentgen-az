@@ -39,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/xidmetler",
     "/hekimler",
     "/merkezler-ucun",
+    "/merkez-kabineti",
     "/hekimler-ucun",
     "/paketler",
     "/blog",
