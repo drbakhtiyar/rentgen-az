@@ -248,7 +248,7 @@ export async function answerWaMessage(
   ]);
   const system = [HARD_RULES, knowledge, ctx, lookup].filter(Boolean).join("\n\n---\n\n");
   const msgs: AiMsg[] = [...history.slice(-10), { role: "user", content: text.slice(0, 1500) }];
-  const res = await askClaude(system, msgs, 600);
+  const res = await askClaude(system, msgs, 600, "sonnet");
   if (!res.ok || !res.answer) return { ok: false };
   // Markdown → WhatsApp: **qalın** → *qalın*; başlıq işarələri silinir
   const answer = res.answer.replace(/\*\*(.+?)\*\*/g, "*$1*").replace(/^#+\s*/gm, "").trim();
@@ -267,7 +267,7 @@ export async function testBotAnswer(
     nameLookupContext([question]),
   ]);
   const system = [HARD_RULES, knowledge, ctx, lookup].filter(Boolean).join("\n\n---\n\n");
-  const res = await askClaude(system, [{ role: "user", content: question.slice(0, 1500) }], 600);
+  const res = await askClaude(system, [{ role: "user", content: question.slice(0, 1500) }], 600, "sonnet");
   return { ...res, systemChars: system.length };
 }
 

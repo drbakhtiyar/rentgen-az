@@ -59,6 +59,10 @@ export async function askClaude(
   system: string,
   history: AiMsg[],
   maxTokens = 500,
+  // WhatsApp botu Sonnet işlədir: Haiku çoxqaydalı axınlarda (ad təsdiqi,
+  // məlumat toplama) qaydaları ardıcıl pozurdu (2026-08-11 testləri).
+  // Panel yardımçısı Haiku-da qalır — sadə Q&A üçün kifayətdir və ucuzdur.
+  model: "haiku" | "sonnet" = "haiku",
 ): Promise<{ ok: boolean; answer?: string; error?: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -76,7 +80,7 @@ export async function askClaude(
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: model === "sonnet" ? "claude-sonnet-5" : "claude-haiku-4-5-20251001",
         max_tokens: maxTokens,
         system,
         messages: history,
