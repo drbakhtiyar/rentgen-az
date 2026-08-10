@@ -57,6 +57,16 @@ Bot: "Təşəkkürlər! İndi köhnə nömrəni və yeni MOBİL nömrəni yazın
 Bot: "Qeyd etdim: ABC Klinika (Bakı) — köhnə nömrə 0124997654, yeni nömrə 0504300000. Operatorumuz təsdiqləyib sizinlə əlaqə saxlayacaq."
 ⚠️ Bütün bu addımlar tamamlanmayıb DATA ƏLİNDƏ DEYİLSƏ, "qeyd etdim" / "operator əlaqə saxlayacaq" DEMƏK QADAĞANDIR — əvvəl soruş.
 
+MƏRKƏZ ADI YALNIZ BAZADAN (pozulmaz!):
+- Mərkəzin adını təsdiqləyəndə YALNIZ kontekstdəki "MƏRKƏZ AD AXTARIŞI" blokundakı adlardan istifadə et — adı OLDUĞU KİMİ, dəyişmədən yaz. İstifadəçinin yazdığı adı sistem adı kimi TƏQDİM ETMƏ, ad UYDURMA.
+- İstifadəçi ad çəkib, amma "MƏRKƏZ AD AXTARIŞI" bloku YOXDURSA və ya uyğun deyilsə — dəyişiklik/giriş axınına DAVAM ETMƏ (sistemdə olmayan mərkəzin nömrəsini dəyişmək mənasızdır). Bunu de:
+  "Bu adla mərkəz sistemimizdə tapılmadı. Nömrə dəyişikliyi üçün əvvəl mərkəzinizi tapmalıyıq:
+  1. Adı bir az fərqli / tam yazın
+  2. rentgen.az-da mərkəzinizin səhifəsini açıb LİNKİNİ bura göndərin
+  3. Mərkəziniz saytda hələ yoxdursa — sizi yeni mərkəz kimi qeydə alaq (\"yeni\" yazın)
+  Sadəcə nömrəni yazın."
+- İstifadəçi rentgen.az/rentgen-merkezleri/... linki göndərsə, kontekstdəki axtarış nəticəsi həmin mərkəzi dəqiq göstərəcək — onunla davam et.
+
 PAROL YOXDUR:
 - Sistemdə parol ANLAYIŞI YOXDUR — giriş yalnız telefon + SMS kod ilədir. Heç vaxt "parolumu unutdum" bəndi təklif etmə, parol sıfırlama danışma. Parol soruşana de: "Bizdə parol yoxdur — kartdakı mobil nömrə + SMS kod ilə girirsiniz."
 
@@ -118,6 +128,20 @@ const LOOKUP_STOPWORDS = new Set([
  * yanlış mərkəzə dəyişiklik düşməsin (istifadəçi istəyi, 2026-08-11).
  */
 async function nameLookupContext(texts: string[]): Promise<string> {
+  // İstifadəçi mərkəz səhifəsinin LİNKİNİ göndəribsə — slug ilə DƏQİQ tanıma
+  const slugMatch = texts.join(" ").match(/rentgen-merkezleri\/([a-z0-9-]+)/);
+  if (slugMatch) {
+    const c = await prisma.centerProfile
+      .findUnique({ where: { slug: slugMatch[1] }, select: { name: true, city: true, status: true } })
+      .catch(() => null);
+    if (c) {
+      return [
+        "MƏRKƏZ AD AXTARIŞI (istifadəçinin göndərdiyi LİNKDƏN dəqiq tapıldı):",
+        `1. "${c.name}"${c.city ? ` (${c.city})` : ""}${c.status === "PENDING" ? " — hələ təsdiq gözləyir" : ""}`,
+        "QAYDA: bu, dəqiq uyğunluqdur — adı OLDUĞU KİMİ işlədib davam et.",
+      ].join("\n");
+    }
+  }
   const tokens = [
     ...new Set(
       texts
@@ -156,7 +180,7 @@ async function nameLookupContext(texts: string[]): Promise<string> {
     "QAYDA: istifadəçi mərkəz adı çəkibsə, TAM RƏSMİ adı bu siyahıdan təsdiqlə:",
     '- 1 uyğunluq → "Sistemdə tam adı belədir: \\"...\\" (şəhər). Sizin klinikanız budur? 1. Bəli 2. Xeyr — Sadəcə nömrəni yazın." de və təsdiq AL.',
     "- Bir neçə uyğunluq → nömrəli siyahı göstər, hansının olduğunu soruş.",
-    "- Yekun qeyddə mərkəzin adını MƏHZ bazadakı tam formada yaz.",
+    "- Yekun qeyddə mərkəzin adını MƏHZ bazadakı tam formada yaz. Adı QISALTMA, DƏYİŞMƏ, tərcümə ETMƏ.",
     "Bu siyahı BOŞDURSA və ya uyğun deyilsə: \"bu adla mərkəz tapa bilmədim — adı bir az fərqli yazın\" de; istifadəçi israr etsə operatora ötür.",
   ].join("\n");
 }
