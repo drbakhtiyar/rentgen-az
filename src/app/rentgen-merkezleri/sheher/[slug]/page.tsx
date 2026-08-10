@@ -14,6 +14,7 @@ import { getServicesForCity } from "@/lib/city-service-pages";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
 import { getLocale } from "@/lib/i18n-server";
+import { serviceNameRu } from "@/content/services-ru";
 import { getDict } from "@/lib/i18n";
 import { parseSort, combinedRatingScore } from "@/lib/rating";
 
@@ -35,6 +36,27 @@ export async function generateMetadata({
   if (!city) return buildMetadata({ title: "Şəhər tapılmadı", noIndex: true });
 
   const s = await getCityStats(city.name);
+  // /ru altında meta da rusca olmalıdır — əvvəllər hər iki dildə AZ gedirdi
+  // (Google-a qarışıq siqnal). getLocale() metadata-da da işləyir (request-scoped).
+  const locale = await getLocale();
+  if (locale === "ru") {
+    const top = s.topServices.slice(0, 3).map((t) => serviceNameRu(t.name)).join(", ");
+    return buildMetadata({
+      title: `Рентген-центры в городе ${city.name}`,
+      description:
+        `${city.count} проверенных рентген- и диагностических центров города ${city.name}. ` +
+        (top ? `${top} и другие исследования. ` : "") +
+        `Адреса, график работы, контакты и цены — на rentgen.az.`,
+      path: `/rentgen-merkezleri/sheher/${city.slug}`,
+      keywords: [
+        `${city.name} рентген`,
+        `рентген центр ${city.name}`,
+        `диагностический центр ${city.name}`,
+        `МРТ ${city.name}`,
+        "рентген центры",
+      ],
+    });
+  }
   const top = s.topServices.slice(0, 3).map((t) => t.name).join(", ");
   return buildMetadata({
     title: `${city.name} şəhərində rentgen mərkəzləri`,
@@ -80,6 +102,10 @@ export default async function CityPage({
   const locale = await getLocale();
   const d = getDict(locale);
   const intro = cityIntro(city.name, stats, locale);
+  const pageTitle =
+    locale === "ru"
+      ? `Рентген-центры в городе ${city.name}`
+      : `${city.name} şəhərində rentgen mərkəzləri`;
   const others = allCities.filter((c) => c.slug !== city.slug).slice(0, 14);
 
   return (
@@ -87,14 +113,14 @@ export default async function CityPage({
       <JsonLd
         data={[
           breadcrumbJsonLd([
-            { name: "Ana səhifə", path: "/" },
-            { name: "Rentgen mərkəzləri", path: "/rentgen-merkezleri" },
+            { name: locale === "ru" ? "Главная" : "Ana səhifə", path: "/" },
+            { name: locale === "ru" ? "Рентген-центры" : "Rentgen mərkəzləri", path: "/rentgen-merkezleri" },
             { name: city.name, path: `/rentgen-merkezleri/sheher/${city.slug}` },
           ]),
           {
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            name: `${city.name} şəhərində rentgen mərkəzləri`,
+            name: pageTitle,
             url: `${SITE_URL}/rentgen-merkezleri/sheher/${city.slug}`,
             about: { "@type": "City", name: city.name, address: { "@type": "PostalAddress", addressLocality: city.name, addressCountry: "AZ" } },
             mainEntity: {
@@ -113,7 +139,7 @@ export default async function CityPage({
 
       <PageHeader
         eyebrow={d.centers.eyebrow}
-        title={`${city.name} şəhərində rentgen mərkəzləri`}
+        title={pageTitle}
         description={intro[0]}
         breadcrumbs={[
           { name: d.centers.title, href: "/rentgen-merkezleri" },
@@ -150,7 +176,8 @@ export default async function CityPage({
                           }
                           className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-brand-50 hover:text-brand-700"
                         >
-                          {t.name} <span className="text-slate-400">· {t.count}</span>
+                          {locale === "ru" ? serviceNameRu(t.name) : t.name}{" "}
+                          <span className="text-slate-400">· {t.count}</span>
                         </Link>
                       );
                     })}
@@ -162,7 +189,7 @@ export default async function CityPage({
                           href={`/rentgen-merkezleri/sheher/${city.slug}/${p.service.slug}`}
                           className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-brand-50 hover:text-brand-700"
                         >
-                          {p.service.shortName ?? p.service.name}{" "}
+                          {locale === "ru" ? serviceNameRu(p.service.name) : (p.service.shortName ?? p.service.name)}{" "}
                           <span className="text-slate-400">· {p.count}</span>
                         </Link>
                       ))}

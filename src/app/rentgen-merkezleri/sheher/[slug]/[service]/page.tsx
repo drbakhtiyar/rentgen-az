@@ -16,6 +16,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { parseSort, combinedRatingScore } from "@/lib/rating";
 import { locative } from "@/lib/center-description";
+import { serviceNameRu, categoryRu } from "@/content/services-ru";
 
 export const revalidate = 300;
 
@@ -35,6 +36,23 @@ export async function generateMetadata({
 
   // Başlıqda TAM ad: shortName tək başına yarımçıq oxunur ("Bakıda Panoramik").
   const svc = page.service.name;
+  // /ru altında meta rusca (əvvəllər hər iki dildə AZ idi — SEO siqnal qarışıqlığı)
+  const locale = await getLocale();
+  if (locale === "ru") {
+    const svcRu = serviceNameRu(svc);
+    return buildMetadata({
+      title: `${svcRu} — ${page.city.name}`,
+      description:
+        `${page.count} центров города ${page.city.name}, где выполняется «${svcRu}». ` +
+        `Адреса, график работы, контакты и рейтинги — rentgen.az.`,
+      path: `/rentgen-merkezleri/sheher/${page.city.slug}/${page.service.slug}`,
+      keywords: [
+        `${svcRu} ${page.city.name}`,
+        `${svcRu} цена`,
+        `${page.city.name} диагностика`,
+      ],
+    });
+  }
   return buildMetadata({
     title: `${locative(page.city.name)} ${svc}`,
     description:
@@ -73,13 +91,13 @@ export default async function CityServicePage({
 
   const locale = await getLocale();
   const d = getDict(locale);
-  const svc = page.service.name;
+  const svc = locale === "ru" ? serviceNameRu(page.service.name) : page.service.name;
   const cityLoc = locative(page.city.name);
-  const title = `${cityLoc} ${svc}`;
+  const title = locale === "ru" ? `${svc} — ${page.city.name}` : `${cityLoc} ${svc}`;
 
   const intro =
     locale === "ru"
-      ? `В каталоге rentgen.az — ${page.count} центров города ${page.city.name}, где выполняется исследование «${page.service.name}». Для каждого указаны адрес, режим работы и контакты.`
+      ? `В каталоге rentgen.az — ${page.count} центров города ${page.city.name}, где выполняется исследование «${svc}». Для каждого указаны адрес, режим работы и контакты.`
       : `Rentgen.az kataloqunda ${cityLoc} «${page.service.name}» müayinəsini aparan ${page.count} mərkəz var. Hər biri üçün ünvan, iş qrafiki və əlaqə nömrəsi göstərilib.`;
 
   return (
@@ -87,8 +105,8 @@ export default async function CityServicePage({
       <JsonLd
         data={[
           breadcrumbJsonLd([
-            { name: "Ana səhifə", path: "/" },
-            { name: "Rentgen mərkəzləri", path: "/rentgen-merkezleri" },
+            { name: locale === "ru" ? "Главная" : "Ana səhifə", path: "/" },
+            { name: locale === "ru" ? "Рентген-центры" : "Rentgen mərkəzləri", path: "/rentgen-merkezleri" },
             { name: page.city.name, path: `/rentgen-merkezleri/sheher/${page.city.slug}` },
             { name: svc, path: `/rentgen-merkezleri/sheher/${page.city.slug}/${page.service.slug}` },
           ]),
@@ -99,7 +117,7 @@ export default async function CityServicePage({
             url: `${SITE_URL}/rentgen-merkezleri/sheher/${page.city.slug}/${page.service.slug}`,
             about: {
               "@type": "MedicalTest",
-              name: page.service.name,
+              name: svc,
             },
             mainEntity: {
               "@type": "ItemList",
@@ -116,7 +134,9 @@ export default async function CityServicePage({
       />
 
       <PageHeader
-        eyebrow={page.service.category ?? undefined}
+        eyebrow={
+          locale === "ru" ? categoryRu(page.service.category) : (page.service.category ?? undefined)
+        }
         title={title}
         description={intro}
         breadcrumbs={[
@@ -173,7 +193,7 @@ export default async function CityServicePage({
                       href={`/rentgen-merkezleri/sheher/${s.city.slug}/${s.service.slug}`}
                       className="rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-brand-50 hover:text-brand-700"
                     >
-                      {s.service.shortName ?? s.service.name}{" "}
+                      {locale === "ru" ? serviceNameRu(s.service.name) : (s.service.shortName ?? s.service.name)}{" "}
                       <span className="text-slate-400">· {s.count}</span>
                     </Link>
                   ))}
