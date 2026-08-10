@@ -74,12 +74,36 @@ export async function buildKnowledge(): Promise<string> {
   return sections.map((s) => `## ${s.title}\n${s.content.trim()}`).join("\n\n");
 }
 
-/** "smile by bakhtiyar" ~ "Smile by Dr.Bakhtiyar" — diakritik-fold. */
+/** "smile bextiyar" ~ "Smile by Dr.Bakhtiyar" — diakritik + translit fold. */
 function fold(s: string): string {
   return s
     .toLowerCase()
     .replace(/ə/g, "e").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ç/g, "c")
-    .replace(/ö/g, "o").replace(/ü/g, "u").replace(/ğ/g, "g");
+    .replace(/ö/g, "o").replace(/ü/g, "u").replace(/ğ/g, "g")
+    // ingiliscə transliterasiyalar → AZ qarşılığı (Bakhtiyar→Baxtiyar, Shafa→Safa)
+    .replace(/kh/g, "x").replace(/sh/g, "s").replace(/ch/g, "c").replace(/gh/g, "g");
+}
+
+/** Kiçik Levenshtein — yazı səhvinə dözümlü ad-uyğunluğu üçün. */
+function lev(a: string, b: string): number {
+  if (Math.abs(a.length - b.length) > 2) return 99;
+  const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+  return dp[a.length][b.length];
+}
+
+/** Token ad-sözlərindən birinə uyğundurmu (daxilolma və ya ≤tol məsafə). */
+function tokenMatches(token: string, nameFold: string, nameWords: string[]): boolean {
+  if (nameFold.includes(token)) return true;
+  const tol = token.length >= 8 ? 2 : 1;
+  return nameWords.some((w) => lev(w, token) <= tol);
 }
 
 const LOOKUP_STOPWORDS = new Set([
@@ -115,7 +139,8 @@ async function nameLookupContext(texts: string[]): Promise<string> {
   const scored = centers
     .map((c) => {
       const f = fold(c.name);
-      const hits = tokens.filter((t) => f.includes(t)).length;
+      const words = f.split(/[^a-z0-9]+/).filter((w) => w.length >= 3);
+      const hits = tokens.filter((t) => tokenMatches(t, f, words)).length;
       return { c, hits };
     })
     .filter((x) => x.hits >= Math.min(2, tokens.length))
