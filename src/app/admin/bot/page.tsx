@@ -56,7 +56,8 @@ export default async function AdminBotPage() {
         <p className="mt-3 rounded-xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600 ring-1 ring-slate-100">
           <strong>Dəyişməz qaydalar (kodda):</strong> bot özünü təqdim edir · qısa yazır ·
           qiymət/endirim vəd etmir · hesab rəqəmləri demir · tibbi məsləhət vermir ·
-          şübhəli/mürəkkəb halda operatora yönləndirir. Bunlar buradan dəyişdirilə bilməz —
+          şəhər nömrəsini giriş üçün qəbul etmir (mobil tələb edir) · icra vədi vermir
+          ("əlavə etdim" demir, operatora ötürür) · şübhəli/mürəkkəb halda operatora yönləndirir. Bunlar buradan dəyişdirilə bilməz —
           təhlükəsizlik təminatıdır.
         </p>
       </Card>
