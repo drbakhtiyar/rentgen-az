@@ -2,6 +2,23 @@
 
 Reverse-chronological.
 
+## 2026-08-10 — WhatsApp kampaniya mərkəzi: 4 dəvət növü + girişsiz özünəxidmət formları
+
+`/panel/whatsapp` + `/admin/whatsapp` (admin-ə yeni nav bəndi) indi 4 tablıdır,
+hamısı ORTAQ gündə-12 limitini bölüşür, hər tabda diakritik-fold ad axtarışı var
+("beyaz" ~ "Bəyaz"), mesajlar variantlı və əhəmiyyət-izahlıdır:
+- **💰 Qiymət** → `/q/<token>` (mövcud; "+" ilə kataloqdan xidmət əlavə etmə qazandı)
+- **❓ FAQ** → `/f/<token>` — 10 sabit sual (center-faq.ts), prefill, boş sahə köhnəni silmir
+- **📋 Kart** → `/m/<token>` — xidmət təsdiqi (checkbox-la SİL + "+" ilə ƏLAVƏ),
+  qiymətlər, həftəlik iş saatları ("hamısına tətbiq et"); silinənlər jurnal
+  meta-sında; foto/loqo "elə çata göndərin" qeydi
+- **🔑 Kabinet** → `/merkez-kabineti` eniş səhifəsi (parolsuz giriş 3 addım +
+  6 fayda kartı); növbəyə yalnız sahibi placeholder olan (aktivləşməmiş) mərkəzlər
+Jurnal açarları: wa_price/faq/card/cabinet_invite + özünəxidmət izləri
+price/faq/card_self. Robots DÜZƏLİŞİ: "/f" prefiksi /faq-ı bloklayırdı →
+"/q/" "/f/" "/m/". WhatsApp Business profil mətnləri + salamlama/uzaqda/8 sürətli
+cavab istifadəçiyə verildi (tətbiqdə qurulur, kod yox).
+
 ## 2026-08-10 — FAQ restrukturu + qeydiyyat şəhər siyahısı təmizliyi + Axiora nişanı
 
 - **FAQ** (`/faq`): köhnə 14 dental-dövr sualı → **53 sual × 2 dil**, çip-naviqasiyalı
