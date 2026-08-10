@@ -59,6 +59,14 @@ export default async function AdminWhatsappPage(props: {
             {label}
           </Link>
         ))}
+        <a
+          href="/panel/whatsapp/vcard"
+          download
+          className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-600 hover:border-brand-300 hover:text-brand-700"
+          title="Göndəriş olunan mərkəzləri adları ilə telefon kontaktlarına import et — WhatsApp siyahısında adlar görünsün"
+        >
+          📇 Kontaktları yüklə (.vcf)
+        </a>
       </div>
 
       <Card className="mb-5 p-5">
