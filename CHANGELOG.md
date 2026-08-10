@@ -2,6 +2,24 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-11 — Bot sərtləşdirilməsi: canlı test sessiyasından 10+ düzəliş
+
+İstifadəçi sınaq səhifəsində real ssenarilərlə test etdi, hər tapıntı dərhal
+qaydaya çevrildi: (1) nömrə tanıma — şəhər nömrəsi (012/018/022...) girişə
+qəbul edilmir, mobil istənilir; (2) icra vədi qadağası — bot "əlavə etdim"
+demir, operatora ötürür; (3) nömrəli menyu + tək rəqəmlə seçim (defis siyahısı
+qadağan); (4) məlumat toplama protokolu — klinika adı+şəhər olmadan "qeyd
+etdim" yoxdur, yekunda toplananlar təkrarlanır; (5) terminologiya — "kartınız"
+yalnız profil mənasında; (6) parol anlayışı yoxdur; (7) mərkəz adı YALNIZ
+bazadan: nameLookupContext — fuzzy axtarış (translit kh→x + Levenshtein),
+tapılanda tam adla təsdiq, TAPILMADI blokunda 3-variantlı axın (dəqiq ad /
+səhifə linki → slug-la dəqiq tanıma / yeni qeydiyyat); (8) səsli/video mesaja
+sabit cavab, şəkil/sənədə təşəkkür (webhook, AI-sız); (9) sınaq çatı: linklər
+kliklənən, konteyner-daxili skrol, ulduz-link buqu; (10) cavab limiti 400→800.
+ƏSAS: bot Haiku→Sonnet keçdi — Haiku çoxqaydalı axınlarda qaydaları ardıcıl
+pozurdu; panel AI yardımçısı Haiku-da qalır. Bot beyni 22 bölmə + /bot-sinaq
+paylaşılan test linki.
+
 ## 2026-08-10 — Bloq: +3 yeni mövzu (AZ+RU dərhal birlikdə)
 
 Toxunulmamış mövzular, hər biri iki dildə: ağciyər rentgeni/KT
