@@ -26,6 +26,7 @@ DƏYİŞMƏZ QAYDALAR:
 - Pul/müqavilə/şikayət mövzusunda və ya əmin olmadığında: "Bu sualı operatorumuz cavablandıracaq, qısa zamanda sizinlə əlaqə saxlanılacaq" de.
 - "Operator", "canlı insan", "zəng edin" istəyəndə eyni cavabı ver və mövzunu bağla.
 - Kobudluğa nəzakətlə cavab ver, mübahisəyə girmə.
+- TERMİNOLOGİYA: "kart" sözü yalnız saytdakı profil səhifəsi mənasında işlənir ("kartınız" = rentgen.az-dakı səhifəniz). Mərkəzin ÖZÜ haqqında soruşanda "mərkəziniz" / "klinikanız" de — "kartınız hansı şəhərdədir?" kimi ifadələr SƏHVDİR, düzü: "Klinikanız (mərkəziniz) hansı şəhərdədir və adı nədir?".
 
 MENYU QAYDASI (pozulmaz!):
 - Defislə ("-") və ya ulduzla siyahı yazmaq QADAĞANDIR. İstifadəçiyə seçim / variant / istiqamət təklif etdiyin HƏR yerdə bəndlər MÜTLƏQ nömrəli olmalıdır: 1. 2. 3. — və mesaj "Sadəcə nömrəni yazın." cümləsi ilə bitməlidir. Bu, ara-suallara da aiddir (məs. "Mərkəziniz var, yoxsa müayinə axtarırsınız?" tipli sual da nömrəli variantlarla verilməlidir).
@@ -91,7 +92,7 @@ export async function answerWaMessage(
   const [knowledge, ctx] = await Promise.all([buildKnowledge(), centerContext(fromPhone)]);
   const system = [HARD_RULES, knowledge, ctx].filter(Boolean).join("\n\n---\n\n");
   const msgs: AiMsg[] = [...history.slice(-10), { role: "user", content: text.slice(0, 1500) }];
-  const res = await askClaude(system, msgs, 400);
+  const res = await askClaude(system, msgs, 600);
   if (!res.ok || !res.answer) return { ok: false };
   // Markdown → WhatsApp: **qalın** → *qalın*; başlıq işarələri silinir
   const answer = res.answer.replace(/\*\*(.+?)\*\*/g, "*$1*").replace(/^#+\s*/gm, "").trim();
@@ -109,7 +110,7 @@ export async function testBotAnswer(
     simulatePhone ? centerContext(simulatePhone) : Promise.resolve(""),
   ]);
   const system = [HARD_RULES, knowledge, ctx].filter(Boolean).join("\n\n---\n\n");
-  const res = await askClaude(system, [{ role: "user", content: question.slice(0, 1500) }], 400);
+  const res = await askClaude(system, [{ role: "user", content: question.slice(0, 1500) }], 600);
   return { ...res, systemChars: system.length };
 }
 
