@@ -6,6 +6,44 @@ import { askBotTestAction } from "@/app/bot-sinaq/[token]/actions";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+// URL-ləri kliklənən linkə, *mətn*-i qalına çevirir (WhatsApp davranışı).
+const URL_RE =
+  /(https?:\/\/[^\s]+|(?:www\.)?rentgen\.az(?:\/[^\s]*)?|wa\.me\/[^\s]+|crm\.rentgen\.az(?:\/[^\s]*)?)/g;
+
+function renderRich(text: string): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  let key = 0;
+  const boldify = (chunk: string) =>
+    chunk.split(/\*([^*\n]+)\*/g).map((part, i) =>
+      i % 2 === 1 ? <strong key={`b${key++}`}>{part}</strong> : part,
+    );
+  for (const seg of text.split(URL_RE)) {
+    if (!seg) continue;
+    if (URL_RE.test(seg) && !/\s/.test(seg)) {
+      URL_RE.lastIndex = 0;
+      // sondakı durğu işarəsi linkə düşməsin
+      const m = seg.match(/^([^]*?)([.,;:!?)]*)$/)!;
+      const href = m[1].startsWith("http") ? m[1] : `https://${m[1]}`;
+      out.push(
+        <a
+          key={`l${key++}`}
+          href={href}
+          target="_blank"
+          rel="noopener"
+          className="font-semibold text-brand-700 underline underline-offset-2"
+        >
+          {m[1]}
+        </a>,
+      );
+      if (m[2]) out.push(m[2]);
+    } else {
+      URL_RE.lastIndex = 0;
+      out.push(...boldify(seg));
+    }
+  }
+  return out;
+}
+
 /** WhatsApp-vari sınaq çatı — bot beyninin canlı simulyasiyası. */
 export function BotTestChat({ token }: { token: string }) {
   const [msgs, setMsgs] = React.useState<Msg[]>([
@@ -18,10 +56,13 @@ export function BotTestChat({ token }: { token: string }) {
   const [input, setInput] = React.useState("");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
-  const endRef = React.useRef<HTMLDivElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
 
+  // Yalnız çat qutusunun DAXİLİNDƏ skrol — scrollIntoView bütün səhifəni
+  // dartırdı (istifadəçi şikayəti), scrollTop isə konteynerlə məhdudlaşır.
   React.useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [msgs, pending]);
 
   function send(e?: React.FormEvent) {
@@ -56,7 +97,7 @@ export function BotTestChat({ token }: { token: string }) {
       </div>
 
       {/* Mesajlar */}
-      <div className="flex-1 space-y-2 overflow-y-auto px-3 py-4">
+      <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-4">
         {msgs.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             <div
@@ -64,7 +105,7 @@ export function BotTestChat({ token }: { token: string }) {
                 m.role === "user" ? "rounded-br-none bg-[#dcf8c6] text-ink-900" : "rounded-bl-none bg-white text-ink-900"
               }`}
             >
-              {m.content}
+              {renderRich(m.content)}
             </div>
           </div>
         ))}
@@ -80,7 +121,6 @@ export function BotTestChat({ token }: { token: string }) {
             {error}
           </p>
         )}
-        <div ref={endRef} />
       </div>
 
       {/* Giriş sahəsi */}
