@@ -2,6 +2,14 @@
 
 Reverse-chronological.
 
+## 2026-08-10 — Bloq: 6 qeyri-dental yazının RU versiyaları
+
+AZ yazıların rusca qarşılıqları ayrı sluglarla (chto-takoe-mrt, kt-ili-mrt-raznica,
+rentgen-pri-beremennosti, podgotovka-k-uzi-bryushnoy-polosti,
+mammografiya-s-kakogo-vozrasta, chto-takoe-densitometriya-dexa) — DB-yə yazıldı,
+cover-lər AZ -v2 fayllarını paylaşır, daxili linklər /ru/ prefikslidir. RU bloq
+12→18 yazı; sitemap avtomatik götürür.
+
 ## 2026-08-10 — WhatsApp kampaniya mərkəzi: 4 dəvət növü + girişsiz özünəxidmət formları
 
 `/panel/whatsapp` + `/admin/whatsapp` (admin-ə yeni nav bəndi) indi 4 tablıdır,
