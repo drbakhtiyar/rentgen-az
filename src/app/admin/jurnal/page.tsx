@@ -28,12 +28,25 @@ const ACTION_LABELS: Record<string, string> = {
   "blog:create": "Məqalə yaradıldı",
   "blog:update": "Məqalə yeniləndi",
   "blog:delete": "Məqalə silindi",
+  "center:wa_price_invite": "WhatsApp qiymət dəvəti göndərildi",
+  "center:wa_faq_invite": "WhatsApp FAQ dəvəti göndərildi",
+  "center:wa_card_invite": "WhatsApp kart dəvəti göndərildi",
+  "center:wa_cabinet_invite": "WhatsApp kabinet dəvəti göndərildi",
+  "center:price_self": "Mərkəz öz qiymətlərini yazdı",
+  "center:faq_self": "Mərkəz öz FAQ cavablarını yazdı",
+  "center:card_self": "Mərkəz kartını özü yenilədi",
 };
+
+/** Admin hesabı placeholder nömrə ilə yaradılıb (ADMIN_PHONE env yox idi;
+ *  real nömrə pasiyent hesabı ilə toqquşardı) — jurnalda ad göstəririk. */
+const ADMIN_PLACEHOLDER_PHONE = "+994500000000";
 
 /** Operator sentinel nömrəsi jurnalda oxunaqlı ad kimi görünsün. */
 function actorLabel(phone: string | null | undefined): string {
-  if (!phone) return "—";
-  return phone === OPERATOR_PHONE ? `${OPERATOR_NAME} (operator)` : phone;
+  if (!phone) return "mərkəz özü (linklə)";
+  if (phone === OPERATOR_PHONE) return `${OPERATOR_NAME} (operator)`;
+  if (phone === ADMIN_PLACEHOLDER_PHONE) return "Administrator";
+  return phone;
 }
 
 async function getLogs() {
@@ -52,6 +65,21 @@ export default async function AdminJurnalPage() {
   const admin = await requireRole("ADMIN", "/admin/jurnal");
   const logs = await getLogs();
 
+  // Hədəf mərkəzlərin adları — "CenterProfile" əvəzinə oxunaqlı ad göstərmək üçün
+  const centerIds = [
+    ...new Set(
+      logs
+        .filter((l) => l.targetType === "CenterProfile" && l.targetId)
+        .map((l) => l.targetId as string),
+    ),
+  ];
+  const centers = centerIds.length
+    ? await prisma.centerProfile
+        .findMany({ where: { id: { in: centerIds } }, select: { id: true, name: true } })
+        .catch(() => [])
+    : [];
+  const centerName = new Map(centers.map((c) => [c.id, c.name]));
+
   return (
     <AdminShell title="Jurnal" userName={admin.phone}>
       <Panel title="Əməliyyat jurnalı">
@@ -69,7 +97,7 @@ export default async function AdminJurnalPage() {
                   <p className="mt-1 text-sm text-slate-500">
                     {[
                       actorLabel(log.admin?.phone),
-                      log.targetType,
+                      (log.targetId && centerName.get(log.targetId)) || log.targetType,
                       formatDateAz(log.createdAt),
                     ]
                       .filter(Boolean)
