@@ -74,6 +74,68 @@ export async function buildKnowledge(): Promise<string> {
   return sections.map((s) => `## ${s.title}\n${s.content.trim()}`).join("\n\n");
 }
 
+/** "smile by bakhtiyar" ~ "Smile by Dr.Bakhtiyar" — diakritik-fold. */
+function fold(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/ə/g, "e").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ç/g, "c")
+    .replace(/ö/g, "o").replace(/ü/g, "u").replace(/ğ/g, "g");
+}
+
+const LOOKUP_STOPWORDS = new Set([
+  "salam", "klinika", "klinikasi", "merkez", "merkezi", "mərkəz", "mərkəzi",
+  "nomre", "nomresi", "nömrə", "nömrəsi", "yeni", "kohne", "köhnə", "baki",
+  "bakı", "sumqayit", "gence", "gəncə", "dis", "diş", "dental", "tibb",
+]);
+
+/**
+ * İstifadəçinin yazdığı (çox vaxt natamam/səhv) mərkəz adını BAZADA axtarır və
+ * nəticəni botun kontekstinə verir — bot tam rəsmi adı təsdiqlədə bilsin,
+ * yanlış mərkəzə dəyişiklik düşməsin (istifadəçi istəyi, 2026-08-11).
+ */
+async function nameLookupContext(texts: string[]): Promise<string> {
+  const tokens = [
+    ...new Set(
+      texts
+        .join(" ")
+        .split(/[^a-zA-Zəıöüçşğa-яА-Я]+/)
+        .map((w) => fold(w))
+        .filter((w) => w.length >= 3 && !LOOKUP_STOPWORDS.has(w)),
+    ),
+  ];
+  if (!tokens.length) return "";
+
+  const centers = await prisma.centerProfile
+    .findMany({
+      where: { status: { in: ["APPROVED", "PENDING"] } },
+      select: { name: true, city: true, status: true },
+    })
+    .catch(() => []);
+
+  const scored = centers
+    .map((c) => {
+      const f = fold(c.name);
+      const hits = tokens.filter((t) => f.includes(t)).length;
+      return { c, hits };
+    })
+    .filter((x) => x.hits >= Math.min(2, tokens.length))
+    .sort((a, b) => b.hits - a.hits)
+    .slice(0, 3);
+  if (!scored.length) return "";
+
+  return [
+    "MƏRKƏZ AD AXTARIŞI (bazadan — istifadəçinin yazdığı ada ən uyğun mərkəzlər):",
+    ...scored.map(
+      (x, i) => `${i + 1}. "${x.c.name}"${x.c.city ? ` (${x.c.city})` : ""}${x.c.status === "PENDING" ? " — hələ təsdiq gözləyir" : ""}`,
+    ),
+    "QAYDA: istifadəçi mərkəz adı çəkibsə, TAM RƏSMİ adı bu siyahıdan təsdiqlə:",
+    '- 1 uyğunluq → "Sistemdə tam adı belədir: \\"...\\" (şəhər). Sizin klinikanız budur? 1. Bəli 2. Xeyr — Sadəcə nömrəni yazın." de və təsdiq AL.',
+    "- Bir neçə uyğunluq → nömrəli siyahı göstər, hansının olduğunu soruş.",
+    "- Yekun qeyddə mərkəzin adını MƏHZ bazadakı tam formada yaz.",
+    "Bu siyahı BOŞDURSA və ya uyğun deyilsə: \"bu adla mərkəz tapa bilmədim — adı bir az fərqli yazın\" de; istifadəçi israr etsə operatora ötür.",
+  ].join("\n");
+}
+
 /** Yazan mərkəzin kart vəziyyəti — fərdi kontekst. */
 async function centerContext(phone: string): Promise<string> {
   const digits = phone.replace(/\D/g, "").slice(-9);
@@ -110,8 +172,13 @@ export async function answerWaMessage(
   text: string,
   history: AiMsg[] = [],
 ): Promise<{ ok: boolean; answer?: string; escalate?: boolean }> {
-  const [knowledge, ctx] = await Promise.all([buildKnowledge(), centerContext(fromPhone)]);
-  const system = [HARD_RULES, knowledge, ctx].filter(Boolean).join("\n\n---\n\n");
+  const recentUser = history.filter((h) => h.role === "user").slice(-2).map((h) => h.content);
+  const [knowledge, ctx, lookup] = await Promise.all([
+    buildKnowledge(),
+    centerContext(fromPhone),
+    nameLookupContext([...recentUser, text]),
+  ]);
+  const system = [HARD_RULES, knowledge, ctx, lookup].filter(Boolean).join("\n\n---\n\n");
   const msgs: AiMsg[] = [...history.slice(-10), { role: "user", content: text.slice(0, 1500) }];
   const res = await askClaude(system, msgs, 600);
   if (!res.ok || !res.answer) return { ok: false };
@@ -126,11 +193,12 @@ export async function testBotAnswer(
   question: string,
   simulatePhone?: string,
 ): Promise<{ ok: boolean; answer?: string; error?: string; systemChars?: number }> {
-  const [knowledge, ctx] = await Promise.all([
+  const [knowledge, ctx, lookup] = await Promise.all([
     buildKnowledge(),
     simulatePhone ? centerContext(simulatePhone) : Promise.resolve(""),
+    nameLookupContext([question]),
   ]);
-  const system = [HARD_RULES, knowledge, ctx].filter(Boolean).join("\n\n---\n\n");
+  const system = [HARD_RULES, knowledge, ctx, lookup].filter(Boolean).join("\n\n---\n\n");
   const res = await askClaude(system, [{ role: "user", content: question.slice(0, 1500) }], 600);
   return { ...res, systemChars: system.length };
 }
