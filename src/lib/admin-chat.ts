@@ -52,7 +52,15 @@ const USER_SELECT = {
 } as const;
 
 /** All admin threads with last message + unread (admin perspective). */
-export async function getAdminThreads(): Promise<AdminThreadItem[]> {
+/**
+ * filter="whatsapp" → yalnız WhatsApp yazışması olan thread-lər (📲 mesajlı);
+ * filter="system"   → panel-daxili söhbətlər (yalnız-WhatsApp thread-lər gizlənir;
+ *                     istifadəçi həm paneldə, həm WA-da yazıbsa hər ikisində görünür).
+ * İstifadəçi qərarı (2026-08-12): WhatsApp ayrıca bölmədə olsun.
+ */
+export async function getAdminThreads(
+  filter: "all" | "whatsapp" | "system" = "all",
+): Promise<AdminThreadItem[]> {
   const threads = await prisma.adminThread.findMany({
     orderBy: { lastMessageAt: "desc" },
     take: 300,
@@ -68,15 +76,30 @@ export async function getAdminThreads(): Promise<AdminThreadItem[]> {
   // Unread = incoming (fromAdmin=false) messages after adminReadAt.
   const incoming = await prisma.adminMessage.findMany({
     where: { threadId: { in: threads.map((t) => t.id) }, fromAdmin: false },
-    select: { threadId: true, createdAt: true },
+    select: { threadId: true, createdAt: true, content: true },
   });
+
+  // WhatsApp təsnifatı — 📲 prefiksli gələn mesaja görə
+  const waThreads = new Set(
+    incoming.filter((m) => m.content.startsWith("📲")).map((m) => m.threadId),
+  );
+  const hasSystemIncoming = new Set(
+    incoming.filter((m) => !m.content.startsWith("📲")).map((m) => m.threadId),
+  );
   const unreadByThread: Record<string, number> = {};
   const readAt = new Map(threads.map((t) => [t.id, t.adminReadAt]));
   for (const m of incoming) {
     const cut = readAt.get(m.threadId);
     if (!cut || m.createdAt > cut) unreadByThread[m.threadId] = (unreadByThread[m.threadId] ?? 0) + 1;
   }
-  return threads.map((t) => {
+  const filtered =
+    filter === "whatsapp"
+      ? threads.filter((t) => waThreads.has(t.id))
+      : filter === "system"
+        ? threads.filter((t) => !waThreads.has(t.id) || hasSystemIncoming.has(t.id))
+        : threads;
+
+  return filtered.map((t) => {
     const l = labelUser(t.user);
     return {
       threadId: t.id,

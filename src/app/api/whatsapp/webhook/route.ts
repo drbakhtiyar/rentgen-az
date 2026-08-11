@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { answerWaMessage } from "@/lib/wa-bot";
+import type { AiMsg } from "@/lib/ai-assistant";
 import { sendWaText, waConfigured } from "@/lib/whatsapp";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +43,56 @@ function validSignature(raw: string, header: string | null): boolean {
   }
 }
 
-/** Söhbəti mərkəz sahibinin AdminThread-inə güzgülə (görünürlük üçün). */
+/**
+ * Söhbəti AdminThread-ə güzgülə — /admin/whatsapp-sohbetler bölməsi üçün.
+ * 2026-08-12: NAMƏLUM nömrələr də qeydə alınır (əvvəl yalnız mərkəzlər idi —
+ * istifadəçinin şəxsi test mesajı heç yerdə görünmürdü). Nömrə mərkəzə
+ * uyğundursa mərkəzin sahib istifadəçisi, deyilsə telefonla User upsert olunur.
+ */
+/** Nömrə → thread istifadəçisi (mirror ilə eyni həlletmə, oxu üçün). */
+async function threadUserId(phone: string): Promise<string | null> {
+  const digits = phone.replace(/\D/g, "").slice(-9);
+  const center = await prisma.centerProfile
+    .findFirst({
+      where: { OR: [{ phone: { endsWith: digits } }, { whatsapp: { endsWith: digits } }] },
+      select: { userId: true },
+    })
+    .catch(() => null);
+  if (center) return center.userId;
+  const user = await prisma.user
+    .findUnique({ where: { phone: `+994${digits}` }, select: { id: true } })
+    .catch(() => null);
+  return user?.id ?? null;
+}
+
+/**
+ * Çoxdövrəli dialoq üçün tarixçə — güzgülənmiş 📲/🤖 mesajlarından qurulur
+ * (bunsuz bot hər mesajı sıfırdan görürdü: menyudan "2" seçimi, ad təsdiqi
+ * kimi axınlar işləməzdi).
+ */
+async function waHistory(phone: string): Promise<AiMsg[]> {
+  try {
+    const userId = await threadUserId(phone);
+    if (!userId) return [];
+    const rows = await prisma.adminMessage.findMany({
+      where: {
+        thread: { userId },
+        OR: [{ content: { startsWith: "📲" } }, { content: { startsWith: "🤖" } }],
+        createdAt: { gte: new Date(Date.now() - 24 * 3600_000) },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { content: true, fromAdmin: true },
+    });
+    return rows.reverse().map((r) => ({
+      role: r.fromAdmin ? ("assistant" as const) : ("user" as const),
+      content: r.content.replace(/^📲 WhatsApp: /, "").replace(/^🤖 /, "").slice(0, 1500),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 async function mirror(phone: string, inbound: string, outbound: string | null) {
   try {
     const digits = phone.replace(/\D/g, "").slice(-9);
@@ -50,10 +100,20 @@ async function mirror(phone: string, inbound: string, outbound: string | null) {
       where: { OR: [{ phone: { endsWith: digits } }, { whatsapp: { endsWith: digits } }] },
       select: { userId: true },
     });
-    if (!center) return;
+    let userId = center?.userId;
+    if (!userId) {
+      const normalized = `+994${digits}`;
+      const user = await prisma.user.upsert({
+        where: { phone: normalized },
+        create: { phone: normalized, role: "PATIENT" },
+        update: {},
+        select: { id: true },
+      });
+      userId = user.id;
+    }
     const thread = await prisma.adminThread.upsert({
-      where: { userId: center.userId },
-      create: { userId: center.userId },
+      where: { userId },
+      create: { userId },
       update: { lastMessageAt: new Date() },
     });
     await prisma.adminMessage.create({
@@ -103,7 +163,8 @@ export async function POST(request: Request): Promise<Response> {
       }
       if (m.type !== "text" || !m.text?.body) continue;
 
-      const res = await answerWaMessage(m.from, m.text.body);
+      const history = await waHistory(m.from);
+      const res = await answerWaMessage(m.from, m.text.body, history);
       if (res.ok && res.answer) {
         await sendWaText(m.from, res.answer);
         await mirror(m.from, m.text.body, res.answer);

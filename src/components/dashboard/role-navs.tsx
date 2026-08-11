@@ -75,6 +75,7 @@ export const patientNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { label: "İcmal", href: "/admin", icon: <LayoutDashboard /> },
   { label: "Söhbətlər", href: "/admin/sohbetler", icon: <MessageSquare /> },
+  { label: "WhatsApp söhbətləri", href: "/admin/whatsapp-sohbetler", icon: <MessageCircle /> },
   { label: "AI Yardımçı", href: "/admin/ai", icon: <Sparkles /> },
   { label: "Bot beyni", href: "/admin/bot", icon: <Bot /> },
   { label: "WhatsApp dəvətləri", href: "/admin/whatsapp", icon: <MessageCircle /> },

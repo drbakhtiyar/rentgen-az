@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default async function AdminChatPage() {
   const admin = await requireRole("ADMIN", "/admin/sohbetler");
-  const threads = await getAdminThreads();
+  const threads = await getAdminThreads("system");
 
   return (
     <AdminShell title="Söhbətlər" userName={admin.phone}>

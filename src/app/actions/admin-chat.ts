@@ -8,6 +8,7 @@ import { searchAdminUsers, type AdminSearchItem } from "@/lib/admin-chat";
 import { b2Configured, presignUpload, presignDownload } from "@/lib/b2";
 import { CHAT_ALLOWED_TYPES, CHAT_MAX_SIZE, chatSafeName, isLegacyPublicUrl } from "@/lib/chat-files";
 import type { ChatMessage } from "./chat";
+import { sendWaText, waConfigured } from "@/lib/whatsapp";
 
 export type AdminChatResult<T = unknown> =
   | ({ ok: true } & T)
@@ -165,7 +166,7 @@ export async function adminSendToUserAction(
   await requireRole("ADMIN");
   const text = content.trim();
   if (!text && !file) return { ok: false, error: "Mesaj boşdur." };
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, phone: true } });
   if (!user) return { ok: false, error: "İstifadəçi tapılmadı." };
 
   const threadId = await ensureThread(userId);
@@ -180,6 +181,34 @@ export async function adminSendToUserAction(
     where: { id: threadId },
     data: { lastMessageAt: msg.createdAt },
   });
+
+  // OPERATOR KÖRPÜSÜ (2026-08-12): telefon tətbiqi artıq yoxdur — bu thread
+  // son 24 saatda WhatsApp-dan (📲) mesaj alıbsa, admin cavabı WhatsApp-a da
+  // gedir (Meta 24 saatlıq cavab pəncərəsi). Uğursuzluqda thread-ə qeyd düşür.
+  if (text && waConfigured() && !user.phone.startsWith("placeholder:")) {
+    const recentInbound = await prisma.adminMessage.findFirst({
+      where: {
+        threadId,
+        fromAdmin: false,
+        content: { startsWith: "📲" },
+        createdAt: { gte: new Date(Date.now() - 24 * 3600_000) },
+      },
+      select: { id: true },
+    });
+    if (recentInbound) {
+      const sent = await sendWaText(user.phone, text).catch(() => false);
+      if (!sent) {
+        await prisma.adminMessage.create({
+          data: {
+            threadId,
+            fromAdmin: true,
+            content: "⚠️ (sistem) Yuxarıdakı cavab WhatsApp-a ÇATMADI — 24 saat pəncərəsi bitmiş və ya texniki xəta ola bilər.",
+          },
+        }).catch(() => null);
+      }
+    }
+  }
+
   revalidatePath("/admin/sohbetler");
   return { ok: true, threadId };
 }
