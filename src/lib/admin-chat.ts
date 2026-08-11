@@ -116,23 +116,28 @@ export async function getAdminThreads(
 }
 
 /** Total unread across all threads (admin nav badge). */
-export async function adminUnreadTotal(): Promise<number> {
+/** Oxunmamışlar iki nişana bölünür: WhatsApp (📲) ayrıca bölmədədir. */
+export async function adminUnreadTotal(): Promise<{ system: number; whatsapp: number }> {
   try {
     const threads = await prisma.adminThread.findMany({ select: { id: true, adminReadAt: true } });
-    if (threads.length === 0) return 0;
+    if (threads.length === 0) return { system: 0, whatsapp: 0 };
     const incoming = await prisma.adminMessage.findMany({
       where: { threadId: { in: threads.map((t) => t.id) }, fromAdmin: false },
-      select: { threadId: true, createdAt: true },
+      select: { threadId: true, createdAt: true, content: true },
     });
     const readAt = new Map(threads.map((t) => [t.id, t.adminReadAt]));
-    let n = 0;
+    let system = 0;
+    let whatsapp = 0;
     for (const m of incoming) {
       const cut = readAt.get(m.threadId);
-      if (!cut || m.createdAt > cut) n++;
+      if (!cut || m.createdAt > cut) {
+        if (m.content.startsWith("📲")) whatsapp++;
+        else system++;
+      }
     }
-    return n;
+    return { system, whatsapp };
   } catch {
-    return 0;
+    return { system: 0, whatsapp: 0 };
   }
 }
 

@@ -17,7 +17,7 @@ export async function AdminShell({
   let pendingDoctors = 0;
   let newRequests = 0;
   let newReferrals = 0;
-  let unreadChat = 0;
+  let unreadChat = { system: 0, whatsapp: 0 };
   let openReports = 0;
   try {
     [pendingCenters, pendingDoctors, newRequests, newReferrals, unreadChat, openReports] =
@@ -40,7 +40,8 @@ export async function AdminShell({
       userName={userName}
       nav={adminNav}
       navBadges={{
-        "/admin/sohbetler": unreadChat,
+        "/admin/sohbetler": unreadChat.system,
+        "/admin/whatsapp-sohbetler": unreadChat.whatsapp,
         "/admin/merkezler": pendingCenters,
         "/admin/hekimler": pendingDoctors,
         "/admin/muracietler": newRequests,
