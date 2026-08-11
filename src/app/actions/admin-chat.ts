@@ -250,7 +250,7 @@ export async function adminBroadcastAction(
   group: "ALL" | "DOCTORS" | "CENTERS",
   content: string,
 ): Promise<AdminChatResult<{ count: number }>> {
-  await requireRole("ADMIN");
+  await requireRole(["OPERATOR", "ADMIN"]); // toplu mesaj Nərmində də (istifadəçi qərarı, 2026-08-12)
   const text = content.trim();
   if (!text) return { ok: false, error: "Mesaj boşdur." };
 
