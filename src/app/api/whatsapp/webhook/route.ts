@@ -68,7 +68,8 @@ async function threadUserId(phone: string): Promise<string | null> {
 /**
  * Çoxdövrəli dialoq üçün tarixçə — güzgülənmiş 📲/🤖 mesajlarından qurulur
  * (bunsuz bot hər mesajı sıfırdan görürdü: menyudan "2" seçimi, ad təsdiqi
- * kimi axınlar işləməzdi).
+ * kimi axınlar işləməzdi). Pəncərə 7 gün / 20 dövr (istifadəçi istəyi) —
+ * operator CAVABININ WhatsApp-a getmə pəncərəsi isə Meta qaydasıdır, 24s qalır.
  */
 async function waHistory(phone: string): Promise<AiMsg[]> {
   try {
@@ -78,10 +79,10 @@ async function waHistory(phone: string): Promise<AiMsg[]> {
       where: {
         thread: { userId },
         OR: [{ content: { startsWith: "📲" } }, { content: { startsWith: "🤖" } }],
-        createdAt: { gte: new Date(Date.now() - 24 * 3600_000) },
+        createdAt: { gte: new Date(Date.now() - 7 * 24 * 3600_000) },
       },
       orderBy: { createdAt: "desc" },
-      take: 10,
+      take: 20,
       select: { content: true, fromAdmin: true },
     });
     return rows.reverse().map((r) => ({

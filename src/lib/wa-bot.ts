@@ -247,7 +247,7 @@ export async function answerWaMessage(
     nameLookupContext([...recentUser, text]),
   ]);
   const system = [HARD_RULES, knowledge, ctx, lookup].filter(Boolean).join("\n\n---\n\n");
-  const msgs: AiMsg[] = [...history.slice(-10), { role: "user", content: text.slice(0, 1500) }];
+  const msgs: AiMsg[] = [...history.slice(-20), { role: "user", content: text.slice(0, 1500) }];
   const res = await askClaude(system, msgs, 800, "sonnet");
   if (!res.ok || !res.answer) return { ok: false };
   // Markdown → WhatsApp: **qalın** → *qalın*; başlıq işarələri silinir
