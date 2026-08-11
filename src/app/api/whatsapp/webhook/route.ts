@@ -94,6 +94,32 @@ async function waHistory(phone: string): Promise<AiMsg[]> {
   }
 }
 
+/**
+ * İNSAN MÜDAXİLƏSİ REJİMİ (istifadəçi istəyi, 2026-08-12): operator/admin bu
+ * thread-ə əl ilə cavab yazıbsa (🤖-siz fromAdmin mesaj), son insan mesajından
+ * 30 dəqiqə ərzində BOT SUSUR — insan və bot eyni anda danışmasın. Gələn
+ * mesajlar yenə güzgülənir, operator özü cavablayır.
+ */
+const HUMAN_TAKEOVER_MS = 30 * 60_000;
+async function humanActive(phone: string): Promise<boolean> {
+  try {
+    const userId = await threadUserId(phone);
+    if (!userId) return false;
+    const last = await prisma.adminMessage.findFirst({
+      where: {
+        thread: { userId },
+        fromAdmin: true,
+        NOT: [{ content: { startsWith: "🤖" } }, { content: { startsWith: "⚠️" } }],
+        createdAt: { gte: new Date(Date.now() - HUMAN_TAKEOVER_MS) },
+      },
+      select: { id: true },
+    });
+    return !!last;
+  } catch {
+    return false;
+  }
+}
+
 async function mirror(phone: string, inbound: string, outbound: string | null) {
   try {
     const digits = phone.replace(/\D/g, "").slice(-9);
@@ -163,6 +189,12 @@ export async function POST(request: Request): Promise<Response> {
         continue;
       }
       if (m.type !== "text" || !m.text?.body) continue;
+
+      // İnsan söhbəti aparırsa — bot qarışmır, mesaj yalnız güzgüyə düşür
+      if (await humanActive(m.from)) {
+        await mirror(m.from, m.text.body, null);
+        continue;
+      }
 
       const history = await waHistory(m.from);
       const res = await answerWaMessage(m.from, m.text.body, history);

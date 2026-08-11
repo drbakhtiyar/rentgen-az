@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, Plus, MessageCircle } from "lucide-react";
+import { LogOut, Plus } from "lucide-react";
 
 /**
  * Minimal chrome for the operator (data-entry) panel. Intentionally spartan:
@@ -33,12 +33,6 @@ export function OperatorShell({
             <span className="font-display font-bold text-ink-900">Operator paneli</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link
-              href="/panel/whatsapp"
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#1ebe5b]"
-            >
-              <MessageCircle className="h-4 w-4" /> WhatsApp
-            </Link>
             {showNew && (
               <Link
                 href="/panel/yeni"
@@ -58,6 +52,25 @@ export function OperatorShell({
             </form>
           </div>
         </div>
+        {/* Operator bölmələri (istifadəçi istəyi, 2026-08-12) */}
+        <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
+          {[
+            ["Mərkəzlər", "/panel"],
+            ["Söhbətlər", "/panel/sohbetler"],
+            ["WhatsApp söhbətləri", "/panel/whatsapp-sohbetler"],
+            ["WhatsApp dəvətləri", "/panel/whatsapp"],
+            ["AI Yardımçı", "/panel/ai"],
+            ["Bot beyni", "/panel/bot"],
+          ].map(([label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-ink-900"
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">
         <h1 className="font-display mb-5 text-xl font-bold text-ink-900">{title}</h1>

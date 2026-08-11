@@ -163,7 +163,7 @@ export async function adminSendToUserAction(
   content: string,
   file?: { key: string; name: string } | null,
 ): Promise<AdminChatResult<{ threadId: string }>> {
-  await requireRole("ADMIN");
+  await requireRole(["OPERATOR", "ADMIN"]); // Nərmin də cavab yaza bilsin (2026-08-12)
   const text = content.trim();
   if (!text && !file) return { ok: false, error: "Mesaj boşdur." };
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, phone: true } });
@@ -217,7 +217,7 @@ export async function adminSendToUserAction(
 export async function adminFetchThreadMessagesAction(
   threadId: string,
 ): Promise<AdminChatResult<{ messages: ChatMessage[] }>> {
-  await requireRole("ADMIN");
+  await requireRole(["OPERATOR", "ADMIN"]); // Nərmin də cavab yaza bilsin (2026-08-12)
   const thread = await prisma.adminThread.findUnique({
     where: { id: threadId },
     select: { id: true },
@@ -240,7 +240,7 @@ export async function adminFetchThreadMessagesAction(
 export async function adminSearchUsersAction(
   query: string,
 ): Promise<AdminChatResult<{ users: AdminSearchItem[] }>> {
-  await requireRole("ADMIN");
+  await requireRole(["OPERATOR", "ADMIN"]); // Nərmin də cavab yaza bilsin (2026-08-12)
   const users = await searchAdminUsers(query);
   return { ok: true, users };
 }
