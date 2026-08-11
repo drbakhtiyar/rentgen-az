@@ -20,7 +20,7 @@ export default async function PanelWaChatPage() {
         📲 gələn · 🤖 bot. Cavab yazsanız WhatsApp-a gedir (son mesajdan 24 saat
         ərzində) və bot 30 dəqiqə SUSUR — söhbəti siz aparırsınız.
       </p>
-      <AdminChatInterface threads={threads} />
+      <AdminChatInterface threads={threads} showBroadcast={false} />
     </OperatorShell>
   );
 }

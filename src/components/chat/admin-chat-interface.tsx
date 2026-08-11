@@ -49,7 +49,14 @@ function Avatar({ url, role }: { url: string | null; role: string }) {
 
 type ActiveUser = { userId: string; threadId: string | null; name: string; sub: string | null; role: string; avatarUrl: string | null };
 
-export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) {
+export function AdminChatInterface({
+  threads,
+  showBroadcast = true,
+}: {
+  threads: AdminThreadItem[];
+  /** WhatsApp söhbətlərində toplu mesaj mənasızdır — gizlədilir (2026-08-12). */
+  showBroadcast?: boolean;
+}) {
   const [group, setGroup] = React.useState<Group["key"] | null>(null);
   const [active, setActive] = React.useState<ActiveUser | null>(null);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -188,6 +195,7 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
       {/* Left list */}
       <aside className={"w-full shrink-0 overflow-y-auto border-r border-slate-100 sm:w-80 " + (group || active ? "hidden sm:block" : "block")}>
         {/* Pinned broadcast groups */}
+        {showBroadcast && (
         <div className="border-b border-slate-100 p-2">
           <p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Toplu mesaj</p>
           {GROUPS.map((g) => (
@@ -203,6 +211,7 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
             </button>
           ))}
         </div>
+        )}
 
         {/* Search */}
         <div className="sticky top-0 z-10 border-b border-slate-100 bg-white p-2">

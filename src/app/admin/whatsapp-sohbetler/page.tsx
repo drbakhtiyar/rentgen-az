@@ -30,7 +30,7 @@ export default async function AdminWhatsappChatPage() {
         24 saat ərzində) birbaşa WhatsApp-a göndərilir; pəncərə bitibsə sistem
         xəbərdarlıq qeydi düşür.
       </p>
-      <AdminChatInterface threads={threads} />
+      <AdminChatInterface threads={threads} showBroadcast={false} />
     </AdminShell>
   );
 }
