@@ -13,6 +13,8 @@ export type AdminThreadItem = {
   lastMessageAt: string;
   preview: string | null;
   unread: number;
+  /** İnsan müdaxiləsi aktivdir — bot bu vaxta qədər susur (ISO). */
+  botMutedUntil?: string | null;
 };
 
 export type AdminSearchItem = {
@@ -83,6 +85,24 @@ export async function getAdminThreads(
   const waThreads = new Set(
     incoming.filter((m) => m.content.startsWith("📲")).map((m) => m.threadId),
   );
+
+  // Bot susma vaxtı: son İNSAN cavabı (fromAdmin, 🤖/⚠️-siz) + 30 dəq
+  // (webhook-dakı HUMAN_TAKEOVER_MS ilə sinxron). Yalnız WhatsApp thread-lərinə aiddir.
+  const MUTE_MS = 30 * 60_000;
+  const humanReplies = await prisma.adminMessage.findMany({
+    where: {
+      threadId: { in: [...waThreads] },
+      fromAdmin: true,
+      NOT: [{ content: { startsWith: "🤖" } }, { content: { startsWith: "⚠️" } }],
+      createdAt: { gte: new Date(Date.now() - MUTE_MS) },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { threadId: true, createdAt: true },
+  });
+  const mutedUntil = new Map<string, Date>();
+  for (const m of humanReplies)
+    if (!mutedUntil.has(m.threadId))
+      mutedUntil.set(m.threadId, new Date(m.createdAt.getTime() + MUTE_MS));
   const hasSystemIncoming = new Set(
     incoming.filter((m) => !m.content.startsWith("📲")).map((m) => m.threadId),
   );
@@ -111,6 +131,7 @@ export async function getAdminThreads(
       lastMessageAt: t.lastMessageAt.toISOString(),
       preview: t.messages[0] ? (t.messages[0].content || (t.messages[0].fileUrl ? "📎 Fayl" : null)) : null,
       unread: unreadByThread[t.id] ?? 0,
+      botMutedUntil: mutedUntil.get(t.id)?.toISOString() ?? null,
     };
   });
 }

@@ -247,6 +247,17 @@ export function AdminChatInterface({ threads }: { threads: AdminThreadItem[] }) 
                       {t.unread > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-bold text-white">{t.unread}</span>}
                     </span>
                     <span className="block truncate text-xs text-slate-400">{t.preview ?? t.sub ?? "—"}</span>
+                    {t.botMutedUntil && new Date(t.botMutedUntil) > new Date() && (
+                      <span className="mt-0.5 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                        🤫 bot susub —{" "}
+                        {new Date(t.botMutedUntil).toLocaleTimeString("az-AZ", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "Asia/Baku",
+                        })}
+                        -dək
+                      </span>
+                    )}
                   </span>
                 </button>
               </li>
