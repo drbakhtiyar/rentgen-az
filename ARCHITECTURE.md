@@ -7,7 +7,7 @@
 - **Storage:** Backblaze B2 (S3-compatible, private bucket) for rentgen files — `src/lib/b2.ts`, presigned up/download.
 - **SMS:** Lsim.az QuickSMS (`src/lib/sms.ts`, provider `lsim`). **Email:** FormSubmit/Resend (`src/lib/email.ts`).
 - **Payments:** Payriff v3 (`src/lib/payriff.ts` + `payments.ts`; `paymentStatus "APPROVED"` = paid).
-- **AI:** Anthropic REST, Haiku 4.5 (`src/lib/ai-assistant.ts`).
+- **AI:** Anthropic REST (`src/lib/ai-assistant.ts`, `askClaude(system,history,maxTokens,model)`): panel yardımçısı **Haiku 4.5**, WhatsApp botu **claude-sonnet-5** (bax DECISIONS).
 
 ## Folder structure
 ```
