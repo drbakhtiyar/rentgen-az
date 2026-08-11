@@ -485,3 +485,46 @@ export async function resolvePriceToken(token: string): Promise<PriceTarget | nu
 
   return { centerId: c.id, centerName: c.name, slug: c.slug, rows, addable };
 }
+
+/** Kampaniya → Meta şablon adı (2026-08-12, WABA-da yaradılıb). */
+export const WA_TEMPLATE: Record<WaKind, string> = {
+  price: "qiymet_devet",
+  faq: "faq_devet",
+  card: "kart_devet",
+  cabinet: "kabinet_devet",
+};
+
+export type InviteData = {
+  waPhone: string;
+  centerName: string;
+  url: string;
+  /** Güzgü/bot tarixçəsi üçün şablonun doldurulmuş mətni. */
+  mirrorText: string;
+};
+
+/** Platforma nömrəsindən şablonla göndəriş üçün mərkəz məlumatı. */
+export async function inviteData(centerId: string, kind: WaKind): Promise<InviteData | null> {
+  const c = await prisma.centerProfile.findUnique({
+    where: { id: centerId },
+    select: { name: true, phone: true, whatsapp: true, priceToken: true },
+  });
+  if (!c) return null;
+  const waPhone = isMobileNum(c.whatsapp) ? c.whatsapp! : c.phone;
+  if (!isMobileNum(waPhone)) return null;
+  let url = `${SITE_URL}/merkez-kabineti`;
+  if (kind !== "cabinet") {
+    const token = c.priceToken ?? (await ensurePriceToken(centerId));
+    url = `${SITE_URL}/${kind === "faq" ? "f" : kind === "card" ? "m" : "q"}/${token}`;
+  }
+  const BODY: Record<WaKind, (n: string, u: string) => string> = {
+    price: (n, u) =>
+      `Salam, ${n}! 👋 rentgen.az kataloqunda mərkəzinizin səhifəsi var. Xidmət qiymətlərinizi bu linkdən 1 dəqiqəyə qeyd edə bilərsiniz (giriş tələb olunmur): ${u}\n\nQiyməti görünən mərkəzlər axtarışda önə çıxır və pasiyent zəng etmədən seçim edir. Sualınız olsa, elə bura yazın — köməkçimiz dərhal cavablandıracaq.`,
+    faq: (n, u) =>
+      `Salam, ${n}! 👋 Pasiyentlər mərkəz seçəndə əvvəlcə praktik suallara baxır: ödəniş üsulu, parkinq, əlil arabası ilə giriş, nəticə müddəti. rentgen.az səhifənizdəki 10 sualın cavabını bu linkdən doldura bilərsiniz (girişsiz, 2-3 dəqiqə): ${u}\n\nCavabları dolu mərkəzlər daha çox müraciət alır. Sualınız olsa, elə bura yazın.`,
+    card: (n, u) =>
+      `Salam, ${n}! 👋 rentgen.az kataloqunda kartınızı dəqiqləşdirmək üçün özünüidarə linkiniz hazırdır: ${u}\n\nXidmətlərinizi təsdiqləyin (artığı silin, çatışmayanı əlavə edin), qiymət və iş saatlarınızı yazın — 3-4 dəqiqə çəkir, giriş tələb olunmur. Loqo və bina fotosunu elə bu çata göndərə bilərsiniz. Sualınız olsa, yazın — köməkçimiz cavablandıracaq.`,
+    cabinet: (n, u) =>
+      `Salam, ${n}! 👋 rentgen.az-da mərkəzinizin səhifəsi artıq mövcuddur və pulsuz idarəetmə kabinetiniz hazırdır. Giriş çox asandır — kartınızdakı mobil nömrə + SMS kod, parol yoxdur. Kabinetdə pasiyent sorğularını qəbul edir, qiymətlərinizi yeniləyir, foto əlavə edirsiniz. Ətraflı: ${u}\n\nSualınız olsa, elə bura yazın — köməkçimiz dərhal cavablandıracaq.`,
+  };
+  return { waPhone, centerName: c.name, url, mirrorText: BODY[kind](c.name, url) };
+}

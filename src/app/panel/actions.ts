@@ -10,6 +10,8 @@ import {
   type CenterWriteInput,
   type CenterWriteResult,
 } from "@/lib/center-write";
+import { inviteData, sentToday, WA_DAILY_LIMIT, WA_TEMPLATE, type WaKind } from "@/lib/price-invite";
+import { sendWaTemplate } from "@/lib/whatsapp";
 
 /**
  * Operator/admin redaktəsini `AdminActionLog`-a yazır.
@@ -149,6 +151,58 @@ export async function markWaSentAction(
   } catch {
     return { ok: false };
   }
+}
+
+/**
+ * Dəvəti PLATFORMA NÖMRƏSİNDƏN Meta şablonu ilə göndərir (2026-08-12 —
+ * wa.me/operator telefonu əvəzinə). Mərkəz cavab yazanda söhbəti bot aparır
+ * (webhook). Gündəlik ortaq limit serverdə yoxlanır; göndəriş güzgüyə düşür
+ * ki, həm /admin/whatsapp-sohbetler-də görünsün, həm bot tarixçəsində olsun.
+ */
+export async function sendWaInviteAction(
+  centerId: string,
+  kind: WaKind,
+): Promise<{ ok: boolean; error?: string }> {
+  const actor = await requireRole(["OPERATOR", "ADMIN"]);
+  if ((await sentToday()) >= WA_DAILY_LIMIT)
+    return { ok: false, error: "Bugünkü limit dolub — sabah davam edin." };
+
+  const data = await inviteData(centerId, kind);
+  if (!data) return { ok: false, error: "Mərkəzin mobil nömrəsi yoxdur." };
+
+  const res = await sendWaTemplate(data.waPhone, WA_TEMPLATE[kind], [data.centerName, data.url]);
+  if (!res.ok) return { ok: false, error: res.error ?? "Göndərilə bilmədi." };
+
+  try {
+    await prisma.adminActionLog.create({
+      data: {
+        adminId: actor.id,
+        action:
+          kind === "faq" ? "center:wa_faq_invite"
+          : kind === "card" ? "center:wa_card_invite"
+          : kind === "cabinet" ? "center:wa_cabinet_invite"
+          : "center:wa_price_invite",
+        targetType: "CenterProfile",
+        targetId: centerId,
+        meta: { via: "template" },
+      },
+    });
+    // Güzgü: WhatsApp söhbətlərində görünsün + bot tarixçəsinə düşsün
+    const center = await prisma.centerProfile.findUnique({ where: { id: centerId }, select: { userId: true } });
+    if (center) {
+      const thread = await prisma.adminThread.upsert({
+        where: { userId: center.userId },
+        create: { userId: center.userId },
+        update: { lastMessageAt: new Date() },
+      });
+      await prisma.adminMessage.create({
+        data: { threadId: thread.id, fromAdmin: true, content: `🤖 ${data.mirrorText.slice(0, 1500)}` },
+      });
+    }
+  } catch {
+    /* jurnal/güzgü ən yaxşı halda */
+  }
+  return { ok: true };
 }
 
 export async function operatorLogoutAction(): Promise<void> {

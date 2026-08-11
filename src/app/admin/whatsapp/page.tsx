@@ -81,10 +81,10 @@ export default async function AdminWhatsappPage(props: {
         <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-900 ring-1 ring-amber-100">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
-            <strong>Qayda:</strong> düymə WhatsApp-ı hazır mesajla açır — yalnız «göndər»ə
-            basın, mətni dəyişməyin (hər mərkəzə fərqli variant düşür). Dalbadal yox,
-            arada 2-3 dəqiqə fasilə ilə göndərin. Cavab yazana mütləq cavab verin —
-            ikitərəfli söhbət nömrəni qoruyur. Limit operatorla ORTAQDIR: kim göndərsə,
+            <strong>Qayda:</strong> «Dəvət göndər» dəvəti birbaşa PLATFORMA NÖMRƏSİNDƏN (Meta
+            şablonu ilə) göndərir — telefon lazım deyil. Mərkəz cavab yazanda söhbəti
+            BOT aparır; hamısı «WhatsApp söhbətləri» bölməsində görünür və oradan əl
+            ilə də müdaxilə edə bilərsiniz. Limit operatorla ORTAQDIR: kim göndərsə,
             sayğac artır. Günlük limit dolanda sabah davam edin. Sıralama məntiqlidir: hər sətirdə seçim səbəbi yazılır; son 7 gündə hər hansı dəvət alan mərkəz heç bir tabda təklif olunmur (soyuma); kart dəvəti gedən mərkəzə 14 gün qiymət dəvəti çıxmır (kart linkində qiymət yeri var); linkə cavab verənlər irəli çəkilir.
           </span>
         </div>

@@ -48,3 +48,52 @@ export async function sendWaText(
     return { ok: false, error: String(e) };
   }
 }
+
+/**
+ * Təsdiqlənmiş şablonla biznes-başlanğıclı mesaj (kampaniya dəvətləri).
+ * Adi sendWaText yalnız 24s pəncərədə işləyir — şablon pəncərəsiz gedir
+ * (Meta təsdiqi + WABA-da ödəniş kartı tələb olunur).
+ */
+export async function sendWaTemplate(
+  to: string,
+  templateName: string,
+  params: string[],
+): Promise<{ ok: boolean; error?: string }> {
+  if (!waConfigured()) return { ok: false, error: "WhatsApp env qurulmayıb" };
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: to.replace(/\D/g, ""),
+          type: "template",
+          template: {
+            name: templateName,
+            language: { code: "az" },
+            components: [
+              {
+                type: "body",
+                parameters: params.map((t) => ({ type: "text", text: t })),
+              },
+            ],
+          },
+        }),
+      },
+    );
+    if (!res.ok) {
+      const err = await res.text().catch(() => "");
+      console.error("[whatsapp template]", res.status, err);
+      return { ok: false, error: err.includes("132001") || err.includes("does not exist") ? "Şablon hələ təsdiqlənməyib" : "Göndərilə bilmədi" };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("[whatsapp template]", (e as Error).message);
+    return { ok: false, error: "Şəbəkə xətası" };
+  }
+}

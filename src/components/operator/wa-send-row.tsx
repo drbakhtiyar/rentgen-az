@@ -2,13 +2,12 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MessageCircle } from "lucide-react";
-import { markWaSentAction } from "@/app/panel/actions";
+import { Loader2, Send } from "lucide-react";
+import { sendWaInviteAction } from "@/app/panel/actions";
 
 /**
- * Bir mərkəz üçün "WhatsApp aç" düyməsi: əvvəl göndərişi jurnala yazır
- * (kvota sayğacı), sonra wa.me linkini yeni pəncərədə açır — mesaj artıq
- * hazır yazılıb, operator yalnız "göndər"ə basır.
+ * 2026-08-12: wa.me açmır — dəvət PLATFORMA NÖMRƏSİNDƏN Meta şablonu ilə
+ * gedir (sendWaInviteAction). Mərkəz cavab yazanda söhbəti bot aparır.
  */
 export function WaSendRow({
   centerId,
@@ -16,7 +15,6 @@ export function WaSendRow({
   city,
   status,
   waPhone,
-  waUrl,
   reviews,
   note,
   kind = "price",
@@ -27,27 +25,28 @@ export function WaSendRow({
   city: string | null;
   status: string;
   waPhone: string;
-  waUrl: string;
+  /** Köhnə wa.me linki — artıq istifadə olunmur, uyğunluq üçün qalıb. */
+  waUrl?: string;
   reviews: number | null;
-  /** Xəbərdarlıq nişanı (məs. "artıq göndərilib") — göndərməyi bloklamır. */
   note?: string;
-  /** Kampaniya növü — jurnal qeydi buna görə yazılır. */
   kind?: "price" | "faq" | "card" | "cabinet";
-  /** Niyə məhz bu mərkəz təklif olunur — operator üçün məntiq izahı. */
   reason?: string;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
   const [sent, setSent] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   async function go() {
     setPending(true);
-    const res = await markWaSentAction(centerId, kind);
+    setError(null);
+    const res = await sendWaInviteAction(centerId, kind);
     setPending(false);
     if (res.ok) {
       setSent(true);
-      window.open(waUrl, "_blank", "noopener");
       router.refresh();
+    } else {
+      setError(res.error ?? "Xəta");
     }
   }
 
@@ -68,6 +67,11 @@ export function WaSendRow({
             {note}
           </span>
         )}
+        {error && (
+          <span className="mt-1 inline-block rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200">
+            {error}
+          </span>
+        )}
       </div>
       <button
         type="button"
@@ -75,8 +79,8 @@ export function WaSendRow({
         disabled={pending || sent}
         className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1ebe5b] disabled:opacity-50"
       >
-        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-        {sent ? "Göndərildi ✓" : "WhatsApp aç"}
+        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        {sent ? "Göndərildi ✓" : "Dəvət göndər"}
       </button>
     </div>
   );
