@@ -18,11 +18,13 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
   Organization JSON-LD, bot beynində "Əlaqə məlumatları" bölməsi (DB). Qalan (istifadəçi
   tərəfi): WhatsApp Business profili (rentgen.az adı, loqo) + Nərminin kampaniyası bu
   nömrədən; sonra Meta Cloud API-yə bağlanır (aşağıdakı blocked).
-- [blocked] **WhatsApp Business API (Meta)** — bot kodu hazır və passiv gözləyir.
-  İstifadəçi: Meta Business hesabı + biznes verifikasiyası + nömrənin WABA-ya
-  bağlanması. Sonra Vercel env: `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`,
-  `WHATSAPP_VERIFY_TOKEN` (özümüz uydururuq), `WHATSAPP_APP_SECRET`; Meta-da
-  webhook URL: https://rentgen.az/api/whatsapp/webhook. Bot beyni: /admin/bot.
+- [x] **WhatsApp Business API (Meta) — CANLI 2026-08-12!** WABA 1729407764977766,
+  PHONE_ID 1328305727023335, PIN 580131 (yenidən-qeydiyyat üçün), daimi
+  SYSTEM_USER token + app secret Vercel env-də. Real testdə bot cavab verdi.
+- [ ] **Operator cavab körpüsü (VACİB)** — telefon tətbiqi artıq yoxdur; bot
+  "operatora ötürürəm" deyəndə insan cavabı göndərə bilmir. Admin panel
+  Söhbətlərində 📲-lı thread-ə yazılan cavab sendWaText ilə WhatsApp-a getsin
+  (24 saat pəncərə qaydası nəzərə alınmaqla).
 - [blocked] **Apple Developer account** ($99/yr) — push code (native APNs) fully built; needs the `.p8` key + `APNS_*` Vercel env to go live, and the account for App Store submission. Biggest blocker for the app.
 - [x] **`GOOGLE_PLACES_API_KEY` — DONE (2026-07-31).** Key (Places API New) in Vercel prod; ~16 centers auto-connected with live Google ratings (shown on cards + detail + app), daily cron refresh + auto-connect of new centers. 7 centers still need their exact Google link (generic names): Vitamin, Kristal, Dental Clinic Naxçıvan, F Clinic, 3DM Yasamal, 3DM Xalqlar, Implant Dentist.
 - [blocked] **Google Play account** ($25) — Android submission (later).

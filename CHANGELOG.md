@@ -2,6 +2,20 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-12 — 🚀 WHATSAPP BOTU CANLIDA — Meta Cloud API qoşuldu
+
+Tam go-live: istifadəçi Meta Business (Axiora) + WABA qurdu, app yaradıldı
+(Rentgen.az, id 1602952428191651), SYSTEM_USER daimi token alındı. Webhook API
+ilə qeydiyyatdan keçirildi (callback https://rentgen.az/api/whatsapp/webhook,
+messages sahəsi, active:true). İlk nömrə qeydi SMB tipli çıxdı (telefon
+tətbiqindən) → register mümkün olmadı → istifadəçi tətbiqdən hesabı sildi →
+YENİ Cloud nömrə qeydi yaradıldı: WABA 1729407764977766, PHONE_ID
+1328305727023335 → API-dən register (PIN: 580131) → status CONNECTED /
+CLOUD_API. WABA→app abunəsi API ilə (subscribed_apps). 4 env Vercel prod-da.
+CANLI TEST UĞURLU: real WhatsApp mesajına bot cavab verdi. QALAN: operator
+cavab körpüsü (panel Söhbətlər → sendWaText) — telefon tətbiqi artıq yoxdur,
+insan cavabı hazırda yalnız botdadır.
+
 ## 2026-08-11 — Bot sərtləşdirilməsi: canlı test sessiyasından 10+ düzəliş
 
 İstifadəçi sınaq səhifəsində real ssenarilərlə test etdi, hər tapıntı dərhal
