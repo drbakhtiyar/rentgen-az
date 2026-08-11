@@ -2,6 +2,46 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## WhatsApp bot = Sonnet; panel AI = Haiku
+- **Qərar (2026-08-11):** wa-bot claude-sonnet-5 işlədir; panel AI Yardımçısı Haiku-da qalır.
+- **Səbəb:** Haiku çoxqaydalı axınlarda (menyu nömrələmə, məlumat toplama, ad
+  təsdiqi, TAPILMADI axını) qaydaları ardıcıl pozurdu — 10+ canlı testdə sübut
+  olundu; prompt-sərtləşdirmə kömək etmədi. Bot həcmi az → xərc fərqi cüzi.
+- **Nəticə:** yeni davranış problemi çıxanda əvvəl HARD_RULES-a NÜMUNƏ DİALOQ
+  əlavə et (few-shot abstrakt qaydadan güclüdür), model endirmə.
+
+## Bot: mərkəz adı YALNIZ bazadan; sistem-tərəf ad axtarışı
+- **Qərar:** bot ad təsdiqini yalnız kontekstə verilən "MƏRKƏZ AD AXTARIŞI"
+  blokundan edir (nameLookupContext: token-fold + translit kh→x + Levenshtein
+  ≤1-2; slug-linkdən dəqiq tanıma). Tapılmayanda axın DAYANIR: 3 variant
+  (dəqiq ad / səhifə linki / "yeni" qeydiyyat). Boş nəticə AÇIQ "TAPILMADI"
+  bloku kimi verilir — blokun yoxluğu model üçün zəif siqnaldır.
+- **Səbəb:** bot "Smile Bəxtiyar" kimi ad uydururdu; yanlış mərkəzə dəyişiklik
+  düşə bilərdi.
+
+## İnsan müdaxiləsi: operator yazandan sonra bot 30 dəq susur
+- **Qərar (2026-08-12):** WhatsApp thread-inə 🤖-siz fromAdmin mesaj düşəndən
+  30 dəq bot həmin nömrəyə cavab vermir; gələnlər güzgülənir; UI-də
+  "🤫 bot susub — HH:MM-dək" nişanı (Bakı vaxtı). Hər əl cavabı sayğacı
+  sıfırlayır.
+- **Səbəb:** insan və bot eyni anda cavab verib bir-birinin üstünə yazırdı.
+- **Nəticə:** webhook HUMAN_TAKEOVER_MS və admin-chat mutedUntil SİNXRON
+  saxlanmalıdır (hər ikisi 30 dəq).
+
+## WhatsApp yazışmaları ayrıca bölmədə; toplu mesaj yalnız daxilidir
+- **Qərar:** 📲-lı thread-lər "WhatsApp söhbətləri" bölməsində (admin+operator),
+  panel söhbətləri ayrı; nişanlar bölünür. "Toplu mesaj" (Hamısı/Həkim/Mərkəz)
+  YALNIZ daxili paneldir və WhatsApp bölməsində gizlədilir — WhatsApp-a kütləvi
+  göndəriş yalnız təsdiqli şablonlarla, gündə-12 limiti ilə dəvətlərdən gedir.
+
+## Dəvətlər platforma nömrəsindən (şablonlarla); wa.me ləğv
+- **Qərar (2026-08-12):** kampaniya düyməsi wa.me açmır — sendWaInviteAction
+  Meta şablonu ilə (qiymet/faq/kart/kabinet_devet) platforma nömrəsindən
+  göndərir; mərkəz cavab yazanda söhbəti bot aparır. Dəvət 🤖 kimi güzgülənir
+  ki, bot kontekstində olsun.
+- **Ön şərt:** Meta şablon təsdiqi + WABA-da ödəniş kartı (əlavə olunub).
+- **Nəticə:** operator telefonuna ehtiyac qalmır; 24s pəncərə şablona aid deyil.
+
 ## Platforma əlaqəsi YALNIZ yazışma ilə (WhatsApp) — telefon saytda göstərilmir
 - **Qərar (2026-08-04):** platformanın telefon nömrəsi saytın heç yerində göstərilmir;
   əlaqə kanalları: WhatsApp yazışması + info@rentgen.az. Nömrə alınanda yalnız

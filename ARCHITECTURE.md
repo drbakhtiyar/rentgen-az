@@ -52,6 +52,45 @@ keşlənəcəyi üçün bir anlıq nasazlıq səhifəni 404-də saxlayardı.
 
 **Operator panel** (`/panel`, role OPERATOR): rich edit-only center cards (`src/components/operator/*`), same `center-filters.ts` as admin; secret-link login `/panel/acar/[key]`, logout `/panel/cixis`. **Admin center cards** (`src/components/admin/*`) add approve/deactivate/block + **delete** (`deleteCenterAction`) + completeness badge.
 
+## WhatsApp alt-sistemi (Meta Cloud API — 2026-08-12-dən CANLI)
+
+```
+Mərkəz/pasiyent ──WhatsApp──► Meta Cloud API ──POST──► /api/whatsapp/webhook
+                                                        │  imza yoxlanışı (APP_SECRET)
+                                                        │  humanActive? (30 dəq) → bot susur
+                                                        │  waHistory (7 gün/20 dövr, güzgüdən)
+                                                        ▼
+                                              answerWaMessage (wa-bot.ts, SONNET)
+                                              HARD_RULES + 22 BotSection + centerContext
+                                              + nameLookupContext (fuzzy ad axtarışı)
+                                                        │
+                                              sendWaText ◄──── cavab
+                                                        │
+                          mirror(): AdminThread güzgüsü (📲 gələn / 🤖 bot)
+                          naməlum nömrə → User upsert by phone (PATIENT)
+```
+
+- **Kimliklər:** WABA 1729407764977766 · PHONE_ID 1328305727023335 · App
+  1602952428191651 · register PIN 580131. Env (yalnız Vercel prod):
+  WHATSAPP_TOKEN (daimi SYSTEM_USER) / PHONE_ID / VERIFY_TOKEN / APP_SECRET.
+- **Bölmələr:** /admin/whatsapp-sohbetler + /panel/whatsapp-sohbetler —
+  getAdminThreads("whatsapp") (📲-lı thread-lər); adi Söhbətlər "system"
+  filtri. Nişanlar adminUnreadTotal() → {system, whatsapp}.
+- **Cavab körpüsü:** adminSendToUserAction — thread son 24 saatda 📲 alıbsa
+  cavab sendWaText ilə gedir (Meta 24s pəncərəsi); uğursuzda ⚠️ qeydi.
+- **Bot susma:** webhook humanActive() — son 30 dəq-də 🤖-siz fromAdmin mesaj
+  varsa bot cavab vermir; UI-də botMutedUntil nişanı. İKİ YERDƏ sinxron 30 dəq.
+- **Şablonlu dəvətlər:** sendWaTemplate (whatsapp.ts) + sendWaInviteAction
+  (panel/actions.ts) — WA_TEMPLATE xəritəsi (qiymet/faq/kart/kabinet_devet, az);
+  dəvət 🤖 kimi güzgülənir → bot kontekstini görür. wa.me axını LƏĞV edilib.
+- **Sabit cavablar (AI-sız):** audio/video → "yazı ilə göndərin"; image/document
+  → "aldıq, komanda yerləşdirəcək".
+- **Sınaq:** /bot-sinaq/<token> (token = sha256(ADMIN_ACCESS_KEY-dən), link
+  /admin/bot və /panel/bot-da) — answerWaMessage ilə EYNİ mühərrik.
+- **Operator paneli** DashboardShell üzərindədir (admin ilə eyni sol sütun);
+  operatorNav role-navs.tsx-də; Bot beyni operator üçün yalnız-baxış
+  (/panel/bot), redaktə yalnız /admin/bot.
+
 ## Auth & sessions
 - **Login:** `/giris` (role tabs). `requestOtpAction`/`verifyOtpAction` in `src/app/giris/actions.ts`. OTP created/verified in `src/lib/otp.ts` (OTPCode table, sha256 hash). On verify → `setSessionCookie({userId, role, phone})` (`src/lib/auth/session.ts`) → JWT cookie `rx_session` (`src/lib/auth/jwt.ts`, jose HS256, 30d, domain `.rentgen.az` in prod). Token carries `v` = `User.sessionVersion`.
 - **`getCurrentUser()`** (`src/lib/auth/rbac.ts`, React-cached): loads user; returns null if blocked, if token `v` ≠ DB `sessionVersion`, or if an ASSISTANT with no active link.

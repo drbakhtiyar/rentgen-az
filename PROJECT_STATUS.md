@@ -35,6 +35,29 @@ The web platform is production-live and used by real centers/doctors/patients. T
 - **Homepage hero** → data-driven Azerbaijan map (marker per city with an APPROVED center).
 - **TƏBİB logo** stored at stable Blob URL `shared/tabib-logo.png` for state hospitals.
 
+### 2026-08-11/12 blok — WHATSAPP BOTU CANLI (bax CHANGELOG)
+- **Meta Cloud API GO-LIVE:** +994 99 580 13 13 CONNECTED/CLOUD_API. Kimliklər:
+  App id=1602952428191651 · WABA=1729407764977766 · PHONE_ID=1328305727023335 ·
+  register PIN=580131. Daimi SYSTEM_USER token + app secret + verify token
+  YALNIZ Vercel prod env-də (4 × WHATSAPP_*). Telefon tətbiqindən nömrə tam
+  çıxarılıb. Real testdə bot cavab verdi.
+- **Bot:** claude-sonnet-5 (Haiku qaydaları pozurdu — bax DECISIONS), sərt
+  qaydalar toplusu (nömrəli menyu + tək-rəqəm seçim, məlumat toplama protokolu,
+  ad-yalnız-bazadan + fuzzy axtarış/TAPILMADI axını, nömrə tanıma
+  mobil/şəhər, icra-vədi qadağası, parol-yoxdur, terminologiya), 22 BotSection,
+  7 gün/20 dövr yaddaş, səsli/şəkil sabit cavablar. Sınaq: /bot-sinaq/<token>.
+- **Əməliyyat mərkəzi:** "WhatsApp söhbətləri" bölməsi (admin+operator),
+  cavab körpüsü (24s pəncərə), bot susma 30 dəq + "🤫" nişanı, naməlum
+  nömrələr də güzgülənir, nişanlar system/whatsapp bölünür.
+- **Şablonlu dəvətlər:** wa.me ləğv — 4 kampaniya platforma nömrəsindən Meta
+  şablonu ilə gedir (⏳ şablonlar PENDING, ödəniş kartı ✓). Məntiqli növbə +
+  səbəb sətri + soyuma qaydaları qüvvədə.
+- **Operator paneli** admin vizualında (DashboardShell): 7 bənd, Bot beyni
+  yalnız-baxış, toplu mesaj operatora açıq (yalnız daxili!).
+- Bloq 21 AZ + 21 RU; FAQ 53×2 çip-naviqasiyalı; SEO dental-Bakı irsi
+  təmizləndi; şəhər səhifələri RU; Jurnal = vahid sistem lenti; Alliance
+  Clinic PENDING əlavə edildi.
+
 ### 2026-08-03/04 blok (bax CHANGELOG — hamısı canlıda)
 - **Dental klinika importu:** ~/rentgen_az_hedef_klinikalar.xlsx-dən 54 PENDING (sonra 3
   istifadəçi qərarı ilə silindi, +fərdi əlavələr: Swissdent, Piccasa, Dentinn, Dent-Inn);
@@ -99,10 +122,11 @@ centers need a mobile before they can OTP-login. See TODO.md.
 - DICOM viewer 4th quadrant + public launch pending.
 
 ## Waiting on external input (blocked-pending)
-- **Platforma WhatsApp nömrəsi** — istifadəçi alıb verəcək → `/elaqe` düyməsi (hazırda
-  saxta wa.me/994500000000) + WhatsApp Business profili + Nərminin kampaniya nömrəsi.
-- **Meta WhatsApp Cloud API** — 4 env (`WHATSAPP_TOKEN/PHONE_ID/VERIFY_TOKEN/APP_SECRET`)
-  → bot canlanır. Webhook URL: /api/whatsapp/webhook.
+- **Meta şablon təsdiqi** — 4 dəvət şablonu (qiymet/faq/kart/kabinet_devet)
+  PENDING; təsdiqlənəndə "Dəvət göndər" düymələri işə düşür. Status:
+  GET /1729407764977766/message_templates.
+- **Meta Business verification (Step 3)** — Axiora sənədləri ilə; limitləri
+  qaldırır (250→1000+/gün), şablon yoxlamalarını sürətləndirir.
 - Apple Developer ($99/yr) + Google Play ($25) accounts for app store submission.
 
 ## Critical operational notes

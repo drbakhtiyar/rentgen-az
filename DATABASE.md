@@ -89,6 +89,10 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
   `content`, `order`, `isActive`. `/admin/bot`-dan idarə olunur; sərt qaydalar kodda
   (`src/lib/wa-bot.ts` `HARD_RULES`).
 
+**WhatsApp qeydi (2026-08-12):** naməlum nömrədən WhatsApp yazışması gələndə
+webhook `User`-i telefonla upsert edir (role PATIENT) — hər WA söhbətinin
+AdminThread-i olsun deyə. Bu istifadəçilər real qeydiyyat deyil, çat kimliyidir.
+
 **Bu sessiyanın sahə əlavələri:** `CenterProfile.priceToken` (`@unique`, girişsiz
 /q qiymət formu tokeni), `AppointmentRequest.completedAt`/`reviewInviteSentAt`/
 `reviewToken` (rəy dəvəti axını — bax `src/lib/review-invite.ts`).

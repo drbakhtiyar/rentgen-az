@@ -21,10 +21,20 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [x] **WhatsApp Business API (Meta) — CANLI 2026-08-12!** WABA 1729407764977766,
   PHONE_ID 1328305727023335, PIN 580131 (yenidən-qeydiyyat üçün), daimi
   SYSTEM_USER token + app secret Vercel env-də. Real testdə bot cavab verdi.
-- [ ] **Operator cavab körpüsü (VACİB)** — telefon tətbiqi artıq yoxdur; bot
-  "operatora ötürürəm" deyəndə insan cavabı göndərə bilmir. Admin panel
-  Söhbətlərində 📲-lı thread-ə yazılan cavab sendWaText ilə WhatsApp-a getsin
-  (24 saat pəncərə qaydası nəzərə alınmaqla).
+- [x] **Operator cavab körpüsü — DONE 2026-08-12.** WhatsApp söhbətləri
+  bölməsindən yazılan cavab sendWaText ilə gedir (24s pəncərə, çatmazsa ⚠️
+  qeydi); bot 30 dəq susur; naməlum nömrələr də güzgülənir.
+- [ ] **Meta şablon təsdiqini izlə** — 4 şablon PENDING (2026-08-12 gecə
+  yaradılıb). Təsdiqdən sonra İLK CANLI DƏVƏT testi: Kart dəvəti öz mərkəzinə
+  (Smile) → cavab → bot davamı. Rədd olunsa mətnə düzəliş + resubmit.
+- [ ] **Meta Business verification (Step 3)** — Axiora sənədləri; limit +
+  şablon sürəti üçün.
+- [ ] **"WhatsApp elan" funksiyası (istəyə bağlı)** — ümumi elan şablonu ilə
+  bütün mərkəzlərə növbəli (gündə-12) toplu göndəriş. İstifadəçi soruşanda
+  təklif olunub, hələ sifariş edilməyib.
+- [ ] **Anthropic balans monitorinqi** — balans bitəndə bot cavabsız qalır;
+  aşağı-balans xəbərdarlığı düşün (API-də balans endpoint yoxdur — Console-a
+  periodik baxış və ya sərf jurnalı).
 - [blocked] **Apple Developer account** ($99/yr) — push code (native APNs) fully built; needs the `.p8` key + `APNS_*` Vercel env to go live, and the account for App Store submission. Biggest blocker for the app.
 - [x] **`GOOGLE_PLACES_API_KEY` — DONE (2026-07-31).** Key (Places API New) in Vercel prod; ~16 centers auto-connected with live Google ratings (shown on cards + detail + app), daily cron refresh + auto-connect of new centers. 7 centers still need their exact Google link (generic names): Vitamin, Kristal, Dental Clinic Naxçıvan, F Clinic, 3DM Yasamal, 3DM Xalqlar, Implant Dentist.
 - [blocked] **Google Play account** ($25) — Android submission (later).

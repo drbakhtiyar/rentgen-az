@@ -2,6 +2,36 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-12 (davam) — WhatsApp əməliyyat mərkəzi tamamlandı
+
+Go-live-dan sonrakı eyni gecədə:
+- **"WhatsApp söhbətləri"** ayrıca bölmə (admin /admin/whatsapp-sohbetler +
+  operator /panel/whatsapp-sohbetler): yalnız 📲-lı thread-lər; adi Söhbətlər
+  yalnız panel-daxili qalır; nav nişanı system/whatsapp bölünür; "Toplu mesaj"
+  bloku WhatsApp bölməsində gizlədilir (showBroadcast prop) — daxili elandır,
+  WhatsApp-a getmir.
+- **Operator cavab körpüsü**: thread son 24 saatda 📲 alıbsa, panel cavabı
+  sendWaText ilə WhatsApp-a gedir; çatmazsa "⚠️" qeydi.
+- **Bot susma (insan müdaxiləsi)**: operator/admin əl cavabından sonra 30 dəq
+  bot həmin nömrəyə cavab vermir (🤖-siz fromAdmin mesaj siqnaldır); siyahıda
+  "🤫 bot susub — HH:MM-dək" nişanı. Bot dialoq yaddaşı 7 gün / 20 dövr
+  (güzgülənmiş 📲/🤖-dən qurulur — webhook əvvəl tarixçəsiz çağırırdı!).
+- **Naməlum nömrələr də güzgülənir** (User upsert by phone) — əvvəl yalnız
+  mərkəz nömrələri görünürdü.
+- **Şablonlu dəvətlər**: wa.me LƏĞV — "Dəvət göndər" düyməsi platforma
+  nömrəsindən Meta şablonu ilə göndərir (sendWaTemplate + sendWaInviteAction;
+  server-tərəf limit; dəvət 🤖 kimi güzgülənir → bot kontekstində olur).
+  4 şablon yaradıldı: qiymet/faq/kart/kabinet_devet (az, MARKETING) — hazırda
+  Meta təsdiqi PENDING. WABA-da ödəniş kartı əlavə olundu (Payment added ✓).
+- **Operator paneli** admin ilə eyni vizuala keçdi (DashboardShell sol sütun):
+  Mərkəzlər · Yeni mərkəz · Söhbətlər (toplu mesaj daxil — operatora açıldı) ·
+  WhatsApp söhbətləri · WhatsApp dəvətləri · AI Yardımçı · Bot beyni (YALNIZ
+  BAXIŞ — redaktə yalnız adminda).
+- Alliance Clinic (allianceclinic.az, Bakı) PENDING əlavə edildi — 14 sübutlu
+  xidmət, Google ★4.7, 2 foto. Şəkidəki "Alyans Clinic" AYRI klinikadır.
+- Supabase `pg_pgrst_no_exposed_schemas` logları: Data API söndürülü halda
+  GÖZLƏNİLƏN kosmetik xətadır — toxunulmur (Supabase öz UI-də təsdiqləyir).
+
 ## 2026-08-12 — 🚀 WHATSAPP BOTU CANLIDA — Meta Cloud API qoşuldu
 
 Tam go-live: istifadəçi Meta Business (Axiora) + WABA qurdu, app yaradıldı

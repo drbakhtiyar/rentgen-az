@@ -79,11 +79,16 @@ Phone-authed REST mirrors of the site's chat server actions (the app has no sess
 - `GET /api/v1/requests` — Platinum center API (apiKey).
 - `GET /api/merkez/export` — center CSV export.
 - Crons (Bearer `CRON_SECRET`): `/api/cron/purge-trash` (03:00), `plan-downgrade` (04:00), `appointment-reminders` (hourly), `sms-pool-check` (09:00), `google-ratings` (05:30), `review-invites` (saatlıq :15 — tamamlanmış müayinələr üçün rəy dəvəti SMS-i).
-- `GET/POST /api/whatsapp/webhook` — Meta WhatsApp Cloud API. GET = `hub.challenge`
-  doğrulaması (`WHATSAPP_VERIFY_TOKEN`); POST = gələn mesaj (imza yoxlanışı
-  `X-Hub-Signature-256` + `WHATSAPP_APP_SECRET`) → `answerWaMessage` (`src/lib/wa-bot.ts`)
-  → cavab `sendWaText` ilə; hər yazışma AdminThread-ə 📲/🤖 prefiksli güzgülənir.
-  **4 `WHATSAPP_*` env olmadan passivdir.**
+- `GET/POST /api/whatsapp/webhook` — Meta Cloud API (CANLI 2026-08-12). GET =
+  `hub.challenge`; POST = imza yoxlanışı → tip ayrımı: text → humanActive(30dəq)
+  yoxla → waHistory(7g/20) → answerWaMessage → sendWaText; audio/video →
+  sabit "yazı ilə" cavabı; image/document → sabit təşəkkür. Hamısı AdminThread-ə
+  güzgülənir (📲/🤖); naməlum nömrə üçün User upsert. Webhook qeydiyyatı API ilə
+  edilib (app subscriptions + WABA subscribed_apps).
+- `POST` şablon göndərişi: `sendWaTemplate` (lib) — sendWaInviteAction bunu
+  kampaniya dəvətləri üçün çağırır (WA_TEMPLATE: qiymet/faq/kart/kabinet_devet).
+- `GET /api/panel/stats-today` — Axiora admin paneli üçün günün sayları
+  (PANEL_SHARED_SECRET başlığı ilə; paralel sessiyada əlavə olunub).
 
 ## Worker OTP proxy (Rork side, not in this repo)
 `/otp/send` & `/otp/verify` on the Worker call the site's real `requestOtpAction`/`verifyOtpAction` server actions by discovering their action-ids from `/giris` JS chunks at runtime (ids change per deploy; the Worker re-discovers on staleness). SMS goes through the site's Lsim provider.
