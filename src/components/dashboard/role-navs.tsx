@@ -82,6 +82,11 @@ export const operatorNav: NavItem[] = [
   { label: "WhatsApp dəvətləri", href: "/panel/whatsapp", icon: <MessageCircle /> },
   { label: "AI Yardımçı", href: "/panel/ai", icon: <Sparkles /> },
   { label: "Bot beyni", href: "/panel/bot", icon: <Bot /> },
+  // Yalnız-baxış bölmələr (admin qərar verir, operator izləyir)
+  { label: "Rəylər", href: "/panel/reyler", icon: <Star /> },
+  { label: "Məlumat bildirişləri", href: "/panel/duzelisler", icon: <AlertCircle /> },
+  { label: "Əməkdaşlıqlar", href: "/panel/emekdashliq", icon: <Handshake /> },
+  { label: "Yarımçıq qeydiyyat", href: "/panel/yarimciq-qeydiyyat", icon: <UserPlus /> },
 ];
 
 export const adminNav: NavItem[] = [
