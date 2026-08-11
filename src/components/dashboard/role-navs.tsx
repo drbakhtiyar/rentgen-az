@@ -25,6 +25,7 @@ import {
   AlertCircle,
   Bot,
   MessageCircle,
+  Plus,
 } from "lucide-react";
 import type { NavItem } from "./nav";
 
@@ -70,6 +71,17 @@ export const patientNav: NavItem[] = [
   { label: "Bildirişlər", href: "/kabinet/bildirisler", icon: <Bell />, navKey: "bildirisler" },
   { label: "Profil", href: "/kabinet/profil", icon: <User />, navKey: "profil" },
   { label: "Seçilmişlər", href: "/kabinet/secilmisler", icon: <Heart />, navKey: "secilmisler" },
+];
+
+/** Operator (Nərmin) paneli — admin ilə eyni sol-sütun vizualı (2026-08-12). */
+export const operatorNav: NavItem[] = [
+  { label: "Mərkəzlər", href: "/panel", icon: <Building2 /> },
+  { label: "Yeni mərkəz", href: "/panel/yeni", icon: <Plus /> },
+  { label: "Söhbətlər", href: "/panel/sohbetler", icon: <MessageSquare /> },
+  { label: "WhatsApp söhbətləri", href: "/panel/whatsapp-sohbetler", icon: <MessageCircle /> },
+  { label: "WhatsApp dəvətləri", href: "/panel/whatsapp", icon: <MessageCircle /> },
+  { label: "AI Yardımçı", href: "/panel/ai", icon: <Sparkles /> },
+  { label: "Bot beyni", href: "/panel/bot", icon: <Bot /> },
 ];
 
 export const adminNav: NavItem[] = [
