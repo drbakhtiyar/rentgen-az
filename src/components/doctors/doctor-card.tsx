@@ -34,19 +34,19 @@ export function DoctorCard({
 
   return (
     <Card
-      className={`group relative flex h-full flex-col p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)] ${
+      className={`group relative flex h-full flex-col rounded-3xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-24px_rgba(64,60,213,0.35)] ${
         premium
-          ? "border-cyan-200 ring-1 ring-inset ring-cyan-100 hover:border-cyan-300"
-          : "hover:border-brand-200"
+          ? "border-iris-veil/40 ring-1 ring-inset ring-iris-veil/30 hover:border-iris-veil/60"
+          : "border-ash-2 hover:border-iris-veil/50"
       }`}
     >
       {premium && (
-        <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-cyan-500 to-brand-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+        <span className="absolute right-3 top-3 rounded-full bg-iris-pulse px-2 py-0.5 text-[10px] font-semibold shadow-[0_0_16px_rgba(60,57,185,0.45)] uppercase tracking-wide text-white">
           Premium
         </span>
       )}
       <div className="flex items-start gap-3">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-iris-glow/10 text-iris-pulse ring-1 ring-iris-veil/25">
           {doctor.photoUrl ? (
             <Image
               src={doctor.photoUrl}
@@ -61,9 +61,9 @@ export function DoctorCard({
         </span>
         <div className="min-w-0">
           <Link href={`/hekimler/${doctor.id}`} className="group/link">
-            <h3 className="flex items-center gap-1.5 font-display text-base font-bold text-ink-900 transition-colors group-hover/link:text-brand-700">
+            <h3 className="flex items-center gap-1.5 font-display text-base font-semibold text-iris-canvas transition-colors group-hover/link:text-iris-pulse">
               {name}
-              {verified && <BadgeCheck className="h-4 w-4 shrink-0 text-brand-500" />}
+              {verified && <BadgeCheck className="h-4 w-4 shrink-0 text-iris-pulse" />}
             </h3>
           </Link>
           {doctor.clinic && (
@@ -80,17 +80,24 @@ export function DoctorCard({
       {specs.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {specs.map((s) => (
-            <Badge key={s} tone="cyan">
+            <span
+              key={s}
+              className="inline-flex items-center rounded-full border border-iris-veil/30 bg-iris-glow/8 px-2.5 py-0.5 text-xs font-medium text-iris-glow"
+            >
               {s}
-            </Badge>
+            </span>
           ))}
-          {extra > 0 && <Badge tone="slate">+{extra}</Badge>}
+          {extra > 0 && (
+            <span className="inline-flex items-center rounded-full bg-pearl px-2.5 py-0.5 text-xs font-medium text-fog-2">
+              +{extra}
+            </span>
+          )}
         </div>
       )}
 
       <Link
         href={`/hekimler/${doctor.id}`}
-        className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-brand-600 hover:text-brand-700"
+        className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-iris-pulse hover:text-iris-glow"
       >
         {getDict(locale).doctors.viewProfile} <ArrowUpRight className="h-4 w-4" />
       </Link>

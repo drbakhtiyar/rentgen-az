@@ -79,11 +79,11 @@ export default async function DoctorsPage({
       {/* For doctors — advantages + join CTA (merged from the old /hekimler-ucun) */}
       <Section className="pt-8 pb-12 sm:pt-8 lg:pt-8">
         <Container>
-          <div className="rounded-2xl border border-slate-200 bg-surface p-6 sm:p-8">
+          <div className="rounded-3xl bg-[#e4e4eb] p-6 sm:p-8">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">{fd.eyebrow}</p>
-                <h2 className="font-display mt-1 text-2xl font-bold text-ink-900">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-iris-pulse">{fd.eyebrow}</p>
+                <h2 className="font-display mt-1 text-2xl font-semibold tracking-tight text-iris-canvas">
                   {ru ? "Вы врач? Присоединяйтесь к платформе" : "Həkimsiniz? Platformamıza qoşulun"}
                 </h2>
               </div>
@@ -91,7 +91,7 @@ export default async function DoctorsPage({
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {advantages.map((a) => (
                 <Card key={a.h} className="flex items-start gap-3 p-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 [&>svg]:h-5 [&>svg]:w-5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-iris-glow/10 text-iris-pulse [&>svg]:h-5 [&>svg]:w-5">
                     {a.icon}
                   </span>
                   <div>
@@ -103,7 +103,7 @@ export default async function DoctorsPage({
               {/* CTA card (replaces the old referral form) */}
               <Link
                 href="/giris?role=doctor"
-                className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-brand-600 to-cyan-600 p-4 text-white transition-transform hover:-translate-y-0.5"
+                className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-iris-pulse to-iris-glow p-4 text-white shadow-[0_0_24px_rgba(60,57,185,0.4)] transition-transform hover:-translate-y-0.5"
               >
                 <Send className="h-5 w-5" />
                 <div className="mt-3">
@@ -118,7 +118,7 @@ export default async function DoctorsPage({
             </div>
           </div>
 
-          <form method="get" className="mb-8 mt-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1.2fr_1fr_1fr_auto]">
+          <form method="get" className="mb-8 mt-8 grid gap-3 rounded-3xl bg-white p-4 ring-1 ring-ash-2 sm:grid-cols-[1.2fr_1fr_1fr_auto]">
             <input
               name="q"
               defaultValue={sp.q ?? ""}
@@ -141,7 +141,7 @@ export default async function DoctorsPage({
               noMatches={ru ? "Совпадений не найдено" : "Uyğun variant tapılmadı"}
               initial={sp.city ? { value: sp.city, label: sp.city } : null}
             />
-            <button type="submit" className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700">
+            <button type="submit" className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-iris-pulse px-5 text-sm font-semibold text-white hover:bg-iris-glow">
               <Search className="h-4 w-4" /> {ru ? "Поиск" : "Axtar"}
             </button>
           </form>
