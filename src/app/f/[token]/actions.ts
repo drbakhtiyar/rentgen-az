@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { logTokenSave } from "@/lib/link-visit";
 import { resolveFaqToken } from "@/lib/price-invite";
 import { CENTER_FAQ_KEYS } from "@/content/center-faq";
 
@@ -44,6 +45,7 @@ export async function saveFaqAction(input: {
         },
       })
       .catch(() => null);
+    await logTokenSave(target.centerId, "f");
     revalidatePath(`/rentgen-merkezleri/${target.slug}`);
     return { ok: true, saved: Object.keys(filled).length };
   } catch {

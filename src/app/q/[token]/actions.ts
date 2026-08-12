@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { logTokenSave } from "@/lib/link-visit";
 import { resolvePriceToken } from "@/lib/price-invite";
 
 export type PriceSaveState = { ok: boolean; error?: string; saved?: number };
@@ -70,6 +71,7 @@ export async function savePricesAction(input: {
         },
       })
       .catch(() => null);
+    await logTokenSave(target.centerId, "q");
     revalidatePath(`/rentgen-merkezleri/${target.slug}`);
     revalidatePath("/rentgen-merkezleri");
     return { ok: true, saved: updates.length + additions.length };
