@@ -6,13 +6,13 @@ import { askAssistant, type AiMsg } from "@/lib/ai-assistant";
 const MAX_TURNS = 12;
 const MAX_LEN = 1500;
 
-/** Panel-only AI helper (center, doctor, assistant, admin). Conversation lives
- * client-side; we just answer the trimmed history. */
+/** Panel-only AI helper (center, doctor, assistant, operator, admin).
+ * Conversation lives client-side; we just answer the trimmed history. */
 export async function askAiAssistantAction(
   history: { role: "user" | "assistant"; content: string }[],
 ): Promise<{ ok: boolean; answer?: string; error?: string }> {
   const me = await getCurrentUser();
-  if (!me || !["CENTER", "DOCTOR", "ASSISTANT", "ADMIN"].includes(me.role)) {
+  if (!me || !["CENTER", "DOCTOR", "ASSISTANT", "OPERATOR", "ADMIN"].includes(me.role)) {
     return { ok: false, error: "Giriş tələb olunur." };
   }
   const msgs: AiMsg[] = history
