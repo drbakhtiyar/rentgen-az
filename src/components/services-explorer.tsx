@@ -76,38 +76,39 @@ export function ServicesExplorer({
         </div>
       )}
 
-      {/* Premium ikonlu xidmətlər — böyük vizual kartlar */}
+      {/* Premium ikonlu xidmətlər — tam-tünd tile, ad şəklin içində
+          (istifadəçinin bəyəndiyi referans vərəqi üslubu, 2026-08-13) */}
       {withIcon.length > 0 && (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {withIcon.map((s) => (
             <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
-              <div className="group h-full overflow-hidden rounded-3xl bg-white ring-1 ring-ash-2 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_-24px_rgba(64,60,213,0.4)] hover:ring-iris-veil/60">
-                <div className="relative aspect-[4/3] overflow-hidden bg-[#0d1330]">
-                  <Image
-                    src={s.bigIcon!}
-                    alt={s.name}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                  />
-                  {s.count > 0 && (
-                    <span className="absolute right-3 top-3 rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
-                      {s.count} {labels.centerWord}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between gap-3 p-4">
+              <div className="group relative aspect-square overflow-hidden rounded-3xl bg-[#0d1330] ring-1 ring-iris-border/40 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_64px_-24px_rgba(64,60,213,0.6)] hover:ring-clinical/50">
+                <Image
+                  src={s.bigIcon!}
+                  alt={s.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.07]"
+                />
+                {/* Alt qaranlıq keçid — yazı oxunsun */}
+                <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#070b20] via-[#070b20]/60 to-transparent" />
+                {s.count > 0 && (
+                  <span className="absolute right-3 top-3 rounded-full bg-[#070b20]/50 px-2.5 py-1 text-xs font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
+                    {s.count} {labels.centerWord}
+                  </span>
+                )}
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
                   <div className="min-w-0">
-                    <h3 className="font-display truncate text-base font-semibold tracking-tight text-iris-canvas">
+                    <h3 className="font-display text-lg font-semibold leading-snug tracking-tight text-white">
                       {s.name}
                     </h3>
                     {priceLabel(s.priceMin, s.priceMax) && (
-                      <p className="mt-0.5 text-sm font-semibold text-iris-pulse">
+                      <p className="mt-0.5 text-sm font-medium text-clinical-soft">
                         ~ {priceLabel(s.priceMin, s.priceMax)}
                       </p>
                     )}
                   </div>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ash-2 text-iris-canvas transition-all duration-300 group-hover:border-iris-veil group-hover:bg-iris-glow/10 group-hover:translate-x-0.5">
+                  <span className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/25 backdrop-blur-sm transition-all duration-300 group-hover:bg-clinical group-hover:ring-clinical group-hover:translate-x-0.5">
                     <ArrowRight className="h-4 w-4" />
                   </span>
                 </div>
