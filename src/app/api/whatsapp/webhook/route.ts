@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { answerWaMessage } from "@/lib/wa-bot";
 import type { AiMsg } from "@/lib/ai-assistant";
 import { sendWaText, waConfigured } from "@/lib/whatsapp";
+import { transcribeWaAudio } from "@/lib/wa-transcribe";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -164,21 +165,57 @@ export async function POST(request: Request): Promise<Response> {
   // Meta 200-ü tez istəyir; emalı cavabdan əvvəl edirik amma qısa saxlanır.
   try {
     const body = JSON.parse(raw) as {
-      entry?: { changes?: { value?: { messages?: { from: string; type: string; text?: { body: string } }[] } }[] }[];
+      entry?: {
+        changes?: {
+          value?: {
+            messages?: {
+              from: string;
+              type: string;
+              text?: { body: string };
+              audio?: { id?: string };
+            }[];
+          };
+        }[];
+      }[];
     };
     const msgs =
       body.entry?.flatMap((e) => e.changes ?? []).flatMap((c) => c.value?.messages ?? []) ?? [];
     for (const m of msgs.slice(0, 3)) {
       if (!waConfigured()) continue;
 
-      // Mətn olmayan mesajlara SABİT cavablar — AI-a getmir, bot beynindən
-      // asılı deyil (istifadəçi qərarı, 2026-08-11). Səs oxunmur; şəkil isə
-      // arzuolunandır (loqo/foto kampaniyası) — təşəkkür + komanda emalı.
-      if (m.type === "audio" || m.type === "video") {
+      // Səsli mesaj (2026-08-12): transkript → bot adi mətn kimi cavablayır.
+      // Transkript alınmasa (env yoxdur / STT xətası) köhnə sabit cavaba düşür.
+      if (m.type === "audio") {
+        const transcript = m.audio?.id ? await transcribeWaAudio(m.audio.id) : null;
+        if (transcript) {
+          const labeled = `🎤 Səsli mesaj: ${transcript}`;
+          if (await humanActive(m.from)) {
+            await mirror(m.from, labeled, null);
+            continue;
+          }
+          const history = await waHistory(m.from);
+          const res = await answerWaMessage(m.from, transcript, history);
+          if (res.ok && res.answer) {
+            await sendWaText(m.from, res.answer);
+            await mirror(m.from, labeled, res.answer);
+          } else {
+            await mirror(m.from, labeled, null);
+          }
+          continue;
+        }
         const canned =
-          "Bağışlayın, səsli və video mesajları oxuya bilmirəm 🙏 Zəhmət olmasa fikrinizi yazı ilə göndərin — dərhal cavablandırım.";
+          "Bağışlayın, səsli mesajınızı oxuya bilmədim 🙏 Zəhmət olmasa fikrinizi yazı ilə göndərin — dərhal cavablandırım.";
         await sendWaText(m.from, canned);
-        await mirror(m.from, m.type === "audio" ? "[səsli mesaj]" : "[video]", canned);
+        await mirror(m.from, "[səsli mesaj]", canned);
+        continue;
+      }
+      // Video sabit cavab alır — AI-a getmir (istifadəçi qərarı, 2026-08-11).
+      // Şəkil isə arzuolunandır (loqo/foto kampaniyası) — təşəkkür + komanda emalı.
+      if (m.type === "video") {
+        const canned =
+          "Bağışlayın, video mesajları oxuya bilmirəm 🙏 Zəhmət olmasa fikrinizi yazı ilə göndərin — dərhal cavablandırım.";
+        await sendWaText(m.from, canned);
+        await mirror(m.from, "[video]", canned);
         continue;
       }
       if (m.type === "image" || m.type === "document") {
