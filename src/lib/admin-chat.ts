@@ -81,10 +81,21 @@ export async function getAdminThreads(
     select: { threadId: true, createdAt: true, content: true },
   });
 
-  // WhatsApp təsnifatı — 📲 prefiksli gələn mesaja görə
-  const waThreads = new Set(
-    incoming.filter((m) => m.content.startsWith("📲")).map((m) => m.threadId),
-  );
+  // WhatsApp təsnifatı — 📲 prefiksli GƏLƏN mesaj VƏ YA 🤖 prefiksli GEDƏN
+  // mesaj (bot cavabı / şablonlu dəvət). Yalnız-gələnə bağlamaq buq idi:
+  // paneldan göndərilən dəvət cavab gələnə qədər bölmədə görünmürdü (2026-08-12).
+  const outgoingBot = await prisma.adminMessage.findMany({
+    where: {
+      threadId: { in: threads.map((t) => t.id) },
+      fromAdmin: true,
+      content: { startsWith: "🤖" },
+    },
+    select: { threadId: true },
+  });
+  const waThreads = new Set([
+    ...incoming.filter((m) => m.content.startsWith("📲")).map((m) => m.threadId),
+    ...outgoingBot.map((m) => m.threadId),
+  ]);
 
   // Bot susma vaxtı: son İNSAN cavabı (fromAdmin, 🤖/⚠️-siz) + 30 dəq
   // (webhook-dakı HUMAN_TAKEOVER_MS ilə sinxron). Yalnız WhatsApp thread-lərinə aiddir.
