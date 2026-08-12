@@ -21,8 +21,9 @@
   --color-cyan-400: #2ad4e6;
   --color-cyan-500: #11bdd4;
 
-  --color-surface: #f6f9ff;
-  --color-surface-2: #eef3fb;
+  /* Impilo pearl ailəsi (2026-08-13): gövdə #f4f4f6 ilə eyni sərin tonda */
+  --color-surface: #ededf2;
+  --color-surface-2: #e5e5ec;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, sans-serif;
@@ -36,7 +37,10 @@
 }
 
 :root {
-  --background: #ffffff;
+  /* Impilo (2026-08-13): ictimai səhifələrin gövdə fonu ağ deyil, Pearl —
+     ağ kartlar üzərində yumşaq qabarır, uzun oxunuşda göz yormur.
+     Panellər öz fonunu (bg-surface) özləri qoyur, təsirlənmir. */
+  --background: #f4f4f6;
   --foreground: #0a1124;
 }
 
