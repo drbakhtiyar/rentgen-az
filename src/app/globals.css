@@ -152,6 +152,52 @@ body {
    bu utilitləri işlədir; panellər köhnə tokenlərdə qalır.
    ================================================================ */
 
+/* ----------------------------------------------------------------
+   IMPILO üslubu (2026-08-12, istifadəçi seçimi — hələlik YALNIZ ana
+   səhifə). "Midnight clinical observatory": tünd bənövşəyi kainat,
+   data siyan rəngdə parlayır, pill-yumşaq səthlər, ambient bənövşəyi
+   kölgələr. Mənbə: styles.refero.design → Impilo (impilo.health).
+   ---------------------------------------------------------------- */
+@theme {
+  --color-iris-canvas: #16165c;   /* səhifə kanvası, hero */
+  --color-iris-shadow: #232269;   /* qaldırılmış kart səthləri */
+  --color-iris-glow: #403cd5;     /* vurğulu metrik bloklar, orta səth */
+  --color-iris-pulse: #5350cc;    /* dolu düymələr, seçili vəziyyət */
+  --color-iris-border: #4846c6;   /* kart haşiyələri */
+  --color-iris-veil: #524fe1;     /* incə ayırıcılar */
+  --color-lilac-mist: #b1a6f6;    /* xətt-illüstrasiya, dekorativ ştrix */
+  --color-clinical: #00b1ff;      /* data, linklər, ikon vurğuları */
+  --color-clinical-soft: #59b4ff; /* ikinci dərəcəli siyan */
+  --color-mint-vital: #00ffaa;    /* müsbət vurğu, taq konturları */
+  --color-teal-signal: #2ee9ff;   /* əsas data callout-ları */
+  --color-pearl: #f4f4f6;         /* çevrilmiş (açıq) bölmələr */
+  --color-ash-2: #d8d8e3;         /* tünd fonda solğun mətn */
+  --color-fog-2: #9494a9;         /* incə ayırıcılar, deaktiv */
+}
+
+/* Ambient bənövşəyi kölgə — neytral boz kölgə YOXDUR (Impilo qaydası) */
+.shadow-iris {
+  box-shadow: 0 24px 64px -24px rgba(64, 60, 213, 0.55);
+}
+.shadow-iris-soft {
+  box-shadow: 0 12px 40px -18px rgba(35, 34, 105, 0.7);
+}
+
+/* Rəsədxana fonu — kanvas üzərində bənövşəyi işıq ləkələri */
+.bg-observatory {
+  background:
+    radial-gradient(50rem 28rem at 12% -8%, rgba(64, 60, 213, 0.55), transparent 60%),
+    radial-gradient(40rem 24rem at 96% 12%, rgba(0, 177, 255, 0.14), transparent 55%),
+    radial-gradient(44rem 30rem at 55% 115%, rgba(83, 80, 204, 0.4), transparent 60%),
+    var(--color-iris-canvas);
+}
+
+/* Siyan data parlayışı — rəqəm/başlıq vurğusu üçün */
+.text-clinical-glow {
+  color: var(--color-clinical);
+  text-shadow: 0 0 24px rgba(0, 177, 255, 0.45);
+}
+
 /* Çoxrəngli "spektr" qradiyenti — başlıq vurğuları üçün */
 .text-spectrum {
   background: linear-gradient(
