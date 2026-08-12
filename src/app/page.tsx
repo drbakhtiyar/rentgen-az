@@ -295,8 +295,11 @@ export default async function HomePage() {
 
           {centers.length > 0 ? (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {centers.map((c) => (
-                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
+              {/* Mobil: yalnız ilk 3 kart (skrol yükü azalsın); sm+ hamısı (6) */}
+              {centers.map((c, i) => (
+                <div key={c.id} className={i >= 3 ? "hidden sm:block" : ""}>
+                  <CenterCard center={c} rating={ratings[c.id]} />
+                </div>
               ))}
             </div>
           ) : (
