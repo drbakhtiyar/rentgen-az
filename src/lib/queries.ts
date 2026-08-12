@@ -523,6 +523,49 @@ export async function getCenterEventStats(centerId: string, days = 30) {
   );
 }
 
+/** Mərkəz engagement statistikası (Faza 2, 2026-08-13): bütün hadisə növləri
+ *  üzrə cari dövr + əvvəlki dövr (müqayisə üçün) + günlük baxış qrafiki. */
+export async function getCenterEngagement(centerId: string, days: number) {
+  return safe(
+    async () => {
+      const MS = 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      const since = new Date(now - days * MS);
+      const prevSince = new Date(now - 2 * days * MS);
+      const rows = await prisma.centerEvent.findMany({
+        where: { centerId, createdAt: { gte: prevSince } },
+        select: { type: true, createdAt: true },
+      });
+      const current: Record<string, number> = {};
+      const previous: Record<string, number> = {};
+      const dailyMap = new Map<string, number>();
+      // Qrafik boş günləri də göstərsin
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now - i * MS);
+        dailyMap.set(d.toLocaleDateString("en-CA", { timeZone: "Asia/Baku" }), 0);
+      }
+      for (const r of rows) {
+        const bucket = r.createdAt >= since ? current : previous;
+        bucket[r.type] = (bucket[r.type] ?? 0) + 1;
+        if (r.createdAt >= since && r.type === "view") {
+          const key = r.createdAt.toLocaleDateString("en-CA", { timeZone: "Asia/Baku" });
+          if (dailyMap.has(key)) dailyMap.set(key, (dailyMap.get(key) ?? 0) + 1);
+        }
+      }
+      return {
+        current,
+        previous,
+        daily: [...dailyMap.entries()].map(([date, views]) => ({ date, views })),
+      };
+    },
+    { current: {}, previous: {}, daily: [] } as {
+      current: Record<string, number>;
+      previous: Record<string, number>;
+      daily: { date: string; views: number }[];
+    },
+  );
+}
+
 /** Doctor dashboard stats: profile views (N days), referrals sent, partner centers. */
 export async function getDoctorStats(doctorId: string, days = 30) {
   return safe(

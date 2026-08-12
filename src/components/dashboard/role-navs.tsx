@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   LayoutDashboard,
   Building2,
   ListChecks,
@@ -33,6 +34,7 @@ export const centerNav: NavItem[] = [
   { label: "İcmal", href: "/merkez", icon: <LayoutDashboard />, navKey: "icmal" },
   { label: "Söhbətlər", href: "/merkez/chat", icon: <MessageSquare />, navKey: "chat" },
   { label: "Bildirişlər", href: "/merkez/bildirisler", icon: <Bell />, navKey: "bildirisler" },
+  { label: "Statistika", href: "/merkez/statistika", icon: <BarChart3 />, navKey: "statistika" },
   { label: "Profil", href: "/merkez/profil", icon: <Building2 />, navKey: "profil" },
   { label: "Pasiyentlər", href: "/merkez/pasiyentler", icon: <Users />, navKey: "pasiyentler" },
   { label: "CRM / Təqvim", href: "https://crm.rentgen.az/teqvim", icon: <CalendarDays />, navKey: "crmLink" },
