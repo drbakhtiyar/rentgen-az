@@ -20,6 +20,7 @@ import { parseFaqAnswers } from "@/content/center-faq";
 import { CITIES } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
 import { centerLimits } from "@/lib/plans";
+import { getCenterEngagement } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,17 @@ export default async function AdminEditCenterPage({
   const center = await prisma.centerProfile.findUnique({ where: { id } });
   if (!center) notFound();
 
+  // Engagement statistikası (Faza 3, 2026-08-13): son 30 gün + əvvəlki dövr
+  const eng = await getCenterEngagement(center.id, 30);
+  const STAT_ROWS: { key: string; label: string }[] = [
+    { key: "view", label: "Baxış" },
+    { key: "call", label: "Zəng" },
+    { key: "whatsapp", label: "WhatsApp" },
+    { key: "directions", label: "Yol tarifi" },
+    { key: "license", label: "Lisenziya" },
+    { key: "faq", label: "FAQ" },
+  ];
+
   const save = adminUpdateCenterAction.bind(null, center.id);
   const setPlan = adminSetCenterPlanAction.bind(null, center.id);
   const credit = adminCreditWalletAction.bind(null, center.userId);
@@ -54,6 +66,26 @@ export default async function AdminEditCenterPage({
       >
         <ArrowLeft className="h-4 w-4" /> Mərkəzlərə qayıt
       </Link>
+
+      {/* Son 30 günün engagement zolağı */}
+      <div className="mb-5 grid grid-cols-3 gap-2 sm:grid-cols-6">
+        {STAT_ROWS.map((r) => {
+          const cur = eng.current[r.key] ?? 0;
+          const prev = eng.previous[r.key] ?? 0;
+          const pct = prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
+          return (
+            <div key={r.key} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-center">
+              <div className="font-display text-xl font-bold text-ink-900">{cur}</div>
+              <div className="text-[11px] font-medium text-slate-500">{r.label} · 30g</div>
+              {pct !== null && pct !== 0 && (
+                <div className={`text-[11px] font-semibold ${pct > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                  {pct > 0 ? `+${pct}%` : `${pct}%`}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       <Panel title={center.name}>
 
