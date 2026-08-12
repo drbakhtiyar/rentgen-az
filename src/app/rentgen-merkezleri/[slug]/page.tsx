@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
+  Globe,
+  AtSign,
   MapPin,
   Clock,
   Phone,
@@ -380,6 +382,40 @@ export default async function CenterDetailPage({
                     <Detail icon={<User />} label={dd.responsible} value={center.responsiblePerson} />
                   )}
                 </dl>
+                {(center.website || center.instagram) && (
+                  <div className="mt-5 flex flex-wrap items-center gap-4">
+                    {center.website && (
+                      <TrackClick centerId={center.id} type="website">
+                        <a
+                          href={center.website}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+                        >
+                          <Globe className="h-4 w-4" /> Veb sayt
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </TrackClick>
+                    )}
+                    {center.instagram && (
+                      <TrackClick centerId={center.id} type="instagram">
+                        <a
+                          href={
+                            center.instagram.startsWith("http")
+                              ? center.instagram
+                              : `https://instagram.com/${center.instagram.replace(/^@/, "")}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+                        >
+                          <AtSign className="h-4 w-4" /> Instagram
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </TrackClick>
+                    )}
+                  </div>
+                )}
                 {center.mapsUrl && (
                   <TrackClick centerId={center.id} type="directions">
                   <a

@@ -214,6 +214,8 @@ model CenterProfile {
   city              String?
   district          String?
   mapsUrl           String?
+  website           String? // ictimai səhifədə göstərilir, kliklər izlənir (2026-08-13)
+  instagram         String?
   lat               Float?
   lng               Float?
   workingHours      String? // insan-oxunaqlı xülasə (strukturdan avtomatik yaranır)

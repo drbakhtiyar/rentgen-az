@@ -8,14 +8,16 @@ export type CenterEventType =
   | "whatsapp"
   | "directions"
   | "license"
-  | "faq";
+  | "faq"
+  | "website"
+  | "instagram";
 
 /** Fire-and-forget analytics event for a center (public, best-effort). */
 export async function trackCenterEventAction(
   centerId: string,
   type: CenterEventType,
 ): Promise<void> {
-  if (!centerId || !["view", "call", "whatsapp", "directions", "license", "faq"].includes(type)) return;
+  if (!centerId || !["view", "call", "whatsapp", "directions", "license", "faq", "website", "instagram"].includes(type)) return;
   try {
     await prisma.centerEvent.create({ data: { centerId, type } });
   } catch {

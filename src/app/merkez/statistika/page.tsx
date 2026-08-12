@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Eye,
+  Globe,
+  AtSign,
   Phone,
   MessageCircle,
   Navigation,
@@ -38,6 +40,8 @@ const METRICS: { key: string; label: string; icon: React.ReactNode; hint: string
   { key: "directions", label: "Yol tarifi", icon: <Navigation />, hint: "Xəritə / istiqamət" },
   { key: "license", label: "Lisenziya baxışı", icon: <FileCheck />, hint: "Sənədin böyüdülməsi" },
   { key: "faq", label: "FAQ oxunuşu", icon: <HelpCircle />, hint: "Sual-cavab açılışı" },
+  { key: "website", label: "Sayt kliki", icon: <Globe />, hint: "Veb sayt linki" },
+  { key: "instagram", label: "Instagram kliki", icon: <AtSign />, hint: "Instagram linki" },
 ];
 
 function Delta({ cur, prev }: { cur: number; prev: number }) {

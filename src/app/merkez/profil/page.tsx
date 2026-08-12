@@ -47,6 +47,8 @@ export default async function CenterProfilePage() {
           city: center.city ?? "",
           district: center.district ?? "",
           mapsUrl: center.mapsUrl ?? "",
+            website: center.website ?? "",
+            instagram: center.instagram ?? "",
           workingHours: center.workingHours ?? "",
           equipment: center.equipment ?? "",
           responsiblePerson: center.responsiblePerson ?? "",

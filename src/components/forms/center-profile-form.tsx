@@ -24,6 +24,8 @@ export type CenterFormDefaults = {
   city?: string;
   district?: string;
   mapsUrl?: string;
+  website?: string;
+  instagram?: string;
   workingHours?: string;
   hours?: WeeklyHours | null;
   equipment?: string;
@@ -47,6 +49,8 @@ type SaveInput = {
   city: string;
   district: string;
   mapsUrl: string;
+  website: string;
+  instagram: string;
   hours: WeeklyHours | null;
   equipment: string;
   responsiblePerson: string;
@@ -219,6 +223,8 @@ export function CenterProfileForm({
         city: get("city"),
         district: get("district"),
         mapsUrl: get("mapsUrl"),
+        website: get("website"),
+        instagram: get("instagram"),
         hours,
         equipment: get("equipment"),
         responsiblePerson: get("responsiblePerson"),
@@ -415,6 +421,14 @@ export function CenterProfileForm({
         <Field label={c.mapsUrl} htmlFor="mapsUrl">
           <Input id="mapsUrl" name="mapsUrl" type="url" defaultValue={defaults?.mapsUrl} placeholder="https://maps.google.com/..." />
         </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Veb sayt" htmlFor="website">
+            <Input id="website" name="website" type="url" defaultValue={defaults?.website} placeholder="https://..." />
+          </Field>
+          <Field label="Instagram" htmlFor="instagram">
+            <Input id="instagram" name="instagram" defaultValue={defaults?.instagram} placeholder="https://instagram.com/... və ya @ad" />
+          </Field>
+        </div>
         <WeeklyHoursPicker value={hours} onChange={setHours} />
         <Field label={c.equipment} htmlFor="equipment">
           <Textarea id="equipment" name="equipment" defaultValue={defaults?.equipment} placeholder={c.equipmentPh} />

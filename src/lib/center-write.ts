@@ -59,6 +59,8 @@ export type CenterWriteInput = {
   city?: string;
   district?: string;
   mapsUrl?: string;
+  website?: string;
+  instagram?: string;
   hours?: WeeklyHours | null;
   equipment?: string;
   responsiblePerson?: string;
@@ -152,6 +154,8 @@ export async function saveCenterLoose(
     city: s(input.city, 80),
     district: s(input.district, 80),
     mapsUrl: s(input.mapsUrl, 500),
+    website: s(input.website, 300),
+    instagram: s(input.instagram, 300),
     hours: week ? (week as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
     workingHours: formatHoursSummary(week) || null,
     equipment: s(input.equipment, 1000),

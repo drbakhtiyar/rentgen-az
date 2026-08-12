@@ -52,6 +52,8 @@ export default async function AdminEditCenterPage({
     { key: "directions", label: "Yol tarifi" },
     { key: "license", label: "Lisenziya" },
     { key: "faq", label: "FAQ" },
+    { key: "website", label: "Sayt" },
+    { key: "instagram", label: "Instagram" },
   ];
 
   const save = adminUpdateCenterAction.bind(null, center.id);
@@ -68,7 +70,7 @@ export default async function AdminEditCenterPage({
       </Link>
 
       {/* Son 30 günün engagement zolağı */}
-      <div className="mb-5 grid grid-cols-3 gap-2 sm:grid-cols-6">
+      <div className="mb-5 grid grid-cols-4 gap-2 sm:grid-cols-8">
         {STAT_ROWS.map((r) => {
           const cur = eng.current[r.key] ?? 0;
           const prev = eng.previous[r.key] ?? 0;
@@ -123,6 +125,8 @@ export default async function AdminEditCenterPage({
             city: center.city ?? "",
             district: center.district ?? "",
             mapsUrl: center.mapsUrl ?? "",
+            website: center.website ?? "",
+            instagram: center.instagram ?? "",
             workingHours: center.workingHours ?? "",
             equipment: center.equipment ?? "",
             responsiblePerson: center.responsiblePerson ?? "",

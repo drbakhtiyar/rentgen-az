@@ -166,6 +166,8 @@ export async function adminUpdateCenterAction(
     city: string;
     district?: string;
     mapsUrl?: string;
+    website?: string;
+    instagram?: string;
     hours?: WeeklyHours | null;
     equipment?: string;
     responsiblePerson?: string;
