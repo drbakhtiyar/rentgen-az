@@ -2,6 +2,29 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-12 (davam 2) — Səsli mesaj STT, operator genişlənməsi, bloq 24+24
+
+- **Səsli mesaj transkripti CANLI:** `src/lib/wa-transcribe.ts` — Graph media →
+  OpenAI `gpt-4o-transcribe` (STT_PROMPT domen ipucu + `language=az`) → Claude
+  Sonnet təmizləmə (yalnız yazılış, məzmun əlavəsi qadağan) → bot cavabı;
+  güzgüdə "🎤 Səsli mesaj: …". `OPENAI_API_KEY` prod-da (sensitive). Mini model
+  AZ-də zəif çıxdı → tam modelə keçirildi.
+- **WhatsApp biznes profili API ilə quruldu:** logo (512px `public/logo.png`,
+  resumable upload → handle), about, website, email. Təsdiqli ad "Rentgen-az"
+  (AVAILABLE_WITHOUT_REVIEW); keyfiyyət reytinqi GREEN.
+- **Dəvət limiti 12→50** (`WA_DAILY_LIMIT` env ilə deploy-suz dəyişir); AI
+  yardımçı promptu uyğunlaşdırıldı.
+- **Operator paneli:** 4 yalnız-baxış bölmə (Rəylər filtrli, Məlumat
+  bildirişləri, Əməkdaşlıqlar, Yarımçıq qeydiyyat — `/panel/*` OperatorShell);
+  AI Yardımçı action-una OPERATOR rolu əlavə edildi ("Giriş tələb olunur" fix).
+- **AI Yardımçı beyni:** 4 paket dəqiq qiymətlərlə, WhatsApp bloku, operator
+  bölmələri (SYSTEM_PROMPT `src/lib/ai-assistant.ts`).
+- **Bloq 24 AZ + 24 RU:** 3 yeni cüt (bel-agrisinda-mrt, kontrastli-kt-ve-mrt,
+  doppler-usm-nedir + RU qarşılıqları), brend vektor cover-lər Blob-da.
+  **publishedAt yenidən bölüşdürüldü:** 24 cüt 2026-02-05→08-12 aralığına
+  (hər gün 1 mövzu, AZ+RU eyni gün — tərcümə cütü).
+- **Footer RU düzəlişi:** xidmət adları `serviceNameRu` ilə, "Bakı" sətri tərcümə.
+
 ## 2026-08-12 (davam) — WhatsApp əməliyyat mərkəzi tamamlandı
 
 Go-live-dan sonrakı eyni gecədə:
