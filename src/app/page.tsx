@@ -315,8 +315,8 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* ============ FAQ — açıq pearl (mərkəzlərdən fərqli ton) ============ */}
-      <section className="bg-pearl py-16 text-iris-canvas sm:py-20">
+      {/* ============ FAQ — tünd iris (bloq ilə yerdəyişmə, 2026-08-13) ============ */}
+      <section className="bg-iris-canvas py-16 text-white sm:py-20">
         <Container>
           <h2 className="font-display text-center text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
             {d.home.faqTitle}
@@ -327,17 +327,18 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* ============ BLOQ — tünd qayıdış ============ */}
+      {/* ============ BLOQ — açıq pearl (FAQ ilə yerdəyişmə): tünd kartlar
+           açıq fonda referans vərəqi kimi qabarır ============ */}
       {posts.length > 0 && (
-        <section className="bg-iris-canvas py-16 sm:py-20">
+        <section className="bg-pearl py-16 sm:py-20">
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-white sm:text-4xl">
+              <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-iris-canvas sm:text-4xl">
                 {d.home.blogTitle}
               </h2>
               <ButtonLink
                 href="/blog"
-                className="shrink-0 border border-white/25 bg-transparent text-white hover:bg-white/10"
+                className="shrink-0 border border-iris-canvas/25 bg-transparent text-iris-canvas hover:bg-iris-canvas/5"
               >
                 {d.home.allPosts} <ArrowRight className="h-4 w-4" />
               </ButtonLink>
