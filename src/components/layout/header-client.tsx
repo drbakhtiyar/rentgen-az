@@ -51,7 +51,7 @@ export function HeaderClient({
         darkHome
           ? scrolled
             ? "border-b border-white/10 bg-[#16165c]/85 backdrop-blur-xl"
-            : "bg-transparent"
+            : "bg-[#16165c]"
           : scrolled
             ? "border-b border-slate-200/60 bg-white/80 shadow-[0_8px_30px_-18px_rgba(16,31,70,0.35)] backdrop-blur-xl"
             : "bg-transparent",
