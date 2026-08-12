@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { QuickCardForm } from "@/components/forms/quick-card-form";
 import { resolveCardToken } from "@/lib/price-invite";
+import { logTokenVisit } from "@/lib/link-visit";
 import { parseHours } from "@/lib/hours";
 import { buildMetadata } from "@/lib/seo";
 
@@ -42,6 +43,8 @@ export default async function QuickCardPage({
       </div>
     );
   }
+
+  await logTokenVisit(target.centerId, "m");
 
   return (
     <div className="bg-surface py-10 sm:py-16">

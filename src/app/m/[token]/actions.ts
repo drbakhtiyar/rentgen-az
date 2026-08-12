@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { logTokenSave } from "@/lib/link-visit";
 import { resolveCardToken } from "@/lib/price-invite";
 import { formatHoursSummary, parseHours, type WeeklyHours } from "@/lib/hours";
 import type { Prisma } from "@/generated/prisma/client";
@@ -108,6 +109,7 @@ export async function saveCardAction(input: {
         },
       })
       .catch(() => null);
+    await logTokenSave(target.centerId, "m");
     revalidatePath(`/rentgen-merkezleri/${target.slug}`);
     revalidatePath("/rentgen-merkezleri");
     const parts = [

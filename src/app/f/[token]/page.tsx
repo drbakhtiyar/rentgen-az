@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { QuickFaqForm } from "@/components/forms/quick-faq-form";
 import { resolveFaqToken } from "@/lib/price-invite";
+import { logTokenVisit } from "@/lib/link-visit";
 import { CENTER_FAQ_QUESTIONS } from "@/content/center-faq";
 import { buildMetadata } from "@/lib/seo";
 
@@ -42,6 +43,8 @@ export default async function QuickFaqPage({
       </div>
     );
   }
+
+  await logTokenVisit(target.centerId, "f");
 
   const questions = CENTER_FAQ_QUESTIONS.map((q) => ({
     key: q.key,

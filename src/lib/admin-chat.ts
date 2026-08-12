@@ -104,7 +104,13 @@ export async function getAdminThreads(
     where: {
       threadId: { in: [...waThreads] },
       fromAdmin: true,
-      NOT: [{ content: { startsWith: "🤖" } }, { content: { startsWith: "⚠️" } }],
+      // 🤖 bot, ⚠️ sistem, 👀/✅ link-izləmə — insan cavabı sayılmır
+      NOT: [
+        { content: { startsWith: "🤖" } },
+        { content: { startsWith: "⚠️" } },
+        { content: { startsWith: "👀" } },
+        { content: { startsWith: "✅" } },
+      ],
       createdAt: { gte: new Date(Date.now() - MUTE_MS) },
     },
     orderBy: { createdAt: "desc" },

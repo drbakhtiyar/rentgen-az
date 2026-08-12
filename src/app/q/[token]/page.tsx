@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { QuickPriceForm } from "@/components/forms/quick-price-form";
 import { resolvePriceToken } from "@/lib/price-invite";
+import { logTokenVisit } from "@/lib/link-visit";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,8 @@ export default async function QuickPricePage({
       </div>
     );
   }
+
+  await logTokenVisit(target.centerId, "q");
 
   return (
     <div className="bg-surface py-10 sm:py-16">

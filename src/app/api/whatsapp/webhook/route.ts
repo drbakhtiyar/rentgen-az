@@ -110,7 +110,13 @@ async function humanActive(phone: string): Promise<boolean> {
       where: {
         thread: { userId },
         fromAdmin: true,
-        NOT: [{ content: { startsWith: "🤖" } }, { content: { startsWith: "⚠️" } }],
+        // 🤖 bot, ⚠️ sistem xətası, 👀/✅ link-izləmə qeydləri — insan cavabı deyil
+        NOT: [
+          { content: { startsWith: "🤖" } },
+          { content: { startsWith: "⚠️" } },
+          { content: { startsWith: "👀" } },
+          { content: { startsWith: "✅" } },
+        ],
         createdAt: { gte: new Date(Date.now() - HUMAN_TAKEOVER_MS) },
       },
       select: { id: true },
