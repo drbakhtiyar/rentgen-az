@@ -1,5 +1,7 @@
 "use client";
 
+import { trackCenterEventAction } from "@/app/actions/track";
+
 import * as React from "react";
 import { FileText, X, ZoomIn } from "lucide-react";
 
@@ -12,9 +14,12 @@ const isPdf = (url: string) => /\.pdf($|\?)/i.test(url);
 export function DocumentGallery({
   docs,
   title = "Sənədlər",
+  centerId,
 }: {
   docs: Doc[];
   title?: string;
+  /** varsa, sənəd açılışı statistikaya yazılır */
+  centerId?: string;
 }) {
   const [active, setActive] = React.useState<Doc | null>(null);
 
@@ -39,7 +44,10 @@ export function DocumentGallery({
             ) : (
               <button
                 type="button"
-                onClick={() => setActive(d)}
+                onClick={() => {
+                  setActive(d);
+                  if (centerId) void trackCenterEventAction(centerId, "license");
+                }}
                 className="relative block aspect-[4/3] w-full overflow-hidden rounded-xl border border-slate-200 ring-brand-300 hover:ring-2"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}

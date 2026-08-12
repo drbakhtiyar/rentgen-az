@@ -1,5 +1,7 @@
 "use client";
 
+import { trackCenterEventAction } from "@/app/actions/track";
+
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import type { AnsweredFaq } from "@/content/center-faq";
@@ -19,8 +21,9 @@ const T = {
   },
 };
 
-function FaqItem({ item, locale }: { item: AnsweredFaq; locale: Locale }) {
+function FaqItem({ item, locale, centerId }: { item: AnsweredFaq; locale: Locale; centerId: string }) {
   const [open, setOpen] = React.useState(false);
+  const tracked = React.useRef(false);
   const btnId = `faq-q-${item.key}`;
   const panelId = `faq-a-${item.key}`;
   return (
@@ -31,7 +34,13 @@ function FaqItem({ item, locale }: { item: AnsweredFaq; locale: Locale }) {
           id={btnId}
           aria-expanded={open}
           aria-controls={panelId}
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            setOpen((v) => !v);
+            if (!tracked.current) {
+              tracked.current = true;
+              void trackCenterEventAction(centerId, "faq");
+            }
+          }}
           className="flex w-full items-center justify-between gap-3 py-4 text-left text-[15px] font-semibold text-ink-900 transition-colors hover:text-brand-700"
         >
           <span>{item.question}</span>
@@ -92,7 +101,7 @@ export function CenterFaq({
       </h2>
       <div className="mt-2 divide-y divide-slate-100">
         {items.map((item) => (
-          <FaqItem key={item.key} item={item} locale={locale} />
+          <FaqItem key={item.key} item={item} locale={locale} centerId={centerId} />
         ))}
       </div>
 

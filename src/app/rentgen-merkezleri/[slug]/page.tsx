@@ -47,6 +47,7 @@ import {
   medicalBusinessJsonLd,
   faqJsonLd,
 } from "@/lib/seo";
+import { TrackClick } from "@/components/centers/track-click";
 import { CenterFaq } from "@/components/centers/center-faq";
 import { answeredFaq } from "@/content/center-faq";
 
@@ -380,6 +381,7 @@ export default async function CenterDetailPage({
                   )}
                 </dl>
                 {center.mapsUrl && (
+                  <TrackClick centerId={center.id} type="directions">
                   <a
                     href={center.mapsUrl}
                     target="_blank"
@@ -389,10 +391,12 @@ export default async function CenterDetailPage({
                     <MapPin className="h-4 w-4" /> {dd.openMap}
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
+                  </TrackClick>
                 )}
                 {center.lat != null && center.lng != null && (
                   <div className="mt-4">
                     <CenterMiniMap
+                      centerId={center.id}
                       lat={center.lat}
                       lng={center.lng}
                       name={center.name}
@@ -402,6 +406,7 @@ export default async function CenterDetailPage({
                   </div>
                 )}
                 <DocumentGallery
+                  centerId={center.id}
                   title={dd.docsTitle}
                   docs={[{ label: dd.licenseLabel, url: center.licenseUrl }].filter(
                     (d): d is { label: string; url: string } => !!d.url,

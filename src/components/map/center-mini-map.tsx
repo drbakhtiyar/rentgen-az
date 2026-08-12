@@ -1,5 +1,7 @@
 "use client";
 
+import { trackCenterEventAction } from "@/app/actions/track";
+
 import dynamic from "next/dynamic";
 import { Navigation } from "lucide-react";
 
@@ -18,12 +20,15 @@ export function CenterMiniMap({
   name,
   slug,
   directionsLabel = "Yol tərifi",
+  centerId,
 }: {
   lat: number;
   lng: number;
   name: string;
   slug: string;
   directionsLabel?: string;
+  /** varsa, yol tarifi klikləri statistikaya yazılır */
+  centerId?: string;
 }) {
   // Google Maps directions to the center. On phones this opens the Google Maps
   // app with live walking / driving / transit options; on desktop the website.
@@ -38,6 +43,7 @@ export function CenterMiniMap({
           Page scrolling still works — an anchor doesn't trap touch. */}
       <a
         href={directions}
+        onClick={() => centerId && void trackCenterEventAction(centerId, "directions")}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={directionsLabel}
@@ -47,6 +53,7 @@ export function CenterMiniMap({
       {/* Directions button — visible on every device. */}
       <a
         href={directions}
+        onClick={() => centerId && void trackCenterEventAction(centerId, "directions")}
         target="_blank"
         rel="noopener noreferrer"
         className="absolute bottom-3 right-3 z-[1001] inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white shadow-lg ring-1 ring-black/5 hover:bg-brand-700"
