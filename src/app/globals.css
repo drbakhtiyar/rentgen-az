@@ -307,6 +307,56 @@ body {
   pointer-events: none;
 }
 
+/* ---- Paket kartları (2026-08-13): metal parıltı + ikon hərəkətləri ---- */
+/* Çipin üstündən vaxtaşırı keçən işıq zolağı (Gold/Platinum üçün) */
+.chip-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.chip-sheen::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: skewX(-20deg);
+  animation: sheen-sweep 3.2s ease-in-out infinite;
+}
+@keyframes sheen-sweep {
+  0% { left: -60%; }
+  55% { left: 130%; }
+  100% { left: 130%; }
+}
+
+/* Hover-də ikon yellənməsi (Silver ulduzu və s.) */
+@keyframes icon-wiggle {
+  0%, 100% { transform: rotate(0deg) scale(1.15); }
+  25% { transform: rotate(-14deg) scale(1.15); }
+  75% { transform: rotate(14deg) scale(1.15); }
+}
+.group:hover .icon-wiggle {
+  animation: icon-wiggle 0.6s ease-in-out;
+}
+
+/* Platinum daşının nəfəs alan parıltısı */
+@keyframes gem-breathe {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(103, 232, 249, 0.5)); }
+  50% { filter: drop-shadow(0 0 10px rgba(103, 232, 249, 0.95)); }
+}
+.gem-breathe {
+  animation: gem-breathe 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-sheen::after,
+  .group:hover .icon-wiggle,
+  .gem-breathe {
+    animation: none;
+  }
+}
+
 /* Səhifə açılış animasiyası */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }
