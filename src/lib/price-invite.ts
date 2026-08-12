@@ -18,14 +18,17 @@ import { CENTER_FAQ_KEYS, parseFaqAnswers } from "@/content/center-faq";
  * yoxdur; edilə bilən yeganə şey öz kartının qiymətini yazmaqdır və hər
  * dəyişiklik jurnala düşür.
  *
- * NİYƏ GÜNDƏ 12: tanımadığın nömrələrə kütləvi eyni-mətnli mesaj WhatsApp-ın
- * spam siqnalıdır; aşağı temp + variantlı mətn + ikitərəfli söhbət nömrəni
- * qoruyur (istifadəçi qərarı, 2026-08-03). Limit alətə tikilib ki, operator
- * qaydanı bilmədən də poza bilməsin.
+ * LİMİT MƏNTİQİ: risk "API banı" deyil, ALICI ŞİKAYƏTLƏRİdir — MARKETING
+ * şablonunu tanımadığından alan "Report spam" basanda nömrənin keyfiyyət
+ * reytinqi düşür, Meta şablonları dayandırır. Ona görə limit tamamilə
+ * qaldırılmır, tədricən artırılır: 12 → 50 (istifadəçi qərarı, 2026-08-12);
+ * keyfiyyət reytinqi yaşıl qalsa 100-ə qaldırıla bilər. Limit alətə tikilib
+ * ki, operator qaydanı bilmədən də poza bilməsin.
  */
 
-/** Gündəlik WhatsApp göndəriş limiti (istifadəçi qərarı: 12). */
-export const WA_DAILY_LIMIT = 12;
+/** Gündəlik WhatsApp göndəriş limiti — env `WA_DAILY_LIMIT` ilə deploy-suz
+ *  dəyişdirilə bilir; default 50 (2026-08-12-yə qədər 12 idi). */
+export const WA_DAILY_LIMIT = Math.max(1, parseInt(process.env.WA_DAILY_LIMIT ?? "", 10) || 50);
 /** Jurnalda göndəriş qeydinin `action` açarı. */
 export const WA_LOG_ACTION = "center:wa_price_invite";
 /** FAQ dəvəti üçün jurnal açarı (2026-08-10 — ikinci kampaniya). */
@@ -35,8 +38,8 @@ export const WA_CARD_LOG_ACTION = "center:wa_card_invite";
 /** Kabinet aktivləşdirmə dəvəti — 2026-08-10, dördüncü kampaniya. */
 export const WA_CABINET_LOG_ACTION = "center:wa_cabinet_invite";
 
-/** Kampaniya növü. Limit HAMISI ÜÇÜN ORTAQDIR — nömrəni qoruyan gündəlik 12
- *  ümumi göndərişə aiddir, mesajın mövzusuna yox. */
+/** Kampaniya növü. Limit HAMISI ÜÇÜN ORTAQDIR — WA_DAILY_LIMIT ümumi
+ *  göndərişə aidir, mesajın mövzusuna yox. */
 export type WaKind = "price" | "faq" | "card" | "cabinet";
 const WA_ACTIONS: Record<WaKind, string> = {
   price: WA_LOG_ACTION,

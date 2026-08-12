@@ -59,7 +59,7 @@ Uzunmüddətli endirim: 3 ay = 5%, 6 ay = 10%, 12 ay = 20%. CRM yalnız PLATINUM
 WHATSAPP (2026-08-dən CANLI):
 - Platformanın rəsmi WhatsApp nömrəsi: +994995801313. Bu nömrəyə yazan mərkəzlərə AI bot cavab verir (səsli mesajları da mətnə çevirib anlayır).
 - Bütün WhatsApp yazışmaları admin/operator panelindəki "WhatsApp söhbətləri" bölməsində görünür; operator/admin oradan əl ilə cavab yaza bilər — əl cavabından sonra bot 30 dəqiqə susur.
-- "WhatsApp dəvətləri" bölməsi: mərkəzlərə 4 növ şablonlu dəvət (Qiymət / FAQ / Kart təsdiqi / Kabinet aktivləşdirmə) platforma nömrəsindən göndərilir; gündəlik ümumi limit 12-dir.
+- "WhatsApp dəvətləri" bölməsi: mərkəzlərə 4 növ şablonlu dəvət (Qiymət / FAQ / Kart təsdiqi / Kabinet aktivləşdirmə) platforma nömrəsindən göndərilir; gündəlik ümumi limit 50-dir (bütün dəvət növləri birlikdə).
 - WhatsApp botunun bilik bazası = "Bot beyni" bölməsi: admin /admin/bot-da redaktə edir, operator /panel/bot-da YALNIZ BAXIR (redaktə istəyini adminə bildirmək lazımdır). Botu sınamaq üçün sınaq linki Bot beyni səhifəsindədir.
 
 OPERATOR PANELİ (https://rentgen.az/panel — yalnız Operator/Admin):
