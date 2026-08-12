@@ -88,9 +88,9 @@ export default async function DoctorsPage({
                 </h2>
               </div>
             </div>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {advantages.map((a) => (
-                <Card key={a.h} className="flex items-start gap-3 p-4">
+                <Card key={a.h} className="flex flex-col gap-2 rounded-2xl p-3.5 sm:flex-row sm:items-start sm:gap-3 sm:p-4">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-iris-glow/10 text-iris-pulse [&>svg]:h-5 [&>svg]:w-5">
                     {a.icon}
                   </span>
@@ -103,7 +103,7 @@ export default async function DoctorsPage({
               {/* CTA card (replaces the old referral form) */}
               <Link
                 href="/giris?role=doctor"
-                className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-iris-pulse to-iris-glow p-4 text-white shadow-[0_0_24px_rgba(60,57,185,0.4)] transition-transform hover:-translate-y-0.5"
+                className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-iris-pulse to-iris-glow p-3.5 text-white sm:p-4 shadow-[0_0_24px_rgba(60,57,185,0.4)] transition-transform hover:-translate-y-0.5"
               >
                 <Send className="h-5 w-5" />
                 <div className="mt-3">
