@@ -7,6 +7,7 @@ import { pickCrossCategoryRandom } from "@/lib/random-services";
 import { PLATFORM_WHATSAPP_DISPLAY, PLATFORM_WHATSAPP_URL } from "@/lib/constants";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
+import { serviceNameRu } from "@/content/services-ru";
 
 export async function SiteFooter() {
   const year = 2026;
@@ -62,7 +63,8 @@ export async function SiteFooter() {
             </p>
             <div className="mt-5 space-y-2 text-sm text-slate-400">
               <p className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-brand-400" /> Bakı, Azərbaycan
+                <MapPin className="h-4 w-4 text-brand-400" />{" "}
+                {locale === "ru" ? "Баку, Азербайджан" : "Bakı, Azərbaycan"}
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-brand-400" /> info@rentgen.az
@@ -108,7 +110,7 @@ export async function SiteFooter() {
                     href={`/xidmetler/${s.slug}`}
                     className="text-sm text-slate-400 transition-colors hover:text-white"
                   >
-                    {s.shortName ?? s.name}
+                    {locale === "ru" ? serviceNameRu(s.name) : (s.shortName ?? s.name)}
                   </Link>
                 </li>
               ))}
