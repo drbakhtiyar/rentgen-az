@@ -272,8 +272,9 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* ============ PEARL İNVERSİYA — imza "hard cut" ============ */}
-      <section className="bg-pearl py-16 text-iris-canvas sm:py-20">
+      {/* ============ MƏRKƏZLƏR — tünd boz inversiya (istifadəçi istəyi:
+           FAQ ilə fərqlənsin deyə bir pillə tünd ton) ============ */}
+      <section className="bg-[#e4e4eb] py-16 text-iris-canvas sm:py-20">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-2xl">
@@ -311,14 +312,17 @@ export default async function HomePage() {
             </div>
           )}
 
-          {/* FAQ */}
-          <div className="mt-14">
-            <h2 className="font-display text-center text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
-              {d.home.faqTitle}
-            </h2>
-            <div className="mt-8">
-              <FaqAccordion items={homeFaq} />
-            </div>
+        </Container>
+      </section>
+
+      {/* ============ FAQ — açıq pearl (mərkəzlərdən fərqli ton) ============ */}
+      <section className="bg-pearl py-16 text-iris-canvas sm:py-20">
+        <Container>
+          <h2 className="font-display text-center text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
+            {d.home.faqTitle}
+          </h2>
+          <div className="mt-8">
+            <FaqAccordion items={homeFaq} />
           </div>
         </Container>
       </section>
