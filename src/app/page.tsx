@@ -7,7 +7,6 @@ import {
   Stethoscope,
   Building2,
   Users,
-  Radiation,
   ScanLine,
   MapPin,
   ShieldCheck,
@@ -312,29 +311,6 @@ export default async function HomePage() {
             </div>
           )}
 
-          {/* Təhlükəsizlik — compliance üslubunda blok */}
-          <div className="mt-14 rounded-3xl bg-white ring-1 ring-ash-2">
-            <div className="grid gap-6 p-8 lg:grid-cols-[auto_1fr] lg:items-center lg:p-10">
-              <div className="flex h-14 w-14 items-center justify-center rounded-[7px] border border-ash-2 text-iris-canvas">
-                <Radiation className="h-7 w-7" />
-              </div>
-              <div>
-                <h2 className="font-display text-2xl font-semibold tracking-tight">
-                  {d.home.safetyTitle}
-                </h2>
-                <p className="mt-3 max-w-3xl text-iris-canvas/70">
-                  {d.home.safetyText}
-                </p>
-                <Link
-                  href="/blog/dental-rentgen-tehlukelidirmi"
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-iris-pulse hover:text-iris-glow"
-                >
-                  {d.home.readMore} <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
           {/* FAQ */}
           <div className="mt-14">
             <h2 className="font-display text-center text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
@@ -433,7 +409,8 @@ export default async function HomePage() {
 }
 
 /* Impilo "Highlighted Metric Block": Iris Glow səth, böyük dəyər Clinical
- * Cyan-da (data = siyan semantikası), kölgəsiz. */
+ * Cyan-da (data = siyan semantikası), kölgəsiz. Hover dinamikası: blok
+ * qalxır, ikon mint-ə keçir, rəqəm siyan parlayış alır (istifadəçi istəyi). */
 function Metric({
   value,
   label,
@@ -444,12 +421,12 @@ function Metric({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl bg-iris-glow/35 p-5 ring-1 ring-iris-border">
-      <div className="flex items-center gap-2 text-pearl/70 [&>svg]:h-4 [&>svg]:w-4">
+    <div className="group rounded-3xl bg-iris-glow/35 p-5 ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:bg-iris-glow/50 hover:ring-clinical/50">
+      <div className="flex items-center gap-2 text-pearl/70 transition-colors duration-300 group-hover:text-white [&>svg]:h-4 [&>svg]:w-4 [&>svg]:transition-all [&>svg]:duration-300 group-hover:[&>svg]:scale-110 group-hover:[&>svg]:text-mint-vital">
         {icon}
         <span className="text-[13px] font-medium">{label}</span>
       </div>
-      <div className="font-display mt-2 text-3xl font-semibold tracking-tight text-clinical sm:text-4xl">
+      <div className="font-display mt-2 text-3xl font-semibold tracking-tight text-clinical transition-all duration-300 group-hover:[text-shadow:0_0_24px_rgba(0,177,255,0.55)] sm:text-4xl">
         {value}
       </div>
     </div>

@@ -1,31 +1,59 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type FaqItem = { question: string; answer: string };
 
+/* Impilo üslubu (2026-08-12): ayrı-ayrı 24px kartlar, nömrə çipi (7px radius),
+ * açıq sual Iris Pulse aksenti alır, "+" ikonu 45° fırlanıb "×" olur, cavab
+ * grid-rows keçidi ilə yumşaq açılır. Hover: haşiyə bənövşəyiyə keçir. */
 export function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [open, setOpen] = React.useState<number | null>(0);
 
   return (
-    <div className="mx-auto max-w-3xl divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <div className="mx-auto flex max-w-3xl flex-col gap-3">
       {items.map((item, i) => {
         const isOpen = open === i;
         return (
-          <div key={i}>
+          <div
+            key={i}
+            className={cn(
+              "overflow-hidden rounded-3xl bg-white ring-1 transition-all duration-300",
+              isOpen
+                ? "ring-iris-veil/60 shadow-[0_16px_44px_-22px_rgba(64,60,213,0.4)]"
+                : "ring-ash-2 hover:ring-iris-veil/40",
+            )}
+          >
             <button
               type="button"
               onClick={() => setOpen(isOpen ? null : i)}
-              className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+              className="group flex w-full items-center gap-4 px-5 py-4 text-left"
               aria-expanded={isOpen}
             >
-              <span className="font-semibold text-ink-900">{item.question}</span>
-              <ChevronDown
+              <span
                 className={cn(
-                  "h-5 w-5 shrink-0 text-brand-500 transition-transform duration-200",
-                  isOpen && "rotate-180",
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] text-xs font-semibold transition-all duration-300",
+                  isOpen
+                    ? "bg-iris-pulse text-white shadow-[0_0_16px_rgba(60,57,185,0.45)]"
+                    : "border border-ash-2 text-iris-glow group-hover:border-iris-veil/50",
+                )}
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span
+                className={cn(
+                  "flex-1 font-semibold transition-colors duration-300",
+                  isOpen ? "text-iris-pulse" : "text-iris-canvas group-hover:text-iris-pulse",
+                )}
+              >
+                {item.question}
+              </span>
+              <Plus
+                className={cn(
+                  "h-5 w-5 shrink-0 transition-transform duration-300",
+                  isOpen ? "rotate-45 text-iris-pulse" : "text-fog-2 group-hover:text-iris-pulse",
                 )}
               />
             </button>
@@ -36,7 +64,7 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
               )}
             >
               <div className="overflow-hidden">
-                <p className="px-5 pb-5 text-sm leading-relaxed text-slate-600">
+                <p className="pb-5 pl-[4.25rem] pr-5 text-sm leading-relaxed text-slate-600">
                   {item.answer}
                 </p>
               </div>

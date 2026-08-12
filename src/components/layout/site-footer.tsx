@@ -41,10 +41,10 @@ export async function SiteFooter() {
   // həm də zamanla bütün xidmət səhifələrinə footer linki paylayır.
   const footerServices = pickCrossCategoryRandom(await getActiveServices(), 6);
   return (
-    <footer className="relative mt-auto overflow-hidden bg-ink-950 text-slate-300">
-      {/* Dizayn v2: yuxarı spektr zolağı */}
-      <div className="bg-spectrum absolute inset-x-0 top-0 h-1" />
-      <div className="pointer-events-none absolute inset-0 bg-grid-dark opacity-40" />
+    <footer className="relative mt-auto overflow-hidden bg-iris-canvas text-pearl/80">
+      {/* Impilo: siyan→bənövşəyi hairline */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-clinical via-iris-veil to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-grid-dark opacity-25" />
       <Container className="relative py-14">
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="lg:col-span-2">
