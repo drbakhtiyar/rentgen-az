@@ -85,13 +85,13 @@ export function HeroVisual({
   return (
     <div
       className={cn(
-        "relative aspect-square w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-ink-950",
+        "relative aspect-square w-full max-w-lg overflow-hidden rounded-3xl bg-iris-shadow ring-1 ring-iris-border",
         className,
       )}
     >
-      <div className="absolute inset-0 bg-grid-dark opacity-40" />
-      <div className="glow absolute left-1/4 top-1/3 h-56 w-56 opacity-40" />
-      <div className="glow-cyan absolute bottom-8 right-6 h-48 w-48 opacity-40" />
+      <div className="absolute inset-0 bg-grid-dark opacity-25" />
+      <div className="absolute left-1/4 top-1/3 h-56 w-56 rounded-full bg-iris-glow/45 blur-[56px]" />
+      <div className="absolute bottom-8 right-6 h-48 w-48 rounded-full bg-clinical/15 blur-[56px]" />
 
       <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full p-2" aria-hidden>
         <defs>
@@ -101,12 +101,12 @@ export function HeroVisual({
             <stop offset="100%" stopColor="rgba(20,45,90,0.06)" />
           </radialGradient>
           <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#5cc6ff" />
-            <stop offset="100%" stopColor="#2ad4e6" />
+            <stop offset="0%" stopColor="#00b1ff" />
+            <stop offset="100%" stopColor="#2ee9ff" />
           </linearGradient>
           <linearGradient id="rayonOn" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="rgba(92,198,255,0.55)" />
-            <stop offset="100%" stopColor="rgba(42,212,230,0.38)" />
+            <stop offset="0%" stopColor="rgba(0,177,255,0.5)" />
+            <stop offset="100%" stopColor="rgba(46,233,255,0.32)" />
           </linearGradient>
           <clipPath id="landClip">
             <path d={VARIANT === "rayons" ? OUTLINE_PATHS.join(" ") : MAINLAND} />
@@ -123,12 +123,12 @@ export function HeroVisual({
         {VARIANT === "rayons" ? (
           <>
             {/* Bütün rayonlar — tünd baza */}
-            <g stroke="rgba(140,200,255,0.22)" strokeWidth="1">
+            <g stroke="rgba(177,166,246,0.28)" strokeWidth="1">
               {RAYON_PATHS.map((r, i) => (
                 <path
                   key={i}
                   d={r.d}
-                  fill={covered.has(r.az) ? "url(#rayonOn)" : "rgba(52,92,150,0.26)"}
+                  fill={covered.has(r.az) ? "url(#rayonOn)" : "rgba(83,80,204,0.22)"}
                   strokeLinejoin="round"
                 />
               ))}
@@ -136,12 +136,12 @@ export function HeroVisual({
             {/* Örtülü rayonların parıltısı */}
             <g filter="url(#softGlow)" opacity="0.5">
               {RAYON_PATHS.filter((r) => covered.has(r.az)).map((r, i) => (
-                <path key={i} d={r.d} fill="none" stroke="#2ad4e6" strokeWidth="1.6" strokeLinejoin="round" />
+                <path key={i} d={r.d} fill="none" stroke="#00b1ff" strokeWidth="1.6" strokeLinejoin="round" />
               ))}
             </g>
             {/* Xarici dəqiq kontur */}
             {OUTLINE_PATHS.map((d, i) => (
-              <path key={i} d={d} fill="none" stroke="url(#edge)" strokeWidth="2.6" strokeLinejoin="round" />
+              <path key={i} d={d} fill="none" stroke="url(#edge)" strokeWidth="2.4" strokeDasharray="12 9" strokeLinecap="round" strokeLinejoin="round" />
             ))}
             {/* Yalnız əsas şəhər etiketləri + Bakı pulsu */}
             {labelMarkers.map((m) => {
@@ -151,21 +151,21 @@ export function HeroVisual({
               return (
                 <g key={m.name}>
                   {hub && (
-                    <circle cx={m.x} cy={m.y} r={r * 2.4} fill="rgba(42,212,230,0.14)">
+                    <circle cx={m.x} cy={m.y} r={r * 2.4} fill="rgba(0,255,170,0.12)">
                       <animate attributeName="r" values={`${r * 2};${r * 3.2};${r * 2}`} dur="3.2s" repeatCount="indefinite" />
                     </circle>
                   )}
-                  <circle cx={m.x} cy={m.y} r={r} fill="#2ad4e6" stroke="#eafcff" strokeWidth={hub ? 2 : 1.1} />
+                  <circle cx={m.x} cy={m.y} r={r} fill="#00ffaa" stroke="#16165c" strokeWidth={hub ? 2 : 1.1} />
                   <text
                     x={left ? m.x - r - 7 : m.x + r + 7}
                     y={m.y + 4 + (LABEL_DY[m.name] ?? 0)}
                     textAnchor={left ? "end" : "start"}
-                    fill="rgba(224,242,255,0.95)"
+                    fill="rgba(244,244,246,0.95)"
                     fontSize="21"
                     fontWeight="600"
-                    fontFamily="system-ui, sans-serif"
+                    fontFamily="var(--font-manrope), system-ui, sans-serif"
                     paintOrder="stroke"
-                    stroke="rgba(4,12,28,0.75)"
+                    stroke="rgba(22,22,92,0.85)"
                     strokeWidth="4"
                   >
                     {m.name}
@@ -219,10 +219,10 @@ export function HeroVisual({
         )}
       </svg>
 
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-sm">
-        <span className="text-[11px] font-medium text-cyan-300">Bütün Azərbaycan üzrə mərkəzlər</span>
-        <span className="flex items-center gap-1.5 text-[11px] text-slate-300">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
+      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl bg-iris-canvas/70 px-3.5 py-2 ring-1 ring-iris-border backdrop-blur-sm">
+        <span className="text-[11px] font-medium text-clinical">Bütün Azərbaycan üzrə mərkəzlər</span>
+        <span className="flex items-center gap-1.5 text-[11px] text-pearl/70">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-vital" />
           {VARIANT === "rayons" ? `${coveredCount} rayon` : `${markers.length} şəhər`}
         </span>
       </div>

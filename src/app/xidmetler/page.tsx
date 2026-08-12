@@ -10,6 +10,7 @@ import {
   getServicePriceRanges,
 } from "@/lib/queries";
 import { serviceNameRu, categoryRu } from "@/content/services-ru";
+import { SERVICE_ICON_URLS } from "@/lib/service-icon-map";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
@@ -58,6 +59,7 @@ export default async function ServicesPage() {
           : s.description,
         icon: s.icon,
         iconUrl: s.iconUrl,
+        bigIcon: SERVICE_ICON_URLS[s.slug] ?? null,
         category: s.category, // AZ value = the filter key
         count: counts[s.slug] ?? 0,
         priceMin: priceRanges[s.slug]?.min ?? null,
