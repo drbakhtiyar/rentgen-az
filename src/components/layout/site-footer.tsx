@@ -42,6 +42,8 @@ export async function SiteFooter() {
   const footerServices = pickCrossCategoryRandom(await getActiveServices(), 6);
   return (
     <footer className="relative mt-auto overflow-hidden bg-ink-950 text-slate-300">
+      {/* Dizayn v2: yuxarı spektr zolağı */}
+      <div className="bg-spectrum absolute inset-x-0 top-0 h-1" />
       <div className="pointer-events-none absolute inset-0 bg-grid-dark opacity-40" />
       <Container className="relative py-14">
         <div className="grid gap-10 lg:grid-cols-5">

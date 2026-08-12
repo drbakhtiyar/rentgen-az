@@ -53,11 +53,12 @@ export function SectionHeading({
       )}
     >
       {eyebrow && (
-        <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-700 ring-1 ring-brand-100">
+        <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-50 to-violet-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-700 ring-1 ring-brand-100">
+          <span className="h-1.5 w-1.5 rounded-full bg-spectrum" />
           {eyebrow}
         </span>
       )}
-      <h2 className="font-display mt-4 text-3xl font-bold text-ink-900 sm:text-4xl">
+      <h2 className="font-display mt-4 text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
         {title}
       </h2>
       {description && (

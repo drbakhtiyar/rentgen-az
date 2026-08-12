@@ -147,6 +147,136 @@ body {
   color: transparent;
 }
 
+/* ================================================================
+   DİZAYN v2 — "Canlı və cəsarətli" (2026-08-12). Yalnız ictimai sayt
+   bu utilitləri işlədir; panellər köhnə tokenlərdə qalır.
+   ================================================================ */
+
+/* Çoxrəngli "spektr" qradiyenti — başlıq vurğuları üçün */
+.text-spectrum {
+  background: linear-gradient(
+    92deg,
+    var(--color-cyan-400) 0%,
+    var(--color-brand-500) 30%,
+    #8b5cf6 62%,
+    #e879f9 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: spectrum-shift 6s ease-in-out infinite alternate;
+}
+@keyframes spectrum-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* Canlı qradiyent fon — CTA / düymələr */
+.bg-spectrum {
+  background: linear-gradient(
+    95deg,
+    var(--color-brand-600),
+    #7c3aed 45%,
+    #c026d3 80%,
+    var(--color-brand-600)
+  );
+  background-size: 260% 100%;
+  animation: spectrum-shift 8s ease-in-out infinite alternate;
+}
+
+/* Hero üçün tünd "mesh" fon — rəngli blob-larla */
+.bg-mesh-dark {
+  background:
+    radial-gradient(52rem 30rem at 8% -10%, rgba(124, 58, 237, 0.32), transparent 60%),
+    radial-gradient(44rem 28rem at 100% 4%, rgba(34, 211, 238, 0.2), transparent 55%),
+    radial-gradient(40rem 26rem at 62% 108%, rgba(192, 38, 211, 0.18), transparent 60%),
+    var(--color-ink-950);
+}
+
+/* Açıq bölmələr üçün yumşaq rəngli mesh */
+.bg-mesh-light {
+  background:
+    radial-gradient(46rem 26rem at 0% 0%, rgba(34, 211, 238, 0.1), transparent 55%),
+    radial-gradient(42rem 26rem at 100% 18%, rgba(139, 92, 246, 0.1), transparent 55%),
+    radial-gradient(38rem 24rem at 50% 110%, rgba(31, 122, 255, 0.08), transparent 60%),
+    #ffffff;
+}
+
+/* Üzən rəngli bloblar (hero dekoru) */
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(24px, -18px) scale(1.08); }
+  66% { transform: translate(-16px, 14px) scale(0.95); }
+}
+.blob {
+  border-radius: 9999px;
+  filter: blur(56px);
+  animation: blob-drift 14s ease-in-out infinite;
+}
+.blob-violet { background: rgba(139, 92, 246, 0.4); }
+.blob-cyan { background: rgba(34, 211, 238, 0.35); }
+.blob-magenta { background: rgba(217, 70, 239, 0.3); }
+
+/* Sonsuz sürüşən lent (xidmət çipləri) */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee-x 36s linear infinite;
+}
+.animate-marquee:hover { animation-play-state: paused; }
+
+/* Kart qalxması — canlı hover */
+.card-lift {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+.card-lift:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 24px 60px -20px rgba(31, 122, 255, 0.35);
+}
+
+/* Qradiyent haşiyəli kart (bento vurğusu) */
+.ring-spectrum {
+  position: relative;
+  background: white;
+  border-radius: var(--radius-3xl);
+}
+.ring-spectrum::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(120deg, var(--color-cyan-400), var(--color-brand-500), #8b5cf6, #e879f9);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Səhifə açılış animasiyası */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .text-spectrum,
+  .bg-spectrum,
+  .blob,
+  .animate-marquee,
+  .animate-fade-up {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scanline::after,
   .animate-floaty { animation: none; }

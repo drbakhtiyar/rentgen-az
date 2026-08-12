@@ -45,7 +45,7 @@ export function HeaderClient({
       className={cn(
         "sticky top-0 z-50 transition-all duration-300",
         scrolled
-          ? "border-b border-slate-200/70 bg-white/85 backdrop-blur-xl"
+          ? "border-b border-slate-200/60 bg-white/80 shadow-[0_8px_30px_-18px_rgba(16,31,70,0.35)] backdrop-blur-xl"
           : "bg-transparent",
       )}
     >
@@ -96,7 +96,11 @@ export function HeaderClient({
               <ButtonLink href="/giris" size="sm" variant="ghost">
                 {cta.login}
               </ButtonLink>
-              <ButtonLink href="/merkezler-ucun" size="sm" variant="primary">
+              <ButtonLink
+                href="/merkezler-ucun"
+                size="sm"
+                className="bg-spectrum border-0 text-white shadow-[0_10px_28px_-10px_rgba(124,58,237,0.7)] hover:opacity-95"
+              >
                 {cta.addCenter}
               </ButtonLink>
             </>

@@ -56,17 +56,19 @@ export function PageHeader({
           <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/80 to-ink-950/25" />
         </>
       )}
-      <div className="absolute inset-0 bg-grid-dark opacity-40" />
-      <div className="glow absolute -left-20 -top-10 h-72 w-72 opacity-40" />
-      <div className="glow-cyan absolute right-0 top-10 h-72 w-72 opacity-30" />
+      {!bgImageUrl && <div className="absolute inset-0 bg-mesh-dark" />}
+      <div className="absolute inset-0 bg-grid-dark opacity-30" />
+      <div className="blob blob-violet absolute -left-24 -top-16 h-80 w-80 opacity-70" />
+      <div className="blob blob-cyan absolute -right-10 top-6 h-72 w-72 opacity-60" />
       <Container className="relative py-12 lg:py-16">
         {breadcrumbs && <Breadcrumbs items={breadcrumbs} />}
         {eyebrow && (
-          <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-cyan-300">
+          <span className="animate-fade-up mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-cyan-300 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-spectrum" />
             {eyebrow}
           </span>
         )}
-        <h1 className="font-display mt-4 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+        <h1 className="font-display animate-fade-up delay-100 mt-4 max-w-3xl text-3xl font-extrabold leading-[1.08] tracking-tight sm:text-4xl lg:text-[3.4rem]">
           {title}
         </h1>
         {description && (
