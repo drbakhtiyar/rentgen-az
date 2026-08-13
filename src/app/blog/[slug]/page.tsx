@@ -92,16 +92,17 @@ export default async function BlogPostPage({
         <Container>
           <article className="mx-auto max-w-3xl">
             {post.coverImage && (
-              <div className="relative mb-10 aspect-[3/2] w-full overflow-hidden rounded-2xl bg-slate-100">
-                <Image
-                  src={post.coverImage}
-                  alt={post.title}
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 768px"
-                  className="object-cover"
-                />
-              </div>
+              /* Örtük TAM göstərilir — sabit çərçivə + object-cover kənarları
+                 kəsirdi (2026-08-13 istifadəçi düzəlişi). Şəkil öz nisbətində. */
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                width={1600}
+                height={840}
+                priority
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="mb-10 h-auto w-full rounded-2xl bg-slate-100"
+              />
             )}
             <div
               className="prose-rx"
