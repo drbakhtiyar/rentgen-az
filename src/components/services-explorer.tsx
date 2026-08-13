@@ -76,40 +76,43 @@ export function ServicesExplorer({
         </div>
       )}
 
-      {/* Premium ikonlu xidmətlər — tam-tünd tile, ad şəklin içində
-          (istifadəçinin bəyəndiyi referans vərəqi üslubu, 2026-08-13) */}
+      {/* Premium ikonlu xidmətlər — ağ altlıqlı kart: BÖYÜK kvadrat ikon +
+          altında ad/qiymət (2026-08-14: tam-tünd tile-da qiymət itirdi,
+          istifadəçi köhnə şablona qayıtmağı istədi, ikon isə böyüdüldü). */}
       {withIcon.length > 0 && (
-        <div className="mt-6 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-6 xl:grid-cols-8">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
           {withIcon.map((s) => (
             <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
-              <div className="group relative aspect-square overflow-hidden rounded-3xl bg-[#0d1330] ring-1 ring-iris-border/40 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_64px_-24px_rgba(64,60,213,0.6)] hover:ring-clinical/50">
-                <Image
-                  src={s.bigIcon!}
-                  alt={s.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.07]"
-                />
-                {/* Alt qaranlıq keçid — yazı oxunsun */}
-                <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#070b20] via-[#070b20]/60 to-transparent" />
-                {s.count > 0 && (
-                  <span className="absolute right-1.5 top-1.5 rounded-full bg-[#070b20]/50 px-1.5 py-0.5 text-[9px] font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
-                    {s.count} {labels.centerWord}
-                  </span>
-                )}
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1.5 p-2">
+              {/* Altlıq Impilo tonundadır (iris-shadow) — şəkillə vahid, ağ
+                  ləkə yaratmır; qiymət siyan «data» rəngində qabarır. */}
+              <div className="group h-full overflow-hidden rounded-3xl bg-iris-shadow ring-1 ring-iris-border/50 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_64px_-24px_rgba(64,60,213,0.55)] hover:ring-clinical/50">
+                <div className="relative aspect-square overflow-hidden bg-[#0d1330]">
+                  <Image
+                    src={s.bigIcon!}
+                    alt={s.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                  />
+                  {s.count > 0 && (
+                    <span className="absolute right-2 top-2 rounded-full bg-[#070b20]/60 px-2 py-0.5 text-[10px] font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
+                      {s.count} {labels.centerWord}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2 border-t border-iris-border/40 p-3.5">
                   <div className="min-w-0">
-                    <h3 className="font-display text-xs font-semibold leading-snug tracking-tight text-white">
+                    <h3 className="font-display truncate text-[15px] font-semibold tracking-tight text-white">
                       {s.name}
                     </h3>
                     {priceLabel(s.priceMin, s.priceMax) && (
-                      <p className="mt-0.5 text-[10px] font-medium text-clinical-soft">
+                      <p className="mt-0.5 text-sm font-semibold text-clinical">
                         ~ {priceLabel(s.priceMin, s.priceMax)}
                       </p>
                     )}
                   </div>
-                  <span className="mb-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/25 backdrop-blur-sm transition-all duration-300 group-hover:bg-clinical group-hover:ring-clinical group-hover:translate-x-0.5">
-                    <ArrowRight className="h-3 w-3" />
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-white ring-1 ring-iris-border transition-all duration-300 group-hover:bg-clinical group-hover:ring-clinical group-hover:translate-x-0.5">
+                    <ArrowRight className="h-4 w-4" />
                   </span>
                 </div>
               </div>
