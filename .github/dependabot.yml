@@ -1,0 +1,18 @@
+# Asılılıq təhlükəsizliyi (2026-08-14): həftəlik npm və GitHub Actions
+# yeniləmələri. Təhlükəsizlik yeniləmələri GitHub tərəfindən avtomatik açılır.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Xırda yeniləmələr bir PR-da toplanır — səs-küy azalsın
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

@@ -41,8 +41,9 @@ export async function GET(
     try {
       const otp = await createOtp(ADMIN_2FA_KEY);
       if (otp.ok) {
-        // Safety net so the admin can recover the code from server logs.
-        console.log(`[admin-2fa] giriş kodu: ${otp.code}`);
+        // Kod QƏSDƏN loglanmır (2026-08-14 təhlükəsizlik auditi): Vercel
+        // loglarına çıxışı olan hər kəs 5 dəqiqəlik admin kodunu görürdü.
+        // Çatdırılma kanalı yalnız e-poçtdur.
         await sendNotificationEmail({
           subject: "[rentgen.az] Admin giriş kodu",
           fields: { Kod: otp.code, Etibarlıdır: "5 dəqiqə" },
