@@ -99,6 +99,7 @@ export const adminNav: NavItem[] = [
   { label: "Bot beyni", href: "/admin/bot", icon: <Bot /> },
   { label: "WhatsApp dəvətləri", href: "/admin/whatsapp", icon: <MessageCircle /> },
   { label: "Mərkəzlər", href: "/admin/merkezler", icon: <Building2 /> },
+  { label: "Mərkəz statistikası", href: "/admin/merkez-statistika", icon: <BarChart3 /> },
   { label: "Pasiyentlər", href: "/admin/pasiyentler", icon: <Users /> },
   { label: "Həkimlər", href: "/admin/hekimler", icon: <Stethoscope /> },
   { label: "Asistentlər", href: "/admin/asistentler", icon: <UserCog /> },
