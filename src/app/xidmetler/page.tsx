@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
+import { ServicesHeroVisual } from "@/components/services-hero-visual";
 import { JsonLd } from "@/components/ui/json-ld";
 import { SymptomSuggest } from "@/components/symptom-suggest";
 import { ServicesExplorer } from "@/components/services-explorer";
@@ -94,6 +95,7 @@ export default async function ServicesPage() {
         title={d.title}
         description={d.description}
         breadcrumbs={[{ name: d.title }]}
+        visual={<ServicesHeroVisual />}
       />
 
       <Section className="pt-10 pb-16 sm:pt-10 lg:pt-10">

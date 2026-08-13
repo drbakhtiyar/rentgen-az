@@ -357,6 +357,19 @@ body {
   }
 }
 
+
+/* ---- /xidmetler hero vizualı (2026-08-14) ---- */
+@keyframes halo-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+@keyframes hero-scan {
+  0% { top: -20%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 105%; opacity: 0; }
+}
+
 /* Səhifə açılış animasiyası */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }

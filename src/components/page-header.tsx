@@ -38,6 +38,7 @@ export function PageHeader({
   bgImageUrl,
   visualUrl,
   visualAlt,
+  visual,
 }: {
   eyebrow?: string;
   title: string;
@@ -50,6 +51,8 @@ export function PageHeader({
   /** Sağdakı boş sahəyə oturan mövzu şəkli (xidmət ikonu) — 2026-08-14. */
   visualUrl?: string;
   visualAlt?: string;
+  /** Hazır vizual komponent (animasiyalı hero) — visualUrl-dən üstündür. */
+  visual?: React.ReactNode;
 }) {
   return (
     <section className="relative overflow-hidden bg-observatory text-white">
@@ -66,7 +69,7 @@ export function PageHeader({
       )}
       <div className="absolute inset-0 bg-grid-dark opacity-25" />
       <Container className="relative py-12 lg:py-16">
-        <div className={visualUrl ? "lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12" : undefined}>
+        <div className={visual || visualUrl ? "lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12" : undefined}>
           <div className="min-w-0">
             {breadcrumbs && <Breadcrumbs items={breadcrumbs} />}
             {eyebrow && (
@@ -87,7 +90,10 @@ export function PageHeader({
 
           {/* Mövzu şəkli — yalnız geniş ekranda (mobildə başlıq sahəsi
               uzanmasın). Kartlarla eyni dil: 24px radius, iris haşiyə. */}
-          {visualUrl && (
+          {visual && (
+            <div className="animate-fade-up delay-300 mt-8 hidden lg:mt-0 lg:block">{visual}</div>
+          )}
+          {!visual && visualUrl && (
             <div className="animate-fade-up delay-300 mt-8 hidden lg:mt-0 lg:block">
               <div className="relative h-64 w-64 overflow-hidden rounded-3xl bg-[#0d1330] ring-1 ring-iris-border shadow-[0_28px_64px_-24px_rgba(64,60,213,0.6)] xl:h-72 xl:w-72">
                 <Image
