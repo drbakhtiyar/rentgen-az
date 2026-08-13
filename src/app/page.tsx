@@ -47,7 +47,7 @@ export const revalidate = 300;
 export default async function HomePage() {
   const locale = await getLocale();
   const [centers, posts, stats, counts, , allServices, coveredCities] = await Promise.all([
-    getFeaturedCenters(6),
+    getFeaturedCenters(12),
     getPublishedPosts(3, locale),
     getPlatformStats(),
     countApprovedCentersByService(),
@@ -58,7 +58,12 @@ export default async function HomePage() {
   const d = getDict(locale);
   const homeFaq = getHomeFaq(locale);
 
-  const ratings = await getRatingsForCenters(centers.map((c) => c.id));
+  // 3 mərkəz göstərilir (istifadəçi qərarı, 2026-08-13): hovuzda 3-dən çox
+  // tövsiyəli varsa, hər renderdə TƏSADÜFİ 3-ü seçilir (revalidate=300 —
+  // rotasiya ~5 dəqiqədən bir yenilənir).
+  const shown = [...centers].sort(() => Math.random() - 0.5).slice(0, 3);
+
+  const ratings = await getRatingsForCenters(shown.map((c) => c.id));
 
   // Hər ziyarətdə TƏSADÜFİ 4 xidmət — hər biri FƏRQLİ kateqoriyadan
   // (istifadəçi qərarı). Ortaq məntiq: src/lib/random-services.ts.
@@ -293,13 +298,10 @@ export default async function HomePage() {
             </ButtonLink>
           </div>
 
-          {centers.length > 0 ? (
+          {shown.length > 0 ? (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Mobil: yalnız ilk 3 kart (skrol yükü azalsın); sm+ hamısı (6) */}
-              {centers.map((c, i) => (
-                <div key={c.id} className={i >= 3 ? "hidden sm:block" : ""}>
-                  <CenterCard center={c} rating={ratings[c.id]} />
-                </div>
+              {shown.map((c) => (
+                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
               ))}
             </div>
           ) : (
