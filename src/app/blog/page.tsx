@@ -70,7 +70,7 @@ export default async function BlogPage() {
                   {post.coverImage && (
                     <a
                       href={`/blog/${post.slug}`}
-                      className="relative block aspect-[3/2] w-full overflow-hidden bg-slate-100"
+                      className="relative block aspect-video w-full overflow-hidden bg-slate-100"
                       tabIndex={-1}
                       aria-hidden
                     >
@@ -79,7 +79,7 @@ export default async function BlogPage() {
                         alt={post.title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                        className="object-cover object-left transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                     </a>
                   )}

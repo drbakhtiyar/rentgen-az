@@ -353,13 +353,13 @@ export default async function HomePage() {
                 <Link key={p.id} href={`/blog/${p.slug}`}>
                   <article className="group h-full overflow-hidden rounded-3xl bg-iris-shadow ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
                     {p.coverImage && (
-                      <div className="relative aspect-[1200/630] overflow-hidden">
+                      <div className="relative aspect-video overflow-hidden">
                         <Image
                           src={p.coverImage}
                           alt={p.title}
                           fill
                           sizes="(max-width: 768px) 100vw, 33vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="object-cover object-left transition-transform duration-500 group-hover:scale-105"
                         />
                       </div>
                     )}
