@@ -20,7 +20,7 @@ export const revalidate = 300;
 export const metadata: Metadata = buildMetadata({
   title: "Rentgen xidmətləri — bütün rentgen və tomoqrafiya növləri",
   description:
-    "Bakıda bütün rentgen növləri: kəllə, ağciyər, onurğa, əl-ayaq, dental rentgen, KT (kompüter tomoqrafiya), MRT, mammoqrafiya, densitometriya, floroskopiya və USM. Qiymətləri müqayisə et, mərkəz tap.",
+    "Azərbaycanda bütün rentgen növləri: kəllə, ağciyər, onurğa, əl-ayaq, dental rentgen, KT (kompüter tomoqrafiya), MRT, mammoqrafiya, densitometriya, floroskopiya və USM. Qiymətləri müqayisə et, mərkəz tap.",
   path: "/xidmetler",
   keywords: [
     "rentgen növləri",

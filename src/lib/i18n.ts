@@ -572,9 +572,9 @@ const az: Dict = {
   },
   services: {
     eyebrow: "Görüntüləmə xidmətləri",
-    title: "Dental rentgen və tomoqrafiya xidmətləri",
+    title: "Rentgen, tomoqrafiya və USM xidmətləri",
     description:
-      "Diaqnostika və müalicə planlaması üçün lazım olan bütün görüntüləmə növləri — hər biri üçün təsdiqlənmiş mərkəzləri tapın.",
+      "Rentgen, KT, MRT, USM, mammoqrafiya, densitometriya və dental tomoqrafiya — 112 görüntüləmə xidməti üzrə təsdiqlənmiş mərkəzləri tapın, qiymətləri müqayisə edin.",
     categorySuffix: "xidmətləri",
     centerWord: "mərkəz",
     more: "Ətraflı və mərkəzlər",
@@ -1110,9 +1110,9 @@ const ru: Dict = {
   },
   services: {
     eyebrow: "Диагностические услуги",
-    title: "Услуги стоматологического рентгена и томографии",
+    title: "Рентген, томография и УЗИ: все услуги",
     description:
-      "Все виды визуализации для диагностики и планирования лечения — найдите проверенные центры для каждой.",
+      "Рентген, КТ, МРТ, УЗИ, маммография, денситометрия и стоматологическая томография — 112 услуг визуализации: найдите проверенные центры и сравните цены.",
     categorySuffix: "— услуги",
     centerWord: "центр.",
     more: "Подробнее и центры",

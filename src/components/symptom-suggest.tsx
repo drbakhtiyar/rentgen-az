@@ -33,7 +33,7 @@ export function SymptomSuggest({ ru }: { ru: boolean }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder={ru ? "Напр.: имплант, боль в зубе, брекеты…" : "Məs: implant, diş ağrısı, breket…"}
+          placeholder={ru ? "Напр.: боль в пояснице, кашель, боль в колене…" : "Məs: bel ağrısı, öskürək, diz ağrısı…"}
           className="h-11 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm"
         />
         <button
