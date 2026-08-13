@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CheckCircle2, ArrowRight, ListChecks, HelpCircle } from "lucide-react";
 import { Container, Section, SectionHeading } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
+import { SERVICE_ICON_URLS } from "@/lib/service-icon-map";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { ServiceIcon } from "@/components/ui/service-icon";
@@ -105,6 +106,8 @@ export default async function ServiceDetailPage({
         eyebrow={displayCategory || undefined}
         title={displayName}
         description={content.intro}
+        visualUrl={SERVICE_ICON_URLS[slug]}
+        visualAlt={displayName}
         breadcrumbs={[
           { name: ru ? "Услуги" : "Xidmətlər", href: "/xidmetler" },
           { name: shortName },
