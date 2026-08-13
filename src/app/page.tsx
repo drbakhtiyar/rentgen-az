@@ -351,7 +351,7 @@ export default async function HomePage() {
             <div className="mt-10 grid gap-6 md:grid-cols-3">
               {posts.map((p) => (
                 <Link key={p.id} href={`/blog/${p.slug}`}>
-                  <article className="group h-full overflow-hidden rounded-3xl bg-iris-shadow ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
+                  <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-iris-shadow ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
                     {p.coverImage && (
                       <div className="relative aspect-video overflow-hidden">
                         <Image
@@ -363,7 +363,7 @@ export default async function HomePage() {
                         />
                       </div>
                     )}
-                    <div className="p-6">
+                    <div className="flex flex-1 flex-col p-6">
                       <p className="text-xs font-medium text-clinical-soft">
                         {formatDateAz(p.publishedAt)}
                       </p>
@@ -375,7 +375,7 @@ export default async function HomePage() {
                           {p.excerpt}
                         </p>
                       )}
-                      <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-clinical">
+                      <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-medium text-clinical">
                         {d.home.read} <ArrowRight className="h-4 w-4" />
                       </span>
                     </div>
