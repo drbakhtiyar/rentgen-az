@@ -1,0 +1,49 @@
+name: CodeQL
+
+# Statik təhlükəsizlik analizi (Faza 1, 2026-08-14). Nəticələr repo-nun
+# Security → Code scanning bölməsinə düşür. Prisma/Next.js kodunda
+# injection, təhlükəsiz data axını və auth problemlərini axtarır.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Hər bazar 03:00 UTC — yeni zəiflik qaydaları üçün təkrar tarama
+    - cron: "0 3 * * 0"
+  workflow_dispatch: {}
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          # security-extended: standart dəstdən daha geniş qayda toplusu
+          queries: security-extended
+          # Generasiya olunan Prisma client və build çıxışı analiz olunmur
+          config: |
+            paths-ignore:
+              - src/generated/**
+              - .next/**
+              - node_modules/**
+              - .claude/skills/**
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
