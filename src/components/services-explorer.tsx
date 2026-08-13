@@ -79,7 +79,7 @@ export function ServicesExplorer({
       {/* Premium ikonlu xidmətlər — tam-tünd tile, ad şəklin içində
           (istifadəçinin bəyəndiyi referans vərəqi üslubu, 2026-08-13) */}
       {withIcon.length > 0 && (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="mt-6 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-6 xl:grid-cols-8">
           {withIcon.map((s) => (
             <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
               <div className="group relative aspect-square overflow-hidden rounded-3xl bg-[#0d1330] ring-1 ring-iris-border/40 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_64px_-24px_rgba(64,60,213,0.6)] hover:ring-clinical/50">
@@ -93,23 +93,23 @@ export function ServicesExplorer({
                 {/* Alt qaranlıq keçid — yazı oxunsun */}
                 <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#070b20] via-[#070b20]/60 to-transparent" />
                 {s.count > 0 && (
-                  <span className="absolute right-2 top-2 rounded-full bg-[#070b20]/50 px-2 py-0.5 text-[10px] font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
+                  <span className="absolute right-1.5 top-1.5 rounded-full bg-[#070b20]/50 px-1.5 py-0.5 text-[9px] font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
                     {s.count} {labels.centerWord}
                   </span>
                 )}
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3">
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1.5 p-2">
                   <div className="min-w-0">
-                    <h3 className="font-display text-sm font-semibold leading-snug tracking-tight text-white">
+                    <h3 className="font-display text-xs font-semibold leading-snug tracking-tight text-white">
                       {s.name}
                     </h3>
                     {priceLabel(s.priceMin, s.priceMax) && (
-                      <p className="mt-0.5 text-xs font-medium text-clinical-soft">
+                      <p className="mt-0.5 text-[10px] font-medium text-clinical-soft">
                         ~ {priceLabel(s.priceMin, s.priceMax)}
                       </p>
                     )}
                   </div>
-                  <span className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/25 backdrop-blur-sm transition-all duration-300 group-hover:bg-clinical group-hover:ring-clinical group-hover:translate-x-0.5">
-                    <ArrowRight className="h-3.5 w-3.5" />
+                  <span className="mb-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/25 backdrop-blur-sm transition-all duration-300 group-hover:bg-clinical group-hover:ring-clinical group-hover:translate-x-0.5">
+                    <ArrowRight className="h-3 w-3" />
                   </span>
                 </div>
               </div>
