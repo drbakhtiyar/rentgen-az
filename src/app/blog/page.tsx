@@ -4,6 +4,7 @@ import { Container, Section } from "@/components/ui/container";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
+import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { JsonLd } from "@/components/ui/json-ld";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getPublishedPosts } from "@/lib/queries";
@@ -47,6 +48,7 @@ export default async function BlogPage() {
         title={t.title}
         description={t.description}
         breadcrumbs={[{ name: t.title }]}
+        visual={<PageHeroVisual src={PAGE_HERO.blog} alt={t.title} />}
       />
 
       <Section>

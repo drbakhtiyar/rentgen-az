@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Stethoscope, Search, ShieldCheck, Clock, Users, Send, ArrowRight } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
+import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
@@ -70,6 +71,7 @@ export default async function DoctorsPage({
         title={t.title}
         description={t.description}
         breadcrumbs={[{ name: t.title }]}
+        visual={<PageHeroVisual src={PAGE_HERO.doctors} alt={t.title} />}
       >
         <ButtonLink href="/giris?role=doctor" variant="primary">
           {fd.registerCta} <ArrowRight className="h-4 w-4" />

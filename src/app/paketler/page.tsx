@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
+import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buildMetadata } from "@/lib/seo";
@@ -287,6 +288,7 @@ export default async function PackagesPage() {
         title={t.title}
         description={t.description}
         breadcrumbs={[{ name: t.crumb }]}
+        visual={<PageHeroVisual src={PAGE_HERO.pricing} alt={t.title} />}
       />
 
       <Section>

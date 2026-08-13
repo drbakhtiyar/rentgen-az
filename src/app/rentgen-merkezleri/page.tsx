@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Building2 } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
+import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { SearchPanel } from "@/components/search-panel";
 import { CentersExplorer } from "@/components/map/centers-explorer";
 import { TrackSearch } from "@/components/centers/track-search";
@@ -141,6 +142,7 @@ export default async function CentersPage({
         title={d.centers.title}
         description={d.centers.description}
         breadcrumbs={[{ name: d.centers.title }]}
+        visual={<PageHeroVisual src={PAGE_HERO.centers} alt={d.centers.title} />}
       />
 
       <div className="border-b border-slate-200 bg-white">

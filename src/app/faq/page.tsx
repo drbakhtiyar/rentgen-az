@@ -1,5 +1,6 @@
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
+import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { FaqSections } from "@/components/faq-sections";
 import { JsonLd } from "@/components/ui/json-ld";
 import { getFaqSections, getAllFaq } from "@/content/faq";
@@ -48,6 +49,7 @@ export default async function FaqPage() {
           { name: "Ana səhifə", href: "/" },
           { name: t.title },
         ]}
+        visual={<PageHeroVisual src={PAGE_HERO.faq} alt={t.title} />}
       />
       <Section>
         <Container>
