@@ -33,4 +33,12 @@ export const SERVICE_ICON_URLS: Record<string, string> = {
   "paranazal-sinuslarin-rentgeni": `${BLOB}/paranazal-sinuslarin-rentgeni.png`,
   "temporomandibulyar-oynaq-tmj-rentgeni": `${BLOB}/temporomandibulyar-oynaq-tmj-rentgeni.png`,
   "mastoid-rentgeni": `${BLOB}/mastoid-rentgeni.png`,
+  "barmaq-rentgeni": `${BLOB}/barmaq-rentgeni.png`,
+  "bilek-rentgeni": `${BLOB}/bilek-rentgeni.png`,
+  "el-rentgeni": `${BLOB}/el-rentgeni.png`,
+  "dirsek-rentgeni": `${BLOB}/dirsek-rentgeni.png`,
+  "bud-dexa": `${BLOB}/bud-dexa.png`,
+  "bel-dexa": `${BLOB}/bel-dexa.png`,
+  "tam-beden-dexa": `${BLOB}/tam-beden-dexa.png`,
+  "sumuk-mineral-sixligi-olculmesi-dexa": `${BLOB}/sumuk-mineral-sixligi-olculmesi-dexa.png`,
 };
