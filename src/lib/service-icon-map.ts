@@ -19,4 +19,6 @@ export const SERVICE_ICON_URLS: Record<string, string> = {
   "burun-sumukleri-rentgeni": `${BLOB}/burun-sumukleri-rentgeni.png`,
   "uz-sumukleri-rentgeni": `${BLOB}/uz-sumukleri-rentgeni.png`,
   "goz-yuvasi-orbita-rentgeni": `${BLOB}/goz-yuvasi-orbita-rentgeni.png`,
+  "alt-cene-rentgeni": `${BLOB}/alt-cene-rentgeni.png`,
+  "ust-cene-rentgeni": `${BLOB}/ust-cene-rentgeni.png`,
 };
