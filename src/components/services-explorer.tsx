@@ -92,7 +92,9 @@ export function ServicesExplorer({
                     alt={s.name}
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                    /* Sakit vəziyyətdə ağ-qara, hover-də rənglənir
+                       (istifadəçi qərarı, 2026-08-14) */
+                    className="object-cover grayscale transition-all duration-500 group-hover:scale-[1.06] group-hover:grayscale-0"
                   />
                   {s.count > 0 && (
                     <span className="absolute right-2 top-2 rounded-full bg-[#070b20]/60 px-2 py-0.5 text-[10px] font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
