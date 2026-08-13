@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { CheckCircle2, ArrowRight, ListChecks, HelpCircle } from "lucide-react";
 import { Container, Section, SectionHeading } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
@@ -148,9 +149,22 @@ export default async function ServiceDetailPage({
 
             <aside className="space-y-6">
               <Card className="p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
-                  <ServiceIcon name={service.icon} url={service.iconUrl} className="h-6 w-6" />
-                </div>
+                {SERVICE_ICON_URLS[slug] ? (
+                  /* Premium anatomik ikon (2026-08-14) — eyni 48px çərçivədə */
+                  <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-[#0d1330] ring-1 ring-iris-border">
+                    <Image
+                      src={SERVICE_ICON_URLS[slug]}
+                      alt={displayName}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+                    <ServiceIcon name={service.icon} url={service.iconUrl} className="h-6 w-6" />
+                  </div>
+                )}
                 <h3 className="font-display mt-4 text-base font-bold text-ink-900">
                   {t.whenNeeded}
                 </h3>
