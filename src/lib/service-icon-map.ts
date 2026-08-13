@@ -15,4 +15,8 @@ export const SERVICE_ICON_URLS: Record<string, string> = {
   "ayaq-rentgeni": `${BLOB}/ayaq-rentgeni.png`,
   "ayaq-barmaqlari-rentgeni": `${BLOB}/ayaq-barmaqlari-rentgeni.png`,
   "daban-rentgeni": `${BLOB}/daban-rentgeni.png`,
+  "kelle-rentgeni": `${BLOB}/kelle-rentgeni.png`,
+  "burun-sumukleri-rentgeni": `${BLOB}/burun-sumukleri-rentgeni.png`,
+  "uz-sumukleri-rentgeni": `${BLOB}/uz-sumukleri-rentgeni.png`,
+  "goz-yuvasi-orbita-rentgeni": `${BLOB}/goz-yuvasi-orbita-rentgeni.png`,
 };
