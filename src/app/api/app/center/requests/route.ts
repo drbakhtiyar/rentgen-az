@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { getAppCenterForPhone } from "@/lib/app-catalog";
 import { doctorName } from "@/lib/utils";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,10 @@ function sizeLabel(n: number): string {
 export async function GET(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // Mərkəzin sorğuları — nömrə ilə enumerasiya qorunması.
+  const rl = await rateLimit("app:centerreq", clientIp(req), 40, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   const phone = new URL(req.url).searchParams.get("phone") ?? "";
   if (nationalDigits(phone).length < 7) {

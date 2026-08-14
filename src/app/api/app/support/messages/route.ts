@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { resolveUserIdByPhone } from "@/lib/app-catalog";
 import { appFetchSupport } from "@/lib/app-chat";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,11 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // Şəxsi yazışmadır: app açarı ilə başqasının nömrəsini sınamağın qarşısı.
+  // Tətbiq ~4 saniyədən bir sorğu atır (dəqiqədə ~15) — 60 limit rahatdır.
+  const rl = await rateLimit("app:support", clientIp(req), 60, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   const phone = new URL(req.url).searchParams.get("phone") ?? "";
   if (nationalDigits(phone).length < 7) {

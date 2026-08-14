@@ -20,6 +20,14 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   const now = new Date();
+
+  // Sürət limiti sayğaclarının təmizliyi (2026-08-14): vaxtı keçmiş
+  // pəncərələr saxlanmır — cədvəl kiçik qalır.
+  const rateLimitPurged = await prisma.rateLimit
+    .deleteMany({ where: { expiresAt: { lt: now } } })
+    .then((r) => r.count)
+    .catch(() => 0);
+
   const due = await prisma.rentgenFile.findMany({
     where: { deletedAt: { not: null }, purgeAt: { lte: now } },
     select: { id: true, key: true, fileName: true, requestId: true },
@@ -52,5 +60,5 @@ export async function GET(request: Request): Promise<NextResponse> {
     }
   }
 
-  return NextResponse.json({ ok: true, purged, scanned: due.length });
+  return NextResponse.json({ ok: true, rateLimitPurged, purged, scanned: due.length });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { getAppAccountForPhone, type WantedRole } from "@/lib/app-catalog";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 const ROLES: WantedRole[] = ["DOCTOR", "CENTER", "PATIENT"];
 
@@ -14,6 +15,12 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // Nömrə enumerasiyası qorunması (2026-08-14): app açarı statikdir və
+  // tətbiqdən çıxarıla bilər — IP başına dəqiqədə 20 sorğu real istifadəyə
+  // (giriş ekranı) bəs edir, kütləvi nömrə skanını isə dayandırır.
+  const rl = await rateLimit("app:whoami", clientIp(req), 20, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   const params = new URL(req.url).searchParams;
   const phone = params.get("phone") ?? "";

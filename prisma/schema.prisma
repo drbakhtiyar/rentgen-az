@@ -445,6 +445,18 @@ model CenterService {
   @@index([serviceId])
 }
 
+/// Sürət limiti sayğacı (2026-08-14 təhlükəsizlik auditi). Bir sətir =
+/// bir (endpoint + kimlik + zaman pəncərəsi) cütü; upsert ilə artırılır ki,
+/// hər sorğuya CƏMİ 1 baza əməliyyatı düşsün. Köhnə sətirlər cron ilə silinir.
+model RateLimit {
+  id        String   @id @default(cuid())
+  bucket    String   @unique // "whoami:ip:1.2.3.4:29123456"
+  count     Int      @default(1)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
 model OTPCode {
   id        String   @id @default(cuid())
   phone     String

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { resolveUserIdByPhone } from "@/lib/app-catalog";
 import { appSendSupport } from "@/lib/app-chat";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,10 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // Yazma endpointi — spam qorunması.
+  const rl = await rateLimit("app:supportsend", clientIp(req), 20, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   let body: { phone?: string; content?: string };
   try {

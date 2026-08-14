@@ -4,6 +4,7 @@ import { normalizePhone } from "@/lib/phone";
 import { createOtp } from "@/lib/otp";
 import { sendOtpSms } from "@/lib/sms";
 import { env } from "@/lib/env";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,10 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // SMS göndərir — hər sorğu real pul; OTP-nin öz limitindən əlavə IP qoruması.
+  const rl = await rateLimit("app:refotp", clientIp(req), 5, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   let body: { patientPhone?: string; phone?: string };
   try {

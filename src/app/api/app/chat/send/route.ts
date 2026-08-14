@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { resolveAppParticipant, appSendMessage, type AppRole } from "@/lib/app-chat";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,10 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // Yazma endpointi — spam qorunması.
+  const rl = await rateLimit("app:chatsend", clientIp(req), 30, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   let body: { phone?: string; role?: string; conversationId?: string; peerId?: string; content?: string };
   try {

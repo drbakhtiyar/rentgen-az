@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { resolveUserIdByPhone } from "@/lib/app-catalog";
 import { askAssistant, type AiMsg } from "@/lib/ai-assistant";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,10 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // AI çağırışı pullu resursdur — sui-istifadə xərc yaradır.
+  const rl = await rateLimit("app:ai", clientIp(req), 15, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   let body: { phone?: string; messages?: AiMsg[] };
   try {

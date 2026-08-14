@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAppKey, nationalDigits } from "@/lib/app-api";
 import { resolveAppParticipant, getAppSummary, type AppRole } from "@/lib/app-chat";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,10 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // Widget/polling — yumşaq limit.
+  const rl = await rateLimit("app:summary", clientIp(req), 60, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   const params = new URL(req.url).searchParams;
   const phone = params.get("phone") ?? "";

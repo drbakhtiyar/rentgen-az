@@ -5,6 +5,7 @@ import { normalizePhone } from "@/lib/phone";
 import { verifyOtp } from "@/lib/otp";
 import { notifyNewAppointment } from "@/lib/notify";
 import { notifyUser } from "@/lib/notifications";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,10 @@ type ReferralBody = {
 export async function POST(req: Request): Promise<NextResponse> {
   const gate = requireAppKey(req);
   if (gate) return gate;
+
+  // Göndəriş yaradır/oxuyur — spam və enumerasiya qorunması.
+  const rl = await rateLimit("app:referrals", clientIp(req), 20, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec) as unknown as NextResponse;
 
   let body: ReferralBody;
   try {
