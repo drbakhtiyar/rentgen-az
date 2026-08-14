@@ -28,14 +28,19 @@ rentgen.az təhlükəsizlik vəziyyəti və auditin nəticələri (ilk tam audit
 ## Düzəldilib
 
 - **Admin 2FA kodu server loglarına yazılırdı** (Vercel loglarına çıxışı olan hər kəs 5 dəqiqəlik kodu görürdü) — log sətri silindi, kod yalnız e-poçtla gedir.
+- **Mobil API-də sürət limiti yox idi** (2026-08-14) — `RateLimit` cədvəli + paylaşılan limiter (`src/lib/rate-limit.ts`) quruldu, 10 endpointə tətbiq edildi:
+  `accounts` saatda 3 (bütün nömrələri verən registr), `whoami` dəq/20 (nömrə enumerasiyası), `ai` dəq/15 (pullu resurs), `referrals/otp` dəq/5 (SMS xərci), `support/messages` dəq/60 və `chat/send`, `support/send`, `referrals`, `center/requests`, `summary`.
+  Limiter fail-open işləyir (baza problemi istifadəçini bloklamır), sayğaclar gecə cronu ilə təmizlənir.
+- **İctimai «Məlumat düzgün deyil?» formasında spam qorunması yox idi** — IP başına saatda 5 bildiriş limiti.
 
 ## Açıq risklər / növbəti addımlar
 
 | Prioritet | Risk | Plan |
 |---|---|---|
-| Yüksək | **`x-app-key` statik açardır** və mobil tətbiqdən çıxarıla bilər. Açarla `/api/app/whoami` və `/api/app/support/messages` üzərindən **nömrə ilə PII və dəstək yazışmaları** əldə etmək olar. | Telefon sahibliyini sübut edən qısamüddətli token (OTP → JWT) modelinə keçmək; keçidə qədər bu endpointlərə nömrə/IP əsaslı sürət limiti. |
+| Yüksək | **`x-app-key` statik açardır** və mobil tətbiqdən çıxarıla bilər. Sürət limiti qoyuldu (kütləvi çıxarma dayandırıldı), amma **hədəfli sorğu hələ də mümkündür**: açarı olan şəxs konkret nömrənin hesab məlumatını və dəstək yazışmasını görə bilər. | Telefon sahibliyini sübut edən qısamüddətli token (OTP → JWT) modelinə keçid. **Mobil tətbiqin yenilənməsi ilə koordinasiya tələb edir** — Worker/app tərəfi hazır olanda. |
+| Yüksək | **`/api/app/accounts`** bütün həkim/mərkəz nömrələrini bir sorğuda verir. Artıq `whoami` ilə əvəzlənib, amma köhnə tətbiq versiyaları üçün saxlanılıb (indi saatda 3 limitlə). | App versiyalarının statistikası yoxlanıb endpoint tamamilə söndürülməli (410). |
 | Orta | **Girişsiz token formalarında (`/q /f /m`) sürət limiti yoxdur** — token təxmini praktiki deyil (128 bit), amma link ələ keçsə müddətsiz etibarlıdır. | Token üçün müddət/rotasiya + IP əsaslı limit. |
-| Orta | **İctimai yazma endpointlərində limit yoxdur** (məlumat bildirişi, izləmə hadisələri, axtarış) — spam/zibil data riski. | IP əsaslı sadə limit (OTP-dəki naxışla). |
+| Orta | **İzləmə/axtarış hadisələrində limit yoxdur** (`track`, `search`, `symptom`) — zibil data riski (bildiriş forması artıq limitlidir). | Eyni limiter tətbiq edilə bilər; hadisə həcmi yüksək olduğu üçün limit yumşaq olmalıdır. |
 | Orta | **Staging bazası yoxdur** — dinamik test (ZAP/Nuclei) üçün şərtdir. | Sintetik datalı ayrıca Supabase layihəsi. |
 | Aşağı | **CSP yoxdur.** | Nonce-lu siyasət ayrıca hazırlanmalı (yarımçıq CSP saytı sındıra bilər). |
 
