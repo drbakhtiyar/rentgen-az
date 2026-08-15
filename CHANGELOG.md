@@ -2,6 +2,126 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-15 (gecə) — Robot-robot qoruması
+
+- **Qarşı tərəfin avtomatik cavabları tanınır** (`src/lib/wa-auto-reply.ts`):
+  klinikaların WhatsApp Business greeting/away şablonları («Mesajınız ən qısa
+  zamanda cavablandırılacaq», «… ilə əlaqə saxladığınız üçün təşəkkür edirik»)
+  AZ/RU/TR/EN naxışlarla tutulur (güclü naxış = 1 uyğunluq, zəif = 2 uyğunluq).
+  **Bot belə mesaja CAVAB YAZMIR** — mesaj yalnız güzgüyə düşür + `🔇` qeydi.
+  Real 8 nümunə ilə sınandı: hamısı tutuldu, 8 insan mesajında yalançı-müsbət yox.
+- **Döngə qoruması** (webhook `loopGuard`): eyni mətn 15 dəqiqə içində
+  təkrarlanarsa və ya bot 15 dəqiqədə 5+ cavab yazıbsa — susur.
+- **HARD_RULES:** boş nəzakət cümlələri («Rica edirəm», «Anlaşıldı, təşəkkür
+  edirəm») QADAĞAN — deyiləsi konkret söz yoxdursa heç nə yazma. Səbəb: bot
+  şablon cavaba reaksiya verərkən absurd «Rica etmirəm, gözləyirəm» cümləsi qurdu.
+- `🔇` prefiksi `humanActive()` istisnalarına əlavə olundu (susma qeydi insan
+  cavabı sayılmasın).
+
+## 2026-08-15 — WhatsApp/sayt söhbətlərinin ayrılması, 24s pəncərə
+
+- **`AdminMessage.internal` sahəsi** (miqrasiya `20260815140000_admin_message_internal`):
+  daxili qeydlər istifadəçidən gizlənir. `internal: true` olanlar — 📲 gələn WA
+  mesajı, 🤖 bot/şablon güzgüsü, körpü ilə WhatsApp-a gedən operator cavabı,
+  ⚠️ sistem xəbərdarlığı, 👀/✅ link izləməsi, 🔇 susma qeydi. **Mərkəz öz
+  panelində yalnız sayt-daxili yazışmanı görür**; admin/operator hər ikisini.
+  Geriyə dönük: 697 mesajın 69-u işarələndi. Filtr 3 istifadəçi-tərəfli sorğuda
+  (panel siyahısı, önizləmə, oxunmamış sayğacı) + mobil `app-chat`.
+  ⚠️ **CİDDİ QÜSUR idi:** izləmə qeydləri («👀 Mərkəz kart formunu açdı») mərkəzin
+  öz panelində görünürdü.
+- **24 saatlıq Meta pəncərəsi göstəricisi:** `admin-chat.ts` son 📲 mesajından
+  24 saat hesablayır (`AdminThreadItem.waWindowUntil`), söhbət başlığında
+  «🟢 WhatsApp açıq · N saat» / «🔒 bağlı» nişanı. Pəncərəni YALNIZ müştərinin
+  mesajı açır — botun cavabı sayğacı uzatmır (Meta qaydası).
+- **Jurnal etiketləri aydınlaşdırıldı:** `center:link_visit_q/f/m` → «Mərkəz
+  qiymət/FAQ/kart linkini açdı», `center:wa_weekly_stats`, `api:accounts_used`;
+  link açılışlarına «Özünəxidmət» nişanı.
+
+## 2026-08-14/15 — TƏHLÜKƏSİZLİK AUDİTİ (tam sənəd: `SECURITY.md`)
+
+İstifadəçi ChatGPT-nin audit planını verdi; plan layihəyə uyğunlaşdırılıb icra edildi.
+
+- **CI:** CodeQL + Semgrep + TruffleHog (tam tarixçə) + OSV-Scanner + OpenSSF
+  Scorecard (`.github/workflows/{codeql,security}.yml`) + Dependabot.
+- **Təhlükəsizlik başlıqları** (`next.config.ts`): HSTS, X-Frame-Options,
+  X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP;
+  `poweredByHeader: false`; token/panel yollarına `X-Robots-Tag: noindex`.
+- **Sürət limiti sistemi** (miqrasiya `20260814080000_rate_limit`):
+  `RateLimit` cədvəli + `src/lib/rate-limit.ts` (bucket upsert = 1 DB əməliyyatı,
+  **fail-open**, cron təmizliyi). 10 app endpointi + ictimai bildiriş forması.
+  Yeni endpoint yazanda EYNİ naxışı işlət: `clientIp()` → `rateLimit()` →
+  `tooManyRequests()`.
+- **Token TTL** (miqrasiya `20260815060000_price_token_ttl`): `/q` `/f` `/m`
+  linkləri 45 gün (`CenterProfile.priceTokenAt`), dəvətdə avtomatik yenilənir;
+  açılış 60/saat, yazma 30/saat IP limiti.
+- **Tapılan tək real qüsur:** admin 2FA kodu server loguna yazılırdı → SİLİNDİ.
+- **IDOR auditi TƏMİZ:** fayl girişi (rol qapısı + 5 dəq presigned + audit log),
+  viewer, mərkəz sorğuları, çat, ödəniş (qiymət serverdə), admin (27 rol yoxlaması).
+- **Balans artırmada yuxarı hədd 10 000 ₼** — absurd məbləğ ödəniş sisteminə getmir.
+- **`/api/app/accounts` istifadə ölçüsü** (`api:accounts_used` jurnalı) — bir ay
+  sonra çağırış yoxdursa endpoint 410 ilə söndürüləcək.
+- **Vercel preview SSO ilə qorunur** (əvvəl açıq idi + prod DB-yə bağlı).
+  Parol qoruması cəhdi 428 verdi: «Advanced Deployment Protection is not enabled
+  on your team» → SSO saxlanıldı.
+
+## 2026-08-13/14 — DİZAYN v2 «Impilo» + ikonlar
+
+**Geri dönüş nöqtəsi: `git tag design-v1`.** Üslub bələdçisi: `DESIGN.md`.
+Prosedur: refero.design-dan Impilo seçildi → DESIGN.md + `taste-skill` +
+`impeccable` skilləri ilə tətbiq → istifadəçi təsdiqi → canlıya.
+
+- **Tokenlər** (`globals.css` `@theme`): `iris-canvas #16165c`, `iris-shadow
+  #232269`, `iris-glow #403cd5`, `iris-pulse #5350cc`, `iris-border #4846c6`,
+  `iris-veil #524fe1`, `clinical #00b1ff` (data/link), `mint-vital #00ffaa`
+  (müsbət), `pearl #f4f4f6` (fon). Yalnız **Manrope 500/600**. Pill düymələr,
+  24px radiuslu kartlar, kölgə YOX — hündürlük tonla verilir.
+- **Animasiyalar** (CSS, `prefers-reduced-motion` dostu): `.beam-ring` (conic
+  gradient + `@property --beam-angle`), `halo-breathe`, `hero-scan`, `chip-sheen`,
+  `icon-wiggle`, `gem-breathe`, `animate-marquee`, `card-lift`, `.bg-observatory`.
+- **Səhifələr:** ana səhifə, xidmətlər, həkimlər, mərkəzlər, paketlər (metal
+  kimliyi: gümüş/qızıl/platin + sheen + qiymət sayğacı `animated-price.tsx`),
+  bloq, FAQ. Bölmə keçidləri açıq-tünd növbələnir.
+- **Xidmət ikonları (33):** istifadəçi ChatGPT-də yaradır → `sharp` ilə kvadrat
+  kəsim (`fit:cover position:attention`) → Vercel Blob. Xəritə
+  `src/lib/service-icon-map.ts` (**DB-yə yazılmır**). Sakit halda ağ-qara,
+  hover-də rənglənir. Xidmət detal başlığında animasiyalı çərçivə
+  (`service-icon-visual.tsx`: beam-ring + skan zolağı + künc nişanları).
+- **Səhifə hero ikonları (6):** gpt-image-1 ilə, `services-hero-visual.tsx`
+  `PAGE_HERO` xəritəsi + 5 qatlı CSS animasiya (`mix-blend-screen`).
+- **Mobil düzəlişlər:** ana səhifədə 3 mərkəz kartı, həkim qoşulma paneli 2×2
+  kvadrat.
+- **Xidmətlər səhifəsində «dental» sözü platforma səviyyəsinə keçdi** (başlıq,
+  təsvir, simptom nümunələri; «Bakıda» → «Azərbaycanda»).
+- **Bloq:** 48 yazının (24 AZ + 24 RU) örtükləri istifadəçinin göndərdiyi yeni
+  premium şəkillərlə əvəzləndi; kartlarda `aspect-video + object-left`, yazı
+  səhifəsində örtük TAM göstərilir (kəsən çərçivə çıxarıldı).
+
+## 2026-08-13 — Statistika sistemi (4 faza) + bot özünəxidmət + sosial linklər
+
+- **Faza 1:** `CenterEvent` genişləndi — directions, license, faq, website,
+  instagram klikləri (`TrackClick` sarğısı, `components/centers/track-click.tsx`).
+- **Faza 2:** `/merkez/statistika` — 8 metrik, ±% müqayisə, SVG günlük qrafik,
+  7/30 gün seçimi.
+- **Faza 3:** admin mərkəz səhifəsində 30 günlük engagement zolağı +
+  `/admin/merkez-statistika` (bu gün/7/30, ümumi cəmlər, yalnız aktivlikli
+  mərkəzlər, reytinq sırası).
+- **Faza 4:** `/api/cron/weekly-stats` — həftəlik WhatsApp hesabatı, B.e 09:00
+  Bakı (05:00 UTC), `heftelik_hesabat` UTILITY şablonu ✅ TƏSDİQLƏNİB, dedup 6 gün,
+  güzgü `internal: true`, jurnal `center:wa_weekly_stats`. **Yalnız ≥3 hadisəli
+  mərkəzlərə** (`WA_STATS_MIN_EVENTS`). İstifadəçi qərarı: 1 oktyabr gözləməsi
+  LƏĞV — minimal aktivlik həddi ilə dərhal başladı.
+- **Bot özünəxidmət (üçmərhələli təhlükəsizlik):** `centerContext` (wa-bot.ts)
+  yazan nömrə mərkəzin qeydə alınmış nömrəsi ilə uyğun gələndə `/q` `/f` `/m`
+  linklərini VƏ boşluqları konteksə salır; uyğun gəlmirsə link ümumiyyətlə
+  görünmür (**LLM avtorizasiya qərarı vermir — kod verir**). Üstəlik dialoq
+  təsdiqi + hücum-rədd qaydası + 2 few-shot (uğurlu axın və HÜCUM CƏHDİ).
+  Bot həm kabinet yolunu, həm sürətli linki təklif edir.
+- **Mərkəz sosial linkləri:** `website` + `instagram` sahələri (miqrasiya
+  `20260813060000_center_socials`), formalarda + ictimai səhifədə, klikləri izlənir.
+- **Kampaniya linki izlənməsi** (`src/lib/link-visit.ts`): açılma 👀 / doldurma ✅
+  qeydləri WhatsApp söhbətinə + jurnala; crawler süzgəci, 1 saniyəlik dedup;
+  bot susma məntiqindən istisna.
+
 ## 2026-08-12 (davam 2) — Səsli mesaj STT, operator genişlənməsi, bloq 24+24
 
 - **Səsli mesaj transkripti CANLI:** `src/lib/wa-transcribe.ts` — Graph media →

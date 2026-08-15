@@ -12,6 +12,30 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **SMS on center status change from app** — `/api/app/center/status` sends in-app only; site also SMSes. Wire for parity.
 - [ ] **Center rating/endorsement (#12)** — deferred by user ("hələ saxla"); decide model (doctor endorsement vs patient review vs favorite).
 
+## Təhlükəsizlik (tam sənəd: `SECURITY.md` — açıq risklər cədvəli oradadır)
+- [ ] **`x-app-key` → OTP/JWT modeli (YÜKSƏK)** — limit qoyuldu (kütləvi çıxarma
+  bağlandı), amma hədəfli sorğu qalır. OTP→qısamüddətli JWT keçidi **mobil app
+  yenilənməsi** tələb edir (Rork Worker + app tərəfi) — istifadəçi ilə koordinasiya.
+- [ ] **`/api/app/accounts` söndürülməsi** — `api:accounts_used` jurnalına BİR AY
+  SONRA (təq. 2026-09-15) bax; çağırış yoxdursa 410 qaytar.
+- [ ] **CSP (nonce ilə)** — aşağı prioritet, ehtiyatla.
+- [ ] **ZAP/Nuclei** — YALNIZ staging olanda (bax DECISIONS: canlı sayta əsla).
+  Staging bazası: istifadəçi «hələlik lazım deyil» dedi (2026-08-15).
+
+## Dizayn v2 qalıqları
+- [ ] **Panellərin redizaynı** — admin/mərkəz/həkim/CRM hələ köhnə vizualdadır
+  (qəsdən). İstifadəçi istəyəndə Impilo tokenləri ilə keçirilməli.
+- [ ] **Emil Kowalski `animate` skilli** — sonda cilalama üçün saxlanılıb, hələ
+  istifadə edilməyib (`github.com/emilkowalski/skills`).
+- [ ] **Qalan xidmət ikonları** — 33 hazırdır; istifadəçi ChatGPT-də yaratdıqca
+  göndərir, mən emal edirəm (bax DECISIONS: generasiya mənim işim deyil).
+
+## Statistika
+- [ ] **Qapını Silver+-a bağla** — hazırda hamıya açıqdır (istifadəçi qərarı).
+  İstənəndə `/merkez/statistika`-ya plan yoxlaması + «Silver-ə keç» ekranı.
+- [ ] **Həftəlik hesabatın ilk real göndərişini izlə** — B.e 09:00; neçə mərkəz
+  həddi keçdi, cavab gəldimi.
+
 ## Blocked — waiting on external input
 - [x] **Platforma WhatsApp nömrəsi — GƏLDİ 2026-08-09: +994 99 580 13 13.**
   Sayta yayıldı (`PLATFORM_WHATSAPP*` konstantları): /elaqe düyməsi, footer, /telimat,
@@ -24,9 +48,11 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [x] **Operator cavab körpüsü — DONE 2026-08-12.** WhatsApp söhbətləri
   bölməsindən yazılan cavab sendWaText ilə gedir (24s pəncərə, çatmazsa ⚠️
   qeydi); bot 30 dəq susur; naməlum nömrələr də güzgülənir.
-- [ ] **Meta şablon təsdiqini izlə** — 4 şablon PENDING (2026-08-12 gecə
-  yaradılıb). Təsdiqdən sonra İLK CANLI DƏVƏT testi: Kart dəvəti öz mərkəzinə
-  (Smile) → cavab → bot davamı. Rədd olunsa mətnə düzəliş + resubmit.
+- [x] **Meta şablonları TƏSDİQLƏNDİ** (dəvətlər + `heftelik_hesabat` ✅). Real
+  dəvətlər göndərilir; mərkəzlərin öz robotları cavab qaytarır → auto-reply
+  detektoru ilə həll edildi (2026-08-15).
+- [ ] **Dəvət konversiyasını ölç** — neçə mərkəz linki açdı (👀), neçəsi formu
+  doldurdu (✅). Jurnalda `center:link_visit_*` + `center:price_self` sayılır.
 - [ ] **Meta Business verification (Step 3)** — Axiora sənədləri; limit +
   şablon sürəti üçün.
 - [ ] **"WhatsApp elan" funksiyası (istəyə bağlı)** — ümumi elan şablonu ilə

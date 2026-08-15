@@ -25,7 +25,7 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 - **User** — phone (unique, normalized), role, isBlocked, **`sessionVersion`** (bumped to invalidate all JWTs — assistant removal/block), locale, lastLoginAt. 1:1 to profile models below.
 - **Wallet** / **WalletLedger** — prepaid coin balance (qəpik); ledger `type` TOPUP|PLAN|REFUND|ADMIN.
 - **Payment** — Payriff payments; amount in qəpik; `paymentStatus` APPROVED = paid.
-- **AdminThread** / **AdminMessage** — admin ↔ user (center/doctor) chat, one thread per user, read cursors.
+- **AdminThread** / **AdminMessage** — admin ↔ user (center/doctor) chat, one thread per user, read cursors. **`AdminMessage.internal`** (2026-08-15, miqrasiya `20260815140000_admin_message_internal`) — DAXİLİ qeyd: WhatsApp güzgüsü (📲/🤖), körpü cavabı, ⚠️ xəbərdarlıq, 👀/✅ link izləməsi, 🔇 bot-susma qeydi. **`true` olanlar istifadəçinin öz panelində GÖRÜNMÜR** (yalnız admin/operator). Yeni güzgü/sistem mesajı yazanda MÜTLƏQ `internal: true`; yeni istifadəçi-tərəfli sorğuya `internal: false` filtri.
 - **Notification** — in-app notifications (bell); polling.
 
 ### Profiles
@@ -93,8 +93,25 @@ Schema: `prisma/schema.prisma` (single file). Client generated to `src/generated
 webhook `User`-i telefonla upsert edir (role PATIENT) — hər WA söhbətinin
 AdminThread-i olsun deyə. Bu istifadəçilər real qeydiyyat deyil, çat kimliyidir.
 
-**Bu sessiyanın sahə əlavələri:** `CenterProfile.priceToken` (`@unique`, girişsiz
-/q qiymət formu tokeni), `AppointmentRequest.completedAt`/`reviewInviteSentAt`/
-`reviewToken` (rəy dəvəti axını — bax `src/lib/review-invite.ts`).
+**Sahə əlavələri:** `CenterProfile.priceToken` (`@unique`, girişsiz /q qiymət
+formu tokeni), `AppointmentRequest.completedAt`/`reviewInviteSentAt`/`reviewToken`
+(rəy dəvəti axını — bax `src/lib/review-invite.ts`).
+
+### 2026-08-13/15 miqrasiyaları (4)
+- **`20260813060000_center_socials`** — `CenterProfile.website` + `.instagram`
+  (ictimai səhifədə göstərilir, klikləri `CenterEvent`-ə yazılır).
+- **`20260814080000_rate_limit`** — **`RateLimit`** cədvəli: sürət limiti bucket-i
+  (`key` unique = `<ad>:<subyekt>:<pəncərəId>`, `count`, `expiresAt`). Upsert ilə
+  artırılır (1 DB əməliyyatı), **fail-open** (DB xətası istifadəçini bloklamır),
+  cron təmizləyir. İşlədən modul: `src/lib/rate-limit.ts`.
+- **`20260815060000_price_token_ttl`** — `CenterProfile.priceTokenAt`: token
+  verilmə vaxtı. TTL **45 gün** (`PRICE_TOKEN_TTL_DAYS`); müddəti bitmiş token
+  dəvət göndəriləndə avtomatik yenilənir (`ensurePriceToken`).
+- **`20260815140000_admin_message_internal`** — `AdminMessage.internal` (yuxarıda).
+
+> **Statistika:** ayrıca cədvəl YOXDUR — hər şey mövcud **`CenterEvent`**
+> üzərində qurulub. 2026-08-13-də `type` dəyərləri genişləndi: `view`, `call`,
+> `whatsapp` + **`directions`, `license`, `faq`, `website`, `instagram`**.
+> `/merkez/statistika` və `/admin/merkez-statistika` bunu `groupBy` ilə oxuyur.
 
 > When in doubt, `prisma/schema.prisma` is the source of truth — every model carries AZ comments explaining intent.

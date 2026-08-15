@@ -2,6 +2,83 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Qarşı tərəfin avtomatik cavabına BOT SUSUR (cavab yazmır)
+- **Qərar (2026-08-15):** klinikanın WhatsApp Business greeting/away şablonu
+  tanınanda bot heç nə göndərmir — mesaj yalnız güzgüyə düşür + 🔇 qeydi.
+- **Səbəb:** qarşı tərəfdə insan yoxdur. Cavab yazsaq onların robotu yenidən işə
+  düşə bilər (real hadisə: eyni şablon iki dəfə gəldi, bot iki dəfə cavab verdi).
+  Üstəlik bot deyiləsi sözü olmayanda absurd cümlə qurur («Rica etmirəm,
+  gözləyirəm») — bu, mərkəzə pis təəssürat yaradır.
+- **Nəticə:** detektor `src/lib/wa-auto-reply.ts` (STRONG = 1 uyğunluq, WEAK = 2).
+  Yalançı-müsbət görsən naxışları dəqiqləşdir — susmaq ucuzdur (operator güzgüdə
+  görür), amma real sualı susdurmaq baha başa gəlir. Əlavə `loopGuard`: təkrar
+  mətn 15 dəq / bot 5 cavab həddi — tanımadığımız robot növləri üçün son sipər.
+
+## WhatsApp yazışması ≠ sayt söhbəti (`AdminMessage.internal`)
+- **Qərar (2026-08-15, istifadəçi):** «whatsapp yazishmalar - sohbetler biri
+  birinden ayri olsun». Güzgü mesajları, körpü cavabları, sistem qeydləri
+  `internal: true` — mərkəzin öz panelində GÖRÜNMÜR.
+- **Səbəb:** mərkəz öz panelində «👀 Mərkəz kart formunu açdı» kimi DAXİLİ izləmə
+  qeydlərini görürdü — bu, bizim əməliyyat qeydimizdir, müştəriyə göstərilməməli.
+  Həm də WhatsApp yazışması ilə sayt-daxili dəstək söhbəti iki fərqli kanaldır.
+- **Nəticə:** YENİ WhatsApp güzgüsü və ya sistem qeydi yazanda MÜTLƏQ
+  `internal: true` qoy. İstifadəçi-tərəfli hər yeni sorğuya `internal: false`
+  filtri əlavə et (hazırda: panel siyahısı, önizləmə, oxunmamış sayğacı, mobil).
+
+## 24 saatlıq pəncərəni yalnız MÜŞTƏRİNİN mesajı açır
+- **Qərar/fakt (2026-08-15):** Meta qaydası — sərbəst mətn yalnız müştərinin son
+  mesajından 24 saat ərzində göndərilə bilər. **Botun cavabı sayğacı UZATMIR.**
+- **Nəticə:** söhbət başlığındakı nişan (🟢 açıq · N saat / 🔒 bağlı) yalnız
+  gələn 📲 mesajlarından hesablanır. Pəncərə bağlıdırsa operator sərbəst mətn
+  yaza bilmir — şablon dəvəti göndərilməlidir. Canlı söhbətdə pəncərə praktiki
+  olaraq həmişə açıq qalır (mərkəz yazdıqca uzanır).
+
+## Örtük/ikon generasiyası MƏNİM işim DEYİL
+- **Qərar (2026-08-13, istifadəçi geribildirimi):** «senin etdiyini beyenmedim
+  bunlari et» — mənim yaratdığım bloq örtükləri və ikonlar bəyənilmədi.
+- **Nəticə:** vizual aktivləri istifadəçi ChatGPT-də yaradır və göndərir; mən
+  yalnız EMAL edirəm (kəsim, ölçü, format, Blob-a yükləmə, xəritəyə qoşma).
+  Öz təşəbbüsümlə şəkil generasiya etmə. Fayllar adətən `~/Downloads/icon/` və
+  `~/Downloads/rentgen bloq kover/` qovluqlarında olur.
+
+## Dizayn v2 «Impilo» — geri dönüş nöqtəsi `design-v1` tagıdır
+- **Qərar (2026-08-13, istifadəçi):** «saytın dizaynını tamamilə kökündən
+  dəyişmək istəyirəm… əvvəlki versiyanı yadda saxla ki, qayıda bilək».
+- **Nəticə:** köhnə dizayn `git tag design-v1` ilə dondurulub. Yeni sistem
+  `DESIGN.md`-də sənədləşdirilib, tokenlər `globals.css` `@theme`-də.
+  **Panellər (admin/mərkəz/həkim/CRM) qəsdən köhnə vizualda qaldı** — yalnız
+  ictimai sayt redizayn edildi.
+
+## Statistika qapısı hələlik AÇIQ (sonra Silver+)
+- **Qərar (2026-08-13, istifadəçi):** «Qapı funksiyası qoymuşam. Hələ ki,
+  free-da, hamıya görsəniz.»
+- **Nəticə:** `/merkez/statistika` bütün paketlərə açıqdır. Qapı istənəndə plan
+  yoxlaması əlavə edilməli («açmaq istəyəndə Silver-ə keç» ekranı). Həftəlik
+  hesabat üçün 1 oktyabr gözləməsi LƏĞV edildi — əvəzinə minimal aktivlik həddi
+  (`WA_STATS_MIN_EVENTS`, default 3) qoyuldu: sıfır-aktivlikli mərkəzə hesabat
+  göndərmək mənasızdır.
+
+## Bot özünəxidmətində avtorizasiya qərarını KOD verir, LLM yox
+- **Qərar (2026-08-13, istifadəçi istəyi: «çox sərt qayda… üç mərhələli»):**
+  (1) **Kod qatı** — yazan nömrə mərkəzin qeydə alınmış nömrəsi ilə uyğun
+  gəlmirsə token linki `centerContext`-ə HEÇ DÜŞMÜR; (2) **dialoq təsdiqi** —
+  bot mərkəz adını təsdiqlətdirir; (3) **hücum-rədd qaydası** + few-shot
+  «HÜCUM CƏHDİ» nümunəsi.
+- **Səbəb:** prompt-la qorunan sirr sirr deyil. LLM-ə «bu nömrəyə link vermə»
+  demək kifayət deyil — link kontekstdə varsa, nə vaxtsa sızdırılacaq.
+- **Nəticə:** hər yeni özünəxidmət funksiyasında eyni naxış — həssas dəyər
+  kontekstə YALNIZ kod yoxlamasından sonra düşür.
+
+## ZAP/Nuclei/fuzzing CANLI SAYTA ƏSLA yönəldilmir
+- **Qərar (2026-08-15):** aktiv skan yalnız staging mühitində.
+- **Səbəb:** `/q` `/f` `/m` autentifikasiyasız YAZIR (mərkəz məlumatı dəyişir),
+  webhook real WhatsApp mesajı göndərir. Skan real data korlaya və müştərilərə
+  zibil mesaj göndərə bilər.
+- **Nəticə:** staging bazası lazım olacaq (Supabase yeni layihə ~$10/ay).
+  **İstifadəçi qərarı (2026-08-15): «hələlik lazım deyil»** — kod səviyyəli
+  auditlə davam. ZAP aşağı prioritetdir: bizim stack-də (Vercel managed, Prisma,
+  React escape) gözlənilən dəyər azdır.
+
 ## WhatsApp bot = Sonnet; panel AI = Haiku
 - **Qərar (2026-08-11):** wa-bot claude-sonnet-5 işlədir; panel AI Yardımçısı Haiku-da qalır.
 - **Səbəb:** Haiku çoxqaydalı axınlarda (menyu nömrələmə, məlumat toplama, ad

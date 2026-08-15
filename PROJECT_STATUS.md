@@ -35,6 +35,47 @@ The web platform is production-live and used by real centers/doctors/patients. T
 - **Homepage hero** → data-driven Azerbaijan map (marker per city with an APPROVED center).
 - **TƏBİB logo** stored at stable Blob URL `shared/tabib-logo.png` for state hospitals.
 
+### 2026-08-13/15 blok — DİZAYN v2, STATİSTİKA, TƏHLÜKƏSİZLİK (bax CHANGELOG)
+
+- **DİZAYN v2 «Impilo» CANLI (2026-08-13):** saytın bütün ictimai hissəsi kökündən
+  yenidən işlənib — tünd iris (bənövşəyi-göy) ailəsi, Pearl fon, Manrope 500/600,
+  pill düymələr, 24px kartlar. Tokenlər `src/app/globals.css` `@theme` blokunda,
+  üslub bələdçisi **`DESIGN.md`**-də. ⚠️ **GERİ DÖNÜŞ NÖQTƏSİ: `git tag design-v1`**
+  — köhnə dizayn tam bərpa oluna bilər. Panellər (admin/mərkəz/həkim/CRM) HƏLƏ
+  köhnə vizualdadır, redizayn edilməyib.
+- **Xidmət ikonları (33) + səhifə hero ikonları (6):** istifadəçi ChatGPT-də
+  yaradır, mən `sharp` ilə kəsib Vercel Blob-a yükləyirəm; xəritə
+  `src/lib/service-icon-map.ts` (DB-yə YAZILMIR). CSS animasiyalı çərçivələr:
+  `service-icon-visual.tsx` (xidmət detalı), `services-hero-visual.tsx`
+  (`PAGE_HERO` xəritəsi ilə 6 daxili səhifə). **Qayda: örtük/ikon generasiyasını
+  MƏN etmirəm — yalnız istifadəçinin göndərdiyini emal edirəm** (bax DECISIONS).
+- **Statistika sistemi (4 faza, hamısı canlı):** izləmə genişləndi (directions,
+  license, faq, website, instagram); `/merkez/statistika` (8 metrik, ±% müqayisə,
+  SVG qrafik, 7/30 gün); `/admin/merkez-statistika` (bu gün/7/30, reytinq sırası);
+  həftəlik WhatsApp hesabatı cronu (B.e 09:00 Bakı, `heftelik_hesabat` şablonu
+  TƏSDİQLƏNİB ✅, yalnız ≥3 hadisəli mərkəzlərə). **Qapı (gating) HƏLƏLİK
+  AÇIQDIR** — sonra Silver+ paketə bağlanacaq.
+- **Bot özünəxidmət:** bot artıq mərkəzə öz `/q` `/f` `/m` linklərini verə bilir,
+  amma **üçmərhələli təhlükəsizliklə**: (1) kod qatı — nömrə mərkəzin qeydə alınmış
+  nömrəsi ilə uyğun gəlmirsə link kontekstə HEÇ DÜŞMÜR (LLM avtorizasiya etmir);
+  (2) dialoq təsdiqi; (3) hücum-rədd qaydası + few-shot nümunə.
+- **TƏHLÜKƏSİZLİK AUDİTİ (2026-08-14/15) — bax `SECURITY.md`:** CI (CodeQL,
+  Semgrep, TruffleHog, OSV, Scorecard, Dependabot); təhlükəsizlik başlıqları;
+  sürət limiti sistemi (`RateLimit` cədvəli, 10+ endpoint); token TTL 45 gün;
+  IDOR auditi TƏMİZ; admin 2FA kodunun loglanması silindi (tapılan tək real qüsur);
+  balans artırmada 10 000 ₼ yuxarı hədd. **Qayda: ZAP/Nuclei/fuzzing CANLI SAYTA
+  ƏSLA yönəldilmir** — yalnız staging (staging bazası istifadəçi qərarı ilə
+  hələlik ALINMAYIB).
+- **WhatsApp ↔ sayt söhbətləri AYRILDI:** `AdminMessage.internal` sahəsi — güzgü
+  mesajları (📲/🤖), körpü cavabları, ⚠️ xəbərdarlıqlar və 👀/✅ izləmə qeydləri
+  mərkəzin öz panelində GÖRÜNMÜR, yalnız admin/operator görür (697 mesajın 69-u
+  geriyə dönük işarələndi). Söhbət başlığında **24 saatlıq Meta pəncərəsi**
+  göstəricisi (🟢 açıq · N saat / 🔒 bağlı).
+- **Robot-robot qoruması (2026-08-15):** klinikaların WhatsApp Business
+  greeting/away şablonlarına bot cavab yazırdı → mənasız yazışma. İndi
+  `src/lib/wa-auto-reply.ts` belə mətnləri tanıyır və **bot susur**; əlavə döngə
+  qoruması (təkrar mətn 15 dəq / bot 5 cavab həddi).
+
 ### 2026-08-11/12 blok — WHATSAPP BOTU CANLI (bax CHANGELOG)
 - **Meta Cloud API GO-LIVE:** +994 99 580 13 13 CONNECTED/CLOUD_API. Kimliklər:
   App id=1602952428191651 · WABA=1729407764977766 · PHONE_ID=1328305727023335 ·
@@ -122,12 +163,14 @@ centers need a mobile before they can OTP-login. See TODO.md.
 - DICOM viewer 4th quadrant + public launch pending.
 
 ## Waiting on external input (blocked-pending)
-- **Meta şablon təsdiqi** — 4 dəvət şablonu (qiymet/faq/kart/kabinet_devet)
-  PENDING; təsdiqlənəndə "Dəvət göndər" düymələri işə düşür. Status:
-  GET /1729407764977766/message_templates.
+- **Meta şablon təsdiqi** — dəvət şablonları (qiymet/faq/kart/kabinet_devet) və
+  `heftelik_hesabat` ✅ TƏSDİQLƏNİB, real dəvətlər göndərilir. Qalan yeni
+  şablonlar üçün status: GET /1729407764977766/message_templates.
 - **Meta Business verification (Step 3)** — Axiora sənədləri ilə; limitləri
   qaldırır (250→1000+/gün), şablon yoxlamalarını sürətləndirir.
 - Apple Developer ($99/yr) + Google Play ($25) accounts for app store submission.
+- **`GOOGLE_PLACES_API_KEY`** — mərkəzlərin Google reytinqi üçün (bax memory
+  `rentgen-az-google-rating`).
 
 ## Critical operational notes
 - **Same Supabase DB powers site + mobile app.** Never reset the DB password without updating Vercel `DATABASE_URL` + `DIRECT_URL` (else the live site 500s). Supabase `pg_pgrst_no_exposed_schemas` 503 logs are harmless (PostgREST/Data API is unused).

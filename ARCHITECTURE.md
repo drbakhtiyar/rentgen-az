@@ -9,6 +9,20 @@
 - **Payments:** Payriff v3 (`src/lib/payriff.ts` + `payments.ts`; `paymentStatus "APPROVED"` = paid).
 - **AI:** Anthropic REST (`src/lib/ai-assistant.ts`, `askClaude(system,history,maxTokens,model)`): panel yardımçısı **Haiku 4.5**, WhatsApp botu **claude-sonnet-5** (bax DECISIONS).
 
+## Environment variables (hamısı Vercel prod-da; `src/lib/env.ts` tipli oxuyur)
+
+| Qrup | Dəyişənlər | Qeyd |
+|---|---|---|
+| **Baza** | `DATABASE_URL`, `DIRECT_URL` | Supabase. **Parolu dəyişəndə HƏR İKİSİNİ eyni addımda yenilə**, yoxsa sayt 500 verir. Preview mühitinə də əlavə edilib. |
+| **Auth** | `AUTH_SECRET`, `OTP_SECRET`, `ADMIN_ACCESS_KEY`, `OPERATOR_ACCESS_KEY`, `ADMIN_PHONE`, `ADMIN_2FA`, `ADMIN_ALERT_PHONE` | Admin gizli link `/admin-giris/<ADMIN_ACCESS_KEY>`; operator `/panel/acar/<OPERATOR_ACCESS_KEY>`. |
+| **SMS** | `SMS_PROVIDER=lsim`, `LSIM_LOGIN`, `LSIM_PASSWORD`, `LSIM_SENDER` | Lsim.az QuickSMS. |
+| **WhatsApp** | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`, `WA_DAILY_LIMIT` (50), `WA_STATS_MIN_EVENTS` (3) | Meta Cloud API. Env yoxdursa webhook **passivdir**. Limitlər deploy-suz dəyişir. |
+| **AI** | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `WA_TRANSCRIBE_MODEL` | Anthropic = bot + panel yardımçısı; OpenAI = səsli mesaj STT (`gpt-4o-transcribe`) və şəkil generasiyası. |
+| **Ödəniş** | `PAYRIFF_MERCHANT`, `PAYRIFF_SECRET`, `PAYRIFF_BASE` | Payriff v3, CANLI. |
+| **Fayl** | `B2_KEY_ID`, `B2_APP_KEY`, `B2_BUCKET`, `B2_ENDPOINT`, `B2_REGION` | Backblaze B2 (private). |
+| **Mobil** | `APP_API_KEY`, `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, `APNS_ENV` | `APNS_*` **Apple hesabı gələnə qədər passiv**. |
+| **Digər** | `CRON_SECRET`, `GOOGLE_PLACES_API_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_GA_ID`, `PANEL_SHARED_SECRET`, `EMAIL_PROVIDER`/`RESEND_*`/`NOTIFY_EMAIL` | `PANEL_SHARED_SECRET` = Axiora admin panelinin `/api/panel/stats-today` çağırışı. |
+
 ## Folder structure
 ```
 src/
@@ -33,7 +47,7 @@ prisma/schema.prisma           # single schema; 51 migrations
 ```
 
 ### Key `src/lib` modules
-`db.ts` (prisma), `env.ts` (typed env), `auth/` (jwt, session, rbac, acting, revoke; +`operator.ts` = OPERATOR "Nərmin" secret-link), `queries.ts` (public+catalog reads; incl. `getApprovedCenters`, `getCoveredCities`), `center-write.ts` (`saveCenterLoose` — loose center create/edit, placeholder owner phone, coord extraction from pasted Maps link), `center-filters.ts` (shared admin+operator completeness filters/where/score), **`rating.ts`** (Bayesian weighted rating — server+client sort), **`az-cities.ts`** (Azerbaijan border GeoJSON + city coords for the hero map), `crm.ts` (slot engine), `crm-activity.ts`, `notify.ts`+`notifications.ts` (SMS+in-app), `otp.ts`, `sms.ts`+`center-sms.ts`, `wallet.ts`+`payments.ts`+`payriff.ts`, `b2.ts`, `plans.ts` (`centerLimits`/`doctorLimits`), `phone.ts` (`normalizePhone` → `+994XXXXXXXXX`), `hours.ts` (Baku tz, slots, `formatHoursSummary`/`WeeklyHours`), `i18n.ts`/`i18n-panel.ts`/`i18n-crm.ts` (az/ru dicts), `constants.ts` (CITIES, EXAM_TYPES, DENTAL_SPECIALIZATIONS), `google-rating.ts` (**Places API New** — `searchText`/place details; legacy Places API disabled), `viewer-access.ts`, **`app-api.ts` + `app-catalog.ts`** (mobile bridge), **`center-description.ts`** (unikal mərkəz təsviri generatoru + `locative()` yerlik hal), **`city-pages.ts`** (şəhər lendinq səhifələri), **`city-service-pages.ts`** (şəhər×xidmət, kurasiyalı `HEADLINE_SERVICES`), **`review-invite.ts`** (rəy dəvəti + cron məntiqi), **`center-editors.ts`** (mərkəzə kim toxunub — operator/admin izi), **`price-invite.ts`** (WhatsApp qiymət kampaniyası: gündəlik limit, wa.me mesajları, `/q/<token>` həlledicisi), **`wa-bot.ts`** (WhatsApp AI botu: sərt qaydalar + DB-dən BotSection bilik bazası + mərkəz konteksti), **`whatsapp.ts`** (Meta Cloud API göndərişi; env-siz passiv), **`az-rayons.ts`** (avtogenerasiya, 60KB: 79 rayon poliqonu + ADM0 kontur — hero xəritə v2), **`random-services.ts`** (`pickCrossCategoryRandom` — footer 6 + ana səhifə 4 random xidmət linki, hər biri fərqli kateqoriyadan).
+`db.ts` (prisma), `env.ts` (typed env), `auth/` (jwt, session, rbac, acting, revoke; +`operator.ts` = OPERATOR "Nərmin" secret-link), `queries.ts` (public+catalog reads; incl. `getApprovedCenters`, `getCoveredCities`), `center-write.ts` (`saveCenterLoose` — loose center create/edit, placeholder owner phone, coord extraction from pasted Maps link), `center-filters.ts` (shared admin+operator completeness filters/where/score), **`rating.ts`** (Bayesian weighted rating — server+client sort), **`az-cities.ts`** (Azerbaijan border GeoJSON + city coords for the hero map), `crm.ts` (slot engine), `crm-activity.ts`, `notify.ts`+`notifications.ts` (SMS+in-app), `otp.ts`, `sms.ts`+`center-sms.ts`, `wallet.ts`+`payments.ts`+`payriff.ts`, `b2.ts`, `plans.ts` (`centerLimits`/`doctorLimits`), `phone.ts` (`normalizePhone` → `+994XXXXXXXXX`), `hours.ts` (Baku tz, slots, `formatHoursSummary`/`WeeklyHours`), `i18n.ts`/`i18n-panel.ts`/`i18n-crm.ts` (az/ru dicts), `constants.ts` (CITIES, EXAM_TYPES, DENTAL_SPECIALIZATIONS), `google-rating.ts` (**Places API New** — `searchText`/place details; legacy Places API disabled), `viewer-access.ts`, **`app-api.ts` + `app-catalog.ts`** (mobile bridge), **`center-description.ts`** (unikal mərkəz təsviri generatoru + `locative()` yerlik hal), **`city-pages.ts`** (şəhər lendinq səhifələri), **`city-service-pages.ts`** (şəhər×xidmət, kurasiyalı `HEADLINE_SERVICES`), **`review-invite.ts`** (rəy dəvəti + cron məntiqi), **`center-editors.ts`** (mərkəzə kim toxunub — operator/admin izi), **`price-invite.ts`** (WhatsApp qiymət kampaniyası: gündəlik limit, wa.me mesajları, `/q/<token>` həlledicisi), **`wa-bot.ts`** (WhatsApp AI botu: sərt qaydalar + DB-dən BotSection bilik bazası + mərkəz konteksti), **`whatsapp.ts`** (Meta Cloud API göndərişi; env-siz passiv), **`az-rayons.ts`** (avtogenerasiya, 60KB: 79 rayon poliqonu + ADM0 kontur — hero xəritə v2), **`random-services.ts`** (`pickCrossCategoryRandom` — footer 6 + ana səhifə 4 random xidmət linki, hər biri fərqli kateqoriyadan), **`wa-transcribe.ts`** (səsli mesaj → Graph media → OpenAI `gpt-4o-transcribe` + Claude təmizləmə), **`wa-auto-reply.ts`** (qarşı tərəfin şablon cavabını tanıyır → bot susur), **`rate-limit.ts`** (`clientIp`/`rateLimit`/`tooManyRequests` — fail-open bucket limiter), **`link-visit.ts`** (token linklərinin açılma/doldurma izləməsi, 👀/✅ daxili qeyd), **`service-icon-map.ts`** (33 xidmət ikonunun Blob URL xəritəsi — DB-yə yazılmır).
 
 **Digər qeyd olunmalı marşrutlar:** `/telimat` (mərkəzlər üçün GİZLİ istifadə təlimatı —
 noIndex + robots disallow + sitemap-dan kənar), `/q/[token]` (girişsiz qiymət formu),
@@ -90,6 +104,27 @@ Mərkəz/pasiyent ──WhatsApp──► Meta Cloud API ──POST──► /ap
 - **Operator paneli** DashboardShell üzərindədir (admin ilə eyni sol sütun);
   operatorNav role-navs.tsx-də; Bot beyni operator üçün yalnız-baxış
   (/panel/bot), redaktə yalnız /admin/bot.
+
+### WhatsApp botunun qorunma qatları (webhook ardıcıllığı)
+```
+gələn mesaj → imza (APP_SECRET)
+  → humanActive(30 dəq)?     → bot susur, yalnız güzgü
+  → isAutoReply(mətn)?       → bot SUSUR + 🔇 qeydi   (wa-auto-reply.ts)
+  → loopGuard(təkrar/burst)? → bot SUSUR + 🔇 qeydi   (15 dəq / 5 cavab)
+  → waHistory → answerWaMessage (Sonnet) → sendWaText → mirror
+```
+`mirror()` bütün güzgü mesajlarını `internal: true` ilə yazır — mərkəzin öz
+panelində görünmür (bax DECISIONS «WhatsApp yazışması ≠ sayt söhbəti»).
+
+## Dizayn sistemi (v2 «Impilo», 2026-08-13)
+Tam bələdçi: **`DESIGN.md`**. Tokenlər `src/app/globals.css` `@theme` blokunda
+(`--color-iris-*`, `clinical`, `mint-vital`, `pearl`). Yalnız Manrope 500/600;
+pill düymələr; 24px kartlar; kölgə əvəzinə ton fərqi. Animasiya köməkçiləri
+eyni fayldadır (`.beam-ring`, `halo-breathe`, `hero-scan`, `chip-sheen`,
+`card-lift`, `.bg-observatory`) — hamısı `prefers-reduced-motion` dostudur.
+**Geri dönüş: `git tag design-v1`.** Panellər (admin/mərkəz/həkim/CRM) qəsdən
+köhnə vizualdadır. Vizual aktivlər (ikon/örtük) **istifadəçi tərəfindən verilir**,
+mən yalnız emal edirəm.
 
 ## Auth & sessions
 - **Login:** `/giris` (role tabs). `requestOtpAction`/`verifyOtpAction` in `src/app/giris/actions.ts`. OTP created/verified in `src/lib/otp.ts` (OTPCode table, sha256 hash). On verify → `setSessionCookie({userId, role, phone})` (`src/lib/auth/session.ts`) → JWT cookie `rx_session` (`src/lib/auth/jwt.ts`, jose HS256, 30d, domain `.rentgen.az` in prod). Token carries `v` = `User.sessionVersion`.

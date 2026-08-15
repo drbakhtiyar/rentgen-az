@@ -7,15 +7,25 @@ platforması. Canlı: https://rentgen.az (+ CRM: https://crm.rentgen.az).
 Rollar (enum `Role`): **PATIENT · CENTER · DOCTOR · ASSISTANT · ADMIN** (+ gizli-link
 OPERATOR data-entry paneli `/panel`). Giriş parolsuz — telefon + OTP (birdəfəlik kod).
 
-> **Layihəyə davam edən AI/insan üçün:** əvvəlcə `PROJECT_STATUS.md`, sonra
-> `ARCHITECTURE.md` · `DATABASE.md` · `API.md` · `DECISIONS.md` · `TODO.md` ·
-> `CHANGELOG.md` oxu — bütün vəziyyət, qərarlar və yarımçıq işlər oradadır.
-> Next.js 16 fərqləri üçün: `AGENTS.md`.
+> **Layihəyə davam edən AI/insan üçün — bu ardıcıllıqla oxu:**
+> 1. **`PROJECT_STATUS.md`** — nə canlıdır, nə yarımçıqdır, nə gözlənilir
+> 2. **`ARCHITECTURE.md`** — stack, qovluq quruluşu, ENV cədvəli, auth, WhatsApp axını
+> 3. **`DECISIONS.md`** — «niyə belədir» (yalnız söhbətdə qalan qərarlar)
+> 4. **`DATABASE.md`** · **`API.md`** — sxem və endpointlər
+> 5. **`TODO.md`** — növbəti işlər · **`CHANGELOG.md`** — nə dəyişib
+> 6. **`SECURITY.md`** — qorumalar + açıq risklər (təhlükəsizlik işinə başlamazdan ƏVVƏL)
+> 7. **`DESIGN.md`** — Impilo dizayn sistemi (UI işinə başlamazdan ƏVVƏL)
+> 8. **`AGENTS.md`** — Next.js 16 fərqləri (köhnə biliklə kod yazma!)
+>
+> **Daimi istifadəçi qaydaları:** hər dəyişikliyi commit + push et (lokal qalmasın) ·
+> xırda qərarları soruşma, işlə · **heç nə silmə, destruktiv əməldə soruş** ·
+> yalnız deyilənə toxun.
 
 ## Texnologiyalar
 
 - **Next.js 16** (App Router) + **React 19** + **TypeScript**
-- **Tailwind CSS v4** (premium, glassmorphism, radiology UI)
+- **Tailwind CSS v4** — dizayn sistemi **Impilo v2** (bax `DESIGN.md`; geri dönüş
+  nöqtəsi `git tag design-v1`)
 - **Prisma 7** + **PostgreSQL** (pg driver adapter)
 - **OTP auth** — `jose` JWT (httpOnly cookie), DB-əsaslı rate-limit
 - **Zod** validation, **lucide-react** ikonlar, **marked** (blog markdown)

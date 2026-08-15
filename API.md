@@ -78,7 +78,7 @@ Phone-authed REST mirrors of the site's chat server actions (the app has no sess
 - `POST /api/upload` — authenticated upload helper.
 - `GET /api/v1/requests` — Platinum center API (apiKey).
 - `GET /api/merkez/export` — center CSV export.
-- Crons (Bearer `CRON_SECRET`): `/api/cron/purge-trash` (03:00), `plan-downgrade` (04:00), `appointment-reminders` (hourly), `sms-pool-check` (09:00), `google-ratings` (05:30), `review-invites` (saatlıq :15 — tamamlanmış müayinələr üçün rəy dəvəti SMS-i).
+- Crons (Bearer `CRON_SECRET`): `/api/cron/purge-trash` (03:00), `plan-downgrade` (04:00), `appointment-reminders` (hourly), `sms-pool-check` (09:00), `google-ratings` (05:30), `review-invites` (saatlıq :15 — tamamlanmış müayinələr üçün rəy dəvəti SMS-i), **`weekly-stats`** (B.e 05:00 UTC = 09:00 Bakı — həftəlik WhatsApp statistika hesabatı; yalnız APPROVED + mobil nömrəli + son 7 gündə ≥`WA_STATS_MIN_EVENTS` (default 3) hadisəsi olan mərkəzlərə; `heftelik_hesabat` UTILITY şablonu; dedup 6 gün `AdminActionLog center:wa_weekly_stats`; güzgü `internal: true`).
 - `GET/POST /api/whatsapp/webhook` — Meta Cloud API (CANLI 2026-08-12). GET =
   `hub.challenge`; POST = imza yoxlanışı → tip ayrımı: text → humanActive(30dəq)
   yoxla → waHistory(7g/20) → answerWaMessage → sendWaText; audio/video →
@@ -89,6 +89,27 @@ Phone-authed REST mirrors of the site's chat server actions (the app has no sess
   kampaniya dəvətləri üçün çağırır (WA_TEMPLATE: qiymet/faq/kart/kabinet_devet).
 - `GET /api/panel/stats-today` — Axiora admin paneli üçün günün sayları
   (PANEL_SHARED_SECRET başlığı ilə; paralel sessiyada əlavə olunub).
+
+## Sürət limiti (2026-08-14) — hər yeni ictimai endpointdə MƏCBURİ
+
+Naxış (`src/lib/rate-limit.ts`):
+```ts
+const ip = clientIp(request);
+const rl = await rateLimit("endpoint_adi", ip, 60 /*limit*/, 3600 /*pəncərə san*/);
+if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+```
+Bucket = `<ad>:<subyekt>:<pəncərəId>`, upsert ilə artırılır (1 DB əməliyyatı),
+**fail-open** (DB xətası istifadəçini bloklamır). Qüvvədə: 10 app endpointi
+(`accounts` saatda 3, `whoami`/AI/OTP/yazma endpointləri), ictimai bildiriş
+forması, `/q` `/f` `/m` açılışı (60/saat) və yazması (30/saat), `track`/`search`
+hadisələri (120/saat).
+
+## Token linkləri (girişsiz formalar) — TTL 45 gün
+`/q/<token>` (qiymət), `/f/<token>` (FAQ), `/m/<token>` (kart) — `CenterProfile.
+priceToken` + `priceTokenAt`. `resolvePriceToken`/`FaqToken`/`CardToken` müddəti
+yoxlayır (`tokenExpired`); dəvət göndəriləndə `ensurePriceToken` müddəti bitmiş
+tokeni avtomatik yeniləyir. Açılış/doldurma `src/lib/link-visit.ts` ilə izlənir
+(👀/✅ qeydi — `internal: true`, crawler süzgəci, 1 s dedup).
 
 ## Worker OTP proxy (Rork side, not in this repo)
 `/otp/send` & `/otp/verify` on the Worker call the site's real `requestOtpAction`/`verifyOtpAction` server actions by discovering their action-ids from `/giris` JS chunks at runtime (ids change per deploy; the Worker re-discovers on staleness). SMS goes through the site's Lsim provider.
