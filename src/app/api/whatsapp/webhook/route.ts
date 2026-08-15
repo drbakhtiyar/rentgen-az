@@ -5,6 +5,7 @@ import { answerWaMessage } from "@/lib/wa-bot";
 import type { AiMsg } from "@/lib/ai-assistant";
 import { sendWaText, waConfigured } from "@/lib/whatsapp";
 import { transcribeWaAudio } from "@/lib/wa-transcribe";
+import { isAutoReply } from "@/lib/wa-auto-reply";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -116,6 +117,7 @@ async function humanActive(phone: string): Promise<boolean> {
           { content: { startsWith: "⚠️" } },
           { content: { startsWith: "👀" } },
           { content: { startsWith: "✅" } },
+          { content: { startsWith: "🔇" } },
         ],
         createdAt: { gte: new Date(Date.now() - HUMAN_TAKEOVER_MS) },
       },
@@ -127,7 +129,41 @@ async function humanActive(phone: string): Promise<boolean> {
   }
 }
 
-async function mirror(phone: string, inbound: string, outbound: string | null) {
+/**
+ * DÖNGƏ QORUMASI (2026-08-15): qarşı tərəf robotdursa yazışma sonsuza gedə
+ * bilər. İki əlavə hədd:
+ *  a) eyni mətn son 15 dəqiqədə artıq gəlibsə — bir daha cavab verilmir
+ *     (klinikanın away-mesajı iki dəfə düşən hal real baş verdi);
+ *  b) son 15 dəqiqədə bot 5-dən çox cavab yazıbsa — susur, operator baxsın.
+ */
+const LOOP_WINDOW_MS = 15 * 60_000;
+const BOT_BURST_LIMIT = 5;
+
+async function loopGuard(phone: string, inbound: string): Promise<string | null> {
+  try {
+    const userId = await threadUserId(phone);
+    if (!userId) return null;
+    const since = new Date(Date.now() - LOOP_WINDOW_MS);
+    const rows = await prisma.adminMessage.findMany({
+      where: { thread: { userId }, createdAt: { gte: since } },
+      select: { content: true, fromAdmin: true },
+      take: 40,
+    });
+    const norm = (s: string) => s.replace(/\s+/g, " ").trim().toLowerCase().slice(0, 300);
+    const key = norm(inbound);
+    const repeated = rows.some(
+      (r) => !r.fromAdmin && key.length > 20 && norm(r.content.replace(/^📲 WhatsApp: /, "")) === key,
+    );
+    if (repeated) return "təkrar mesaj";
+    const botCount = rows.filter((r) => r.fromAdmin && r.content.startsWith("🤖")).length;
+    if (botCount >= BOT_BURST_LIMIT) return "bot cavab həddi";
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function mirror(phone: string, inbound: string, outbound: string | null, note?: string) {
   try {
     const digits = phone.replace(/\D/g, "").slice(-9);
     const center = await prisma.centerProfile.findFirst({
@@ -156,6 +192,11 @@ async function mirror(phone: string, inbound: string, outbound: string | null) {
     if (outbound) {
       await prisma.adminMessage.create({
         data: { threadId: thread.id, fromAdmin: true, content: `🤖 ${outbound.slice(0, 1500)}`, internal: true },
+      });
+    }
+    if (note) {
+      await prisma.adminMessage.create({
+        data: { threadId: thread.id, fromAdmin: true, content: `🔇 ${note}`, internal: true },
       });
     }
   } catch {
@@ -236,6 +277,21 @@ export async function POST(request: Request): Promise<Response> {
       // İnsan söhbəti aparırsa — bot qarışmır, mesaj yalnız güzgüyə düşür
       if (await humanActive(m.from)) {
         await mirror(m.from, m.text.body, null);
+        continue;
+      }
+
+      // Qarşı tərəfin avtomatik cavabı (greeting/away şablonu) — bot SUSUR.
+      // Robot-robot yazışmasının qarşısını alır; operator güzgüdə görür.
+      const auto = isAutoReply(m.text.body);
+      if (auto.auto) {
+        await mirror(m.from, m.text.body, null, `Avtomatik cavab tanındı (${auto.reason}) — bot cavab yazmadı`);
+        continue;
+      }
+
+      // Döngə qoruması: təkrar mesaj / bot cavab həddi
+      const loop = await loopGuard(m.from, m.text.body);
+      if (loop) {
+        await mirror(m.from, m.text.body, null, `Döngə qoruması: ${loop} — bot cavab yazmadı`);
         continue;
       }
 
