@@ -136,6 +136,17 @@ export default async function HomePage() {
         </Container>
       </div>
 
+      {/* Bölmə ayırıcısı (2026-08-16) — footer-in üstündəki siyan→bənövşəyi
+          hairline ilə eyni ailə, amma iki tərəfə sönür; mərkəzdə hero-lardakı
+          skan nöqtəsinin kiçik variantı. */}
+      <div className="bg-iris-canvas">
+        <Container>
+          <div className="relative h-px bg-gradient-to-r from-transparent via-iris-veil to-transparent">
+            <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-clinical shadow-[0_0_12px_3px_rgba(0,177,255,0.55)]" />
+          </div>
+        </Container>
+      </div>
+
       {/* ============ XİDMƏTLƏR — Dark Canvas Cards ============ */}
       <section className="bg-iris-canvas py-16 sm:py-20">
         <Container>
