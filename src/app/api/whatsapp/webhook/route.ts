@@ -151,11 +151,11 @@ async function mirror(phone: string, inbound: string, outbound: string | null) {
       update: { lastMessageAt: new Date() },
     });
     await prisma.adminMessage.create({
-      data: { threadId: thread.id, fromAdmin: false, content: `📲 WhatsApp: ${inbound.slice(0, 1500)}` },
+      data: { threadId: thread.id, fromAdmin: false, content: `📲 WhatsApp: ${inbound.slice(0, 1500)}`, internal: true },
     });
     if (outbound) {
       await prisma.adminMessage.create({
-        data: { threadId: thread.id, fromAdmin: true, content: `🤖 ${outbound.slice(0, 1500)}` },
+        data: { threadId: thread.id, fromAdmin: true, content: `🤖 ${outbound.slice(0, 1500)}`, internal: true },
       });
     }
   } catch {

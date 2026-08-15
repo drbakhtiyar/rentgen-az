@@ -74,6 +74,13 @@ const ACTION_LABELS: Record<string, string> = {
   "center:price_self": "Mərkəz qiymətlərini yazdı",
   "center:faq_self": "Mərkəz FAQ cavablarını yazdı",
   "center:card_self": "Mərkəz kartını yenilədi",
+  // Girişsiz link izləməsi (2026-08-14): kim açdı — aşağıdakı "parts" mərkəz
+  // adını göstərir, nişan isə "Özünəxidmət" olur.
+  "center:link_visit_q": "Mərkəz qiymət linkini açdı",
+  "center:link_visit_f": "Mərkəz FAQ linkini açdı",
+  "center:link_visit_m": "Mərkəz kart linkini açdı",
+  "center:wa_weekly_stats": "Həftəlik statistika hesabatı",
+  "api:accounts_used": "Mobil API: accounts çağırıldı",
 };
 
 const SMS_KIND_LABELS: Record<string, string> = {
@@ -216,9 +223,11 @@ async function collectEvents(): Promise<Ev[]> {
   const evs: Ev[] = [];
 
   for (const l of logs) {
+    // Mərkəzin ÖZ hərəkətləri (forma yazması və link açması) "Özünəxidmət"
+    // nişanı alır — operatorun etdiyi əməliyyatlardan ayrılsın (2026-08-15).
     const kind: EventKind = l.action.startsWith("center:wa_")
       ? "whatsapp"
-      : l.action.endsWith("_self")
+      : l.action.endsWith("_self") || l.action.startsWith("center:link_visit_")
         ? "ozun"
         : "admin";
     const c = l.targetId ? centerById.get(l.targetId) : undefined;

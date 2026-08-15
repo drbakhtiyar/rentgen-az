@@ -175,8 +175,32 @@ export async function adminSendToUserAction(
   if (file && !file.key.startsWith(`chat/admin/${threadId}/`)) {
     return { ok: false, error: "Yanlış fayl açarı." };
   }
+  // WhatsApp körpüsü aktivdirsə (son 24 saatda 📲 gəlib), bu cavab mərkəzə
+  // WhatsApp-la çatır — sayt panelində TƏKRAR göstərilməsin deyə daxili
+  // qeyd kimi saxlanılır (istifadəçi qərarı, 2026-08-15: "WhatsApp
+  // yazışmaları ilə sayt söhbətləri bir-birindən ayrı olsun").
+  const waBridgeOpen =
+    !!text && waConfigured() && !user.phone.startsWith("placeholder:")
+      ? !!(await prisma.adminMessage.findFirst({
+          where: {
+            threadId,
+            fromAdmin: false,
+            content: { startsWith: "📲" },
+            createdAt: { gte: new Date(Date.now() - 24 * 3600_000) },
+          },
+          select: { id: true },
+        }))
+      : false;
+
   const msg = await prisma.adminMessage.create({
-    data: { threadId, fromAdmin: true, content: text, fileUrl: file?.key ?? null, fileName: file?.name ?? null },
+    data: {
+      threadId,
+      fromAdmin: true,
+      content: text,
+      fileUrl: file?.key ?? null,
+      fileName: file?.name ?? null,
+      internal: waBridgeOpen,
+    },
     select: { createdAt: true },
   });
   await prisma.adminThread.update({
@@ -187,27 +211,17 @@ export async function adminSendToUserAction(
   // OPERATOR KÖRPÜSÜ (2026-08-12): telefon tətbiqi artıq yoxdur — bu thread
   // son 24 saatda WhatsApp-dan (📲) mesaj alıbsa, admin cavabı WhatsApp-a da
   // gedir (Meta 24 saatlıq cavab pəncərəsi). Uğursuzluqda thread-ə qeyd düşür.
-  if (text && waConfigured() && !user.phone.startsWith("placeholder:")) {
-    const recentInbound = await prisma.adminMessage.findFirst({
-      where: {
-        threadId,
-        fromAdmin: false,
-        content: { startsWith: "📲" },
-        createdAt: { gte: new Date(Date.now() - 24 * 3600_000) },
-      },
-      select: { id: true },
-    });
-    if (recentInbound) {
-      const sent = await sendWaText(user.phone, text).catch(() => false);
-      if (!sent) {
-        await prisma.adminMessage.create({
-          data: {
-            threadId,
-            fromAdmin: true,
-            content: "⚠️ (sistem) Yuxarıdakı cavab WhatsApp-a ÇATMADI — 24 saat pəncərəsi bitmiş və ya texniki xəta ola bilər.",
-          },
-        }).catch(() => null);
-      }
+  if (waBridgeOpen && text) {
+    const sent = await sendWaText(user.phone, text).catch(() => false);
+    if (!sent) {
+      await prisma.adminMessage.create({
+        data: {
+          threadId,
+          fromAdmin: true,
+          internal: true,
+          content: "⚠️ (sistem) Yuxarıdakı cavab WhatsApp-a ÇATMADI — 24 saat pəncərəsi bitmiş və ya texniki xəta ola bilər.",
+        },
+      }).catch(() => null);
     }
   }
 

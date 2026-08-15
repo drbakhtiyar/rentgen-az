@@ -117,6 +117,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         data: {
           threadId: thread.id,
           fromAdmin: true,
+          internal: true, // WhatsApp güzgüsü — sayt panelində göstərilmir
           content: `🤖 Salam, ${c.name}! 📊 rentgen.az həftəlik hesabatınız — son 7 gündə profiliniz ${views} dəfə baxılıb, ${calls} zəng kliki və ${wa} WhatsApp müraciəti olub. Ətraflı: https://rentgen.az/merkez/statistika [heftelik_hesabat şablonu]`,
         },
       });

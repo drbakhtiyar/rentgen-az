@@ -196,7 +196,7 @@ export async function sendWaInviteAction(
         update: { lastMessageAt: new Date() },
       });
       await prisma.adminMessage.create({
-        data: { threadId: thread.id, fromAdmin: true, content: `🤖 ${data.mirrorText.slice(0, 1500)}` },
+        data: { threadId: thread.id, fromAdmin: true, content: `🤖 ${data.mirrorText.slice(0, 1500)}`, internal: true },
       });
     }
   } catch {
