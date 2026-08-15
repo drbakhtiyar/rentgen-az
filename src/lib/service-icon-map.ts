@@ -86,8 +86,6 @@ export const SERVICE_ICON_URLS: Record<string, string> = {
   "urek-kt": `${BLOB}/urek-kt.png`,
 
   // 2026-08-16 seriyası 2 (36): MRT, onurğa, sinə, uşaq, mammoqrafiya, USM.
-  // Qalan ikonsuz (3): usaqlarda-skolioz-rentgeni, 3d-tomoqrafiya,
-  // 3d-tomoqrafiya-frontal-nahiyye — şəkil gələndə əlavə et.
   "urek-mrt": `${BLOB}/urek-mrt.png`,
   "bas-mrt": `${BLOB}/bas-mrt.png`,
   "beyin-mrt": `${BLOB}/beyin-mrt.png`,
@@ -124,4 +122,9 @@ export const SERVICE_ICON_URLS: Record<string, string> = {
   "doppler-usm": `${BLOB}/doppler-usm.png`,
   "hamilelik-usm": `${BLOB}/hamilelik-usm.png`,
   "usaq-usm": `${BLOB}/usaq-usm.png`,
+
+  // 2026-08-16 son 2 — kataloq TAM (111 aktiv xidmətin hamısında ikon;
+  // "3d-tomoqrafiya" generiki istifadəçi qərarı ilə deaktiv edildi).
+  "usaqlarda-skolioz-rentgeni": `${BLOB}/usaqlarda-skolioz-rentgeni.png`,
+  "3d-tomoqrafiya-frontal-nahiyye": `${BLOB}/3d-tomoqrafiya-frontal-nahiyye.png`,
 };
