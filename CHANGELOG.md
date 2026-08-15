@@ -66,7 +66,8 @@ Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git
 
 ## 2026-08-13/14 — DİZAYN v2 «Impilo» + ikonlar
 
-**Geri dönüş nöqtəsi: `git tag design-v1`.** Üslub bələdçisi: `DESIGN.md`.
+Üslub bələdçisi: `DESIGN.md`. (Köhnə dizaynın `design-v1` tagı 2026-08-16-da
+istifadəçi qərarı ilə silindi — geri dönüş nəzərdə tutulmur.)
 Prosedur: refero.design-dan Impilo seçildi → DESIGN.md + `taste-skill` +
 `impeccable` skilləri ilə tətbiq → istifadəçi təsdiqi → canlıya.
 

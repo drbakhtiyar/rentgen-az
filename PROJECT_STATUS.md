@@ -40,9 +40,9 @@ The web platform is production-live and used by real centers/doctors/patients. T
 - **DİZAYN v2 «Impilo» CANLI (2026-08-13):** saytın bütün ictimai hissəsi kökündən
   yenidən işlənib — tünd iris (bənövşəyi-göy) ailəsi, Pearl fon, Manrope 500/600,
   pill düymələr, 24px kartlar. Tokenlər `src/app/globals.css` `@theme` blokunda,
-  üslub bələdçisi **`DESIGN.md`**-də. ⚠️ **GERİ DÖNÜŞ NÖQTƏSİ: `git tag design-v1`**
-  — köhnə dizayn tam bərpa oluna bilər. Panellər (admin/mərkəz/həkim/CRM) HƏLƏ
-  köhnə vizualdadır, redizayn edilməyib.
+  üslub bələdçisi **`DESIGN.md`**-də. Köhnə dizayna qayıdış NƏZƏRDƏ TUTULMUR
+  (`design-v1` tagı istifadəçi qərarı ilə silindi). Panellər (admin/mərkəz/həkim/
+  CRM) HƏLƏ köhnə vizualdadır, redizayn edilməyib.
 - **Xidmət ikonları (33) + səhifə hero ikonları (6):** istifadəçi ChatGPT-də
   yaradır, mən `sharp` ilə kəsib Vercel Blob-a yükləyirəm; xəritə
   `src/lib/service-icon-map.ts` (DB-yə YAZILMIR). CSS animasiyalı çərçivələr:

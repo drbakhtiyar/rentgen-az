@@ -24,8 +24,7 @@ OPERATOR data-entry paneli `/panel`). Giriş parolsuz — telefon + OTP (birdəf
 ## Texnologiyalar
 
 - **Next.js 16** (App Router) + **React 19** + **TypeScript**
-- **Tailwind CSS v4** — dizayn sistemi **Impilo v2** (bax `DESIGN.md`; geri dönüş
-  nöqtəsi `git tag design-v1`)
+- **Tailwind CSS v4** — dizayn sistemi **Impilo v2** (bax `DESIGN.md`)
 - **Prisma 7** + **PostgreSQL** (pg driver adapter)
 - **OTP auth** — `jose` JWT (httpOnly cookie), DB-əsaslı rate-limit
 - **Zod** validation, **lucide-react** ikonlar, **marked** (blog markdown)

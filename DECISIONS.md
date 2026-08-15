@@ -41,11 +41,14 @@ Architectural & product decisions that live only in conversation (not obvious fr
   Öz təşəbbüsümlə şəkil generasiya etmə. Fayllar adətən `~/Downloads/icon/` və
   `~/Downloads/rentgen bloq kover/` qovluqlarında olur.
 
-## Dizayn v2 «Impilo» — geri dönüş nöqtəsi `design-v1` tagıdır
+## Dizayn v2 «Impilo» — köhnə dizayna qayıdış yoxdur
 - **Qərar (2026-08-13, istifadəçi):** «saytın dizaynını tamamilə kökündən
   dəyişmək istəyirəm… əvvəlki versiyanı yadda saxla ki, qayıda bilək».
-- **Nəticə:** köhnə dizayn `git tag design-v1` ilə dondurulub. Yeni sistem
-  `DESIGN.md`-də sənədləşdirilib, tokenlər `globals.css` `@theme`-də.
+- **Nəticə (yenilənib 2026-08-16):** başlanğıcda `design-v1` tagı qoyulmuşdu,
+  amma yeni dizayn oturduğu üçün istifadəçi tagı SİLDİRDİ («sil getsin lazım
+  deyil») — köhnə dizayna qayıdış NƏZƏRDƏ TUTULMUR, yeni iş planlaşdırarkən
+  «geri dönə bilərik» ehtimalını hesaba qatma. Yeni sistem `DESIGN.md`-də
+  sənədləşdirilib, tokenlər `globals.css` `@theme`-də.
   **Panellər (admin/mərkəz/həkim/CRM) qəsdən köhnə vizualda qaldı** — yalnız
   ictimai sayt redizayn edildi.
 

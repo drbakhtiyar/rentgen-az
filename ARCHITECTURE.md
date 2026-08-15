@@ -122,7 +122,7 @@ Tam bələdçi: **`DESIGN.md`**. Tokenlər `src/app/globals.css` `@theme` blokun
 pill düymələr; 24px kartlar; kölgə əvəzinə ton fərqi. Animasiya köməkçiləri
 eyni fayldadır (`.beam-ring`, `halo-breathe`, `hero-scan`, `chip-sheen`,
 `card-lift`, `.bg-observatory`) — hamısı `prefers-reduced-motion` dostudur.
-**Geri dönüş: `git tag design-v1`.** Panellər (admin/mərkəz/həkim/CRM) qəsdən
+Panellər (admin/mərkəz/həkim/CRM) qəsdən
 köhnə vizualdadır. Vizual aktivlər (ikon/örtük) **istifadəçi tərəfindən verilir**,
 mən yalnız emal edirəm.
 
