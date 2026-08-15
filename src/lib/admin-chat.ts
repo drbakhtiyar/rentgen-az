@@ -278,7 +278,13 @@ export async function getUserAdminContact(
     select: {
       id: true,
       userReadAt: true,
-      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { content: true, fileUrl: true } },
+      // Önizləmə və sayğacda daxili qeydlər (👀/✅) iştirak etmir (2026-08-15)
+      messages: {
+        where: { internal: false },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { content: true, fileUrl: true },
+      },
     },
   });
   if (!thread) return { threadId: null, preview: null, unread: 0 };
@@ -286,6 +292,7 @@ export async function getUserAdminContact(
     where: {
       threadId: thread.id,
       fromAdmin: true,
+      internal: false,
       ...(thread.userReadAt ? { createdAt: { gt: thread.userReadAt } } : {}),
     },
   });

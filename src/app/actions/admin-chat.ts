@@ -146,7 +146,9 @@ export async function fetchAdminThreadMessagesAction(): Promise<
     .update({ where: { id: threadId }, data: { userReadAt: new Date() } })
     .catch(() => {});
   const rows = await prisma.adminMessage.findMany({
-    where: { threadId },
+    // internal qeydlər (👀 link açılışı, ✅ forma doldurma) istifadəçiyə
+    // GÖSTƏRİLMİR — yalnız admin/operator panelindədir (2026-08-15).
+    where: { threadId, internal: false },
     orderBy: { createdAt: "asc" },
     take: 200,
     select: { id: true, fromAdmin: true, content: true, fileUrl: true, fileName: true, createdAt: true },

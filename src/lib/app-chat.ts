@@ -353,7 +353,8 @@ export async function appFetchSupport(userId: string): Promise<AppChatMessage[]>
   const threadId = await ensureAdminThread(userId);
   await prisma.adminThread.update({ where: { id: threadId }, data: { userReadAt: new Date() } }).catch(() => {});
   const rows = await prisma.adminMessage.findMany({
-    where: { threadId },
+    // Daxili izləmə qeydləri tətbiqdə də gizlidir (2026-08-15)
+    where: { threadId, internal: false },
     orderBy: { createdAt: "asc" },
     take: 200,
     select: { id: true, fromAdmin: true, content: true, fileUrl: true, fileName: true, createdAt: true },

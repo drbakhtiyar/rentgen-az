@@ -140,6 +140,10 @@ model AdminMessage {
   id        String      @id @default(cuid())
   threadId  String
   thread    AdminThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  /// Daxili qeyd (2026-08-15): 👀 link açılışı, ✅ forma doldurma kimi
+  /// izləmə qeydləri YALNIZ admin/operatora görünür — mərkəzin öz panelində
+  /// və mobil tətbiqdə gizlədilir ("sizi izləyirik" təəssüratı yaranmasın).
+  internal  Boolean  @default(false)
   fromAdmin Boolean // true = admin göndərib, false = user göndərib
   content   String
   fileUrl   String? // əlavə edilmiş fayl (şəkil/PDF)

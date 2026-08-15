@@ -40,7 +40,8 @@ async function threadNote(centerId: string, content: string): Promise<void> {
     update: { lastMessageAt: new Date() },
   });
   await prisma.adminMessage.create({
-    data: { threadId: thread.id, fromAdmin: true, content },
+    // internal: yalnız admin/operator görür (2026-08-15)
+    data: { threadId: thread.id, fromAdmin: true, content, internal: true },
   });
 }
 
