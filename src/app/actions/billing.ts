@@ -86,6 +86,9 @@ export async function startWalletTopupAction(amountMinor: number): Promise<Billi
   }
   const amount = Math.round(amountMinor);
   if (amount < 100) return { ok: false, error: "Minimum məbləğ 1 ₼." };
+  // Yuxarı hədd (2026-08-15 auditi): absurd məbləğlərin ödəniş sisteminə
+  // ötürülməsinin qarşısı. Daha böyük ödəniş üçün admin əl ilə kreditləyir.
+  if (amount > 1_000_000) return { ok: false, error: "Maksimum məbləğ 10 000 ₼. Daha böyük məbləğ üçün bizimlə əlaqə saxlayın." };
   if (!payriffConfigured()) {
     return { ok: false, error: "Ödəniş sistemi hələ aktiv deyil (Payriff konfiqurasiyası gözlənilir)." };
   }
