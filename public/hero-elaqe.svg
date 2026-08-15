@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Əlaqə">
   <!-- /elaqe hero (2026-08-16): digər səhifə hero-larının neon üslubu, vektorda.
-       Qara fon qəsdəndir — PageHeroVisual `mix-blend-screen` ilə onu yox edir. -->
+       Fon ŞƏFFAFDIR — səhifənin iris fonu birbaşa görünür (2026-08-16 düzəlişi:
+       qara kvadrat SVG-də blend ilə yox olmurdu). -->
   <defs>
     <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#00b1ff" stop-opacity="0.55"/>
       <stop offset="45%" stop-color="#0090e0" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0090e0" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#0a86d8" stop-opacity="0.55"/>
@@ -29,7 +30,6 @@
     </filter>
   </defs>
 
-  <rect width="1024" height="1024" fill="#000000"/>
   <circle cx="512" cy="512" r="470" fill="url(#bloom)"/>
 
   <!-- xarici halqa + bölgü çərtikləri -->

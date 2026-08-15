@@ -46,7 +46,11 @@ export function PageHeroVisual({ src, alt }: { src: string; alt: string }) {
           fill
           sizes="352px"
           priority
-          className="object-contain mix-blend-screen drop-shadow-[0_0_28px_rgba(0,177,255,0.35)]"
+          /* PNG-lər qara fonludur → screen blend onu yox edir. SVG variantların
+             fonu onsuz da şəffafdır, blend orada rəngləri yuyardı. */
+          className={`object-contain drop-shadow-[0_0_28px_rgba(0,177,255,0.35)] ${
+            src.endsWith(".svg") ? "" : "mix-blend-screen"
+          }`}
         />
       </div>
 
