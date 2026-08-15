@@ -48,6 +48,10 @@ html {
   scroll-behavior: smooth;
 }
 
+:root {
+  /* Düymə parıltısının default (ictimai sayt) dəyəri — panel bunu iris-ə çevirir */
+  --btn-glow: rgba(10, 95, 240, 0.7);
+}
 body {
   background: var(--background);
   color: var(--foreground);
@@ -453,3 +457,138 @@ body {
 .prose-rx :where(li) { margin: 0.4rem 0; line-height: 1.7; color: #2b3a5c; }
 .prose-rx :where(strong) { color: var(--color-ink-900); font-weight: 700; }
 .prose-rx :where(a) { color: var(--color-brand-600); text-decoration: underline; }
+
+/* ============================================================================
+   PANEL — IMPILO (2026-08-16)
+   Panellərin (admin / mərkəz / həkim / operator / CRM / kabinet) rəng ailəsini
+   ictimai saytla eyniləşdirir. STRUKTURA TOXUNMUR: heç bir səhifə yenidən
+   yazılmır — Tailwind v4 rəng siniflərini `var(--color-*)` ilə həll etdiyi üçün
+   burada həmin dəyişənləri panel qatı daxilində yenidən təyin etmək kifayətdir.
+   Nəticə: `text-slate-500`, `bg-brand-600` və s. avtomatik Impilo tonuna düşür.
+   Geri qaytarmaq üçün bu bloku silmək kifayətdir.
+   ========================================================================== */
+.panel-impilo {
+  /* Boz ailə → sərin bənövşəyi-boz (pearl #f4f4f6 ilə eyni ailə) */
+  --color-slate-50: #f7f7fa;
+  --color-slate-100: #eeeef4;
+  --color-slate-200: #e0e0ea;
+  --color-slate-300: #c8c8d9;
+  --color-slate-400: #9494a9;
+  --color-slate-500: #71718a;
+  --color-slate-600: #55556e;
+  --color-slate-700: #3f3f57;
+  --color-slate-800: #2b2b44;
+  --color-slate-900: #1d1d38;
+  --color-slate-950: #14142b;
+  /* gray/zinc/neutral eyni ailəyə — qarışıq işlədilən yerlər üçün */
+  --color-gray-50: #f7f7fa;
+  --color-gray-100: #eeeef4;
+  --color-gray-200: #e0e0ea;
+  --color-gray-300: #c8c8d9;
+  --color-gray-400: #9494a9;
+  --color-gray-500: #71718a;
+  --color-gray-600: #55556e;
+  --color-gray-700: #3f3f57;
+  --color-gray-800: #2b2b44;
+  --color-gray-900: #1d1d38;
+
+  /* Vurğu ailəsi → iris (saytın əsas brend rəngi) */
+  --color-brand-50: #f0effe;
+  --color-brand-100: #e2e0fc;
+  --color-brand-200: #c8c5f8;
+  --color-brand-300: #a7a2f2;
+  --color-brand-400: #837de9;
+  --color-brand-500: #5350cc;
+  --color-brand-600: #403cd5;
+  --color-brand-700: #3733b0;
+  --color-brand-800: #2d2a8f;
+  --color-brand-900: #232269;
+
+  /* Tünd səthlər/başlıqlar → iris kanvası */
+  --color-ink-700: #232269;
+  --color-ink-800: #1c1c5f;
+  --color-ink-900: #16165c;
+  --color-ink-950: #101040;
+
+  /* Data/link vurğusu → clinical siyan */
+  --color-cyan-50: #e6f7ff;
+  --color-cyan-100: #cceeff;
+  --color-cyan-400: #59b4ff;
+  --color-cyan-500: #00b1ff;
+  --color-cyan-600: #0092d6;
+  --color-cyan-700: #0073ab;
+  --color-sky-50: #e6f7ff;
+  --color-sky-100: #cceeff;
+  --color-sky-500: #00b1ff;
+  --color-sky-600: #0092d6;
+  --color-sky-700: #0073ab;
+  --color-blue-50: #f0effe;
+  --color-blue-100: #e2e0fc;
+  --color-blue-500: #5350cc;
+  --color-blue-600: #403cd5;
+  --color-blue-700: #3733b0;
+  --color-indigo-50: #f0effe;
+  --color-indigo-100: #e2e0fc;
+  --color-indigo-500: #5350cc;
+  --color-indigo-600: #403cd5;
+  --color-indigo-700: #3733b0;
+
+  /* Müsbət → mint ailəsi (açıq fonda oxunaqlı tünd variantlar) */
+  --color-emerald-50: #e4fff6;
+  --color-emerald-100: #c2ffe9;
+  --color-emerald-200: #93f7d5;
+  --color-emerald-500: #00c48f;
+  --color-emerald-600: #00a87a;
+  --color-emerald-700: #008762;
+  --color-emerald-800: #006b4e;
+  --color-green-50: #e4fff6;
+  --color-green-100: #c2ffe9;
+  --color-green-600: #00a87a;
+  --color-green-700: #008762;
+  /* violet (asistent bannerləri) → iris ailəsi */
+  --color-violet-50: #f0effe;
+  --color-violet-100: #e2e0fc;
+  --color-violet-200: #c8c5f8;
+  --color-violet-500: #5350cc;
+  --color-violet-700: #3733b0;
+  --color-violet-800: #2d2a8f;
+
+  /* amber (xəbərdarlıq) və red (xəta) qəsdən toxunulmur — semantik siqnaldır */
+
+  /* Düymə parıltısı iris olsun (ictimai saytda mavi qalır) */
+  --btn-glow: rgba(64, 60, 213, 0.55);
+}
+
+/* Panel fonu — saytın Pearl bölmələri ilə eyni */
+.panel-impilo {
+  background: var(--color-pearl);
+}
+
+/* Sol sütun: saytın tünd iris səthi. İçəridəki boz mətn dəyişənləri açıq
+   tərəfə çevrilir ki, mövcud `text-slate-*` sinifləri tünd fonda oxunsun. */
+.panel-rail {
+  background: linear-gradient(180deg, #1b1a63 0%, #16165c 55%, #141450 100%);
+  border-color: rgba(72, 70, 198, 0.55) !important;
+  --color-slate-100: #eceafc;
+  --color-slate-200: rgba(255, 255, 255, 0.14);
+  --color-slate-300: #b1a6f6;
+  --color-slate-400: #9d9ac9;
+  --color-slate-500: #b8b5dd;
+  --color-slate-600: #d8d8e3;
+  --color-slate-700: #eceafc;
+  --color-slate-900: #ffffff;
+  --color-ink-900: #ffffff;
+  --color-ink-800: #eceafc;
+  /* seçili bənd: tünd fonda işıqlı iris */
+  --color-brand-50: rgba(83, 80, 204, 0.32);
+  --color-brand-700: #ffffff;
+  --color-red-600: #ff8fa3;
+}
+.panel-rail .panel-rail-hover:hover,
+.panel-rail nav a:hover {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+/* Rail-də loqo/avatar konturu */
+.panel-rail img {
+  box-shadow: 0 0 0 1px rgba(177, 166, 246, 0.35);
+}

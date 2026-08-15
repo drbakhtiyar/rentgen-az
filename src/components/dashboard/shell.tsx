@@ -106,15 +106,15 @@ export async function DashboardShell({
   return (
     <LocaleProvider locale={locale}>
     {showAlerts && <DashboardAlerts />}
-    <div className="min-h-[calc(100vh-4rem)] bg-surface">
+    <div className="panel-impilo min-h-[calc(100vh-4rem)]">
       <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Sidebar (desktop) */}
         <aside className={collapsible ? "hidden w-16 shrink-0 lg:block" : "hidden w-64 shrink-0 lg:block"}>
           <div
             className={
               collapsible
-                ? "group sticky top-20 z-40 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 transition-[width] duration-200 hover:w-64 hover:shadow-xl"
-                : "sticky top-20 rounded-2xl border border-slate-200 bg-white p-4"
+                ? "panel-rail group sticky top-20 z-40 w-16 overflow-hidden rounded-3xl border border-slate-200 p-3 transition-[width] duration-200 hover:w-64 hover:shadow-xl"
+                : "panel-rail sticky top-20 rounded-3xl border border-slate-200 p-4"
             }
           >
             <div className="flex items-center gap-2 px-2 pb-3">
