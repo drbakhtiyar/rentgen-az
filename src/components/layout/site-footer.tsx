@@ -35,10 +35,11 @@ export async function SiteFooter() {
       ],
     },
   ];
-  // Hər renderde fərqli 6 xidmət — hər biri fərqli kateqoriyadan. Əvvəl yalnız
-  // `featured` (7 dental) göstərilirdi; random rotasiya həm siyahını qısa saxlayır,
-  // həm də zamanla bütün xidmət səhifələrinə footer linki paylayır.
-  const footerServices = pickCrossCategoryRandom(await getActiveServices(), 6);
+  // Hər renderde fərqli 5 xidmət — hər biri fərqli kateqoriyadan (2026-08-16:
+  // 6 → 5, digər sütunlarla eyni hündürlük). Əvvəl yalnız `featured` (7 dental)
+  // göstərilirdi; random rotasiya həm siyahını qısa saxlayır, həm də zamanla
+  // bütün xidmət səhifələrinə footer linki paylayır.
+  const footerServices = pickCrossCategoryRandom(await getActiveServices(), 5);
   return (
     <footer className="relative mt-auto overflow-hidden bg-iris-canvas text-pearl/80">
       {/* Impilo: siyan→bənövşəyi hairline */}
