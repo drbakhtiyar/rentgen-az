@@ -59,6 +59,14 @@ export function HeaderClient({
       "/istifade-shertleri",
       "/bize-qoshul",
       "/telimat",
+      // Panellər (2026-08-16): sol sütun tünd iris olduğu üçün başlıq zolağı da
+      // tünd rejimə keçdi — yuxarı zolaq + sidebar eyni səth kimi oxunur.
+      "/admin",
+      "/merkez",
+      "/hekim",
+      "/kabinet",
+      "/panel",
+      "/crm",
     ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 
   return (
@@ -108,7 +116,7 @@ export function HeaderClient({
                       ? "bg-white/10 text-white"
                       : "text-pearl/80 hover:bg-white/10 hover:text-white"
                     : active
-                      ? "bg-brand-50 text-brand-700"
+                      ? "bg-iris-veil/10 text-iris-glow"
                       : "text-slate-600 hover:bg-slate-100 hover:text-ink-900",
                 )}
               >
