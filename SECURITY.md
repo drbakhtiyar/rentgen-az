@@ -32,16 +32,18 @@ rentgen.az təhlükəsizlik vəziyyəti və auditin nəticələri (ilk tam audit
   `accounts` saatda 3 (bütün nömrələri verən registr), `whoami` dəq/20 (nömrə enumerasiyası), `ai` dəq/15 (pullu resurs), `referrals/otp` dəq/5 (SMS xərci), `support/messages` dəq/60 və `chat/send`, `support/send`, `referrals`, `center/requests`, `summary`.
   Limiter fail-open işləyir (baza problemi istifadəçini bloklamır), sayğaclar gecə cronu ilə təmizlənir.
 - **İctimai «Məlumat düzgün deyil?» formasında spam qorunması yox idi** — IP başına saatda 5 bildiriş limiti.
+- **Girişsiz token linkləri müddətsiz idi** (2026-08-15) — `/q /f /m` linklərinə **45 günlük müddət** verildi (`CenterProfile.priceTokenAt`); müddət bitəndə növbəti dəvətdə avtomatik YENİ token verilir, köhnə link ölür. Əlavə: token səhifələrinin açılışına (IP/saat 60) və yazma əməliyyatına (IP/saat 30) limit — token təxmini cəhdləri yavaşladılır.
+- **İzləmə/axtarış hadisələrində limit yox idi** — `track`/`search` üçün IP başına saatda 120 hadisə (normal ziyarətçi bu həddə çatmır).
+- **`/api/app/accounts` istifadəsi ölçülür** — söndürməzdən əvvəl köhnə tətbiq versiyalarının çağırıb-çağırmadığını görmək üçün gündəlik jurnal qeydi (`api:accounts_used`).
 
 ## Açıq risklər / növbəti addımlar
 
 | Prioritet | Risk | Plan |
 |---|---|---|
 | Yüksək | **`x-app-key` statik açardır** və mobil tətbiqdən çıxarıla bilər. Sürət limiti qoyuldu (kütləvi çıxarma dayandırıldı), amma **hədəfli sorğu hələ də mümkündür**: açarı olan şəxs konkret nömrənin hesab məlumatını və dəstək yazışmasını görə bilər. | Telefon sahibliyini sübut edən qısamüddətli token (OTP → JWT) modelinə keçid. **Mobil tətbiqin yenilənməsi ilə koordinasiya tələb edir** — Worker/app tərəfi hazır olanda. |
-| Yüksək | **`/api/app/accounts`** bütün həkim/mərkəz nömrələrini bir sorğuda verir. Artıq `whoami` ilə əvəzlənib, amma köhnə tətbiq versiyaları üçün saxlanılıb (indi saatda 3 limitlə). | App versiyalarının statistikası yoxlanıb endpoint tamamilə söndürülməli (410). |
-| Orta | **Girişsiz token formalarında (`/q /f /m`) sürət limiti yoxdur** — token təxmini praktiki deyil (128 bit), amma link ələ keçsə müddətsiz etibarlıdır. | Token üçün müddət/rotasiya + IP əsaslı limit. |
-| Orta | **İzləmə/axtarış hadisələrində limit yoxdur** (`track`, `search`, `symptom`) — zibil data riski (bildiriş forması artıq limitlidir). | Eyni limiter tətbiq edilə bilər; hadisə həcmi yüksək olduğu üçün limit yumşaq olmalıdır. |
-| Orta | **Staging bazası yoxdur** — dinamik test (ZAP/Nuclei) üçün şərtdir. | Sintetik datalı ayrıca Supabase layihəsi. |
+| Yüksək | **`/api/app/accounts`** bütün həkim/mərkəz nömrələrini bir sorğuda verir. Saatda 3 limit + istifadə ölçüsü qoyulub. | **Bir ay sonra jurnala bax** (`api:accounts_used`): çağırış yoxdursa endpoint 410 ilə söndürülür. |
+| Orta | **Staging bazası yoxdur** — IDOR/biznes məntiqi testlərini canlı datanı zibilləmədən aparmaq üçün lazımdır. | Supabase-də yeni layihə **$10/ay** (təşkilat Pro planındadır) — istifadəçi qərarı gözlənilir. Pulsuz alternativ: Neon/Railway free-tier Postgres. |
+| Aşağı | **ZAP/Nuclei dinamik skan** — bizim stack-də (Vercel managed, Prisma parametrləşdirilmiş sorğular, React escape) gözlənilən dəyər azdır. | Staging hazır olandan sonra bir dəfəlik yekun yoxlama kimi. **Canlı sayta əsla yönəldilmir.** |
 | Aşağı | **CSP yoxdur.** | Nonce-lu siyasət ayrıca hazırlanmalı (yarımçıq CSP saytı sındıra bilər). |
 
 ## Test qaydası
