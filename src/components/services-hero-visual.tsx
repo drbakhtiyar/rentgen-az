@@ -10,6 +10,8 @@ export const PAGE_HERO = {
   blog: `${BLOB}/hero-blog.png`,
   faq: `${BLOB}/hero-faq.png`,
   pricing: `${BLOB}/hero-pricing.png`,
+  // /elaqe (2026-08-16): vektor variant — eyni neon üslub, qara fon screen-blend ilə yox olur
+  contact: "/hero-elaqe.svg",
 } as const;
 
 /**

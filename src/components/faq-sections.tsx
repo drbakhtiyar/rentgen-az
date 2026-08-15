@@ -42,7 +42,7 @@ export function FaqSections({
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       {/* Yapışqan çip zolağı — sürüşmə YOXDUR: qısa adlarla bükülür,
           hamısı həmişə görünür (istifadəçi rəyi: yan skrol narahat idi) */}
       <div className="sticky top-16 z-20 -mx-4 mb-8 border-b border-slate-200/70 bg-white/85 px-4 py-3 backdrop-blur-sm sm:top-[68px]">
@@ -55,8 +55,8 @@ export function FaqSections({
               className={cn(
                 "whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors sm:text-sm",
                 active === s.key
-                  ? "border-brand-600 bg-brand-600 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700",
+                  ? "border-iris-glow bg-iris-glow text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-iris-veil hover:text-iris-glow",
               )}
             >
               {s.chip}

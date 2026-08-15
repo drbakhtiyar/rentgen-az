@@ -13,7 +13,7 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [open, setOpen] = React.useState<number | null>(0);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-3">
+    <div className="mx-auto flex max-w-5xl flex-col gap-3">
       {items.map((item, i) => {
         const isOpen = open === i;
         return (

@@ -6,8 +6,8 @@ import {
 } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
+import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { Card } from "@/components/ui/card";
-import { ButtonLink } from "@/components/ui/button";
 import { JsonLd } from "@/components/ui/json-ld";
 import { AppointmentForm } from "@/components/forms/appointment-form";
 import { getApprovedDoctors, getActiveServices } from "@/lib/queries";
@@ -38,6 +38,16 @@ export default async function ContactPage() {
     { icon: Mail, title: c.email, value: "info@rentgen.az", href: "mailto:info@rentgen.az" },
     { icon: MapPin, title: c.address, value: c.addressValue },
     { icon: Clock, title: c.hours, value: c.hoursValue },
+    // WhatsApp da adi əlaqə blokudur (2026-08-16): ayrıca düymə yoxdur —
+    // nömrənin özünə toxunanda WhatsApp açılır.
+    {
+      icon: MessageCircle,
+      title: "WhatsApp",
+      value: PLATFORM_WHATSAPP_DISPLAY,
+      href: PLATFORM_WHATSAPP_URL,
+      external: true,
+      tone: "whatsapp" as const,
+    },
   ];
   const me = await getCurrentUser();
   const patientInfo =
@@ -65,6 +75,7 @@ export default async function ContactPage() {
           { name: "Ana səhifə", href: "/" },
           { name: c.title },
         ]}
+        visual={<PageHeroVisual src={PAGE_HERO.contact} alt={c.title} />}
       />
       <Section>
         <Container>
@@ -80,7 +91,13 @@ export default async function ContactPage() {
                   const Icon = item.icon;
                   const content = (
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 sm:h-10 sm:w-10">
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 ${
+                          item.tone === "whatsapp"
+                            ? "bg-green-50 text-green-600"
+                            : "bg-brand-50 text-brand-600"
+                        }`}
+                      >
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </span>
                       <div className="min-w-0">
@@ -96,7 +113,13 @@ export default async function ContactPage() {
                   return (
                     <Card key={item.title} className="p-3 sm:p-5">
                       {item.href ? (
-                        <a href={item.href} className="block hover:opacity-80">
+                        <a
+                          href={item.href}
+                          className="block hover:opacity-80"
+                          {...(item.external
+                            ? { target: "_blank", rel: "noopener noreferrer" }
+                            : {})}
+                        >
                           {content}
                         </a>
                       ) : (
@@ -106,31 +129,6 @@ export default async function ContactPage() {
                   );
                 })}
               </div>
-              <Card className="p-3 sm:p-5">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600 sm:h-10 sm:w-10">
-                    <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </span>
-                  <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="text-xs font-medium text-slate-500 sm:text-sm">
-                        WhatsApp
-                      </div>
-                      <div className="text-sm font-medium text-ink-900 sm:text-base">
-                        {PLATFORM_WHATSAPP_DISPLAY}
-                      </div>
-                      <div className="text-xs text-slate-500">{c.whatsappDesc}</div>
-                    </div>
-                    <ButtonLink
-                      href={PLATFORM_WHATSAPP_URL}
-                      variant="whatsapp"
-                      size="sm"
-                    >
-                      {c.whatsappCta}
-                    </ButtonLink>
-                  </div>
-                </div>
-              </Card>
             </div>
 
             <Card className="p-6 sm:p-8">

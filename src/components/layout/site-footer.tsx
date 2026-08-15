@@ -85,6 +85,10 @@ export async function SiteFooter() {
             </div>
           </div>
 
+          {/* Mobil (2026-08-16): Platforma və Şirkət yan-yana — alt-alta düzülüş
+              footeri həddən artıq uzadırdı. `lg:contents` sarğını desktopda
+              şəffaf edir, yəni 5 sütunlu düzülüş olduğu kimi qalır. */}
+          <div className="grid grid-cols-2 gap-8 lg:contents">
           {cols.map((col) => (
             <div key={col.title}>
               <h3 className="text-sm font-semibold text-white">{col.title}</h3>
@@ -102,8 +106,10 @@ export async function SiteFooter() {
               </ul>
             </div>
           ))}
+          </div>
 
-          <div>
+          {/* Xidmət linkləri mobildə gizlidir — kataloq onsuz da naviqasiyadadır */}
+          <div className="hidden lg:block">
             <h3 className="text-sm font-semibold text-white">{d.nav.services}</h3>
             <ul className="mt-4 space-y-2.5">
               {footerServices.map((s) => (
