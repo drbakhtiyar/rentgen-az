@@ -39,7 +39,22 @@ export async function SiteFooter() {
   // 6 → 5, digər sütunlarla eyni hündürlük). Əvvəl yalnız `featured` (7 dental)
   // göstərilirdi; random rotasiya həm siyahını qısa saxlayır, həm də zamanla
   // bütün xidmət səhifələrinə footer linki paylayır.
-  const footerServices = pickCrossCategoryRandom(await getActiveServices(), 5);
+  //
+  // UZUN ADLAR SÜZÜLÜR (2026-08-16): «Boyun yumşaq toxumalarının rentgeni» kimi
+  // adlar sütunda iki sətrə düşüb proporsiyanı pozurdu. Hədd göstəriləcək dilə
+  // görə hesablanır (AZ: shortName ?? name, RU: serviceNameRu). ≤22 simvol
+  // 112 xidmətdən 90-ı saxlayır və 15 kateqoriyanın hamısı təmsil olunur, ona
+  // görə rotasiyanın müxtəlifliyi itmir. Süzgəc bir səbəbdən boş qalsa tam
+  // siyahıya qayıdılır.
+  const MAX_LABEL = 22;
+  const allActive = await getActiveServices();
+  const footerLabel = (s: { name: string; shortName?: string | null }) =>
+    locale === "ru" ? serviceNameRu(s.name) : (s.shortName ?? s.name);
+  const shortEnough = allActive.filter((s) => footerLabel(s).length <= MAX_LABEL);
+  const footerServices = pickCrossCategoryRandom(
+    shortEnough.length >= 5 ? shortEnough : allActive,
+    5,
+  );
   return (
     <footer className="relative mt-auto overflow-hidden bg-iris-canvas text-pearl/80">
       {/* Impilo: siyan→bənövşəyi hairline */}
