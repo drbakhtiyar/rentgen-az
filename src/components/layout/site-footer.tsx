@@ -22,13 +22,13 @@ export async function SiteFooter() {
         { label: d.nav.doctors, href: "/hekimler" },
         { label: d.nav.forCenters, href: "/merkezler-ucun" },
         { label: d.nav.pricing, href: "/paketler" },
-        { label: d.nav.blog, href: "/blog" },
       ],
     },
     {
       title: d.footer.company,
       links: [
         { label: d.footer.about, href: "/#nece-ishleyir" },
+        { label: d.nav.blog, href: "/blog" },
         { label: d.footer.faq, href: "/faq" },
         { label: d.nav.contact, href: "/elaqe" },
         { label: d.footer.privacy, href: "/gizlilik-siyaseti" },
