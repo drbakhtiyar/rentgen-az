@@ -15,6 +15,9 @@ export type AdminThreadItem = {
   unread: number;
   /** İnsan müdaxiləsi aktivdir — bot bu vaxta qədər susur (ISO). */
   botMutedUntil?: string | null;
+  /** Meta 24 saatlıq cavab pəncərəsinin bitmə vaxtı (son 📲 + 24s).
+   *  null = pəncərə bağlıdır → sərbəst mətn WhatsApp-a getmir, yalnız şablon. */
+  waWindowUntil?: string | null;
 };
 
 export type AdminSearchItem = {
@@ -97,6 +100,16 @@ export async function getAdminThreads(
     ...outgoingBot.map((m) => m.threadId),
   ]);
 
+  // Meta 24 saatlıq pəncərə (2026-08-15): mərkəz son 24 saatda yazıbsa,
+  // operator SƏRBƏST mətn göndərə bilər; əks halda yalnız təsdiqli şablon.
+  const waWindow = new Map<string, Date>();
+  for (const m of incoming) {
+    if (!m.content.startsWith("📲")) continue;
+    const until = new Date(m.createdAt.getTime() + 24 * 3600_000);
+    const cur = waWindow.get(m.threadId);
+    if (!cur || until > cur) waWindow.set(m.threadId, until);
+  }
+
   // Bot susma vaxtı: son İNSAN cavabı (fromAdmin, 🤖/⚠️-siz) + 30 dəq
   // (webhook-dakı HUMAN_TAKEOVER_MS ilə sinxron). Yalnız WhatsApp thread-lərinə aiddir.
   const MUTE_MS = 30 * 60_000;
@@ -149,6 +162,10 @@ export async function getAdminThreads(
       preview: t.messages[0] ? (t.messages[0].content || (t.messages[0].fileUrl ? "📎 Fayl" : null)) : null,
       unread: unreadByThread[t.id] ?? 0,
       botMutedUntil: mutedUntil.get(t.id)?.toISOString() ?? null,
+      waWindowUntil: (() => {
+        const u = waWindow.get(t.id);
+        return u && u > new Date() ? u.toISOString() : null;
+      })(),
     };
   });
 }

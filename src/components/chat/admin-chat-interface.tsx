@@ -47,7 +47,23 @@ function Avatar({ url, role }: { url: string | null; role: string }) {
   );
 }
 
-type ActiveUser = { userId: string; threadId: string | null; name: string; sub: string | null; role: string; avatarUrl: string | null };
+type ActiveUser = { userId: string; threadId: string | null; name: string; sub: string | null; role: string; avatarUrl: string | null; waWindowUntil?: string | null };
+
+
+/**
+ * Meta 24 saatlıq cavab pəncərəsi. Mərkəz bizə yazandan sonra 24 saat ərzində
+ * sərbəst mətn göndərmək olar; sonra yalnız təsdiqli şablon. Bu nişan operatora
+ * mesajın hara çatacağını əvvəlcədən deyir (2026-08-15).
+ */
+function waWindowLabel(t: { waWindowUntil?: string | null }): { open: boolean; text: string } | null {
+  if (t.waWindowUntil === undefined) return null;
+  if (!t.waWindowUntil) return { open: false, text: "🔒 WhatsApp pəncərəsi bağlı" };
+  const left = new Date(t.waWindowUntil).getTime() - Date.now();
+  if (left <= 0) return { open: false, text: "🔒 WhatsApp pəncərəsi bağlı" };
+  const h = Math.floor(left / 3600_000);
+  const m = Math.floor((left % 3600_000) / 60_000);
+  return { open: true, text: `🟢 WhatsApp açıq · ${h > 0 ? `${h} saat` : `${m} dəq`}` };
+}
 
 export function AdminChatInterface({
   threads,
@@ -113,7 +129,7 @@ export function AdminChatInterface({
     setError(null);
     setDone(null);
     setMessages([]);
-    setActive({ userId: t.userId, threadId: t.threadId, name: t.name, sub: t.sub, role: t.role, avatarUrl: t.avatarUrl });
+    setActive({ userId: t.userId, threadId: t.threadId, name: t.name, sub: t.sub, role: t.role, avatarUrl: t.avatarUrl, waWindowUntil: t.waWindowUntil ?? null });
   }
   function openSearchUser(u: AdminSearchItem) {
     setGroup(null);
@@ -298,10 +314,29 @@ export function AdminChatInterface({
             <header className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
               <button type="button" onClick={() => setActive(null)} className="rounded p-1 text-slate-500 hover:bg-slate-100 sm:hidden"><ArrowLeft className="h-5 w-5" /></button>
               <Avatar url={active.avatarUrl} role={active.role} />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-ink-900">{active.name}</p>
                 {active.sub && <p className="truncate text-xs text-slate-400">{active.sub}</p>}
               </div>
+              {/* Meta 24 saatlıq cavab pəncərəsi (2026-08-15): operator
+                  yazmadan ƏVVƏL mesajın WhatsApp-a çatıb-çatmayacağını bilsin. */}
+              {waWindowLabel(active) && (
+                <span
+                  className={
+                    "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 " +
+                    (waWindowLabel(active)!.open
+                      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                      : "bg-slate-100 text-slate-600 ring-slate-200")
+                  }
+                  title={
+                    waWindowLabel(active)!.open
+                      ? "Mərkəz son 24 saatda yazıb — buradan yazdığınız mətn birbaşa WhatsApp-a gedir."
+                      : "24 saatlıq pəncərə bağlıdır: WhatsApp qaydasına görə sərbəst mətn göndərilmir. Mesajınız mərkəzin sayt kabinetinə düşəcək; telefona çatdırmaq üçün «WhatsApp dəvətləri» bölməsindən şablon göndərin."
+                  }
+                >
+                  {waWindowLabel(active)!.text}
+                </span>
+              )}
             </header>
             <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-slate-50/50 p-4">
               {messages.length === 0 && <p className="py-8 text-center text-sm text-slate-400">Mesaj yoxdur. İlk mesajı yazın.</p>}
