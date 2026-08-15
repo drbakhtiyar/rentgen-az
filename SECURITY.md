@@ -36,6 +36,19 @@ rentgen.az təhlükəsizlik vəziyyəti və auditin nəticələri (ilk tam audit
 - **İzləmə/axtarış hadisələrində limit yox idi** — `track`/`search` üçün IP başına saatda 120 hadisə (normal ziyarətçi bu həddə çatmır).
 - **`/api/app/accounts` istifadəsi ölçülür** — söndürməzdən əvvəl köhnə tətbiq versiyalarının çağırıb-çağırmadığını görmək üçün gündəlik jurnal qeydi (`api:accounts_used`).
 
+## IDOR / biznes məntiqi auditi (2026-08-15, kod səviyyəsində)
+
+Ən həssas axınlar bir-bir yoxlandı — **sahiblik yoxlaması hər yerdə var**:
+
+- **Rentgen faylları** (`getDownloadUrlAction`): mərkəzli IDOR qapısı — ADMIN / öz mərkəzi (CENTER) / aktiv asistent / **ACCEPTED partnyorluğu olan** göndərən həkim / öz sorğusunun pasiyenti. Hər endirmə `FileAuditLog`-a yazılır. Presigned URL **5 dəqiqə** yaşayır (çoxhissəli yükləmə URL-ləri 6 saat — yalnız upload üçün).
+- **Viewer** (`/viewer/[fileId]`): faylı göstərməzdən əvvəl həmin qapıdan keçir; icazə yoxdursa məlumat sızmır.
+- **Mərkəz sorğuları**: status dəyişikliyi, nəticə yükləmə və digər əməliyyatların hər üçündə `req.centerId !== center.id` yoxlaması var; status keçidləri birtərəflidir (terminal statuslar kilidli).
+- **Çat**: söhbətə giriş `conv.centerId`/`conv.doctorId` ilə istifadəçinin profil id-si tutuşdurularaq verilir.
+- **Ödəniş**: paket qiyməti **serverdə** hesablanır (`CENTER_PLAN_PRICE` + müddət endirimi) — məbləğ client-dən qəbul edilmir; callback Payriff API-dən yoxlanır. Balans artırmada minimum 1 ₼, **maksimum 10 000 ₼** (2026-08-15 əlavəsi).
+- **Admin əməliyyatları**: `src/app/admin/actions.ts` içində 27 rol yoxlaması.
+
+**Nəticə: IDOR tapılmadı.**
+
 ## Açıq risklər / növbəti addımlar
 
 | Prioritet | Risk | Plan |
