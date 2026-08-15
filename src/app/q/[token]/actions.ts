@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { logTokenSave } from "@/lib/link-visit";
 import { resolvePriceToken } from "@/lib/price-invite";
+import { headers } from "next/headers";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export type PriceSaveState = { ok: boolean; error?: string; saved?: number };
 
@@ -18,6 +20,9 @@ export async function savePricesAction(input: {
   /** "+" ilə kataloqdan seçilmiş YENİ xidmətlər (qiymət istəyə bağlıdır). */
   additions?: { serviceId: string; price: number | null }[];
 }): Promise<PriceSaveState> {
+  // Yazma spamının qarşısı (2026-08-14 auditi)
+  const rl = await rateLimit("token:save", clientIp({ headers: await headers() }), 30, 3600);
+  if (!rl.allowed) return { ok: false, error: "Çox sayda cəhd. Bir azdan yenidən yoxlayın." };
   const target = await resolvePriceToken(input.token).catch(() => null);
   if (!target) return { ok: false, error: "Bu link artıq keçərli deyil." };
 

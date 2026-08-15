@@ -240,6 +240,10 @@ model CenterProfile {
   // Qiymət toplama kampaniyası: WhatsApp-la göndərilən birdəfəlik linkin tokeni
   // (/q/<token> — girişsiz sürətli qiymət səhifəsi). Bax src/lib/price-invite.ts.
   priceToken        String?      @unique
+  /// Tokenin verilmə vaxtı (2026-08-14 təhlükəsizlik auditi). Girişsiz
+  /// /q /f /m linkləri PRICE_TOKEN_TTL_DAYS gün sonra etibarsız olur;
+  /// yeni dəvət göndəriləndə token avtomatik yenilənir.
+  priceTokenAt      DateTime?
 
   // Google rating (fetched via the platform's Places API key from googlePlaceId)
   googlePlaceId     String?

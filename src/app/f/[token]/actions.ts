@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { logTokenSave } from "@/lib/link-visit";
 import { resolveFaqToken } from "@/lib/price-invite";
 import { CENTER_FAQ_KEYS } from "@/content/center-faq";
+import { headers } from "next/headers";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export type FaqSaveState = { ok: boolean; error?: string; saved?: number };
 
@@ -18,6 +20,9 @@ export async function saveFaqAction(input: {
   token: string;
   answers: Record<string, string>;
 }): Promise<FaqSaveState> {
+  // Yazma spamının qarşısı (2026-08-14 auditi)
+  const rl = await rateLimit("token:save", clientIp({ headers: await headers() }), 30, 3600);
+  if (!rl.allowed) return { ok: false, error: "Çox sayda cəhd. Bir azdan yenidən yoxlayın." };
   const target = await resolveFaqToken(input.token).catch(() => null);
   if (!target) return { ok: false, error: "Bu link artıq keçərli deyil." };
 

@@ -6,6 +6,8 @@ import { logTokenSave } from "@/lib/link-visit";
 import { resolveCardToken } from "@/lib/price-invite";
 import { formatHoursSummary, parseHours, type WeeklyHours } from "@/lib/hours";
 import type { Prisma } from "@/generated/prisma/client";
+import { headers } from "next/headers";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export type CardSaveState = { ok: boolean; error?: string; summary?: string };
 
@@ -26,6 +28,9 @@ export async function saveCardAction(input: {
   /** null = qrafikə toxunulmadı. */
   hours: WeeklyHours | null;
 }): Promise<CardSaveState> {
+  // Yazma spamının qarşısı (2026-08-14 auditi)
+  const rl = await rateLimit("token:save", clientIp({ headers: await headers() }), 30, 3600);
+  if (!rl.allowed) return { ok: false, error: "Çox sayda cəhd. Bir azdan yenidən yoxlayın." };
   const target = await resolveCardToken(input.token).catch(() => null);
   if (!target) return { ok: false, error: "Bu link artıq keçərli deyil." };
 

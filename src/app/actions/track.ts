@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { headers } from "next/headers";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export type CenterEventType =
   | "view"
@@ -17,6 +19,9 @@ export async function trackCenterEventAction(
   centerId: string,
   type: CenterEventType,
 ): Promise<void> {
+  // Zibil hadisə qorunması (2026-08-14): normal ziyarətçi bu həddə çatmır.
+  const rl = await rateLimit("public:track", clientIp({ headers: await headers() }), 120, 3600);
+  if (!rl.allowed) return;
   if (!centerId || !["view", "call", "whatsapp", "directions", "license", "faq", "website", "instagram"].includes(type)) return;
   try {
     await prisma.centerEvent.create({ data: { centerId, type } });
@@ -33,6 +38,9 @@ export async function trackSearchEventAction(input: {
   service?: string;
   results?: number;
 }): Promise<void> {
+  // Zibil hadisə qorunması (2026-08-14): normal ziyarətçi bu həddə çatmır.
+  const rl = await rateLimit("public:search", clientIp({ headers: await headers() }), 120, 3600);
+  if (!rl.allowed) return;
   const query = (input.query ?? "").trim().slice(0, 100) || null;
   const city = (input.city ?? "").trim().slice(0, 80) || null;
   const service = (input.service ?? "").trim().slice(0, 80) || null;

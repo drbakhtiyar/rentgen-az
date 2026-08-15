@@ -141,12 +141,31 @@ export function waCabinetMessage(centerName: string, seed: string): string {
   return V[hash(seed) % V.length];
 }
 
-/** Mərkəzin tokenini qaytarır, yoxdursa yaradır. */
+/**
+ * Girişsiz linklərin (/q /f /m) etibarlılıq müddəti — 2026-08-14 auditi.
+ * WhatsApp-la göndərilən link telefon ələ keçsə də əbədi qalmamalıdır.
+ * Müddət bitəndə növbəti dəvətdə YENİ token verilir (köhnə link ölür).
+ */
+export const PRICE_TOKEN_TTL_DAYS = 45;
+
+/** Token yaşı keçibmi? (tarix yoxdursa köhnə qeyddir — etibarsız sayılır) */
+export function tokenExpired(issuedAt: Date | null | undefined): boolean {
+  if (!issuedAt) return true;
+  return Date.now() - issuedAt.getTime() > PRICE_TOKEN_TTL_DAYS * 24 * 3600_000;
+}
+
+/** Mərkəzin tokenini qaytarır; yoxdursa VƏ YA müddəti bitibsə yenisini verir. */
 export async function ensurePriceToken(centerId: string): Promise<string> {
-  const c = await prisma.centerProfile.findUnique({ where: { id: centerId }, select: { priceToken: true } });
-  if (c?.priceToken) return c.priceToken;
+  const c = await prisma.centerProfile.findUnique({
+    where: { id: centerId },
+    select: { priceToken: true, priceTokenAt: true },
+  });
+  if (c?.priceToken && !tokenExpired(c.priceTokenAt)) return c.priceToken;
   const token = randomBytes(16).toString("hex");
-  await prisma.centerProfile.update({ where: { id: centerId }, data: { priceToken: token } });
+  await prisma.centerProfile.update({
+    where: { id: centerId },
+    data: { priceToken: token, priceTokenAt: new Date() },
+  });
   return token;
 }
 
@@ -450,9 +469,9 @@ export async function resolveFaqToken(token: string): Promise<FaqTarget | null> 
   if (!/^[a-f0-9]{32}$/.test(token)) return null;
   const c = await prisma.centerProfile.findUnique({
     where: { priceToken: token },
-    select: { id: true, name: true, slug: true, status: true, faqAnswers: true },
+    select: { id: true, name: true, slug: true, status: true, faqAnswers: true, priceTokenAt: true },
   });
-  if (!c || c.status === "DEACTIVATED") return null;
+  if (!c || c.status === "DEACTIVATED" || tokenExpired(c.priceTokenAt)) return null;
   return { centerId: c.id, centerName: c.name, slug: c.slug, answers: parseFaqAnswers(c.faqAnswers) };
 }
 
@@ -462,14 +481,14 @@ export async function resolvePriceToken(token: string): Promise<PriceTarget | nu
   const c = await prisma.centerProfile.findUnique({
     where: { priceToken: token },
     select: {
-      id: true, name: true, slug: true, status: true,
+      id: true, name: true, slug: true, status: true, priceTokenAt: true,
       services: {
         select: { id: true, serviceId: true, price: true, service: { select: { name: true, category: true, featured: true, order: true } } },
         orderBy: { service: { order: "asc" } },
       },
     },
   });
-  if (!c || c.status === "DEACTIVATED") return null;
+  if (!c || c.status === "DEACTIVATED" || tokenExpired(c.priceTokenAt)) return null;
   const rows = [...c.services]
     .sort((a, b) => Number(b.service.featured) - Number(a.service.featured))
     .map((s) => ({ centerServiceId: s.id, serviceName: s.service.name, category: s.service.category, price: s.price }));

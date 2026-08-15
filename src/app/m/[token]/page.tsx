@@ -8,6 +8,9 @@ import { resolveCardToken } from "@/lib/price-invite";
 import { logTokenVisit } from "@/lib/link-visit";
 import { parseHours } from "@/lib/hours";
 import { buildMetadata } from "@/lib/seo";
+import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +27,10 @@ export default async function QuickCardPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  // Token təxmini cəhdlərini yavaşlatmaq (2026-08-14 auditi):
+  // real mərkəz linki bir neçə dəfə açır, saatda 60 kifayətdir.
+  const rl = await rateLimit("token:open", clientIp({ headers: await headers() }), 60, 3600);
+  if (!rl.allowed) notFound();
   const target = await resolveCardToken(token);
 
   if (!target) {
