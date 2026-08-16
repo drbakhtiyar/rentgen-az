@@ -107,6 +107,7 @@ export default async function CentersPage({
     ratings = await getRatingsForCenters(centers.map((c) => c.id));
   }
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const locale = await getLocale();
   const cityOptions = (await getCitiesWithCenters()).map((c) => ({
     value: c,
     label: cityLabel(c, locale), // RU-da rus adı, dəyər AZ qalır (2026-08-16)
@@ -116,7 +117,6 @@ export default async function CentersPage({
   const serviceOptions = (await getActiveServices())
     .filter((s) => (serviceCounts[s.slug] ?? 0) > 0)
     .map((s) => ({ value: s.slug, label: s.name }));
-  const locale = await getLocale();
   const d = getDict(locale);
   const searchLabels = { ...d.search, search: d.cta.search };
 
