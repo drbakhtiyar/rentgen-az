@@ -79,7 +79,7 @@ export default async function DoctorsPage({
       </PageHeader>
 
       {/* For doctors — advantages + join CTA (merged from the old /hekimler-ucun) */}
-      <Section className="pt-8 pb-12 sm:pt-8 lg:pt-8">
+      <Section className="pt-8 pb-12 sm:pt-10 lg:pt-10">
         <Container>
           <div className="rounded-3xl bg-[#e4e4eb] p-6 sm:p-8">
             <div className="flex flex-wrap items-end justify-between gap-3">

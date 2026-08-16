@@ -147,7 +147,7 @@ export default async function CentersPage({
       />
 
       <div className="bg-pearl">
-        <Container className="py-6">
+        <Container className="pt-8 pb-6 sm:pt-10">
           <SearchPanel
             services={serviceOptions}
             cities={cityOptions}
