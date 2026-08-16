@@ -160,13 +160,22 @@ export default async function HomePage() {
       {/* ============ XİDMƏTLƏR — Dark Canvas Cards ============ */}
       <section className="bg-iris-canvas py-16 sm:py-20">
         <Container>
-          <div className="max-w-2xl">
-            <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-white sm:text-4xl">
-              {d.home.servicesTitle}
-            </h2>
-            <p className="mt-3 text-[17px] leading-relaxed text-ash-2">
-              {d.home.servicesDesc}
-            </p>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-2xl">
+              <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-white sm:text-4xl">
+                {d.home.servicesTitle}
+              </h2>
+              <p className="mt-3 text-[17px] leading-relaxed text-ash-2">
+                {d.home.servicesDesc}
+              </p>
+            </div>
+            {/* 2026-08-16: düymə mərkəzdən başlığın sağındakı boşluğa keçdi */}
+            <ButtonLink
+              href="/xidmetler"
+              className="border border-white/25 bg-transparent text-white hover:bg-white/10"
+            >
+              {d.home.allServices} <ArrowRight className="h-4 w-4" />
+            </ButtonLink>
           </div>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredServices.map((s) => (
@@ -206,14 +215,6 @@ export default async function HomePage() {
                 </div>
               </Link>
             ))}
-          </div>
-          <div className="mt-10 text-center">
-            <ButtonLink
-              href="/xidmetler"
-              className="border border-white/25 bg-transparent text-white hover:bg-white/10"
-            >
-              {d.home.allServices} <ArrowRight className="h-4 w-4" />
-            </ButtonLink>
           </div>
         </Container>
       </section>
