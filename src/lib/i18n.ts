@@ -509,7 +509,7 @@ const az: Dict = {
   },
   footer: {
     tagline:
-      "Azərbaycanda rentgen, KT, MRT, USM, mammoqrafiya və dental tomoqrafiya (CBCT) mərkəzlərini bir platformada tapın.",
+      "Azərbaycanda rentgen, KT, MRT, USM, mammoqrafiya və dental tomoqrafiya (CBCT) mərkəzləri — bir platformada.",
     platform: "Platforma",
     company: "Şirkət",
     about: "Haqqımızda",
@@ -1047,7 +1047,7 @@ const ru: Dict = {
   },
   footer: {
     tagline:
-      "Найдите центры рентгена, КТ, МРТ, УЗИ, маммографии и дентальной томографии (КЛКТ) в Азербайджане на одной платформе.",
+      "Центры рентгена, КТ, МРТ, УЗИ, маммографии и дентальной томографии (КЛКТ) в Азербайджане — на одной платформе.",
     platform: "Платформа",
     company: "Компания",
     about: "О нас",
