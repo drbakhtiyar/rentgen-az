@@ -171,7 +171,7 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredServices.map((s) => (
               <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
-                <div className="group h-full rounded-3xl bg-iris-shadow p-6 ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
+                <div className="group flex h-full flex-col rounded-3xl bg-iris-shadow p-6 ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
                   {/* Premium anatomik ikon + ad yan-yana (2026-08-16):
                       ad maks 2 sətir — ikonun hündürlüyü qədər */}
                   <div className="flex items-center gap-3">
@@ -191,7 +191,7 @@ export default async function HomePage() {
                   <p className="mt-2 text-sm leading-relaxed text-ash-2">
                     {s.description}
                   </p>
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-auto flex items-center justify-between pt-4">
                     {counts[s.slug] ? (
                       <span className="rounded-full border border-mint-vital/50 px-2.5 py-0.5 text-xs font-medium text-mint-vital">
                         {counts[s.slug]} {d.home.centerCount}
