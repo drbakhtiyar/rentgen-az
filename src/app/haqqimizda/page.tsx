@@ -171,12 +171,14 @@ export default async function AboutPage() {
               <div className="absolute inset-4 rounded-full border border-dashed border-iris-veil/40 motion-safe:animate-[spin_38s_linear_infinite_reverse]" />
               <div className="absolute inset-9 rounded-full border-2 border-transparent border-t-mint-vital/50 motion-safe:animate-[spin_16s_linear_infinite]" />
               <div className="absolute inset-0 flex items-center justify-center">
+                {/* Ağ loqo (istifadəçi istəyi) — header-dəki kimi brightness-0
+                    invert ilə ağardılır, siyan parıltı drop-shadow ilə */}
                 <Image
-                  src="/mark-square.png"
+                  src="/mark.png"
                   alt="rentgen.az"
                   width={112}
                   height={112}
-                  className="h-28 w-28 rounded-3xl shadow-[0_0_40px_rgba(0,177,255,0.35)] motion-safe:animate-floaty"
+                  className="h-28 w-28 brightness-0 invert drop-shadow-[0_0_28px_rgba(0,177,255,0.55)] motion-safe:animate-floaty"
                 />
               </div>
             </div>
