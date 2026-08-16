@@ -11,7 +11,8 @@ import { AZ_RAYONS, AZ_OUTLINE } from "@/lib/az-rayons";
  *  "dots": köhnə görünüş — sadə siluet + şəhər nöqtələri. İstifadəçi xahişi
  *   ilə SAXLANILIB — geri qayıtmaq üçün aşağıda VARIANT-ı "dots" et.
  *
- * Purely decorative: NOT interactive.
+ * 2026-08-16-dan İNTERAKTİV: hər şəhər etiketi həmin şəhərin
+ * mərkəzlər siyahısına aparır (?city= filtri).
  */
 const VARIANT: "rayons" | "dots" = "rayons";
 
@@ -45,13 +46,25 @@ const RAYON_PATHS = AZ_RAYONS.map((r) => ({
 }));
 const OUTLINE_PATHS = AZ_OUTLINE.map(toPath);
 
-// Which cities get a text label (if active). Bakı is the hub; its label sits left
-// of the marker because it's on the eastern tip.
-const LABELS = new Set(["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Şamaxı", "Şirvan", "Mingəçevir", "Zaqatala", "Tovuz", "İsmayıllı", "Qusar", "Sumqayıt", "Xankəndi"]);
+// 2026-08-16 (istifadəçi istəyi): BÜTÜN şəhərlər etiket alır, hamısı
+// kliklənəbilir (/rentgen-merkezleri?city=X — universal filtr, 404 vermir),
+// markerlərdə növbəli nəbz animasiyası. Bakı hub olaraq qalır.
 const HUB = "Bakı";
-const LEFT = new Set(["Bakı", "Qusar"]);
+const LEFT = new Set(["Bakı", "Qusar", "Salyan", "Qəbələə", "Abşeron", "Tovuz", "Naxçıvan"]);
 // Ayrı-ayrı etiketlərə şaquli sürüşmə (sıx zonalarda toqquşmanı açmaq üçün)
-const LABEL_DY: Record<string, number> = { Qusar: -16 };
+const LABEL_DY: Record<string, number> = {
+  Qusar: -16,
+  Xaçmaz: 10,
+  Abşeron: 20,
+  Sumqayıt: -12,
+  Yevlax: 16,
+  Göyçay: 14,
+  Qəbələ: -14,
+  İsmayıllı: -10,
+  Bərdə: -8,
+  Salyan: 12,
+  Masallı: -6,
+};
 const DEFAULT_CITIES = ["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran", "Quba", "Sumqayıt", "Şamaxı"];
 
 export function HeroVisual({
@@ -80,7 +93,7 @@ export function HeroVisual({
     seen.add(key);
     markers.push({ name: canonCity(raw), x: px(xy[0]), y: py(xy[1]) });
   }
-  const labelMarkers = markers.filter((m) => LABELS.has(m.name));
+  const labelMarkers = markers;
 
   return (
     <div
@@ -93,7 +106,7 @@ export function HeroVisual({
       <div className="absolute left-1/4 top-1/3 h-56 w-56 rounded-full bg-iris-glow/45 blur-[56px]" />
       <div className="absolute bottom-8 right-6 h-48 w-48 rounded-full bg-clinical/15 blur-[56px]" />
 
-      <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full p-2" aria-hidden>
+      <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full p-2" role="img" aria-label="Azərbaycan xəritəsi — şəhərə klik edin">
         <defs>
           <radialGradient id="land" cx="60%" cy="40%" r="72%">
             <stop offset="0%" stopColor="rgba(56,150,230,0.30)" />
@@ -141,27 +154,30 @@ export function HeroVisual({
             </g>
             {/* Xarici dəqiq kontur */}
             {OUTLINE_PATHS.map((d, i) => (
-              <path key={i} d={d} fill="none" stroke="url(#edge)" strokeWidth="2.4" strokeDasharray="12 9" strokeLinecap="round" strokeLinejoin="round" />
+              <path key={i} d={d} fill="none" stroke="url(#edge)" strokeWidth="2.4" strokeDasharray="12 9" strokeLinecap="round" strokeLinejoin="round">
+                {/* sərhəd xətti yavaş axır */}
+                <animate attributeName="stroke-dashoffset" values="0;-42" dur="4s" repeatCount="indefinite" />
+              </path>
             ))}
             {/* Yalnız əsas şəhər etiketləri + Bakı pulsu */}
-            {labelMarkers.map((m) => {
+            {labelMarkers.map((m, i) => {
               const hub = m.name === HUB;
               const left = LEFT.has(m.name);
               const r = hub ? 7 : 4.5;
               return (
-                <g key={m.name}>
-                  {hub && (
-                    <circle cx={m.x} cy={m.y} r={r * 2.4} fill="rgba(0,255,170,0.12)">
-                      <animate attributeName="r" values={`${r * 2};${r * 3.2};${r * 2}`} dur="3.2s" repeatCount="indefinite" />
-                    </circle>
-                  )}
+                <a key={m.name} href={`/rentgen-merkezleri?city=${encodeURIComponent(m.name)}`} className="map-city" aria-label={`${m.name} mərkəzləri`}>
+                  {/* hər markerdə növbəli mint nəbzi (hub daha güclü) */}
+                  <circle cx={m.x} cy={m.y} r={r * 2.4} fill={hub ? "rgba(0,255,170,0.12)" : "rgba(0,255,170,0.07)"}>
+                    <animate attributeName="r" values={`${r * 1.8};${r * 3};${r * 1.8}`} dur="3.2s" begin={`${(i % 8) * 0.4}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.9;0.25;0.9" dur="3.2s" begin={`${(i % 8) * 0.4}s`} repeatCount="indefinite" />
+                  </circle>
                   <circle cx={m.x} cy={m.y} r={r} fill="#00ffaa" stroke="#16165c" strokeWidth={hub ? 2 : 1.1} />
                   <text
                     x={left ? m.x - r - 7 : m.x + r + 7}
                     y={m.y + 4 + (LABEL_DY[m.name] ?? 0)}
                     textAnchor={left ? "end" : "start"}
                     fill="rgba(244,244,246,0.95)"
-                    fontSize="21"
+                    fontSize={hub ? 22 : 18}
                     fontWeight="600"
                     fontFamily="var(--font-manrope), system-ui, sans-serif"
                     paintOrder="stroke"
@@ -170,7 +186,7 @@ export function HeroVisual({
                   >
                     {m.name}
                   </text>
-                </g>
+                </a>
               );
             })}
           </>
@@ -188,7 +204,7 @@ export function HeroVisual({
             </g>
             {markers.map((m) => {
               const hub = m.name === HUB;
-              const label = LABELS.has(m.name);
+              const label = true;
               const r = hub ? 8 : label ? 6 : 4.5;
               const left = LEFT.has(m.name);
               return (

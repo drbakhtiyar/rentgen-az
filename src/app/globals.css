@@ -592,3 +592,12 @@ body {
 .panel-rail img {
   box-shadow: 0 0 0 1px rgba(177, 166, 246, 0.35);
 }
+
+/* Hero xəritəsi — kliklənəbilən şəhərlər (2026-08-16) */
+.map-city { cursor: pointer; }
+.map-city text { transition: fill 0.2s; }
+.map-city:hover text { fill: #00ffaa; }
+.map-city:hover circle:last-of-type { filter: drop-shadow(0 0 6px rgba(0, 255, 170, 0.8)); }
+@media (prefers-reduced-motion: reduce) {
+  .map-city animate { display: none; }
+}

@@ -14,6 +14,7 @@ import {
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { ServiceIcon } from "@/components/ui/service-icon";
+import { SERVICE_ICON_URLS } from "@/lib/service-icon-map";
 import { SmartSearch } from "@/components/smart-search";
 import { HeroVisual } from "@/components/hero-visual";
 import { CenterCard } from "@/components/centers/center-card";
@@ -68,7 +69,12 @@ export default async function HomePage() {
   // Hər ziyarətdə TƏSADÜFİ 4 xidmət — hər biri FƏRQLİ kateqoriyadan
   // (istifadəçi qərarı). Ortaq məntiq: src/lib/random-services.ts.
   const offeredServices = allServices.filter((s) => (counts[s.slug] ?? 0) > 0);
-  const featuredServices = pickCrossCategoryRandom(offeredServices, 4);
+  // 2026-08-16: kartlarda premium anatomik ikonlar (xidmətlər səhifəsi ilə
+  // eyni üslub) — hamısının ikonu var, amma ehtiyat üçün süzülür.
+  const featuredServices = pickCrossCategoryRandom(
+    offeredServices.filter((s) => SERVICE_ICON_URLS[s.slug]),
+    4,
+  );
   const marqueeServices = offeredServices.slice(0, 14);
 
   return (
@@ -162,8 +168,16 @@ export default async function HomePage() {
             {featuredServices.map((s) => (
               <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
                 <div className="group h-full rounded-3xl bg-iris-shadow p-6 ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[7px] bg-white/5 text-clinical ring-1 ring-iris-border">
-                    <ServiceIcon name={s.icon} url={s.iconUrl} className="h-6 w-6" />
+                  {/* Premium anatomik ikon — xidmətlər səhifəsindəki tile üslubu:
+                      sakit halda ağ-qara, hover-də rənglənir */}
+                  <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-[#0d1330] ring-1 ring-iris-border">
+                    <Image
+                      src={SERVICE_ICON_URLS[s.slug]}
+                      alt={s.name}
+                      fill
+                      sizes="96px"
+                      className="object-cover grayscale transition-all duration-500 group-hover:scale-[1.06] group-hover:grayscale-0"
+                    />
                   </div>
                   <h3 className="font-display mt-4 text-lg font-semibold tracking-tight text-white">
                     {s.name}
