@@ -34,6 +34,7 @@ import { faqJsonLd } from "@/lib/seo";
 import { getHomeFaq } from "@/content/faq";
 import { formatDateAz } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
+import { serviceNameRu } from "@/content/services-ru";
 import { getDict } from "@/lib/i18n";
 import { pickCrossCategoryRandom } from "@/lib/random-services";
 
@@ -120,11 +121,11 @@ export default async function HomePage() {
                 {[...marqueeServices, ...marqueeServices].map((s, i) => (
                   <Link
                     key={`${s.slug}-${i}`}
-                    href={`/xidmetler/${s.slug}`}
+                    href={`${locale === "ru" ? "/ru" : ""}/xidmetler/${s.slug}`}
                     className="flex shrink-0 items-center gap-2 rounded-full bg-iris-shadow px-4 py-1.5 text-sm font-medium text-pearl ring-1 ring-iris-border transition-colors hover:text-white hover:ring-iris-veil"
                   >
                     <ServiceIcon name={s.icon} url={s.iconUrl} className="h-4 w-4 text-clinical" />
-                    {s.shortName ?? s.name}
+                    {locale === "ru" ? serviceNameRu(s.name) : (s.shortName ?? s.name)}
                   </Link>
                 ))}
               </div>
@@ -179,7 +180,7 @@ export default async function HomePage() {
           </div>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredServices.map((s) => (
-              <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
+              <Link key={s.slug} href={`${locale === "ru" ? "/ru" : ""}/xidmetler/${s.slug}`}>
                 <div className="group flex h-full flex-col rounded-3xl bg-iris-shadow p-6 ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
                   {/* Premium anatomik ikon + ad yan-yana (2026-08-16):
                       ad maks 2 sətir — ikonun hündürlüyü qədər */}

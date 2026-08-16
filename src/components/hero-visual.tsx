@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { AZ_MAINLAND, AZ_NAKHCHIVAN, AZ_CITY_COORDS, cityCoords, canonCity } from "@/lib/az-cities";
+import { AZ_MAINLAND, AZ_NAKHCHIVAN, AZ_CITY_COORDS, cityCoords, canonCity, CITY_RU } from "@/lib/az-cities";
 import { AZ_RAYONS, AZ_OUTLINE } from "@/lib/az-rayons";
 
 /**
@@ -50,34 +50,6 @@ const OUTLINE_PATHS = AZ_OUTLINE.map(toPath);
 // kliklənəbilir (/rentgen-merkezleri?city=X — universal filtr, 404 vermir),
 // markerlərdə növbəli nəbz animasiyası. Bakı hub olaraq qalır.
 const HUB = "Bakı";
-// RU versiyada etiketlər rusca (2026-08-16); klik linki AZ adla qalır —
-// kataloq filtri bazadakı AZ dəyəri ilə işləyir.
-const CITY_RU: Record<string, string> = {
-  "Bakı": "Баку",
-  "Sumqayıt": "Сумгайыт",
-  "Gəncə": "Гянджа",
-  "Quba": "Губа",
-  "Mingəçevir": "Мингячевир",
-  "Naxçıvan": "Нахчыван",
-  "Lənkəran": "Лянкяран",
-  "Şəki": "Шеки",
-  "Xaçmaz": "Хачмаз",
-  "Şirvan": "Ширван",
-  "Masallı": "Масаллы",
-  "Zaqatala": "Загатала",
-  "Yevlax": "Евлах",
-  "Ağcabədi": "Агджабеди",
-  "Göyçay": "Гёйчай",
-  "Abşeron": "Абшерон",
-  "Bərdə": "Барда",
-  "Şamaxı": "Шамахы",
-  "Salyan": "Сальян",
-  "Tovuz": "Товуз",
-  "İsmayıllı": "Исмаиллы",
-  "Qəbələ": "Габала",
-  "Qusar": "Гусар",
-  "Xankəndi": "Ханкенди",
-};
 const LEFT = new Set(["Bakı", "Qusar", "Salyan", "Qəbələə", "Abşeron", "Tovuz", "Naxçıvan"]);
 // Ayrı-ayrı etiketlərə şaquli sürüşmə (sıx zonalarda toqquşmanı açmaq üçün)
 const LABEL_DY: Record<string, number> = {

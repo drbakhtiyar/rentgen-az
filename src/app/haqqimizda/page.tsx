@@ -19,6 +19,7 @@ import { JsonLd } from "@/components/ui/json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { getPlatformStats, getActiveServices } from "@/lib/queries";
 import { getLocale } from "@/lib/i18n-server";
+import { serviceNameRu } from "@/content/services-ru";
 
 /**
  * Haqqımızda (2026-08-16, istifadəçi istəyi) — layihə haqqında animasiyalı
@@ -132,7 +133,9 @@ export default async function AboutPage() {
     [`${stats.cities}`, t.nCities, MapPin],
     [`${stats.doctors}`, t.nDoctors, Stethoscope],
   ];
-  const marquee = services.slice(0, 16).map((s) => s.shortName ?? s.name);
+  const marquee = services
+    .slice(0, 16)
+    .map((s) => (ru ? serviceNameRu(s.name) : (s.shortName ?? s.name)));
 
   return (
     <>

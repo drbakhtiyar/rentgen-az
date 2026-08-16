@@ -20,6 +20,7 @@ import {
 } from "@/lib/queries";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
+import { cityLabel } from "@/lib/az-cities";
 import { getDict } from "@/lib/i18n";
 import { parseSort, combinedRatingScore, bayesian } from "@/lib/rating";
 import { getCityPages } from "@/lib/city-pages";
@@ -108,7 +109,7 @@ export default async function CentersPage({
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const cityOptions = (await getCitiesWithCenters()).map((c) => ({
     value: c,
-    label: c,
+    label: cityLabel(c, locale), // RU-da rus adı, dəyər AZ qalır (2026-08-16)
   }));
   const cityPages = await getCityPages();
   const serviceCounts = await countApprovedCentersByService();
@@ -122,7 +123,7 @@ export default async function CentersPage({
   const svc = sp.service ? await getServiceBySlug(sp.service) : null;
   const activeFilters = [
     svc?.name,
-    sp.city,
+    sp.city ? cityLabel(sp.city, locale) : null,
     sp.q ? `“${sp.q}”` : null,
   ].filter(Boolean);
 

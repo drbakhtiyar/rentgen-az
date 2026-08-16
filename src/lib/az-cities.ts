@@ -61,3 +61,39 @@ export function cityCoords(raw: string | null | undefined): [number, number] | n
   }
   return null;
 }
+
+/**
+ * Şəhər adlarının rus qarşılıqları (2026-08-16) — UI etiketləri üçün.
+ * Dəyər (value/filter) HƏMİŞƏ AZ adla qalır: baza `city` sahəsi AZ-dır.
+ */
+export const CITY_RU: Record<string, string> = {
+  "Bakı": "Баку",
+  "Sumqayıt": "Сумгайыт",
+  "Gəncə": "Гянджа",
+  "Quba": "Губа",
+  "Mingəçevir": "Мингячевир",
+  "Naxçıvan": "Нахчыван",
+  "Lənkəran": "Лянкяран",
+  "Şəki": "Шеки",
+  "Xaçmaz": "Хачмаз",
+  "Şirvan": "Ширван",
+  "Masallı": "Масаллы",
+  "Zaqatala": "Загатала",
+  "Yevlax": "Евлах",
+  "Ağcabədi": "Агджабеди",
+  "Göyçay": "Гёйчай",
+  "Abşeron": "Абшерон",
+  "Bərdə": "Барда",
+  "Şamaxı": "Шамахы",
+  "Salyan": "Сальян",
+  "Tovuz": "Товуз",
+  "İsmayıllı": "Исмаиллы",
+  "Qəbələ": "Габала",
+  "Qusar": "Гусар",
+  "Xankəndi": "Ханкенди",
+};
+
+/** UI etiketi: RU-da rus adı (yoxdursa AZ qalır), AZ-da olduğu kimi. */
+export function cityLabel(name: string, locale: "az" | "ru"): string {
+  return locale === "ru" ? (CITY_RU[name] ?? name) : name;
+}
