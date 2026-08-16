@@ -768,6 +768,7 @@ model BlogPost {
   metaTitle       String?
   metaDescription String?
   tags            String[]  @default([])
+  category        String? // kateqoriya slug-u (adlar kodda: src/lib/blog-categories.ts) — 2026-08-17
   published       Boolean   @default(false)
   publishedAt     DateTime?
   createdAt       DateTime  @default(now())

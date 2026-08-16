@@ -390,6 +390,7 @@ export async function saveBlogPostAction(input: {
   metaTitle?: string;
   metaDescription?: string;
   tags?: string;
+  category?: string;
   published?: boolean;
 }): Promise<AdminResult> {
   const admin = await requireRole("ADMIN");
@@ -422,6 +423,7 @@ export async function saveBlogPostAction(input: {
       metaTitle: d.metaTitle || null,
       metaDescription: d.metaDescription || null,
       tags,
+      category: d.category || null,
       published,
       publishedAt: published ? new Date() : null,
     };

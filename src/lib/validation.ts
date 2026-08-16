@@ -166,6 +166,7 @@ export const blogPostSchema = z.object({
   metaTitle: z.string().trim().max(200).optional().or(z.literal("")),
   metaDescription: z.string().trim().max(400).optional().or(z.literal("")),
   tags: z.string().trim().optional().or(z.literal("")),
+  category: z.string().trim().max(40).optional().or(z.literal("")),
   published: z.boolean().optional(),
 });
 

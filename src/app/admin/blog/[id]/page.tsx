@@ -38,6 +38,7 @@ export default async function EditBlogPostPage({
           metaTitle: post.metaTitle ?? "",
           metaDescription: post.metaDescription ?? "",
           tags: post.tags.join(", "),
+          category: post.category ?? "",
           published: post.published,
         }}
       />

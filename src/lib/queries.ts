@@ -697,15 +697,69 @@ export async function getReviewableCentersForPatient(patientId: string) {
   );
 }
 
-export async function getPublishedPosts(take?: number, locale?: string) {
+export async function getPublishedPosts(take?: number, locale?: string, category?: string) {
   return safe(
     () =>
       prisma.blogPost.findMany({
-        where: { published: true, ...(locale ? { locale } : {}) },
+        where: {
+          published: true,
+          ...(locale ? { locale } : {}),
+          ...(category ? { category } : {}),
+        },
         orderBy: { publishedAt: "desc" },
         take,
       }),
     [],
+  );
+}
+
+/** Kateqoriya sayğacları — filtr seçiləndə də TAM dəstdən (2026-08-17). */
+export async function getBlogCategoryCounts(locale: string): Promise<Record<string, number>> {
+  return safe(
+    async () => {
+      const rows = await prisma.blogPost.groupBy({
+        by: ["category"],
+        where: { published: true, locale, category: { not: null } },
+        _count: { _all: true },
+      });
+      return Object.fromEntries(rows.map((r) => [r.category!, r._count._all]));
+    },
+    {} as Record<string, number>,
+  );
+}
+
+/** Oxşar yazılar: eyni kateqoriya (özündən başqa), çatmasa son yazılarla doldurulur. */
+export async function getRelatedPosts(opts: {
+  slug: string;
+  locale: string;
+  category?: string | null;
+  take?: number;
+}) {
+  const take = opts.take ?? 4;
+  return safe(
+    async () => {
+      const same = opts.category
+        ? await prisma.blogPost.findMany({
+            where: { published: true, locale: opts.locale, category: opts.category, slug: { not: opts.slug } },
+            orderBy: { publishedAt: "desc" },
+            take,
+            select: { slug: true, title: true, coverImage: true, publishedAt: true },
+          })
+        : [];
+      if (same.length >= take) return same;
+      const fill = await prisma.blogPost.findMany({
+        where: {
+          published: true,
+          locale: opts.locale,
+          slug: { notIn: [opts.slug, ...same.map((p) => p.slug)] },
+        },
+        orderBy: { publishedAt: "desc" },
+        take: take - same.length,
+        select: { slug: true, title: true, coverImage: true, publishedAt: true },
+      });
+      return [...same, ...fill];
+    },
+    [] as { slug: string; title: string; coverImage: string | null; publishedAt: Date | null }[],
   );
 }
 

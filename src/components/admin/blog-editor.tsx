@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea, Field } from "@/components/ui/field";
 import { slugify } from "@/lib/utils";
 import { saveBlogPostAction } from "@/app/admin/actions";
+import { BLOG_CATEGORIES } from "@/lib/blog-categories";
 
 export type BlogDefaults = {
   id?: string;
@@ -19,6 +20,7 @@ export type BlogDefaults = {
   metaTitle?: string;
   metaDescription?: string;
   tags?: string;
+  category?: string;
   published?: boolean;
 };
 
@@ -49,6 +51,7 @@ export function BlogEditor({ defaults }: { defaults?: BlogDefaults }) {
         metaTitle: get("metaTitle"),
         metaDescription: get("metaDescription"),
         tags: get("tags"),
+        category: get("category"),
         published: fd.get("published") === "on",
       });
       if (!res.ok) {
@@ -140,6 +143,21 @@ export function BlogEditor({ defaults }: { defaults?: BlogDefaults }) {
           </Field>
           <Field label="Meta description" htmlFor="metaDescription">
             <Textarea id="metaDescription" name="metaDescription" defaultValue={defaults?.metaDescription} className="min-h-[70px]" />
+          </Field>
+          <Field label="Kateqoriya" htmlFor="category">
+            <select
+              id="category"
+              name="category"
+              defaultValue={defaults?.category ?? ""}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+            >
+              <option value="">— seçilməyib —</option>
+              {BLOG_CATEGORIES.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.az}
+                </option>
+              ))}
+            </select>
           </Field>
           <Field label="Tags (vergüllə)" htmlFor="tags">
             <Input id="tags" name="tags" defaultValue={defaults?.tags} placeholder="3D tomoqrafiya, CBCT" />

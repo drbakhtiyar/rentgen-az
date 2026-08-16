@@ -7,7 +7,8 @@ import { PageHeader } from "@/components/page-header";
 import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { JsonLd } from "@/components/ui/json-ld";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
-import { getPublishedPosts } from "@/lib/queries";
+import { getPublishedPosts, getBlogCategoryCounts } from "@/lib/queries";
+import { BLOG_CATEGORIES, blogCategoryName } from "@/lib/blog-categories";
 import { formatDateAz } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
@@ -30,9 +31,20 @@ export const metadata = buildMetadata({
   ],
 });
 
-export default async function BlogPage() {
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kat?: string }>;
+}) {
   const locale = await getLocale();
-  const posts = await getPublishedPosts(undefined, locale);
+  const { kat } = await searchParams;
+  // Kateqoriya filtri (2026-08-17, analizler.az naxışı): sayğac TAM dəstdən,
+  // çiplər yalnız yazısı olan kateqoriyalar üçün.
+  const counts = await getBlogCategoryCounts(locale);
+  const activeKat = kat && counts[kat] ? kat : undefined;
+  const posts = await getPublishedPosts(undefined, locale, activeKat);
+  const chips = BLOG_CATEGORIES.filter((c) => (counts[c.slug] ?? 0) > 0);
+  const prefix = locale === "ru" ? "/ru" : "";
   const t = getDict(locale).blog;
 
   return (
@@ -53,6 +65,36 @@ export default async function BlogPage() {
 
       <Section>
         <Container>
+          {chips.length > 1 && (
+            <div className="mb-8 flex flex-wrap justify-center gap-2 rounded-3xl bg-[#e4e4eb]/90 px-4 py-3">
+              <a
+                href={`${prefix}/blog`}
+                className={
+                  !activeKat
+                    ? "rounded-full border border-iris-glow bg-iris-glow px-3.5 py-1.5 text-xs font-semibold text-white sm:text-sm"
+                    : "rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-iris-veil hover:text-iris-glow sm:text-sm"
+                }
+              >
+                {locale === "ru" ? "Все" : "Hamısı"}
+                <span className="ml-1.5 text-[11px] opacity-60">{Object.values(counts).reduce((a, b) => a + b, 0)}</span>
+              </a>
+              {chips.map((c) => (
+                <a
+                  key={c.slug}
+                  href={`${prefix}/blog?kat=${c.slug}`}
+                  className={
+                    activeKat === c.slug
+                      ? "rounded-full border border-iris-glow bg-iris-glow px-3.5 py-1.5 text-xs font-semibold text-white sm:text-sm"
+                      : "rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-iris-veil hover:text-iris-glow sm:text-sm"
+                  }
+                >
+                  {locale === "ru" ? c.ru : c.az}
+                  <span className="ml-1.5 text-[11px] opacity-60">{counts[c.slug]}</span>
+                </a>
+              ))}
+            </div>
+          )}
+
           {posts.length === 0 ? (
             <Card className="mx-auto max-w-xl p-8 text-center sm:p-10">
               <h2 className="font-display text-xl font-bold text-ink-900">
@@ -86,12 +128,19 @@ export default async function BlogPage() {
                     </a>
                   )}
                   <div className="flex flex-1 flex-col p-6">
-                  {post.publishedAt && (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>{formatDateAz(post.publishedAt)}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2.5 text-xs font-medium text-slate-500">
+                    {blogCategoryName(post.category, locale) && (
+                      <span className="rounded-full bg-iris-glow/10 px-2 py-0.5 font-semibold text-iris-glow">
+                        {blogCategoryName(post.category, locale)}
+                      </span>
+                    )}
+                    {post.publishedAt && (
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {formatDateAz(post.publishedAt)}
+                      </span>
+                    )}
+                  </div>
                   <h2 className="font-display mt-3 text-lg font-bold leading-snug text-ink-900">
                     <a href={`/blog/${post.slug}`} className="hover:text-brand-700">
                       {post.title}
