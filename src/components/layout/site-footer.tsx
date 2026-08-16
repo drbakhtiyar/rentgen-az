@@ -27,7 +27,7 @@ export async function SiteFooter() {
     {
       title: d.footer.company,
       links: [
-        { label: d.footer.about, href: "/#nece-ishleyir" },
+        { label: d.footer.about, href: "/haqqimizda" },
         { label: d.footer.faq, href: "/faq" },
         { label: d.nav.contact, href: "/elaqe" },
         { label: d.footer.privacy, href: "/gizlilik-siyaseti" },

@@ -45,6 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/blog",
     "/faq",
     "/elaqe",
+    "/haqqimizda",
     "/gizlilik-siyaseti",
     "/istifade-shertleri",
   ];

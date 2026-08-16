@@ -59,6 +59,7 @@ export function HeaderClient({
       "/istifade-shertleri",
       "/bize-qoshul",
       "/telimat",
+      "/haqqimizda",
       // Panellər (2026-08-16): sol sütun tünd iris olduğu üçün başlıq zolağı da
       // tünd rejimə keçdi — yuxarı zolaq + sidebar eyni səth kimi oxunur.
       "/admin",
