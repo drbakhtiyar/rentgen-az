@@ -155,9 +155,8 @@ export function CentersExplorer({
       </div>
 
       {points.length > 0 ? (
-        {/* 2026-08-16: 360px alçaq idi — fitBounds bütün ölkəni sığdıranda cənub
-            (Lənkəran) kəsilirdi. Hündürlük artırıldı ki, default masştabda tam
-            ölkə görünsün. */}
+        /* 2026-08-16: 360px alçaq idi — fitBounds bütün ölkəni sığdıranda
+           cənub (Lənkəran) kəsilirdi; hündür blokda tam ölkə görünür. */
         <div className="h-[420px] overflow-hidden rounded-3xl border border-slate-200 shadow-[var(--shadow-soft)] lg:h-[500px]">
           <CentersMapView points={points} user={user} locale={locale} />
         </div>
