@@ -71,8 +71,12 @@ export default async function HomePage() {
   const offeredServices = allServices.filter((s) => (counts[s.slug] ?? 0) > 0);
   // 2026-08-16: kartlarda premium anatomik ikonlar (xidmətlər səhifəsi ilə
   // eyni üslub) — hamısının ikonu var, amma ehtiyat üçün süzülür.
+  // Ad kart enində maks 2 sətrə sığmalıdır (≈19 simvol/sətir) — 3 sətrə
+  // düşəcək uzun adlar ana səhifəyə çıxarılmır (istifadəçi qərarı, 2026-08-16).
   const featuredServices = pickCrossCategoryRandom(
-    offeredServices.filter((s) => SERVICE_ICON_URLS[s.slug]),
+    offeredServices.filter(
+      (s) => SERVICE_ICON_URLS[s.slug] && s.name.length <= 34,
+    ),
     4,
   );
   const marqueeServices = offeredServices.slice(0, 14);
@@ -168,20 +172,22 @@ export default async function HomePage() {
             {featuredServices.map((s) => (
               <Link key={s.slug} href={`/xidmetler/${s.slug}`}>
                 <div className="group h-full rounded-3xl bg-iris-shadow p-6 ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
-                  {/* Premium anatomik ikon — xidmətlər səhifəsindəki tile üslubu:
-                      sakit halda ağ-qara, hover-də rənglənir */}
-                  <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-[#0d1330] ring-1 ring-iris-border">
-                    <Image
-                      src={SERVICE_ICON_URLS[s.slug]}
-                      alt={s.name}
-                      fill
-                      sizes="48px"
-                      className="object-cover grayscale transition-all duration-500 group-hover:scale-[1.06] group-hover:grayscale-0"
-                    />
+                  {/* Premium anatomik ikon + ad yan-yana (2026-08-16):
+                      ad maks 2 sətir — ikonun hündürlüyü qədər */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#0d1330] ring-1 ring-iris-border">
+                      <Image
+                        src={SERVICE_ICON_URLS[s.slug]}
+                        alt={s.name}
+                        fill
+                        sizes="48px"
+                        className="object-cover grayscale transition-all duration-500 group-hover:scale-[1.06] group-hover:grayscale-0"
+                      />
+                    </div>
+                    <h3 className="font-display text-lg font-semibold leading-snug tracking-tight text-white">
+                      {s.name}
+                    </h3>
                   </div>
-                  <h3 className="font-display mt-4 text-lg font-semibold tracking-tight text-white">
-                    {s.name}
-                  </h3>
                   <p className="mt-2 text-sm leading-relaxed text-ash-2">
                     {s.description}
                   </p>
