@@ -170,12 +170,12 @@ export default async function HomePage() {
                 <div className="group h-full rounded-3xl bg-iris-shadow p-6 ring-1 ring-iris-border transition-all duration-300 hover:-translate-y-1 hover:ring-iris-veil">
                   {/* Premium anatomik ikon — xidmətlər səhifəsindəki tile üslubu:
                       sakit halda ağ-qara, hover-də rənglənir */}
-                  <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-[#0d1330] ring-1 ring-iris-border">
+                  <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-[#0d1330] ring-1 ring-iris-border">
                     <Image
                       src={SERVICE_ICON_URLS[s.slug]}
                       alt={s.name}
                       fill
-                      sizes="96px"
+                      sizes="48px"
                       className="object-cover grayscale transition-all duration-500 group-hover:scale-[1.06] group-hover:grayscale-0"
                     />
                   </div>
