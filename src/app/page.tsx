@@ -107,7 +107,7 @@ export default async function HomePage() {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <HeroVisual activeCities={coveredCities} />
+              <HeroVisual activeCities={coveredCities} locale={locale} />
             </div>
           </div>
         </Container>

@@ -50,6 +50,34 @@ const OUTLINE_PATHS = AZ_OUTLINE.map(toPath);
 // kliklənəbilir (/rentgen-merkezleri?city=X — universal filtr, 404 vermir),
 // markerlərdə növbəli nəbz animasiyası. Bakı hub olaraq qalır.
 const HUB = "Bakı";
+// RU versiyada etiketlər rusca (2026-08-16); klik linki AZ adla qalır —
+// kataloq filtri bazadakı AZ dəyəri ilə işləyir.
+const CITY_RU: Record<string, string> = {
+  "Bakı": "Баку",
+  "Sumqayıt": "Сумгайыт",
+  "Gəncə": "Гянджа",
+  "Quba": "Губа",
+  "Mingəçevir": "Мингячевир",
+  "Naxçıvan": "Нахчыван",
+  "Lənkəran": "Лянкяран",
+  "Şəki": "Шеки",
+  "Xaçmaz": "Хачмаз",
+  "Şirvan": "Ширван",
+  "Masallı": "Масаллы",
+  "Zaqatala": "Загатала",
+  "Yevlax": "Евлах",
+  "Ağcabədi": "Агджабеди",
+  "Göyçay": "Гёйчай",
+  "Abşeron": "Абшерон",
+  "Bərdə": "Барда",
+  "Şamaxı": "Шамахы",
+  "Salyan": "Сальян",
+  "Tovuz": "Товуз",
+  "İsmayıllı": "Исмаиллы",
+  "Qəbələ": "Габала",
+  "Qusar": "Гусар",
+  "Xankəndi": "Ханкенди",
+};
 const LEFT = new Set(["Bakı", "Qusar", "Salyan", "Qəbələə", "Abşeron", "Tovuz", "Naxçıvan"]);
 // Ayrı-ayrı etiketlərə şaquli sürüşmə (sıx zonalarda toqquşmanı açmaq üçün)
 const LABEL_DY: Record<string, number> = {
@@ -70,10 +98,13 @@ const DEFAULT_CITIES = ["Bakı", "Gəncə", "Naxçıvan", "Şəki", "Lənkəran"
 export function HeroVisual({
   activeCities,
   className,
+  locale = "az",
 }: {
   activeCities?: string[];
   className?: string;
+  locale?: "az" | "ru";
 }) {
+  const ru = locale === "ru";
   const src = activeCities && activeCities.length ? activeCities : DEFAULT_CITIES;
 
   // Rəngli rayonlar: bazadakı şəhər adı rayon adı ilə üst-üstə düşür.
@@ -165,7 +196,12 @@ export function HeroVisual({
               const left = LEFT.has(m.name);
               const r = hub ? 7 : 4.5;
               return (
-                <a key={m.name} href={`/rentgen-merkezleri?city=${encodeURIComponent(m.name)}`} className="map-city" aria-label={`${m.name} mərkəzləri`}>
+                <a
+                  key={m.name}
+                  href={`${ru ? "/ru" : ""}/rentgen-merkezleri?city=${encodeURIComponent(m.name)}`}
+                  className="map-city"
+                  aria-label={ru ? `Центры: ${CITY_RU[m.name] ?? m.name}` : `${m.name} mərkəzləri`}
+                >
                   {/* hər markerdə növbəli mint nəbzi (hub daha güclü) */}
                   <circle cx={m.x} cy={m.y} r={r * 2.4} fill={hub ? "rgba(0,255,170,0.12)" : "rgba(0,255,170,0.07)"}>
                     <animate attributeName="r" values={`${r * 1.8};${r * 3};${r * 1.8}`} dur="3.2s" begin={`${(i % 8) * 0.4}s`} repeatCount="indefinite" />
@@ -184,7 +220,7 @@ export function HeroVisual({
                     stroke="rgba(22,22,92,0.85)"
                     strokeWidth="4"
                   >
-                    {m.name}
+                    {ru ? (CITY_RU[m.name] ?? m.name) : m.name}
                   </text>
                 </a>
               );
@@ -236,10 +272,10 @@ export function HeroVisual({
       </svg>
 
       <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl bg-iris-canvas/70 px-3.5 py-2 ring-1 ring-iris-border backdrop-blur-sm">
-        <span className="text-[11px] font-medium text-clinical">Bütün Azərbaycan üzrə mərkəzlər</span>
+        <span className="text-[11px] font-medium text-clinical">{ru ? "Центры по всему Азербайджану" : "Bütün Azərbaycan üzrə mərkəzlər"}</span>
         <span className="flex items-center gap-1.5 text-[11px] text-pearl/70">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-vital" />
-          {VARIANT === "rayons" ? `${coveredCount} rayon` : `${markers.length} şəhər`}
+          {VARIANT === "rayons" ? `${coveredCount} ${ru ? "районов" : "rayon"}` : `${markers.length} ${ru ? "городов" : "şəhər"}`}
         </span>
       </div>
     </div>
