@@ -146,7 +146,7 @@ export default async function CentersPage({
         visual={<PageHeroVisual src={PAGE_HERO.centers} alt={d.centers.title} />}
       />
 
-      <div className="border-b border-slate-200 bg-white">
+      <div className="bg-pearl">
         <Container className="py-6">
           <SearchPanel
             services={serviceOptions}

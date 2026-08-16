@@ -72,7 +72,7 @@ export function SearchPanel({
       className={
         variant === "hero"
           ? "glass rounded-3xl p-3 shadow-[var(--shadow-glow)] sm:p-4"
-          : "rounded-2xl border border-slate-200 bg-white p-3 shadow-[var(--shadow-soft)]"
+          : "rounded-3xl bg-[#e4e4eb] p-4 sm:p-5" // 2026-08-16: həkimlər panel forması
       }
     >
       <div className="grid gap-3 md:grid-cols-[1.1fr_1fr_1fr_auto]">
