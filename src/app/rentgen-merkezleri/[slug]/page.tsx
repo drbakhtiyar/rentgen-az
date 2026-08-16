@@ -229,18 +229,21 @@ export default async function CenterDetailPage({
           { name: "Rentgen mərkəzləri", href: "/rentgen-merkezleri" },
           { name: center.name },
         ]}
-      >
-        <div className="flex flex-wrap items-center gap-3">
-          {center.logoUrl && (
-            <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-white/20 shadow-sm">
+        visual={
+          center.logoUrl ? (
+            /* Loqo sağdakı boşluqda, köhnə 48px-in 3 misli (2026-08-16) */
+            <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-3xl bg-white/95 ring-1 ring-white/25 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={center.logoUrl}
                 alt={`${center.name} loqosu`}
                 className="h-full w-full object-contain"
               />
-            </span>
-          )}
+            </div>
+          ) : undefined
+        }
+      >
+        <div className="flex flex-wrap items-center gap-3">
           <VerifiedBadge />
           {center.city && (
             <span className="flex items-center gap-1.5 text-sm text-slate-300">
