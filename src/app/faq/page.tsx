@@ -52,7 +52,9 @@ export default async function FaqPage() {
         ]}
         visual={<PageHeroVisual src={PAGE_HERO.faq} alt={t.title} />}
       />
-      <Section>
+      {/* 2026-08-16: hero ilə çip paneli arası boşluq xidmətlər səhifəsinə
+          bərabərləşdirildi (defolt py-16/24 çox idi) */}
+      <Section className="pt-8 pb-16 sm:pt-10 lg:pt-10">
         <Container>
           <FaqSections
             sections={sections}
