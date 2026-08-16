@@ -70,7 +70,18 @@ export function parseHours(value: unknown): WeeklyHours | null {
  * Human-readable summary, grouping consecutive days with identical hours.
  * e.g. "B.e–Cümə 09:00–19:00, Şənbə 09:00–15:00".
  */
-export function formatHoursSummary(h: WeeklyHours | null): string {
+/** RU qısaltmaları (2026-08-16) — RU interfeysdə saat xülasəsi üçün. */
+export const DAY_LABELS_RU: Record<DayKey, string> = {
+  mon: "Пн",
+  tue: "Вт",
+  wed: "Ср",
+  thu: "Чт",
+  fri: "Пт",
+  sat: "Сб",
+  sun: "Вс",
+};
+
+export function formatHoursSummary(h: WeeklyHours | null, locale: "az" | "ru" = "az"): string {
   if (!h) return "";
   const groups: { days: DayKey[]; open: string; close: string }[] = [];
   for (const key of DAY_KEYS) {
@@ -86,10 +97,11 @@ export function formatHoursSummary(h: WeeklyHours | null): string {
   if (groups.length === 0) return "";
   return groups
     .map((g) => {
+      const L = locale === "ru" ? DAY_LABELS_RU : DAY_LABELS_AZ;
       const label =
         g.days.length === 1
-          ? DAY_LABELS_AZ[g.days[0]]
-          : `${DAY_LABELS_AZ[g.days[0]]}–${DAY_LABELS_AZ[g.days[g.days.length - 1]]}`;
+          ? L[g.days[0]]
+          : `${L[g.days[0]]}–${L[g.days[g.days.length - 1]]}`;
       return `${label} ${g.open}–${g.close}`;
     })
     .join(", ");

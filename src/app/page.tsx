@@ -334,7 +334,7 @@ export default async function HomePage() {
           {shown.length > 0 ? (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((c) => (
-                <CenterCard key={c.id} center={c} rating={ratings[c.id]} />
+                <CenterCard key={c.id} center={c} rating={ratings[c.id]} locale={locale} />
               ))}
             </div>
           ) : (

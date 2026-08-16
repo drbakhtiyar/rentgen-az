@@ -35,11 +35,11 @@ export function Badge({
   );
 }
 
-export function VerifiedBadge({ className }: { className?: string }) {
+export function VerifiedBadge({ className, label }: { className?: string; label?: string }) {
   return (
     <Badge tone="brand" className={cn("gap-1", className)}>
       <BadgeCheck className="h-3.5 w-3.5" />
-      Təsdiqlənmiş
+      {label ?? "Təsdiqlənmiş"}
     </Badge>
   );
 }

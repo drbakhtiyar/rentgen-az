@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Clock, ArrowUpRight, Tag, Star } from "lucide-react";
 import { VerifiedBadge } from "@/components/ui/badge";
+import { serviceNameRu } from "@/content/services-ru";
+import { formatHoursSummary, type WeeklyHours } from "@/lib/hours";
 import { CallButton, WhatsAppButton } from "@/components/contact-buttons";
 import { RatingSummary } from "@/components/reviews/stars";
 import { GoogleRatingBadge } from "@/components/reviews/google-rating-badge";
@@ -81,7 +83,7 @@ export function CenterCard({
           </div>
         )}
         <div className="absolute left-3 top-3">
-          <VerifiedBadge className="bg-white/95 text-iris-pulse shadow-sm ring-ash-2 backdrop-blur" />
+          <VerifiedBadge label={locale === "ru" ? "Проверен" : undefined} className="bg-white/95 text-iris-pulse shadow-sm ring-ash-2 backdrop-blur" />
         </div>
         {featured && (
           <div className="absolute right-3 top-3">
@@ -135,10 +137,15 @@ export function CenterCard({
               <span>{[center.city, center.address].filter(Boolean).join(", ")}</span>
             </p>
           )}
-          {center.workingHours && (
+          {(center.workingHours || center.hours) && (
             <p className="flex items-center gap-1.5">
               <Clock className="h-4 w-4 shrink-0 text-iris-pulse" />
-              <span>{center.workingHours}</span>
+              {/* RU: strukturlu saatlardan rus qısaltmalı xülasə (2026-08-16) */}
+              <span>
+                {locale === "ru" && center.hours
+                  ? formatHoursSummary(center.hours as unknown as WeeklyHours, "ru")
+                  : center.workingHours}
+              </span>
             </p>
           )}
         </div>
@@ -153,7 +160,7 @@ export function CenterCard({
           <div className="mt-3 flex items-center justify-between gap-2 rounded-2xl border border-iris-veil/25 bg-iris-glow/8 px-3 py-2">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-iris-glow">
               <Tag className="h-4 w-4 text-iris-pulse" />
-              {matched.service.shortName ?? matched.service.name}
+              {locale === "ru" ? serviceNameRu(matched.service.name) : (matched.service.shortName ?? matched.service.name)}
             </span>
             <span className="text-sm font-semibold text-iris-canvas">
               {formatPrice(matched.price, matched.priceTo)}
@@ -168,7 +175,7 @@ export function CenterCard({
                 key={cs.id}
                 className="inline-flex items-center rounded-full border border-iris-veil/30 bg-iris-glow/8 px-2.5 py-0.5 text-xs font-medium text-iris-glow transition-colors group-hover:border-iris-veil/50"
               >
-                {cs.service.shortName ?? cs.service.name}
+                {locale === "ru" ? serviceNameRu(cs.service.name) : (cs.service.shortName ?? cs.service.name)}
               </span>
             ))}
             {extra > 0 && (
