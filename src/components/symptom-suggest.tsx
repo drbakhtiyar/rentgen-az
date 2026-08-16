@@ -19,9 +19,9 @@ export function SymptomSuggest({ ru }: { ru: boolean }) {
   }
 
   return (
-    <div className="rounded-2xl border border-brand-100 bg-brand-50/40 p-5 sm:p-6">
-      <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-        <Sparkles className="h-4 w-4 text-brand-600" />
+    <div className="rounded-3xl bg-[#e4e4eb] p-6 sm:p-8">
+      <p className="flex items-center gap-2 text-sm font-semibold text-iris-canvas">
+        <Sparkles className="h-4 w-4 text-iris-pulse" />
         {ru ? "Не знаете, какое обследование нужно?" : "Hansı müayinə lazımdır bilmirsiniz?"}
       </p>
       <p className="mt-1 text-sm text-slate-500">

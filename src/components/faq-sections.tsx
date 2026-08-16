@@ -45,8 +45,11 @@ export function FaqSections({
     <div className="mx-auto max-w-5xl">
       {/* Yapışqan çip zolağı — sürüşmə YOXDUR: qısa adlarla bükülür,
           hamısı həmişə görünür (istifadəçi rəyi: yan skrol narahat idi) */}
-      <div className="sticky top-16 z-20 -mx-4 mb-8 border-b border-slate-200/70 bg-white/85 px-4 py-3 backdrop-blur-sm sm:top-[68px]">
-        <div className="flex flex-wrap justify-center gap-2">
+      {/* 2026-08-16: tam-en ağ zolaq qarışıqlıq yaradırdı — həkimlər
+          səhifəsindəki boz panel formasına keçdi (rounded-3xl #e4e4eb),
+          yapışqan qalanda yüngül blur + kölgə alır */}
+      <div className="sticky top-[72px] z-20 mb-8 sm:top-[76px]">
+        <div className="flex flex-wrap justify-center gap-2 rounded-3xl bg-[#e4e4eb]/90 px-4 py-3 shadow-[0_10px_30px_-18px_rgba(22,22,92,0.35)] backdrop-blur-sm">
           {sections.map((s) => (
             <button
               key={s.key}
