@@ -244,6 +244,18 @@ export default async function CenterDetailPage({
         }
       >
         <div className="flex flex-wrap items-center gap-3">
+          {/* Mobildə kiçik loqo qalır (desktop sağdakı böyük varianta görür,
+              orada bu gizlənir) — 2026-08-16, variant 1 */}
+          {center.logoUrl && (
+            <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-white/20 shadow-sm lg:hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={center.logoUrl}
+                alt={`${center.name} loqosu`}
+                className="h-full w-full object-contain"
+              />
+            </span>
+          )}
           <VerifiedBadge />
           {center.city && (
             <span className="flex items-center gap-1.5 text-sm text-slate-300">
