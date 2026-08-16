@@ -63,7 +63,8 @@ export default async function BlogPage({
         visual={<PageHeroVisual src={PAGE_HERO.blog} alt={t.title} />}
       />
 
-      <Section>
+      {/* 2026-08-17: çip panelinin üst boşluğu FAQ ilə eyniləşdirildi */}
+      <Section className="pt-8 pb-16 sm:pt-10 lg:pt-10">
         <Container>
           {chips.length > 1 && (
             <div className="mb-8 flex flex-wrap justify-center gap-2 rounded-3xl bg-[#e4e4eb]/90 px-4 py-3">
