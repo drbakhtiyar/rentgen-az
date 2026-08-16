@@ -2,6 +2,25 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Bloq: kateqoriya + yan panel + orqanik linklər (analizler.az naxışları)
+- **Qərar (2026-08-17, istifadəçi):** analizler.az-da işlənmiş bloq məntiqləri
+  rentgen-ə köçürüldü: kateqoriya slug bazada / adlar kodda
+  (`src/lib/blog-categories.ts`), saylı filtr çipləri (sayğac tam dəstdən),
+  yapışqan yan panel (CTA + yazıda keçən müayinələr + oxşar yazılar),
+  mətn-içi orqanik linklər.
+- **Orqanik link qaydaları (pozulmaz):** yalnız mövcud ifadə [..](..) sarğısı
+  alır — söz dəyişmir; link/başlıq/kod içinə girmir; hər hədəfə 1 link; yazı
+  başına max 3 bloq + 1 kataloq linki; AZ yazı AZ hədəflərə, RU yazı /ru
+  hədəflərə; ifadə söz sərhədində başlayır, sonuna 0-8 hərf şəkilçi yapışa
+  bilər (AZ hallanma + RU padejlər). Nəticə: 92 bloq-arası + 6 kataloq linki,
+  42/48 yazı. Ehtiyat nüsxə dəyişiklikdən əvvəl çıxarılıb.
+- **«Yazıda keçən müayinələr» bazaya YAZILMIR** — hər render mətndən çıxarılır
+  (`src/lib/blog-services.ts`); yazı redaktə olunanda özü yenilənir.
+- **Müəllif iddiası SƏHV çıxdı:** analizler sessiyası «rentgen-də Dr. Bəxtiyar
+  göstərilir» demişdi — yoxlanıldı (kod, baza, git, canlı HTML): şəxsi müəllif
+  imzası HEÇ VAXT olmayıb; meta müəllifi Rentgen.az təşkilatıdır. Dəyişiklik
+  tələb olunmadı.
+
 ## Qarşı tərəfin avtomatik cavabına BOT SUSUR (cavab yazmır)
 - **Qərar (2026-08-15):** klinikanın WhatsApp Business greeting/away şablonu
   tanınanda bot heç nə göndərmir — mesaj yalnız güzgüyə düşür + 🔇 qeydi.
