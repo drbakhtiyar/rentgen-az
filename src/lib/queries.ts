@@ -18,16 +18,65 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
 
 export type CenterListFilters = {
   q?: string;
+  /** Fold-axtarışın nəticə id-ləri — verilərsə q-nun hərfi contains-i əvəzinə işlənir. */
+  ids?: string[];
   city?: string;
   service?: string; // service slug
   take?: number;
   skip?: number;
 };
 
+/**
+ * Diakritik-aqnostik ad axtarışı (2026-08-17): «saglam aile» yazan istifadəçi
+ * «Sağlam Ailə»ni tapmırdı. Sadə fold: AZ hərfləri ASCII-yə (ə→e/a hər iki
+ * variant yoxlanılır), sorğuda sh→ş/ch→ç/gh→ğ transliti də tanınır.
+ * Uyğun gələn mərkəz id-ləri SQL filtrinə verilir — 300 sətirlik ad siyahısı
+ * üçün JS müqayisəsi ucuzdur.
+ */
+const foldAz = (s: string, eAsA = false) =>
+  s
+    .toLowerCase()
+    .replace(/i̇/g, "i")
+    .replace(/ə/g, eAsA ? "a" : "e")
+    .replace(/[ıî]/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ü/g, "u")
+    .replace(/ç/g, "c")
+    .replace(/ş/g, "s")
+    .replace(/ğ/g, "g")
+    .replace(/\s+/g, " ")
+    .trim();
+const foldQuery = (q: string) =>
+  foldAz(q).replace(/sh/g, "s").replace(/ch/g, "c").replace(/gh/g, "g").replace(/kh/g, "x");
+
+export async function centerIdsForNameQuery(q: string): Promise<string[] | null> {
+  try {
+    // Hərfi uyğunluq onsuz da SQL-də işləyəcək; fold yalnız tapılmayanda lazımdır,
+    // amma bir sorğu ilə hamısını yoxlamaq daha sadədir.
+    const rows = await prisma.centerProfile.findMany({
+      where: { status: "APPROVED" },
+      select: { id: true, name: true },
+    });
+    const nq = foldQuery(q);
+    if (nq.length < 2) return null;
+    const ids = rows
+      .filter((r) => {
+        const n1 = foldAz(r.name);
+        const n2 = foldAz(r.name, true);
+        return n1.includes(nq) || n2.includes(nq);
+      })
+      .map((r) => r.id);
+    return ids;
+  } catch {
+    return null;
+  }
+}
+
 function centerWhere(filters: CenterListFilters): Prisma.CenterProfileWhereInput {
-  const { q, city, service } = filters;
+  const { q, city, service, ids } = filters;
   const where: Prisma.CenterProfileWhereInput = { status: "APPROVED" };
-  if (q) where.name = { contains: q, mode: "insensitive" };
+  if (ids) where.id = { in: ids };
+  else if (q) where.name = { contains: q, mode: "insensitive" };
   if (city) where.city = city;
   if (service) where.services = { some: { service: { slug: service } } };
   return where;

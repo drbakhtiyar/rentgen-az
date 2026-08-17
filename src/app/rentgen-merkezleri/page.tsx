@@ -21,6 +21,7 @@ import {
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { cityLabel } from "@/lib/az-cities";
+import { centerIdsForNameQuery } from "@/lib/queries";
 import { getDict } from "@/lib/i18n";
 import { parseSort, combinedRatingScore, bayesian } from "@/lib/rating";
 import { getCityPages } from "@/lib/city-pages";
@@ -67,7 +68,9 @@ export default async function CentersPage({
   }>;
 }) {
   const sp = await searchParams;
-  const filters = { q: sp.q, city: sp.city, service: sp.service };
+  // Fold-axtarış (2026-08-17): «saglam aile» → «Sağlam Ailə» tapılsın
+  const foldIds = sp.q ? await centerIdsForNameQuery(sp.q) : null;
+  const filters = { q: sp.q, ids: foldIds ?? undefined, city: sp.city, service: sp.service };
   const page = Math.max(1, Number(sp.page) || 1);
   const sort = parseSort(sp.sort);
 
