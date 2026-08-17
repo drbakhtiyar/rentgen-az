@@ -143,6 +143,19 @@ export const SERVICE_NAME_RU: Record<string, string> = {
   "Uşaq USM": "УЗИ детям",
 };
 
+// saglamaile.az inteqrasiyası ilə əlavə olunan xidmətlər (2026-08-17)
+Object.assign(SERVICE_NAME_RU, {
+  "Said sümükləri rentgeni": "Рентген костей предплечья",
+  "Yastı pəncəlik rentgeni": "Рентген на плоскостопие",
+  "Türk yəhəri rentgeni": "Рентген турецкого седла",
+  "İrriqoskopiya": "Ирригоскопия",
+  "Döş qəfəsi rentgenoskopiyası": "Рентгеноскопия грудной клетки",
+  "Ginekoloji USM": "Гинекологическое УЗИ",
+  "Uroloji USM": "Урологическое УЗИ",
+  "Limfa düyünləri USM": "УЗИ лимфатических узлов",
+  "Yumşaq toxuma USM": "УЗИ мягких тканей",
+});
+
 /** RU name for an AZ service name (falls back to the AZ name). */
 export function serviceNameRu(azName: string): string {
   return SERVICE_NAME_RU[azName] ?? azName;
