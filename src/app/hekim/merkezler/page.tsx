@@ -4,6 +4,7 @@ import { Building2, MapPin, MessageSquare } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { EmptyState, Panel } from "@/components/dashboard/widgets";
 import { RequestPartnerButton } from "@/components/partnership/partnership-buttons";
+import { CenterDirectory, type DirectoryCenter } from "@/components/partnership/center-directory";
 import { prisma } from "@/lib/db";
 import { requireDoctor, doctorNavFor } from "../_lib";
 import { getLocale } from "@/lib/i18n-server";
@@ -38,6 +39,20 @@ export default async function DoctorCentersPage() {
     partners.map((p) => [p.centerId, p.status]),
   );
 
+  // 2026-08-17 (asistent geribildirimi): 292 mərkəzlik vahid siyahı mövcud
+  // partnyorları udurdu. İndi PARTNYORLAR (ACCEPTED + PENDING) yuxarıda ayrıca
+  // paneldədir, qalan mərkəzlər axtarışlı kataloqda.
+  const partnerCenters = centers.filter((c) => {
+    const st = statusByCenter.get(c.id);
+    return st === "ACCEPTED" || st === "PENDING";
+  });
+  const otherCenters: DirectoryCenter[] = centers
+    .filter((c) => !partnerCenters.some((p) => p.id === c.id))
+    .map((c) => ({
+      ...c,
+      status: (statusByCenter.get(c.id) as "REJECTED" | undefined) ?? null,
+    }));
+
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
   const pd = getPanelDict(await getLocale());
@@ -49,10 +64,11 @@ export default async function DoctorCentersPage() {
         {t.centersIntro}
       </div>
 
-      <Panel title={`${t.centersPanel} (${centers.length})`}>
-        {centers.length > 0 ? (
+      {/* Partnyorlarım — asistent üçün əsas bölmə */}
+      <Panel title={`Partnyorlarım (${partnerCenters.length})`} className="mb-5">
+        {partnerCenters.length > 0 ? (
           <div className="space-y-2">
-            {centers.map((c) => (
+            {partnerCenters.map((c) => (
               <div
                 key={c.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-3"
@@ -100,6 +116,14 @@ export default async function DoctorCentersPage() {
         ) : (
           <EmptyState icon={<Building2 />} title={t.centersEmptyTitle} description={t.centersEmptyBody} />
         )}
+      </Panel>
+
+      <Panel title={`Yeni əməkdaşlıq qur (${otherCenters.length} mərkəz)`}>
+        <CenterDirectory
+          centers={otherCenters}
+          searchPlaceholder="Mərkəz adı və ya şəhər axtar..."
+          emptyText="Axtarışa uyğun mərkəz tapılmadı."
+        />
       </Panel>
     </DashboardShell>
   );
