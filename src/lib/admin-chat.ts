@@ -10,6 +10,8 @@ export type AdminThreadItem = {
   sub: string | null;
   role: string;
   avatarUrl: string | null;
+  /** Yazışdığımız nömrə (User.phone) — söhbət başlığında göstərilir (2026-08-17). */
+  phone?: string | null;
   lastMessageAt: string;
   preview: string | null;
   unread: number;
@@ -158,6 +160,7 @@ export async function getAdminThreads(
       sub: l.sub,
       role: t.user.role,
       avatarUrl: l.avatarUrl,
+      phone: t.user.phone?.startsWith("placeholder:") ? null : t.user.phone,
       lastMessageAt: t.lastMessageAt.toISOString(),
       preview: t.messages[0] ? (t.messages[0].content || (t.messages[0].fileUrl ? "📎 Fayl" : null)) : null,
       unread: unreadByThread[t.id] ?? 0,

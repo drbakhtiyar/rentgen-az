@@ -47,7 +47,7 @@ function Avatar({ url, role }: { url: string | null; role: string }) {
   );
 }
 
-type ActiveUser = { userId: string; threadId: string | null; name: string; sub: string | null; role: string; avatarUrl: string | null; waWindowUntil?: string | null };
+type ActiveUser = { userId: string; threadId: string | null; name: string; sub: string | null; role: string; avatarUrl: string | null; phone?: string | null; waWindowUntil?: string | null };
 
 
 /**
@@ -129,7 +129,7 @@ export function AdminChatInterface({
     setError(null);
     setDone(null);
     setMessages([]);
-    setActive({ userId: t.userId, threadId: t.threadId, name: t.name, sub: t.sub, role: t.role, avatarUrl: t.avatarUrl, waWindowUntil: t.waWindowUntil ?? null });
+    setActive({ userId: t.userId, threadId: t.threadId, name: t.name, sub: t.sub, role: t.role, avatarUrl: t.avatarUrl, phone: t.phone ?? null, waWindowUntil: t.waWindowUntil ?? null });
   }
   function openSearchUser(u: AdminSearchItem) {
     setGroup(null);
@@ -318,6 +318,17 @@ export function AdminChatInterface({
                 <p className="truncate font-semibold text-ink-900">{active.name}</p>
                 {active.sub && <p className="truncate text-xs text-slate-400">{active.sub}</p>}
               </div>
+              {/* Yazışdığımız WhatsApp nömrəsi (2026-08-17) — operator hansı
+                  nömrə ilə danışdığını bir baxışda görsün */}
+              {active.phone && (
+                <a
+                  href={`tel:${active.phone}`}
+                  className="hidden shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-slate-600 ring-1 ring-slate-200 transition-colors hover:text-iris-glow sm:block"
+                  title="Yazışdığımız nömrə"
+                >
+                  {active.phone}
+                </a>
+              )}
               {/* Meta 24 saatlıq cavab pəncərəsi (2026-08-15): operator
                   yazmadan ƏVVƏL mesajın WhatsApp-a çatıb-çatmayacağını bilsin. */}
               {waWindowLabel(active) && (
