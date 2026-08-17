@@ -12,7 +12,8 @@ export type CenterEventType =
   | "license"
   | "faq"
   | "website"
-  | "instagram";
+  | "instagram"
+  | "email";
 
 /** Fire-and-forget analytics event for a center (public, best-effort). */
 export async function trackCenterEventAction(
@@ -22,7 +23,7 @@ export async function trackCenterEventAction(
   // Zibil hadisə qorunması (2026-08-14): normal ziyarətçi bu həddə çatmır.
   const rl = await rateLimit("public:track", clientIp({ headers: await headers() }), 120, 3600);
   if (!rl.allowed) return;
-  if (!centerId || !["view", "call", "whatsapp", "directions", "license", "faq", "website", "instagram"].includes(type)) return;
+  if (!centerId || !["view", "call", "whatsapp", "directions", "license", "faq", "website", "instagram", "email"].includes(type)) return;
   try {
     await prisma.centerEvent.create({ data: { centerId, type } });
   } catch {

@@ -220,6 +220,7 @@ model CenterProfile {
   mapsUrl           String?
   website           String? // ictimai səhifədə göstərilir, kliklər izlənir (2026-08-13)
   instagram         String?
+  email             String? // ictimai əlaqə e-poçtu (2026-08-17)
   lat               Float?
   lng               Float?
   workingHours      String? // insan-oxunaqlı xülasə (strukturdan avtomatik yaranır)

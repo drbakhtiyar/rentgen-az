@@ -38,6 +38,7 @@ async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
 
 export async function saveCenterProfileAction(input: {
   name: string;
+  email?: string;
   phone: string;
   whatsapp?: string;
   address?: string;
@@ -90,6 +91,7 @@ export async function saveCenterProfileAction(input: {
       workingHours: formatHoursSummary(week) || null,
       equipment: d.equipment || null,
       responsiblePerson: d.responsiblePerson || null,
+      email: d.email || null,
       description: d.description || null,
       logoUrl: d.logoUrl || null,
       licenseUrl: d.licenseUrl || null,

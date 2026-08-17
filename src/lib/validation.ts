@@ -84,6 +84,7 @@ export const centerProfileSchema = z.object({
   lat: z.number().min(-90).max(90).nullable().optional(),
   lng: z.number().min(-180).max(180).nullable().optional(),
   faqAnswers: z.record(z.string(), z.string()).optional(),
+  email: z.string().trim().email().max(200).optional().or(z.literal("")),
 });
 
 export const appointmentRequestSchema = z.object({

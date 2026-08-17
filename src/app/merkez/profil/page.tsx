@@ -49,6 +49,7 @@ export default async function CenterProfilePage() {
           mapsUrl: center.mapsUrl ?? "",
             website: center.website ?? "",
             instagram: center.instagram ?? "",
+            email: center.email ?? "",
           workingHours: center.workingHours ?? "",
           equipment: center.equipment ?? "",
           responsiblePerson: center.responsiblePerson ?? "",

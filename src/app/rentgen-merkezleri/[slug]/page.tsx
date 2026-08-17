@@ -12,6 +12,7 @@ import {
   User,
   ExternalLink,
   CheckCircle2,
+  Mail,
 } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
@@ -397,7 +398,7 @@ export default async function CenterDetailPage({
                     <Detail icon={<User />} label={dd.responsible} value={center.responsiblePerson} />
                   )}
                 </dl>
-                {(center.website || center.instagram) && (
+                {(center.website || center.instagram || center.email) && (
                   <div className="mt-5 flex flex-wrap items-center gap-4">
                     {center.website && (
                       <TrackClick centerId={center.id} type="website">
@@ -409,6 +410,16 @@ export default async function CenterDetailPage({
                         >
                           <Globe className="h-4 w-4" /> Veb sayt
                           <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </TrackClick>
+                    )}
+                    {center.email && (
+                      <TrackClick centerId={center.id} type="email">
+                        <a
+                          href={`mailto:${center.email}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+                        >
+                          <Mail className="h-4 w-4" /> {center.email}
                         </a>
                       </TrackClick>
                     )}

@@ -26,6 +26,7 @@ export type CenterFormDefaults = {
   mapsUrl?: string;
   website?: string;
   instagram?: string;
+  email?: string;
   workingHours?: string;
   hours?: WeeklyHours | null;
   equipment?: string;
@@ -51,6 +52,7 @@ type SaveInput = {
   mapsUrl: string;
   website: string;
   instagram: string;
+  email: string;
   hours: WeeklyHours | null;
   equipment: string;
   responsiblePerson: string;
@@ -225,6 +227,7 @@ export function CenterProfileForm({
         mapsUrl: get("mapsUrl"),
         website: get("website"),
         instagram: get("instagram"),
+        email: get("email"),
         hours,
         equipment: get("equipment"),
         responsiblePerson: get("responsiblePerson"),
@@ -424,6 +427,9 @@ export function CenterProfileForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Veb sayt" htmlFor="website">
             <Input id="website" name="website" type="url" defaultValue={defaults?.website} placeholder="https://..." />
+          </Field>
+          <Field label="E-poçt" htmlFor="email">
+            <Input id="email" name="email" type="email" defaultValue={defaults?.email} placeholder="info@merkez.az" />
           </Field>
           <Field label="Instagram" htmlFor="instagram">
             <Input id="instagram" name="instagram" defaultValue={defaults?.instagram} placeholder="https://instagram.com/... və ya @ad" />
