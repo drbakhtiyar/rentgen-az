@@ -56,7 +56,10 @@ jobs:
       - name: Scan repo history
         uses: trufflesecurity/trufflehog@main
         with:
-          extra_args: --results=verified,unknown --json
+          # 2026-08-17: "unknown" çıxarıldı — .env.example-dakı USER:PASSWORD@HOST
+          # placeholder-ləri yalan həyəcan verirdi (Verified:false, exit 183).
+          # Yalnız TƏSDİQLƏNMİŞ (işlək) sirr tapılanda fail olur.
+          extra_args: --results=verified --json
 
   deps:
     name: OSV-Scanner (asılılıq CVE)
