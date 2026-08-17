@@ -63,7 +63,10 @@ export async function centerIdsForNameQuery(q: string): Promise<string[] | null>
       .filter((r) => {
         const n1 = foldAz(r.name);
         const n2 = foldAz(r.name, true);
-        return n1.includes(nq) || n2.includes(nq);
+        if (n1.includes(nq) || n2.includes(nq)) return true;
+        // Boşluq tolerantlığı: «medi style» → «MediStyle»
+        const nqTight = nq.replace(/ /g, "");
+        return n1.replace(/ /g, "").includes(nqTight) || n2.replace(/ /g, "").includes(nqTight);
       })
       .map((r) => r.id);
     return ids;
