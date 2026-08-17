@@ -11,6 +11,22 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
+ * AI ƏLÇATMAZ olanda göndərilən ehtiyat cavabı (2026-08-18).
+ *
+ * ƏVVƏL BURADA SÜKUT VAR İDİ: `askClaude` uğursuz olanda bot heç nə
+ * göndərmirdi — mərkəz yazırdı və cavabsız qalırdı. Bu, hazır cavabdan da
+ * pisdir, çünki adam bizim ümumiyyətlə işləmədiyimizi düşünür.
+ * Real hadisə (2026-08-18): Anthropic təşkilat bloku botu tamamilə susdurdu.
+ *
+ * DÖNGƏ RİSKİ YOXDUR: avtomatik cavab detektoru və döngə qoruması bu
+ * bloklardan ƏVVƏL işləyir, yəni bu mesaj yalnız insan mesajına gedir.
+ */
+const AI_FALLBACK =
+  "Salam! Mesajınızı aldıq. Hazırda avtomatik köməkçi müvəqqəti əlçatmazdır — " +
+  "operatorumuz qısa zamanda sizinlə əlaqə saxlayacaq.";
+
+
+/**
  * Meta Cloud API webhook — WhatsApp botu.
  *
  * GET  → Meta-nın birdəfəlik doğrulaması (hub.verify_token).
@@ -246,7 +262,14 @@ export async function POST(request: Request): Promise<Response> {
             await sendWaText(m.from, res.answer);
             await mirror(m.from, labeled, res.answer);
           } else {
-            await mirror(m.from, labeled, null);
+            const sent = await sendWaText(m.from, AI_FALLBACK);
+            await mirror(
+              m.from,
+              labeled,
+              sent?.ok ? AI_FALLBACK : null,
+              `⚠️ AI cavab vermədi (${res.error ?? "səbəb bilinmir"}) — ` +
+                (sent?.ok ? "ehtiyat mesajı göndərildi, OPERATOR CAVAB VERMƏLİDİR" : "ehtiyat mesajı da getmədi"),
+            );
           }
           continue;
         }
@@ -301,7 +324,14 @@ export async function POST(request: Request): Promise<Response> {
         await sendWaText(m.from, res.answer);
         await mirror(m.from, m.text.body, res.answer);
       } else {
-        await mirror(m.from, m.text.body, null);
+        const sent = await sendWaText(m.from, AI_FALLBACK);
+        await mirror(
+          m.from,
+          m.text.body,
+          sent?.ok ? AI_FALLBACK : null,
+          `⚠️ AI cavab vermədi (${res.error ?? "səbəb bilinmir"}) — ` +
+            (sent?.ok ? "ehtiyat mesajı göndərildi, OPERATOR CAVAB VERMƏLİDİR" : "ehtiyat mesajı da getmədi"),
+        );
       }
     }
   } catch (e) {

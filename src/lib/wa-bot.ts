@@ -320,7 +320,7 @@ export async function answerWaMessage(
   fromPhone: string,
   text: string,
   history: AiMsg[] = [],
-): Promise<{ ok: boolean; answer?: string; escalate?: boolean }> {
+): Promise<{ ok: boolean; answer?: string; escalate?: boolean; error?: string }> {
   const recentUser = history.filter((h) => h.role === "user").slice(-2).map((h) => h.content);
   const [knowledge, ctx, lookup] = await Promise.all([
     buildKnowledge(),
@@ -330,7 +330,8 @@ export async function answerWaMessage(
   const system = [HARD_RULES, knowledge, ctx, lookup].filter(Boolean).join("\n\n---\n\n");
   const msgs: AiMsg[] = [...history.slice(-20), { role: "user", content: text.slice(0, 1500) }];
   const res = await askClaude(system, msgs, 800, "sonnet");
-  if (!res.ok || !res.answer) return { ok: false };
+  // Səbəbi yuxarı ötürürük ki, webhook jurnalında «niyə susdu» görünsün.
+  if (!res.ok || !res.answer) return { ok: false, error: res.error };
   // Markdown → WhatsApp: **qalın** → *qalın*; başlıq işarələri silinir
   const answer = res.answer.replace(/\*\*(.+?)\*\*/g, "*$1*").replace(/^#+\s*/gm, "").trim();
   const escalate = /operator|əlaqə saxlanılacaq|оператор/i.test(answer);
