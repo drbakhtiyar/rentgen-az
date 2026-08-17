@@ -71,7 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan lockfile
-        uses: google/osv-scanner-action/osv-scanner-action@v2.2.4
+        uses: google/osv-scanner-action/osv-scanner-action@v2.5.0
         continue-on-error: true
         with:
           scan-args: |-
