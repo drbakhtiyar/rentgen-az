@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: Request): Promise<NextResponse> {
   const auth = request.headers.get("authorization");
-  const key = process.env.ADMIN_ACCESS_KEY;
+  const key = process.env.ADMIN_TASK_KEY;
   if (!key || auth !== `Bearer ${key}`) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
