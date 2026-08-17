@@ -18,6 +18,7 @@ import {
   getServiceBySlug,
   getCentersForService,
   getRatingsForCenters,
+  getServicePriceRanges,
 } from "@/lib/queries";
 import { getServiceContent } from "@/content/services";
 import { serviceNameRu, categoryRu } from "@/content/services-ru";
@@ -48,8 +49,15 @@ export async function generateMetadata({
   const locale = await getLocale();
   const name = locale === "ru" ? serviceNameRu(service.name) : service.name;
   const content = getServiceContent(slug, name, service.category ?? undefined, locale);
+  // 2026-08-18 SEO: real qiymət aralığı varsa title-a düşür («qiyməti» sorğuları)
+  const range = (await getServicePriceRanges())[slug];
+  const priceTitle = range
+    ? locale === "ru"
+      ? `${name} — цена ${range.min}${range.max > range.min ? `–${range.max}` : ""} ₼ | центры в Баку`
+      : `${name} qiyməti — ${range.min}${range.max > range.min ? `–${range.max}` : ""} ₼ | Bakıda mərkəzlər`
+    : null;
   return buildMetadata({
-    title: content.metaTitle.replace(/ \| .*$/, ""),
+    title: priceTitle ?? content.metaTitle.replace(/ \| .*$/, ""),
     description: content.metaDescription,
     path: `/xidmetler/${slug}`,
     keywords: content.keywords,
@@ -104,7 +112,16 @@ export default async function ServiceDetailPage({
             { name: ru ? "Услуги" : "Xidmətlər", path: "/xidmetler" },
             { name: displayName, path: `/xidmetler/${slug}` },
           ]),
-          serviceJsonLd({ name: displayName, slug, description: content.intro }),
+          serviceJsonLd({
+            name: displayName,
+            slug,
+            description: content.intro,
+            priceMin: priced[0] ? priceOf(priced[0]) : null,
+            priceMax: priced.length
+              ? Math.max(...priced.map((c) => svcOf(c)?.priceTo ?? priceOf(c) ?? 0))
+              : null,
+            offerCount: priced.length || undefined,
+          }),
           faqJsonLd(content.faq),
         ]}
       />

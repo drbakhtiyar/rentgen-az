@@ -31,7 +31,6 @@ function bilingual(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
 
   const staticPaths = [
     "",
@@ -52,7 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries: MetadataRoute.Sitemap = staticPaths.flatMap((p) =>
     bilingual(p, {
-      lastModified: now,
       changeFrequency: p === "" ? "daily" : "weekly",
       priority: p === "" ? 1 : 0.7,
     }),
@@ -67,7 +65,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const s of services) {
       entries.push(
         ...bilingual(`/xidmetler/${s.slug}`, {
-          lastModified: now,
           changeFrequency: "weekly",
           priority: 0.8,
         }),
@@ -83,7 +80,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const c of cities) {
       entries.push(
         ...bilingual(`/rentgen-merkezleri/sheher/${c.slug}`, {
-          lastModified: now,
           changeFrequency: "weekly",
           // Şəhər səhifələri kataloqun özündən sonra ən vacib giriş nöqtəsidir.
           priority: 0.8,
@@ -99,7 +95,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const p of await getCityServicePages()) {
       entries.push(
         ...bilingual(`/rentgen-merkezleri/sheher/${p.city.slug}/${p.service.slug}`, {
-          lastModified: now,
           changeFrequency: "weekly",
           priority: 0.75,
         }),

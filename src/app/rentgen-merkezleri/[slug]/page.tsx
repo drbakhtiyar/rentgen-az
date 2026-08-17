@@ -66,8 +66,10 @@ export async function generateMetadata({
   if (!center) return buildMetadata({ title: "Mərkəz tapılmadı", noIndex: true });
 
   const svcNames = center.services.map((s) => s.service.shortName ?? s.service.name);
+  // 2026-08-18 SEO: qiymətli xidmətləri olan mərkəzin title-ında «qiymətlər»
+  const hasPrices = center.services.some((s) => s.price != null);
   return buildMetadata({
-    title: `${center.name}${center.city ? ` — ${center.city}` : ""}`,
+    title: `${center.name}${center.city ? ` — ${center.city}` : ""}${hasPrices ? " | xidmətlər və qiymətlər" : ""}`,
     description:
       center.description?.slice(0, 155) ||
       `${center.name} — ${center.city ?? "Bakı"}da ${
@@ -217,6 +219,13 @@ export default async function CenterDetailPage({
             lng: center.lng,
             services: svcNames,
             rating: rating.count > 0 ? rating : null,
+            priceRange: (() => {
+              const ps = center.services.filter((x) => x.price != null);
+              if (!ps.length) return null;
+              const mn = Math.min(...ps.map((x) => x.price!));
+              const mx = Math.max(...ps.map((x) => x.priceTo ?? x.price!));
+              return mx > mn ? `${mn}–${mx} ₼` : `${mn} ₼`;
+            })(),
           }),
           ...(faqItems.length > 0
             ? [faqJsonLd(faqItems.map((f) => ({ question: f.question, answer: f.answer })))]

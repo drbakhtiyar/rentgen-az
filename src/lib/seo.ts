@@ -164,6 +164,8 @@ export function medicalBusinessJsonLd(center: {
   services?: string[];
   /** First-party review summary — drives the ⭐ rich snippet in search. */
   rating?: { avg: number; count: number } | null;
+  /** Real xidmət qiymətlərindən aralıq, məs. "20–400 ₼" (2026-08-18 SEO). */
+  priceRange?: string | null;
 }) {
   return {
     "@context": "https://schema.org",
@@ -195,6 +197,7 @@ export function medicalBusinessJsonLd(center: {
         ? { "@type": "GeoCoordinates", latitude: center.lat, longitude: center.lng }
         : undefined,
     medicalSpecialty: "Radiology",
+    priceRange: center.priceRange ?? undefined,
     availableService: center.services?.map((s) => ({
       "@type": "MedicalProcedure",
       name: s,
@@ -233,6 +236,10 @@ export function serviceJsonLd(service: {
   name: string;
   slug: string;
   description: string;
+  /** Real mərkəz qiymətlərindən aralıq (2026-08-18 SEO) — varsa offers çıxır. */
+  priceMin?: number | null;
+  priceMax?: number | null;
+  offerCount?: number;
 }) {
   return {
     "@context": "https://schema.org",
@@ -241,5 +248,15 @@ export function serviceJsonLd(service: {
     description: service.description,
     url: canonical(`/xidmetler/${service.slug}`),
     procedureType: "https://schema.org/DiagnosticProcedure",
+    offers:
+      service.priceMin != null
+        ? {
+            "@type": "AggregateOffer",
+            priceCurrency: "AZN",
+            lowPrice: service.priceMin,
+            highPrice: service.priceMax ?? service.priceMin,
+            offerCount: service.offerCount ?? undefined,
+          }
+        : undefined,
   };
 }
