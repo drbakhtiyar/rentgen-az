@@ -10,7 +10,7 @@ import { ServiceIconVisual } from "@/components/service-icon-visual";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { ServiceIcon } from "@/components/ui/service-icon";
-import { CenterCard } from "@/components/centers/center-card";
+import { ServiceCenterRows } from "@/components/centers/service-center-rows";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { JsonLd } from "@/components/ui/json-ld";
 import {
@@ -71,11 +71,12 @@ export default async function ServiceDetailPage({
   const shortName = ru ? displayName : (service.shortName ?? service.name);
   const displayCategory = ru ? categoryRu(service.category) : (service.category ?? undefined);
   const content = getServiceContent(slug, displayName, service.category ?? undefined, locale);
-  const centersRaw = await getCentersForService(slug, 12);
-  // Price comparison: cheapest first for this service (centers with no price go last).
-  const priceOf = (c: (typeof centersRaw)[number]) =>
-    c.services.find((cs) => cs.service.slug === slug)?.price ?? null;
-  const centers = [...centersRaw].sort((a, b) => {
+  // 2026-08-18: limitsiz çəkilir — kəsim SORTDAN SONRA (qiymətlilər itməsin)
+  const centersRaw = await getCentersForService(slug);
+  const svcOf = (c: (typeof centersRaw)[number]) =>
+    c.services.find((cs) => cs.service.slug === slug);
+  const priceOf = (c: (typeof centersRaw)[number]) => svcOf(c)?.price ?? null;
+  const sorted = [...centersRaw].sort((a, b) => {
     const pa = priceOf(a);
     const pb = priceOf(b);
     if (pa == null && pb == null) return 0;
@@ -83,6 +84,10 @@ export default async function ServiceDetailPage({
     if (pb == null) return -1;
     return pa - pb;
   });
+  // Qiymətlilərin HAMISI + qiymətsizlərdən maksimum 15 sətir; qalanı kataloqda
+  const priced = sorted.filter((c) => priceOf(c) != null);
+  const unpriced = sorted.filter((c) => priceOf(c) == null).slice(0, 15);
+  const centers = [...priced, ...unpriced];
   const ratings = await getRatingsForCenters(centers.map((c) => c.id));
   const allServices = await getActiveServices();
   const t = getDict(locale).serviceDetail;
@@ -228,17 +233,23 @@ export default async function ServiceDetailPage({
             </p>
           )}
           {centers.length > 0 ? (
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {centers.map((c) => (
-                <CenterCard
-                  key={c.id}
-                  center={c}
-                  rating={ratings[c.id]}
-                  highlightService={slug}
-                  locale={locale}
-                />
-              ))}
-            </div>
+            /* 2026-08-18: kart şəbəkəsi → kompakt sıra-siyahı (analizler.az
+               nümunəsi) — müqayisə və axtarış üçün daha rahatdır */
+            <ServiceCenterRows
+              locale={locale}
+              rows={centers.map((c) => ({
+                id: c.id,
+                slug: c.slug,
+                name: c.name,
+                city: c.city,
+                logoUrl: c.logoUrl,
+                phone: c.phone,
+                whatsapp: c.whatsapp,
+                price: priceOf(c),
+                priceTo: svcOf(c)?.priceTo ?? null,
+                googleRating: ratings[c.id]?.count ? ratings[c.id].avg : (c.googleRating ?? null),
+              }))}
+            />
           ) : (
             <Card className="mt-8 p-10 text-center">
               <p className="text-slate-600">

@@ -138,7 +138,10 @@ export async function getCenterBySlug(slug: string) {
   );
 }
 
-export async function getCentersForService(serviceSlug: string, take = 12) {
+export async function getCentersForService(serviceSlug: string, take?: number) {
+  // 2026-08-18: take sortdan ƏVVƏL kəsirdi — qiymətli mərkəzlər (məs. Diaqnoz)
+  // ilk 12-yə düşməyəndə səhifə yalnız qiymətsizləri göstərirdi. İndi hamısı
+  // qaytarılır, kəsimi çağıran tərəf SORTDAN SONRA edir.
   return getApprovedCenters({ service: serviceSlug, take });
 }
 
