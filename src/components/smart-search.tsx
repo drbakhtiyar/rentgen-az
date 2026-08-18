@@ -113,7 +113,7 @@ export function SmartSearch({ labels }: { labels: SmartSearchLabels }) {
       </p>
 
       {open && (results || searching) && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white text-ink-900 shadow-2xl">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white text-ink-900 shadow-2xl">
           {searching && !results && (
             <div className="flex items-center gap-2 px-4 py-4 text-sm text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin" />

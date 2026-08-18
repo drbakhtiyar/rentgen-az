@@ -102,7 +102,10 @@ export default async function HomePage() {
               <p className="animate-fade-up delay-100 mt-5 max-w-xl text-[17px] leading-relaxed text-pearl/90">
                 {d.hero.subtitle}
               </p>
-              <div className="animate-fade-up delay-200 mt-7">
+              {/* relative z-30 (2026-08-19): fade-up transformu stacking
+                  context yaradır və təklif dropdown-u xəritənin ALTINA
+                  düşürdü (mobil + veb) — axtarış qatı xəritədən yuxarıdır */}
+              <div className="animate-fade-up delay-200 relative z-30 mt-7">
                 <SmartSearch labels={d.smartSearch} />
               </div>
             </div>
