@@ -87,7 +87,9 @@ export default async function HomePage() {
       <JsonLd data={faqJsonLd(homeFaq.map((f) => ({ question: f.question, answer: f.answer })))} />
 
       {/* ============ HERO — asimmetrik split, Deep Iris kanvas ============ */}
-      <section className="relative overflow-hidden bg-observatory text-white">
+      {/* overflow-hidden ÇIXARILIB (2026-08-19): axtarış dropdown-unu bölmə
+          sərhədində kəsirdi (3-cü nəticə görünmürdü) */}
+      <section className="relative bg-observatory text-white">
         <Container className="relative pt-16 pb-14 lg:pt-24 lg:pb-20">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
