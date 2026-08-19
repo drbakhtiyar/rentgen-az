@@ -2,6 +2,19 @@
 
 Architectural & product decisions that live only in conversation (not obvious from the code). Newest-relevant first. Each: **decision — why — consequence.**
 
+## Şəbəkə mərkəzləri: admin + super admin modeli
+- **Qərar (2026-08-19, istifadəçi):** çoxfiliallı şəbəkələr (Referans 20+,
+  Mərkəzi Klinika 4, Diamed 3) üçün iki idarəçi səviyyəsi:
+  `CenterProfile.adminPhone/adminName` (tək mərkəz) və
+  `superAdminPhone/superAdminName` (bütün bağlı filiallar).
+- **Qaydalar:** super admini YALNIZ sayt rəhbəri təyin edir (admin formunda
+  `superEditable`); mərkəz admini onu görür, dəyişə bilmir —
+  saveCenterProfileAction super sahələrini qəbul etmir (kod səviyyəli qadağa).
+  Girişdə seçim cookie-si (`rx_center`) yalnız icazəli siyahıdan dəyər alır.
+- **Nəticə:** super adminə filial bağlamaq = həmin mərkəzlərin
+  superAdminPhone sahəsinə eyni nömrəni yazmaq (admin formundan). Yeni filial
+  əlavə olunanda da eyni qayda.
+
 ## Bloq: kateqoriya + yan panel + orqanik linklər (analizler.az naxışları)
 - **Qərar (2026-08-17, istifadəçi):** analizler.az-da işlənmiş bloq məntiqləri
   rentgen-ə köçürüldü: kateqoriya slug bazada / adlar kodda
