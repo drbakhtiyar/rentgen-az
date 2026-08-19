@@ -5,7 +5,8 @@
   function paint() {
     var el = document.getElementById('rx-user');
     if (!el || !user) return;
-    el.textContent = user.name ? user.name + '  ·  ' + user.roleLabel : user.roleLabel || '';
+    var name = user.name || '';
+    el.textContent = !name || name === user.roleLabel ? (user.roleLabel || '') : name + ' · ' + user.roleLabel;
   }
   fetch('/whoami', { credentials: 'same-origin' })
     .then(function (r) { return r.ok ? r.json() : null; })
@@ -38,9 +39,8 @@ window.config = {
         React.createElement('span', {
           id: 'rx-user',
           style: {
-            position: 'fixed', left: '50%', top: 0, height: '50px', transform: 'translateX(-50%)',
-            display: 'flex', alignItems: 'center', color: '#e2e8f0', fontSize: '14px', fontWeight: 500,
-            whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 50,
+            marginLeft: '14px', paddingLeft: '14px', borderLeft: '1px solid rgba(148,163,184,0.35)',
+            color: '#e2e8f0', fontSize: '13.5px', fontWeight: 500, whiteSpace: 'nowrap',
           },
         }, '')
       );

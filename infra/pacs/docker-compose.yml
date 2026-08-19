@@ -4,6 +4,10 @@ services:
   orthanc:
     image: orthancteam/orthanc:latest
     restart: unless-stopped
+    # OOM guard (2026-08-20: a 1.7GB single-file upload OOM-killed the whole box).
+    # Cap Orthanc at 2.5G so the kernel kills only the container, never sshd/caddy.
+    mem_limit: 2560m
+    memswap_limit: 3584m
     env_file: .env
     volumes:
       - ./orthanc/orthanc.json:/etc/orthanc/orthanc.json:ro
