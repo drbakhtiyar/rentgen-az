@@ -12,6 +12,23 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
 - [ ] **SMS on center status change from app** — `/api/app/center/status` sends in-app only; site also SMSes. Wire for parity.
 - [ ] **Center rating/endorsement (#12)** — deferred by user ("hələ saxla"); decide model (doctor endorsement vs patient review vs favorite).
 
+## Qiymət dövrü (2026-08-19 vəziyyəti)
+- [x] Sağlam Ailə (5 filial) + Dimed + Diaqnoz + Mərkəzi Klinika (4) — mənbəli
+  real qiymətlərlə DOLU. Qalan mərkəzlər «Qiymət üçün soruşun» göstərir.
+- [ ] **Qeydiyyat axınında dublikat yoxlaması YOXDUR** — Bəyaz Diş presedenti
+  (klinika özü qeydiyyat açdı, import qeydi ilə toqquşdu). Təklif: admin
+  approve səhifəsində «oxşar adlı APPROVED var» xəbərdarlığı + Google cronuna
+  «placeId artıq bağlıdır» qoruması.
+- [ ] Kitabçada olub bizdə olmayan xidmətlər (sistoqrafiya, pieloqrafiya,
+  sintiqrafiyalar, artro/bronxo/limfanqioqrafiya) — istənsə taksonomiyaya.
+- [ ] SEO qiymət dəyişikliklərinin təsirini GSC-də izlə (1-2 həftə):
+  «qiyməti» sorğularında CTR.
+
+## Şəbəkə adminləri (2026-08-19 — QURULDU, istifadə gözləyir)
+- [ ] Real şəbəkələrə super admin nömrələrini yaz (Mərkəzi Klinika 4,
+  Referans, Diamed) — admin formunda superAdmin xanaları.
+- [ ] İlk real super admin girişini müşahidə et (/merkez/secim axını).
+
 ## Təhlükəsizlik (tam sənəd: `SECURITY.md` — açıq risklər cədvəli oradadır)
 - [ ] **`x-app-key` → OTP/JWT modeli (YÜKSƏK)** — limit qoyuldu (kütləvi çıxarma
   bağlandı), amma hədəfli sorğu qalır. OTP→qısamüddətli JWT keçidi **mobil app

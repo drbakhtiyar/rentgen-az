@@ -90,6 +90,15 @@ Phone-authed REST mirrors of the site's chat server actions (the app has no sess
 - `GET /api/panel/stats-today` — Axiora admin paneli üçün günün sayları
   (PANEL_SHARED_SECRET başlığı ilə; paralel sessiyada əlavə olunub).
 
+## Kataloq axtarışı (2026-08-17)
+`?q=` diakritik-aqnostikdir: `centerIdsForNameQuery` (queries.ts) fold
+(ə→e/a, ş→s, ğ→g...) + translit (sh/ch/gh/kh) + boşluq tolerantlığı ilə
+id siyahısı qurur, SQL filtrinə ötürür. Fail-open (xətada hərfi contains).
+
+## CenterEvent tipləri (izləmə)
+`view · call · whatsapp · directions · license · faq · website · instagram ·
+email` — track.ts icazə siyahısı; yeni tip əlavə edəndə oranı da genişlət.
+
 ## Sürət limiti (2026-08-14) — hər yeni ictimai endpointdə MƏCBURİ
 
 Naxış (`src/lib/rate-limit.ts`):

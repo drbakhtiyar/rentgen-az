@@ -2,6 +2,103 @@
 
 Reverse-chronological. Grouped by theme; each line is a shipped commit (see `git log` for full history). Dates approximate to when the block landed.
 
+## 2026-08-17/19 — Qiymət dövrü, şəbəkə adminləri, ikonlar tamam, SEO
+
+### Qiymət inteqrasiyaları (mənbəli real qiymətlər — DB-only, deploysuz)
+- **Sağlam Ailə (saglamaile.az):** 9 YENİ xidmət taksonomiyaya (said sümükləri,
+  yastı pəncəlik, türk yəhəri, irriqoskopiya, döş qəfəsi R-skopiyası,
+  ginekoloji/uroloji/limfa/yumşaq toxuma USM — RU adları services-ru.ts-də);
+  5 filiala 45-46 xidmət qiymətlə; 24 köhnə şablon bağlantısı silindi.
+  Kataloq 111 → 120 xidmət.
+- **Dimed (PDF prays):** USM-only 7 xidmət; loqo; +994707901033 əsas;
+  ad «Dimed Medical Centre»; email sahəsi (aşağıda).
+- **Diaqnoz Tibb Mərkəzi (diaqnoz.az/radiologiya-qiymetler, 304 sətir):**
+  53 qiymətli xidmət (MRT 9, KT 12, rentgen 22, USM 9, mammo 1); 28 şablon
+  bağlantısı silindi. Skript anomaliyaları tutdu (topuq=MRT səhvi, 12₼ dublikat).
+- **Mərkəzi Klinika (rəsmi kitabça, 14 səhifə):** Xəstəxana + Ambulatoriya
+  78 xidmət olduğu kimi; Gəncə −30% və 5-ə YUXARI yuvarlaq (18→20, 12→15);
+  Stomatologiyaya yalnız TMJ (35₼) — dental bölgü istifadəçi təlimatı ilə.
+- Dərin veb axtarışın nəticəsi: AZ klinikalarının çoxu qiymət dərc ETMİR
+  (mediclub/mərkəzi/medera/ege/rdm/lor/premium yoxlanıldı); İstanbul NS
+  «MRT qiymətləri» səhifəsi SEO tələsidir (qiymət yoxdur, saytı da ölüdür).
+
+### Xidmət ikonları TAMAM (111/111)
++40 (dental tomoqrafiya 20, floroskopiya 6, KT 14) + 36 (MRT 10, onurğa 7,
+sinə 5, uşaq 3, mammo 4, USM 6, koronar KT) + son 2. Emal naxışı:
+künc etiketi + bağlı-komponent analizi ilə yazı silinməsi → trim → 1024
+şəffaf PNG → Blob. «3d-tomoqrafiya» generiki DEAKTİV (istifadəçi qərarı;
+CenterService sətirlərinə toxunulmadı).
+
+### Şəbəkə admin sistemi (miqrasiya 20260819150000)
+adminPhone/adminName + superAdminPhone/superAdminName; OTP girişdə profilsiz
+nömrə bu sahələrdə axtarılır; çoxmərkəzli → /merkez/secim (rx_center cookie,
+yalnız icazəli siyahıdan); shell-də «⇄ Şəbəkə siyahısı»; formalar superEditable
+(yalnız admin formu super təyin edir; mərkəz görür, dəyişmir). Bax DECISIONS.
+
+### Mərkəz məlumat yeniləmələri
+- Professor Rahimov: loqo+bina+saatlar+0514113400+10 xidmət (3D/panoram/
+  sefalometrik)+ödəniş FAQ+Planmeca avadanlıq
+- Piccasa: loqo+bina+0103290311 (placeholder sahib idi → OTP girişi açıldı)
+- MediStyle: yeni nömrə 0772517666 (köhnə 051 landline-a), FAQ şablonu yeni
+  nömrəyə resend (birdəfəlik admin-task endpointi ilə — SİLİNDİ), söhbət
+  başlığında yazışılan nömrə göstərilir
+- Bəyaz Diş dublikatı: import qeydi DEACTIVATED (klinikanın öz qeydiyyatı
+  qaldı, 2 Google şəkli köçürüldü) — qeydiyyat axını dedup ETMİR (bilinən boşluq)
+
+### CenterProfile.email (miqrasiya 20260817120000)
+İctimai kartda mailto (kliki «email» tipi ilə CenterEvent-ə), mərkəz/operator/
+admin formaları, validation. İlk istifadəçi: Dimed.
+
+### Axtarış və kataloq
+- Fold-axtarış: «saglam aile»→Sağlam Ailə, «shefa»→Şəfa (sh/ch/gh/kh translit),
+  «medi style»→MediStyle (boşluq tolerantlığı). centerIdsForNameQuery →
+  id-lər SQL filtrinə; fail-open.
+- Xidmət səhifəsi SORT BUQU: take=12 + daxili take??60 kəsimi sortdan ƏVVƏL
+  idi → qiymətlilər görünmürdü. İndi limitsiz çək → sort → qiymətlilər HAMISI
+  + qiymətsizlərdən max 15. UI kart şəbəkəsindən analizler.az üslubunda
+  sıra-siyahıya keçdi (ServiceCenterRows: loqo·ad·şəhər·reytinq|qiymət|Zəng/WA).
+
+### SEO (canlı yoxlanıldı)
+- serviceJsonLd: AggregateOffer (lowPrice/highPrice/offerCount, AZN);
+  medicalBusinessJsonLd: priceRange («20–320 ₼»)
+- Title şablonları: xidmət «X qiyməti — 21–30 ₼ | Bakıda mərkəzlər» (AZ+RU,
+  aralıq dinamik), mərkəz «... | xidmətlər və qiymətlər» (qiymətlisə)
+- Sitemap: süni lastModified:now çıxarıldı (yalnız real updatedAt qalıb)
+
+### UI/dizayn birləşdirmə
+- Panel Impilo restyle: globals.css .panel-impilo scoped token override
+  (132 fayl dəyişmədən), .panel-rail tünd sol sütun; panel yolları darkNav-da
+- «Boz yumru panel» ortaq dili: FAQ çip zolağı, xidmətlər AI paneli, kataloq
+  axtarış paneli — hamısı rounded-3xl #e4e4eb
+- Hero→panel boşluğu 5 səhifədə vahid: pt-8 sm:pt-10
+- Ana səhifə: kartlarda premium ikon (48px, ad yanında, >34 simvol adlar
+  rotasiyadan çıxır, alt sıra mt-auto), «Bütün xidmətlər» başlıq sağında,
+  bölmə ayırıcısı (hairline+skan nöqtəsi), interaktiv xəritə (24 şəhər adı,
+  klik→?city=, RU adları az-cities.CITY_RU), mərkəz loqosu detal hero-da 144px
+  (mobil 48px lg:hidden)
+- Z-index/overflow buqları: SmartSearch dropdown mobalda xəritə altına düşürdü
+  (fade-up stacking context → relative z-30) və vebdə hero overflow-hidden
+  kəsirdi (çıxarıldı)
+- Əlaqə: WhatsApp adi blok (nömrə=link), hero-elaqe.svg (vektor, şəffaf fon,
+  .svg-də blend yox), «yönləndirən həkim» sahəsi ÇIXDI + «müraciətin mövzusu»
+  seçimi (note-a «Mövzu: X» prefiksi); OTP axını dəyişmədi
+- Kataloq xəritəsi 360→420/500px (cənub kəsilmirdi)
+- Haqqımızda (/haqqimizda AZ+RU): animasiyalı təqdimat, canlı rəqəmlər,
+  footer «Haqqımızda» buraya, sitemap-da
+- RU tamamlamaları: xəritə şəhərləri, kataloq dropdown+filtr sətri (cityLabel),
+  mərkəz kartı («Проверен», Пн–Сб saatlar formatHoursSummary(locale), çiplər
+  serviceNameRu), hər iki marquee
+
+### İnfrastruktur
+- pacs.rentgen.az: domen+SSL, proxy qapısı (kök→/pacs qarşılama noindex,
+  yollar→rentgen.az redirect, /viewer işlək); qarşılama səhifəsi əvvəl boş
+  edilib sonra istifadəçi istəyi ilə BƏRPA olundu
+- CI TruffleHog: --results=verified (unknown .env.example placeholder-lərində
+  yalançı fail verirdi)
+- Opus $1.5/gün araşdırması: mənbə threads-agent (ANTHROPIC_MODEL=claude-opus-4-8),
+  rentgen yalnız Sonnet+Haiku; agent lokalda deyil, haradasa işləyir
+- Kataloq 500 TDZ hotfix (locale istifadədən sonra elan olunmuşdu)
+
 ## 2026-08-15 (gecə) — Robot-robot qoruması
 
 - **Qarşı tərəfin avtomatik cavabları tanınır** (`src/lib/wa-auto-reply.ts`):

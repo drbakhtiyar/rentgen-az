@@ -109,6 +109,19 @@ formu tokeni), `AppointmentRequest.completedAt`/`reviewInviteSentAt`/`reviewToke
   dəvət göndəriləndə avtomatik yenilənir (`ensurePriceToken`).
 - **`20260815140000_admin_message_internal`** — `AdminMessage.internal` (yuxarıda).
 
+### 2026-08-17/19 miqrasiyaları (3)
+- **`20260817000000_blog_category`** — `BlogPost.category` (slug; adlar
+  `src/lib/blog-categories.ts`-də AZ+RU).
+- **`20260817120000_center_email`** — `CenterProfile.email` (ictimai mailto,
+  kliki CenterEvent «email» tipi).
+- **`20260819150000_center_network_admins`** — `CenterProfile.adminPhone/
+  adminName/superAdminPhone/superAdminName` (+2 index). Şəbəkə girişi:
+  `centersManagedByPhone()` (acting.ts); seçim cookie `rx_center`.
+- Qeyd: `Service` «3d-tomoqrafiya» `isActive=false` (2026-08-16); 9 yeni
+  xidmət slug-ları: said-sumukleri-rentgeni, yasti-pencelik-rentgeni,
+  turk-yeheri-rentgeni, irriqoskopiya, dos-qefesi-rentgenoskopiyasi,
+  ginekoloji-usm, uroloji-usm, limfa-duyunleri-usm, yumsaq-toxuma-usm.
+
 > **Statistika:** ayrıca cədvəl YOXDUR — hər şey mövcud **`CenterEvent`**
 > üzərində qurulub. 2026-08-13-də `type` dəyərləri genişləndi: `view`, `call`,
 > `whatsapp` + **`directions`, `license`, `faq`, `website`, `instagram`**.

@@ -35,6 +35,30 @@ The web platform is production-live and used by real centers/doctors/patients. T
 - **Homepage hero** → data-driven Azerbaijan map (marker per city with an APPROVED center).
 - **TƏBİB logo** stored at stable Blob URL `shared/tabib-logo.png` for state hospitals.
 
+### 2026-08-17/19 blok — QİYMƏT DÖVRÜ, ŞƏBƏKƏ ADMİNLƏRİ (bax CHANGELOG)
+
+- **REAL QİYMƏTLƏR CANLIDA:** 11 mərkəz mənbəli qiymətlərlə dolduruldu —
+  Sağlam Ailə 5 filial (saglamaile.az), Dimed (PDF), Diaqnoz (diaqnoz.az,
+  304 sətir → 53 xidmət), Mərkəzi Klinika 4 mərkəz (rəsmi kitabça; Gəncə
+  −30% + 5-ə yuxarı yuvarlaq). Kataloq 120 xidmət (9 yeni USM/rentgen).
+  SEO: AggregateOffer + priceRange schema, «X qiyməti — N–M ₼» title-ları.
+- **Xidmət ikonları 111/111 TAMAM**; «3d-tomoqrafiya» generiki deaktiv.
+- **ŞƏBƏKƏ ADMİN SİSTEMİ** (Referans/Mərkəzi Klinika/Diamed kimi çoxfiliallılar):
+  adminPhone + superAdminPhone (yalnız sayt rəhbəri təyin edir), OTP girişi,
+  /merkez/secim filial siyahısı, «⇄ Şəbəkə siyahısı» linki. Bax DECISIONS.
+- **CenterProfile.email** sahəsi (kartda mailto + klik izləmə + formalar).
+- **Xidmət səhifəsi:** sort-before-limit buqu düzəldi (qiymətlilər indi
+  həmişə üstdə), analizler.az üslubunda sıra-siyahı (ServiceCenterRows).
+- **Fold-axtarış:** «saglam aile» → Sağlam Ailə (diakritik+translit+boşluq).
+- **Panel Impilo restyle** (scoped CSS token override — struktura toxunulmadan);
+  «boz yumru panel» ortaq dili (FAQ/xidmətlər/kataloq); 5 səhifədə vahid
+  hero→panel boşluğu; interaktiv ana səhifə xəritəsi (klik → şəhər filtri).
+- **pacs.rentgen.az** subdomeni (qarşılama + /viewer hazır infrastruktur).
+- **/haqqimizda** səhifəsi (AZ+RU, canlı rəqəmlər).
+- **Əlaqə formu:** həkim sahəsi çıxdı, «müraciətin mövzusu» seçimi gəldi.
+- MediStyle/Rahimov/Piccasa kart yeniləmələri; Bəyaz Diş dublikatı deaktiv
+  (qeydiyyat axını dedup ETMİR — bilinən boşluq, TODO-da).
+
 ### 2026-08-13/15 blok — DİZAYN v2, STATİSTİKA, TƏHLÜKƏSİZLİK (bax CHANGELOG)
 
 - **DİZAYN v2 «Impilo» CANLI (2026-08-13):** saytın bütün ictimai hissəsi kökündən
