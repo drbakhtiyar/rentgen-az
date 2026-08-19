@@ -18,6 +18,7 @@ export type DoctorActionResult = { ok: boolean; error?: string; message?: string
 export async function saveDoctorProfileAction(input: {
   firstName: string;
   lastName: string;
+  fatherName?: string;
   clinic?: string;
   specializations?: string[];
   portfolio?: string[];
@@ -76,6 +77,7 @@ export async function saveDoctorProfileAction(input: {
     const data = {
       firstName: d.firstName,
       lastName: d.lastName,
+      fatherName: d.fatherName || null,
       clinic: d.clinic || null,
       specializations: d.specializations ?? [],
       portfolio: doctorLimits(existing?.plan ?? "FREE").portfolio ? (d.portfolio ?? []) : [],

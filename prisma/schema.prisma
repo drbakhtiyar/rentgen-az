@@ -663,6 +663,7 @@ model DoctorProfile {
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   firstName       String?
   lastName        String?
+  fatherName        String? // ata adı (2026-08-19, istəyə bağlı)
   clinic          String? // iş yeri / klinika
   specialization  String? // (köhnə — sərbəst mətn, istifadə olunmur)
   specializations String[]     @default([]) // seçilmiş ixtisaslar

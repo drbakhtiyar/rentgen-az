@@ -456,6 +456,64 @@ export const EXAM_TYPES: string[] = [
 ];
 
 /** Dental specializations — doctors pick one or more. */
+/**
+ * Həkim ixtisasları (2026-08-19 genişlənmə): platforma dental-dan kənara
+ * çıxdığı üçün tam tibbi dəst. UI-də hamısı çip kimi göstərilmir —
+ * axtarışlı seçici (SpecializationsPicker) fold-fuzzy ilə tapır.
+ */
+export const ALL_SPECIALIZATIONS: string[] = [
+  // Görüntüləmə / diaqnostika
+  "Radioloq",
+  "Radioloq (Diş radiologiyası)",
+  "USM həkimi (Sonoloq)",
+  "Nüvə təbabəti həkimi",
+  // Dental
+  "Ümumi diş həkimi (Terapevt)",
+  "Ortodont",
+  "İmplantoloq",
+  "Diş-üz-çənə cərrahı",
+  "Ortoped (Protezist)",
+  "Pedodont (Uşaq diş həkimi)",
+  "Endodont (Kanal müalicəsi)",
+  "Parodontoloq (Diş əti müalicəsi)",
+  "Estetik diş həkimi",
+  "Gnatoloq",
+  // Terapevtik ixtisaslar
+  "Terapevt (Ailə həkimi)",
+  "Kardioloq",
+  "Nevroloq",
+  "Endokrinoloq",
+  "Qastroenteroloq",
+  "Pulmonoloq",
+  "Nefroloq",
+  "Revmatoloq",
+  "Hematoloq",
+  "Allerqoloq-immunoloq",
+  "İnfeksionist",
+  "Dermatoloq",
+  "Onkoloq",
+  // Cərrahi ixtisaslar
+  "Ümumi cərrah",
+  "Ortoped-travmatoloq",
+  "Neyrocərrah",
+  "Ürək-damar cərrahı",
+  "Uroloq",
+  "Proktoloq",
+  "LOR (Qulaq-burun-boğaz)",
+  "Oftalmoloq",
+  "Mamoloq",
+  // Qadın / uşaq
+  "Ginekoloq",
+  "Mama-ginekoloq",
+  "Reproduktoloq",
+  "Pediatr",
+  "Neonatoloq",
+  // Digər
+  "Fizioterapevt-reabilitoloq",
+  "Anestezioloq-reanimatoloq",
+  "İdman həkimi",
+];
+
 export const DENTAL_SPECIALIZATIONS: string[] = [
   "Ümumi diş həkimi (Terapevt)",
   "Ortodont",

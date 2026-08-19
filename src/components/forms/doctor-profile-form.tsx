@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Field } from "@/components/ui/field";
-import { DENTAL_SPECIALIZATIONS } from "@/lib/constants";
+import { SpecializationsPicker } from "@/components/forms/specializations-picker";
 import { cn } from "@/lib/utils";
 import { getDict, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { saveDoctorProfileAction } from "@/app/hekim/actions";
@@ -23,6 +23,7 @@ type Option = { value: string; label: string };
 export type DoctorFormDefaults = {
   firstName?: string;
   lastName?: string;
+  fatherName?: string;
   clinic?: string;
   specializations?: string[];
   portfolio?: string[];
@@ -43,6 +44,7 @@ export type DoctorFormDefaults = {
 type SaveInput = {
   firstName: string;
   lastName: string;
+  fatherName: string;
   clinic: string;
   specializations: string[];
   portfolio: string[];
@@ -200,6 +202,7 @@ export function DoctorProfileForm({
       const res = await save({
         firstName: get("firstName"),
         lastName: get("lastName"),
+        fatherName: get("fatherName"),
         clinic: get("clinic"),
         workplaceCenterId,
         specializations: specs,
@@ -286,7 +289,8 @@ export function DoctorProfileForm({
       {allowBanner && (
         <div>
           <p className="mb-1.5 text-sm font-medium text-ink-800">
-            Profil banneri <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[11px] font-semibold text-cyan-700">Platinum</span>
+            Profil banneri <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[11px] font-semibold text-cyan-700">Platinum</span>{" "}
+            <span className="font-normal text-slate-400">— tövsiyə olunan ölçü: 1920×480 px (4:1), JPG/PNG, maks 5 MB</span>
           </p>
           <div className="overflow-hidden rounded-xl border border-slate-200">
             {bannerUrl ? (
@@ -339,6 +343,9 @@ export function DoctorProfileForm({
         <Field label={t.lastName} htmlFor="lastName" required>
           <Input id="lastName" name="lastName" defaultValue={defaults?.lastName} required placeholder={t.lastNamePh} />
         </Field>
+        <Field label={ru ? "Отчество" : "Ata adı"} htmlFor="fatherName">
+          <Input id="fatherName" name="fatherName" defaultValue={defaults?.fatherName} placeholder={ru ? "по желанию" : "istəyə bağlı"} />
+        </Field>
       </div>
 
       <Field label={t.phone} htmlFor="phone" hint={t.phoneHint}>
@@ -351,26 +358,9 @@ export function DoctorProfileForm({
           {t.specs}{" "}
           <span className="font-normal text-slate-400">{t.specsHint}</span>
         </p>
-        <div className="flex flex-wrap gap-2">
-          {DENTAL_SPECIALIZATIONS.map((s) => {
-            const active = specs.includes(s);
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => toggleSpec(s)}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset transition-colors",
-                  active
-                    ? "bg-brand-600 text-white ring-brand-600"
-                    : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50",
-                )}
-              >
-                {s}
-              </button>
-            );
-          })}
-        </div>
+        {/* 2026-08-19: siyahı genişləndi (40+ ixtisas) — çiplər əvəzinə
+            axtarışlı seçici (fold-fuzzy: dəqiq yazmasa da tapır) */}
+        <SpecializationsPicker value={specs} onChange={setSpecs} />
       </div>
 
       {/* Portfolio (Silver+) */}
