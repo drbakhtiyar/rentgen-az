@@ -10,12 +10,11 @@ import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
 import { Card } from "@/components/ui/card";
 import { JsonLd } from "@/components/ui/json-ld";
 import { AppointmentForm } from "@/components/forms/appointment-form";
-import { getApprovedDoctors, getActiveServices } from "@/lib/queries";
+import { getActiveServices } from "@/lib/queries";
 import { PLATFORM_WHATSAPP_DISPLAY, PLATFORM_WHATSAPP_URL } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/auth/rbac";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
-import { doctorName } from "@/lib/utils";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -27,7 +26,6 @@ export const metadata = buildMetadata({
 });
 
 export default async function ContactPage() {
-  const doctors = await getApprovedDoctors();
   const serviceOptions = (await getActiveServices()).map((s) => ({
     value: s.slug,
     label: s.name,
@@ -142,12 +140,7 @@ export default async function ContactPage() {
                 locale={locale}
                 patient={patientInfo}
                 services={serviceOptions}
-                doctors={doctors.map((d) => ({
-                  value: d.id,
-                  label: `${doctorName(d.firstName, d.lastName)}${
-                    d.clinic ? " — " + d.clinic : ""
-                  }`,
-                }))}
+                withTopic
               />
             </Card>
           </div>

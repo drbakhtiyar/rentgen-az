@@ -22,6 +22,7 @@ export function AppointmentForm({
   centerName,
   services,
   doctors,
+  withTopic = false,
   defaultService,
   hours,
   patient,
@@ -32,6 +33,8 @@ export function AppointmentForm({
   centerName?: string;
   services: Option[];
   doctors?: Option[];
+  /** Əlaqə səhifəsi: «müraciətin mövzusu» seçimi (2026-08-19) — note-a prefiks kimi düşür. */
+  withTopic?: boolean;
   defaultService?: string;
   /** center's structured hours — enables date + time slot picking */
   hours?: WeeklyHours | null;
@@ -47,6 +50,9 @@ export function AppointmentForm({
   const [date, setDate] = React.useState("");
   const [time, setTime] = React.useState("");
   const [service, setService] = React.useState(defaultService ?? "");
+  const TOPICS = locale === "ru"
+    ? ["Запись на обследование", "Вопрос по ценам", "Регистрация центра", "Сотрудничество", "Техническая проблема", "Другое"]
+    : ["Müayinəyə yazılmaq", "Qiymətlərlə bağlı sual", "Mərkəz qeydiyyatı", "Əməkdaşlıq", "Texniki problem", "Digər"];
   const [step, setStep] = React.useState<"form" | "otp">("form");
   const [code, setCode] = React.useState("");
   const [devCode, setDevCode] = React.useState<string | null>(null);
@@ -125,7 +131,11 @@ export function AppointmentForm({
       phone: patient?.phone ?? String(fd.get("phone") ?? ""),
       doctorId: String(fd.get("doctorId") ?? ""),
       serviceSlug: String(fd.get("serviceSlug") ?? ""),
-      note: String(fd.get("note") ?? ""),
+      note: (() => {
+        const t = String(fd.get("topic") ?? "");
+        const n = String(fd.get("note") ?? "");
+        return t ? `Mövzu: ${t}${n ? "\n" + n : ""}` : n;
+      })(),
     };
     startTransition(async () => {
       if (skipOtp) {
@@ -283,6 +293,24 @@ export function AppointmentForm({
           />
         )}
       </Field>
+      {withTopic && (
+        <div>
+          <label htmlFor="topic" className="mb-1.5 block text-sm font-semibold text-ink-900">
+            {locale === "ru" ? "Тема обращения" : "Müraciətin mövzusu"}
+          </label>
+          <select
+            id="topic"
+            name="topic"
+            className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-400"
+            defaultValue=""
+          >
+            <option value="">{locale === "ru" ? "Выберите (по желанию)" : "Seçin (istəyə bağlı)"}</option>
+            {TOPICS.map((t2) => (
+              <option key={t2} value={t2}>{t2}</option>
+            ))}
+          </select>
+        </div>
+      )}
       {doctors && doctors.length > 0 && (
         <Field label={t.doctor} htmlFor="doctorId" hint={t.doctorHint}>
           {patient ? (
