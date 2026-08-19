@@ -59,6 +59,24 @@ The web platform is production-live and used by real centers/doctors/patients. T
 - MediStyle/Rahimov/Piccasa kart yeniləmələri; Bəyaz Diş dublikatı deaktiv
   (qeydiyyat axını dedup ETMİR — bilinən boşluq, TODO-da).
 
+### 2026-08-19/20 — PACS CANLI (pilot infrastrukturu) — bax `infra/pacs/README.md`
+- **pacs.rentgen.az** artıq Vercel placeholder deyil: **Hetzner CPX22** (Falkenstein,
+  `167.233.72.179`, Ubuntu 24.04, €22.99/ay) üzərində **Orthanc 1.13 + OHIF + Caddy
+  (auto-SSL) + auth qapısı** (docker compose, `/opt/pacs`). DNS A/AAAA Vercel DNS-də.
+- **Giriş modeli:** rentgen.az 5 dəqiqəlik HMAC imzalı link verir (`src/lib/pacs.ts`)
+  → `/open?t=` → HttpOnly cookie → OHIF yalnız icazəli StudyInstanceUID-ə çıxır
+  (Caddy `forward_auth` + `infra/pacs/auth/server.mjs`). Gateway-lər öz Basic auth-u ilə.
+- **Saxlanma:** fayllar serverdə **7 gün** keşdə (cron 04:00 `ttl-cleanup.sh`), `archive`
+  etiketlilər daimi (ödənişli arxiv üçün). B2 hələ qoşulmayıb (pilotda lazım deyil).
+- **Admin:** `/admin/pacs` — keşdəki tədqiqatlar, «Aç» (OHIF), «OHIF siyahısı», Orthanc
+  Explorer; hər açılış jurnalda `pacs:open`. Env: `PACS_URL`, `PACS_SHARED_SECRET`,
+  `PACS_ORTHANC_USER/PASS` (Vercel + `.env.local`).
+- **Test:** sintetik 40 kəsimli CT zip → Orthanc → OHIF-də açıldı ✅.
+- **Qalan (TODO):** klinika gateway paketi (Windows Orthanc + papka izləyicisi + Lua
+  auto-forward), tələbə-görə çəkmə növbəsi, həkim/mərkəz panelində «Görüntüyə bax»,
+  ödənişli arxiv (B2 + `archive` etiketi), PostgreSQL indeks.
+- **Qayda:** mövcud əl ilə yükləmə paneli + öz `/viewer` PACS-a DAXİL DEYİL (DECISIONS).
+
 ### 2026-08-13/15 blok — DİZAYN v2, STATİSTİKA, TƏHLÜKƏSİZLİK (bax CHANGELOG)
 
 - **DİZAYN v2 «Impilo» CANLI (2026-08-13):** saytın bütün ictimai hissəsi kökündən

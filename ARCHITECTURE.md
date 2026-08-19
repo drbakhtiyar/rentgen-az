@@ -4,6 +4,7 @@
 - **Next.js 16.2.9** (App Router, React 19.2, TypeScript, **Turbopack** default). Async request APIs (`cookies()`, `headers()`, `params`, `searchParams` are Promises — always `await`). Middleware is `src/proxy.ts` (exported fn `proxy()`, nodejs runtime). See `AGENTS.md` for the Next 16 breaking-change cheat sheet.
 - **Prisma 7** + Supabase Postgres. Client generated to `src/generated/prisma` — **import from `@/generated/prisma/client` and `@/generated/prisma/enums`, NOT `@prisma/client`**. DB access via `src/lib/db.ts` (`prisma`, PrismaPg adapter, pooled, `max:3`).
 - **Hosting:** Vercel (region fra1), auto-deploy on push to `main`. Crons in `vercel.json`.
+- **PACS:** `pacs.rentgen.az` — ayrıca Hetzner serveri (Orthanc + OHIF + Caddy + auth qapısı), bax `infra/pacs/README.md`; sayt tərəfi `src/lib/pacs.ts` (imzalı açılış linkləri + server-tərəfli Orthanc oxuma), `/admin/pacs`.
 - **Storage:** Backblaze B2 (S3-compatible, private bucket) for rentgen files — `src/lib/b2.ts`, presigned up/download.
 - **SMS:** Lsim.az QuickSMS (`src/lib/sms.ts`, provider `lsim`). **Email:** FormSubmit/Resend (`src/lib/email.ts`).
 - **Payments:** Payriff v3 (`src/lib/payriff.ts` + `payments.ts`; `paymentStatus "APPROVED"` = paid).

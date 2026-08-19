@@ -29,6 +29,26 @@ Pending work, in rough priority order. `[ ]` open · `[~]` in progress · `[bloc
   Referans, Diamed) — admin formunda superAdmin xanaları.
 - [ ] İlk real super admin girişini müşahidə et (/merkez/secim axını).
 
+## PACS (pacs.rentgen.az) — infrastruktur CANLI 2026-08-19; növbəti addımlar
+- [ ] **Klinika gateway paketi** — Windows Orthanc installer konfiqi (`orthanc.json`:
+  AET `RENTGEN_GW`, port 4242, peer `https://pacs.rentgen.az/orthanc/` öz Basic
+  açarı ilə) + Lua `OnStoredInstance` auto-forward + **papka izləyicisi** (cihaz yalnız
+  papkaya yazanda; DICOM zip də) + firewall PowerShell əmri. Cihazın marka/modeli gözlənilir.
+- [ ] **Gateway istifadəçiləri** — Orthanc `RegisteredUsers`-ə mərkəz-başına `gw-<slug>`
+  (server `.env` → `ORTHANC__REGISTERED_USERS`); rentgen.az admin-dən idarə sonra.
+- [ ] **Tələbə görə çəkmə** (qərar: metadata indeks + həkim açanda gateway göndərir) —
+  gateway buluddakı «növbə» endpointini sorğulayır (yalnız çıxış bağlantısı); OHIF-də
+  «klinikadan yüklənir…» vəziyyəti. Pilotda gateway hər şeyi dərhal göndərə bilər (sadə).
+- [ ] **«Görüntüyə bax»** həkim/mərkəz/pasiyent panelində — `pacsOpenUrl({role, study})`;
+  tədqiqat↔müraciət/pasiyent uyğunluğu (PatientID = rentgen.az müraciət/pasiyent ID-si
+  gateway-də yazılmalı, yoxsa ad+tarix ilə əl uyğunlaşdırma).
+- [ ] **Ödənişli bulud arxivi** — Orthanc `archive` etiketi (cron silmir) + B2 bucket
+  `rentgen-pacs` (S3 plugin / gecə sinxron); storage satışı (Platinum +1TB) ilə bağla.
+- [ ] **PostgreSQL indeks** (hazırda SQLite) — çox mərkəz olanda.
+- [ ] **Köhnə placeholder** — `src/app/pacs/page.tsx` + `proxy.ts`-dəki pacs rewrite artıq
+  işə düşmür (host Hetzner-dədir); istifadəçi təsdiqləyəndə silinsin (no-delete qaydası).
+- [ ] **Monitorinq** — Hetzner server uptime/disk xəbərdarlığı (WhatsApp admin bildirişi).
+
 ## Təhlükəsizlik (tam sənəd: `SECURITY.md` — açıq risklər cədvəli oradadır)
 - [ ] **`x-app-key` → OTP/JWT modeli (YÜKSƏK)** — limit qoyuldu (kütləvi çıxarma
   bağlandı), amma hədəfli sorğu qalır. OTP→qısamüddətli JWT keçidi **mobil app
