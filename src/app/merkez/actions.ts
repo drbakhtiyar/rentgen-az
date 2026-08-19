@@ -39,6 +39,8 @@ async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
 export async function saveCenterProfileAction(input: {
   name: string;
   email?: string;
+  adminPhone?: string;
+  adminName?: string;
   phone: string;
   whatsapp?: string;
   address?: string;
@@ -92,6 +94,10 @@ export async function saveCenterProfileAction(input: {
       equipment: d.equipment || null,
       responsiblePerson: d.responsiblePerson || null,
       email: d.email || null,
+      // Super admin sahələri QƏSDƏN YOXDUR: onları yalnız sayt rəhbəri
+      // (admin/operator formu) təyin edir — mərkəz özü dəyişə bilmir.
+      adminPhone: d.adminPhone ? normalizePhone(d.adminPhone) ?? d.adminPhone : null,
+      adminName: d.adminName || null,
       description: d.description || null,
       logoUrl: d.logoUrl || null,
       licenseUrl: d.licenseUrl || null,

@@ -85,6 +85,10 @@ export const centerProfileSchema = z.object({
   lng: z.number().min(-180).max(180).nullable().optional(),
   faqAnswers: z.record(z.string(), z.string()).optional(),
   email: z.string().trim().email().max(200).optional().or(z.literal("")),
+  adminPhone: z.string().trim().max(30).optional().or(z.literal("")),
+  adminName: z.string().trim().max(120).optional().or(z.literal("")),
+  superAdminPhone: z.string().trim().max(30).optional().or(z.literal("")),
+  superAdminName: z.string().trim().max(120).optional().or(z.literal("")),
 });
 
 export const appointmentRequestSchema = z.object({

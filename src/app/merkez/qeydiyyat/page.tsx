@@ -23,6 +23,18 @@ export const metadata: Metadata = buildMetadata({
 const cityOptions = CITIES.map((c) => ({ value: c.name, label: c.name }));
 
 export default async function CenterOnboardingPage() {
+  {
+    // Şəbəkə idarəçisi (2026-08-19): profili yoxdur amma nömrəsi mərkəz(lər)in
+    // adminPhone/superAdminPhone sahəsindədir → qeydiyyat yox, seçim/panel.
+    const { getCurrentUser } = await import("@/lib/auth/rbac");
+    const { centersManagedByPhone } = await import("@/lib/auth/acting");
+    const me = await getCurrentUser();
+    if (me?.role === "CENTER" && !me.centerProfile) {
+      const managed = await centersManagedByPhone(me.phone);
+      if (managed.length > 1) redirect("/merkez/secim");
+      if (managed.length === 1) redirect("/merkez");
+    }
+  }
   const user = await requireRole("CENTER", "/merkez/qeydiyyat");
   const existing = await prisma.centerProfile.findUnique({
     where: { userId: user.id },

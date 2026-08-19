@@ -91,6 +91,15 @@ export async function DashboardShell({
     mergedBadges["/merkez/chat"] = unreadChat;
     mergedBadges["/hekim/chat"] = unreadChat;
   }
+  // Şəbəkə idarəçisi (2026-08-19): birdən çox mərkəzi idarə edirsə sol
+  // sütunda «Şəbəkə siyahısı» linki görünür.
+  let networkList = false;
+  if (me?.role === "CENTER" && !me.centerProfile) {
+    const n = await prisma.centerProfile.count({
+      where: { OR: [{ adminPhone: me.phone }, { superAdminPhone: me.phone }] },
+    });
+    networkList = n > 1;
+  }
   const availableRoles = (
     [
       me?.patientProfile ? "PATIENT" : null,
@@ -141,6 +150,14 @@ export async function DashboardShell({
             )}
             <DashboardNav items={navItems} badges={mergedBadges} collapsible={collapsible} />
             <div className="mt-3 border-t border-slate-100 pt-3">
+              {networkList && (
+                <Link
+                  href="/merkez/secim"
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold text-clinical hover:bg-white/10 ${collapsible ? "hidden group-hover:block" : "block"}`}
+                >
+                  ⇄ Şəbəkə siyahısı
+                </Link>
+              )}
               <Link
                 href="/"
                 className={`rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 ${collapsible ? "hidden group-hover:block" : "block"}`}

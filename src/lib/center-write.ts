@@ -62,6 +62,10 @@ export type CenterWriteInput = {
   website?: string;
   instagram?: string;
   email?: string;
+  adminPhone?: string;
+  adminName?: string;
+  superAdminPhone?: string;
+  superAdminName?: string;
   hours?: WeeklyHours | null;
   equipment?: string;
   responsiblePerson?: string;
@@ -158,6 +162,10 @@ export async function saveCenterLoose(
     website: s(input.website, 300),
     instagram: s(input.instagram, 300),
     email: s(input.email, 200),
+    adminPhone: input.adminPhone ? normalizePhone(input.adminPhone) ?? s(input.adminPhone, 30) : null,
+    adminName: s(input.adminName, 120),
+    superAdminPhone: input.superAdminPhone ? normalizePhone(input.superAdminPhone) ?? s(input.superAdminPhone, 30) : null,
+    superAdminName: s(input.superAdminName, 120),
     hours: week ? (week as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
     workingHours: formatHoursSummary(week) || null,
     equipment: s(input.equipment, 1000),

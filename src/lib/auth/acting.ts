@@ -17,12 +17,39 @@ export type ActingCenter = {
  * Assistants do the day-to-day CRM work; settings/billing stay owner-only
  * (callers decide via `isOwner`). Returns null for anyone else.
  */
+/** Bu nömrənin idarə edə bildiyi BÜTÜN mərkəzlər (şəbəkə, 2026-08-19):
+ *  sahiblik + adminPhone + superAdminPhone. */
+export async function centersManagedByPhone(phone: string) {
+  return prisma.centerProfile.findMany({
+    where: {
+      OR: [
+        { user: { phone } },
+        { adminPhone: phone },
+        { superAdminPhone: phone },
+      ],
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
+const NETWORK_COOKIE = "rx_center";
+
 export async function getActingCenter(): Promise<ActingCenter | null> {
   const me = await getCurrentUser();
   if (!me) return null;
   if (me.role === "CENTER") {
     const center = await prisma.centerProfile.findUnique({ where: { userId: me.id } });
-    return center ? { userId: me.id, center, isOwner: true } : null;
+    if (center) return { userId: me.id, center, isOwner: true };
+    // Şəbəkə idarəçisi (2026-08-19): öz profili yoxdur, amma nömrəsi hansısa
+    // mərkəz(lər)in adminPhone/superAdminPhone sahəsindədir.
+    const managed = await centersManagedByPhone(me.phone);
+    if (managed.length === 0) return null;
+    if (managed.length === 1) return { userId: me.id, center: managed[0], isOwner: true };
+    // Çox mərkəz → seçim cookie-si (yalnız icazəli siyahıdan)
+    const { cookies } = await import("next/headers");
+    const chosen = (await cookies()).get(NETWORK_COOKIE)?.value;
+    const picked = chosen ? managed.find((c) => c.id === chosen) : undefined;
+    return picked ? { userId: me.id, center: picked, isOwner: true } : null;
   }
   if (me.role === "ASSISTANT") {
     const link = await prisma.centerAssistant.findUnique({

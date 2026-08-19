@@ -113,6 +113,7 @@ export default async function AdminEditCenterPage({
           cities={cityOptions}
           mode="edit"
           loose
+          superEditable
           onSave={save}
           maxImages={centerLimits(center.plan).photoLimit ?? 999}
           allowBanner={centerLimits(center.plan).banner}
@@ -127,6 +128,11 @@ export default async function AdminEditCenterPage({
             mapsUrl: center.mapsUrl ?? "",
             website: center.website ?? "",
             instagram: center.instagram ?? "",
+            email: center.email ?? "",
+            adminPhone: center.adminPhone ?? "",
+            adminName: center.adminName ?? "",
+            superAdminPhone: center.superAdminPhone ?? "",
+            superAdminName: center.superAdminName ?? "",
             workingHours: center.workingHours ?? "",
             equipment: center.equipment ?? "",
             responsiblePerson: center.responsiblePerson ?? "",

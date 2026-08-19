@@ -36,6 +36,7 @@ export default async function AdminNewCenterPage() {
           gözləyən (PENDING) vəziyyətdə yaradılır.
         </p>
         <CenterProfileForm
+          superEditable
           cities={cityOptions}
           mode="create"
           loose

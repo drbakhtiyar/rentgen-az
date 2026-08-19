@@ -27,6 +27,10 @@ export type CenterFormDefaults = {
   website?: string;
   instagram?: string;
   email?: string;
+  adminPhone?: string;
+  adminName?: string;
+  superAdminPhone?: string;
+  superAdminName?: string;
   workingHours?: string;
   hours?: WeeklyHours | null;
   equipment?: string;
@@ -53,6 +57,10 @@ type SaveInput = {
   website: string;
   instagram: string;
   email: string;
+  adminPhone: string;
+  adminName: string;
+  superAdminPhone?: string;
+  superAdminName?: string;
   hours: WeeklyHours | null;
   equipment: string;
   responsiblePerson: string;
@@ -71,6 +79,7 @@ export function CenterProfileForm({
   defaults,
   mode,
   onSave,
+  superEditable = false,
   maxImages,
   allowBanner,
   loose = false,
@@ -78,6 +87,8 @@ export function CenterProfileForm({
   cities: Option[];
   defaults?: CenterFormDefaults;
   mode: "create" | "edit";
+  /** Super admin xanaları yalnız platforma admin formunda redaktə olunur (2026-08-19). */
+  superEditable?: boolean;
   /** Overrides the default self-serve save (e.g. admin editing any center). */
   onSave?: (input: SaveInput) => Promise<{ ok: boolean; error?: string; message?: string }>;
   /** Max number of gallery photos allowed by the center's plan (default 12). */
@@ -228,6 +239,11 @@ export function CenterProfileForm({
         website: get("website"),
         instagram: get("instagram"),
         email: get("email"),
+        adminPhone: get("adminPhone"),
+        adminName: get("adminName"),
+        ...(superEditable
+          ? { superAdminPhone: get("superAdminPhone"), superAdminName: get("superAdminName") }
+          : {}),
         hours,
         equipment: get("equipment"),
         responsiblePerson: get("responsiblePerson"),
@@ -428,6 +444,29 @@ export function CenterProfileForm({
           <Field label="Veb sayt" htmlFor="website">
             <Input id="website" name="website" type="url" defaultValue={defaults?.website} placeholder="https://..." />
           </Field>
+          <Field label="Admin nömrəsi (OTP girişi)" htmlFor="adminPhone">
+            <Input id="adminPhone" name="adminPhone" defaultValue={defaults?.adminPhone} placeholder="+994 50 000 00 00" />
+          </Field>
+          <Field label="Adminin adı, soyadı" htmlFor="adminName">
+            <Input id="adminName" name="adminName" defaultValue={defaults?.adminName} placeholder="Ad Soyad" />
+          </Field>
+          {superEditable ? (
+            <>
+              <Field label="Super admin nömrəsi (şəbəkə)" htmlFor="superAdminPhone">
+                <Input id="superAdminPhone" name="superAdminPhone" defaultValue={defaults?.superAdminPhone} placeholder="+994 50 000 00 00" />
+              </Field>
+              <Field label="Super adminin adı, soyadı" htmlFor="superAdminName">
+                <Input id="superAdminName" name="superAdminName" defaultValue={defaults?.superAdminName} placeholder="Ad Soyad" />
+              </Field>
+            </>
+          ) : (
+            (defaults?.superAdminPhone || defaults?.superAdminName) && (
+              /* Mərkəz admini super admini GÖRÜR, dəyişə bilmir (sayt rəhbəri təyin edir) */
+              <Field label="Super admin (şəbəkə — sayt rəhbəri təyin edir)" htmlFor="superAdminRO">
+                <Input id="superAdminRO" disabled value={`${defaults?.superAdminName ?? ""} ${defaults?.superAdminPhone ?? ""}`.trim()} className="bg-slate-50 text-slate-500" />
+              </Field>
+            )
+          )}
           <Field label="E-poçt" htmlFor="email">
             <Input id="email" name="email" type="email" defaultValue={defaults?.email} placeholder="info@merkez.az" />
           </Field>

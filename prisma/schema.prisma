@@ -221,6 +221,11 @@ model CenterProfile {
   website           String? // ictimai səhifədə göstərilir, kliklər izlənir (2026-08-13)
   instagram         String?
   email             String? // ictimai əlaqə e-poçtu (2026-08-17)
+  // Şəbəkə idarəetməsi (2026-08-19): OTP ilə girə bilən idarəçi nömrələri.
+  adminPhone        String? // bu mərkəzin admininin nömrəsi (yalnız bu mərkəzi idarə edir)
+  adminName         String? // adminin ad-soyadı
+  superAdminPhone   String? // şəbəkə super admini (bu nömrəyə bağlı BÜTÜN mərkəzləri idarə edir); yalnız sayt rəhbəri təyin edir
+  superAdminName    String? // super adminin ad-soyadı
   lat               Float?
   lng               Float?
   workingHours      String? // insan-oxunaqlı xülasə (strukturdan avtomatik yaranır)

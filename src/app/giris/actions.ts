@@ -207,7 +207,12 @@ export async function verifyOtpAction(input: {
     // Where to send the user next (onboarding if the selected profile is missing)
     let redirectTo = dashboardPathForRole(selectedRole);
     if (selectedRole === "CENTER" && !user.centerProfile) {
-      redirectTo = "/merkez/qeydiyyat";
+      // Şəbəkə idarəçisi (2026-08-19): nömrə hansısa mərkəzin adminPhone /
+      // superAdminPhone sahəsindədirsə, qeydiyyata yox, panelə gedir.
+      const managed = await prisma.centerProfile.count({
+        where: { OR: [{ adminPhone: phone }, { superAdminPhone: phone }] },
+      });
+      redirectTo = managed > 1 ? "/merkez/secim" : managed === 1 ? "/merkez" : "/merkez/qeydiyyat";
     } else if (selectedRole === "DOCTOR" && !user.doctorProfile) {
       redirectTo = "/hekim/qeydiyyat";
     }
