@@ -473,6 +473,11 @@ Architectural & product decisions that live only in conversation (not obvious fr
 - **Why:** istifadəçi qərarı — iki fərqli real ssenari (avtomatik cihaz axını vs əməkdaşın əl ilə yüklədiyi fayl); birini digərinə qurban vermək olmaz.
 - **Consequence:** PACS işi öz viewer-ə, `rentgen-files.ts`-ə və mövcud B2 bucket-inə toxunmur; PACS üçün ayrıca B2 bucket + açar (`rentgen-pacs`), eyni hesab, əlavə paket yoxdur. `pacs.rentgen.az` DNS-i Hetzner-ə çevriləndə `proxy.ts`-dəki müvəqqəti pacs rewrite və `/pacs` placeholder lazımsız olur.
 
+## PACS saxlanma modeli: tələbə görə çəkmə + 7 günlük keş; daimi arxiv yalnız ödənişli
+- **Decision (2026-08-19):** PACS-da fayllar **default olaraq bizdə daimi saxlanmır**. Klinikadakı gateway (Windows PC-də lokal Orthanc + papka izləyicisi) buluda yalnız **metadata indeksi** göndərir (pasiyent adı, tarix, modallıq, ölçü, StudyUID); həkim siyahıda tədqiqatı açanda bulud gateway-dən tədqiqatı **tələbə görə çəkir** (gateway yalnız çıxış bağlantısı ilə növbəni sorğulayır — klinikada port/VPN açılmır), OHIF-də göstərir və **7 gün müvəqqəti keşdə** saxlayır (eyni həftə təkrar açılış yenidən yüklənmir); müddət bitəndə avtomatik silinir. **Daimi bulud arxivi** (B2-də, 7/24, yedəkli) yalnız mərkəz ödənişli «bulud arxivi» paketi alanda — mövcud storage satışı (Platinum +1TB) ilə eyni xətt.
+- **Why:** istifadəçi qərarı — serverimiz dolmur, bizdə pasiyent görüntüsü lazımsız yerə qalmır, data klinikada qalır; istəyən mərkəz arxivi ayrıca alır → PACS gəlir mənbəyinə çevrilir.
+- **Consequence / qəbul edilən risklər:** klinika PC söndürülüb/internetsizdirsə keşdə olmayan tədqiqat açılmır; ilk açılış klinikanın upload sürətindən asılıdır (200 MB → 1,5–5 dəq); yedək yalnız ödənişli arxivdə. Hetzner CPX22-nin 80 GB SSD-si yalnız keş + indeks üçündür.
+
 ## Same Supabase DB for site + app; never rotate password blindly
 - **Decision:** site and mobile app share one Supabase project (`yunonkioubsvozqmezvp`, PRO, SMALL compute).
 - **Why/Consequence:** resetting the DB password 500s the live site unless Vercel `DATABASE_URL` + `DIRECT_URL` are updated in the same change. The recurring `pg_pgrst_no_exposed_schemas` 503 in Supabase logs is harmless — PostgREST/Data API is unused; everything goes through direct Prisma.
