@@ -118,6 +118,13 @@ export default async function DoctorPatientsPage({
     groups[i].items.push(r);
   }
 
+  // Bildirişdən gələn pasiyenti (?p=) siyahının başına çək — açıq blok
+  // ekranın yuxarısında görünsün, axtarmaq lazım olmasın (2026-08-20).
+  if (openPhone) {
+    const hit = groups.findIndex((g) => g.phone.replace(/\D/g, "").endsWith(openPhone));
+    if (hit > 0) groups.unshift(groups.splice(hit, 1)[0]);
+  }
+
   const fullName =
     doctorName(doctor.firstName, doctor.lastName);
   const pd = getPanelDict(await getLocale());

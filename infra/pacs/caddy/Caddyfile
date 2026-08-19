@@ -49,6 +49,19 @@ pacs.rentgen.az {
     }
   }
 
+  # OHIF runtime config: never cache (we edit it), always UTF-8
+  handle /app-config.js {
+    forward_auth auth:9000 {
+      uri /gate
+    }
+    header {
+      Cache-Control "no-cache, no-store, must-revalidate"
+      Content-Type "application/javascript; charset=utf-8"
+      defer
+    }
+    reverse_proxy ohif:80
+  }
+
   # Everything else → OHIF viewer, but only with a session (else 302 → rentgen.az SSO)
   handle {
     forward_auth auth:9000 {
