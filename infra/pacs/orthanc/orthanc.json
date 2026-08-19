@@ -1,0 +1,42 @@
+{
+  "Name": "rentgen.az PACS",
+  "StorageDirectory": "/var/lib/orthanc/db",
+  "IndexDirectory": "/var/lib/orthanc/db",
+  "StorageCompression": false,
+  "MaximumStorageSize": 60000,
+  "MaximumStorageMode": "Reject",
+
+  "HttpServerEnabled": true,
+  "HttpPort": 8042,
+  "RemoteAccessAllowed": true,
+  "AuthenticationEnabled": true,
+  "HttpsVerifyPeers": true,
+  "HttpTimeout": 120,
+  "HttpRequestTimeout": 120,
+
+  "DicomServerEnabled": false,
+  "DicomAet": "RENTGEN_PACS",
+
+  "OverwriteInstances": true,
+  "StoreMD5ForAttachments": true,
+  "ConcurrentJobs": 2,
+  "JobsHistorySize": 100,
+
+  "DicomWeb": {
+    "Enable": true,
+    "Root": "/dicom-web/",
+    "PublicRoot": "/orthanc/dicom-web/",
+    "EnableWado": true,
+    "WadoRoot": "/wado",
+    "Ssl": false,
+    "StudiesMetadata": "Full",
+    "SeriesMetadata": "Full"
+  },
+
+  "OrthancExplorer2": { "Enable": true, "IsDefaultOrthancUI": true },
+
+  "HttpThreadsCount": 50,
+  "DefaultEncoding": "Utf8",
+  "LimitFindResults": 0,
+  "LimitFindInstances": 0
+}

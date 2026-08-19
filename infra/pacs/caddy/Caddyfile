@@ -1,0 +1,45 @@
+{
+  email dr.bakhtiyar.aliyev@gmail.com
+}
+
+pacs.rentgen.az {
+  encode zstd gzip
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options nosniff
+    X-Frame-Options SAMEORIGIN
+    Referrer-Policy strict-origin-when-cross-origin
+    -Server
+  }
+
+  # Auth gate: signed link → session cookie; logout
+  handle /open {
+    reverse_proxy auth:9000
+  }
+  handle /logout {
+    reverse_proxy auth:9000
+  }
+
+  # Orthanc REST + DICOMweb + Explorer under /orthanc/ (prefix stripped).
+  # Every request passes the auth gate: own Basic auth (gateways) OR session cookie.
+  handle_path /orthanc/* {
+    forward_auth auth:9000 {
+      uri /verify
+      copy_headers Authorization
+    }
+    reverse_proxy orthanc:8042 {
+      header_up X-Forwarded-Prefix /orthanc
+    }
+  }
+
+  # Everything else → OHIF viewer
+  handle {
+    reverse_proxy ohif:80
+  }
+
+  log {
+    output stdout
+    format console
+  }
+}
