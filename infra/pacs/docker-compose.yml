@@ -7,6 +7,7 @@ services:
     env_file: .env
     volumes:
       - ./orthanc/orthanc.json:/etc/orthanc/orthanc.json:ro
+      - ./orthanc/label-origin.lua:/etc/orthanc/label-origin.lua:ro
       - orthanc-db:/var/lib/orthanc/db
     # 8042 only on the host loopback (admin scripts / ttl-cleanup); public access goes via Caddy.
     # DICOM port 4242 is intentionally NOT published: gateways push over HTTPS peers.
@@ -48,6 +49,7 @@ services:
     ports: ["80:80", "443:443", "443:443/udp"]
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./static:/srv/rx:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on: [orthanc, ohif, auth]

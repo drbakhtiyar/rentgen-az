@@ -35,6 +35,8 @@
 
   "OrthancExplorer2": { "Enable": true, "IsDefaultOrthancUI": true },
 
+  "LuaScripts": ["/etc/orthanc/label-origin.lua"],
+
   "HttpThreadsCount": 50,
   "DefaultEncoding": "Utf8",
   "LimitFindResults": 0,

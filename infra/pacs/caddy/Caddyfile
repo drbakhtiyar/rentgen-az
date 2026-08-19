@@ -13,11 +13,27 @@ pacs.rentgen.az {
     -Server
   }
 
-  # Auth gate: signed link → session cookie; logout
+  # Auth gate: signed link → session cookie; logout; who-am-i (header bar)
   handle /open {
     reverse_proxy auth:9000
   }
   handle /logout {
+    reverse_proxy auth:9000
+  }
+  handle /whoami {
+    reverse_proxy auth:9000
+  }
+
+  # Static brand assets for the OHIF header (logo)
+  handle_path /rx/* {
+    root * /srv/rx
+    header Cache-Control "public, max-age=86400"
+    file_server
+  }
+
+  # OHIF study list → scoped by the session (auth service filters by labels)
+  handle /orthanc/dicom-web/studies {
+    rewrite * /qido-studies?{query}
     reverse_proxy auth:9000
   }
 
@@ -33,8 +49,11 @@ pacs.rentgen.az {
     }
   }
 
-  # Everything else → OHIF viewer
+  # Everything else → OHIF viewer, but only with a session (else 302 → rentgen.az SSO)
   handle {
+    forward_auth auth:9000 {
+      uri /gate
+    }
     reverse_proxy ohif:80
   }
 

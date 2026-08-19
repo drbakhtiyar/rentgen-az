@@ -13,6 +13,19 @@ import { env } from "./env";
 
 export type PacsRole = "admin" | "doctor" | "center" | "patient";
 
+/** What a rentgen.az user may see in the PACS. Orthanc labels: center-<id> | doctor-<id> | patient-<id>. */
+export type PacsScope =
+  | { role: PacsRole; name: string; study: "*" }
+  | { role: PacsRole; name: string; labels: string[] };
+
+/** Label helpers — keep in sync with infra/pacs/orthanc/label-origin.lua (gw-<centerId> → center-<centerId>). */
+export const pacsLabel = {
+  center: (centerId: string) => `center-${centerId}`,
+  doctor: (doctorId: string) => `doctor-${doctorId}`,
+  patient: (userId: string) => `patient-${userId}`,
+  archive: "archive",
+};
+
 export function pacsConfigured(): boolean {
   return Boolean(env.pacs.sharedSecret);
 }
@@ -22,20 +35,30 @@ export function pacsOrthancConfigured(): boolean {
 
 const b64u = (b: Buffer | string) => Buffer.from(b).toString("base64url");
 
-/** study = StudyInstanceUID, or "*" for full access (admin only). */
+/**
+ * study = StudyInstanceUID, or "*" for full access (admin only); or labels = every
+ * study carrying any of these Orthanc labels. dest = path on pacs.rentgen.az to land on.
+ */
 export function mintPacsToken(opts: {
   sub: string;
   role: PacsRole;
-  study: string;
+  name?: string;
+  study?: string;
+  labels?: string[];
+  dest?: string;
   ttlSec?: number;
 }): string {
   if (!env.pacs.sharedSecret) throw new Error("PACS_SHARED_SECRET is not set");
+  if (!opts.study && !opts.labels) throw new Error("mintPacsToken: study or labels required");
   const ttl = opts.ttlSec ?? 300;
   const payload = b64u(
     JSON.stringify({
       sub: opts.sub,
       role: opts.role,
+      name: opts.name ?? "",
       study: opts.study,
+      labels: opts.labels,
+      dest: opts.dest,
       exp: Math.floor(Date.now() / 1000) + ttl,
     }),
   );
