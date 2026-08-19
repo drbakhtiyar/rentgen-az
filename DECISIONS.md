@@ -468,6 +468,11 @@ Architectural & product decisions that live only in conversation (not obvious fr
 - **Decision:** `/viewer/[fileId]` is restricted to Dr. Bakhtiyar only (`src/lib/viewer-access.ts`).
 - **Why:** the MPR/measure/implant tooling isn't finished (4th-quadrant reference images pending); not ready for public/center use.
 
+## PACS (Orthanc/OHIF) ≠ mövcud fayl paneli + öz viewer — iki ayrı xətt
+- **Decision (2026-08-19):** `pacs.rentgen.az`-da qurulacaq PACS (Hetzner CPX22 + Orthanc + OHIF, arxiv B2-də) **yalnız şəbəkəyə birbaşa DICOM göndərə bilən cihazlar** üçündür. Mövcud rentgen fayl paneli (`rentgen-files-panel.tsx`, B2 presigned yükləmə) + öz `/viewer/[fileId]` isə **internetə çıxışı olmayan cihazlar** üçün əl ilə yükləmə yoludur — **olduğu kimi qalır, PACS-a daxil edilmir, OHIF ilə əvəz olunmur**.
+- **Why:** istifadəçi qərarı — iki fərqli real ssenari (avtomatik cihaz axını vs əməkdaşın əl ilə yüklədiyi fayl); birini digərinə qurban vermək olmaz.
+- **Consequence:** PACS işi öz viewer-ə, `rentgen-files.ts`-ə və mövcud B2 bucket-inə toxunmur; PACS üçün ayrıca B2 bucket + açar (`rentgen-pacs`), eyni hesab, əlavə paket yoxdur. `pacs.rentgen.az` DNS-i Hetzner-ə çevriləndə `proxy.ts`-dəki müvəqqəti pacs rewrite və `/pacs` placeholder lazımsız olur.
+
 ## Same Supabase DB for site + app; never rotate password blindly
 - **Decision:** site and mobile app share one Supabase project (`yunonkioubsvozqmezvp`, PRO, SMALL compute).
 - **Why/Consequence:** resetting the DB password 500s the live site unless Vercel `DATABASE_URL` + `DIRECT_URL` are updated in the same change. The recurring `pg_pgrst_no_exposed_schemas` 503 in Supabase logs is harmless — PostgREST/Data API is unused; everything goes through direct Prisma.
