@@ -61,6 +61,15 @@ export const env = {
     endpoint: process.env.B2_ENDPOINT ?? "",
     region: process.env.B2_REGION ?? "eu-central-003",
   },
+  // PACS (pacs.rentgen.az — Orthanc + OHIF on Hetzner, see infra/pacs/README.md).
+  // sharedSecret signs the short-lived "open study" links; orthanc creds are for
+  // server-to-server listing only (never shipped to the browser).
+  pacs: {
+    url: (process.env.PACS_URL ?? "https://pacs.rentgen.az").replace(/\/$/, ""),
+    sharedSecret: process.env.PACS_SHARED_SECRET ?? "",
+    orthancUser: process.env.PACS_ORTHANC_USER ?? "",
+    orthancPass: process.env.PACS_ORTHANC_PASS ?? "",
+  },
   isProd: process.env.NODE_ENV === "production",
 };
 

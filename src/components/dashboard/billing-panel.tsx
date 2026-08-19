@@ -20,6 +20,36 @@ import type { Plan } from "@/generated/prisma/client";
 import { useLocale } from "@/components/locale-context";
 import { getPanelDict } from "@/lib/i18n-panel";
 
+/* Saytdakı /paketler metal kimliyi (2026-08-19) — Silver gümüşü, Gold qızılı,
+ * Platinum buz-platin; chip-sheen parıltısı, hover-də ikon böyüyür, Platinum
+ * daşı «nəfəs alır» (gem-breathe). Panel kartları ictimai səhifə ilə eynidir. */
+const TIER_THEME: Record<string, { chip: string; iconExtra: string; ring: string; hover: string; name: string; sheen: boolean }> = {
+  SILVER: {
+    chip: "bg-gradient-to-br from-slate-300 via-slate-100 to-slate-400 text-slate-700 ring-1 ring-slate-300",
+    iconExtra: "",
+    ring: "ring-1 ring-slate-300 border-slate-200",
+    hover: "hover:shadow-[0_24px_60px_-24px_rgba(100,116,139,0.55)] hover:ring-slate-400",
+    name: "bg-gradient-to-r from-slate-600 via-slate-400 to-slate-600 bg-clip-text text-transparent",
+    sheen: true,
+  },
+  GOLD: {
+    chip: "bg-gradient-to-br from-amber-400 via-yellow-200 to-amber-500 text-amber-900 ring-1 ring-amber-300",
+    iconExtra: "",
+    ring: "ring-2 ring-amber-300 border-amber-200",
+    hover: "hover:shadow-[0_24px_60px_-24px_rgba(245,158,11,0.55)] hover:ring-amber-400",
+    name: "bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 bg-clip-text text-transparent",
+    sheen: true,
+  },
+  PLATINUM: {
+    chip: "bg-gradient-to-br from-slate-200 via-white to-cyan-200 text-cyan-700 ring-1 ring-cyan-200",
+    iconExtra: "gem-breathe",
+    ring: "ring-1 ring-cyan-200 border-cyan-200",
+    hover: "hover:shadow-[0_24px_60px_-24px_rgba(34,211,238,0.5)] hover:ring-cyan-300",
+    name: "bg-gradient-to-r from-cyan-700 via-slate-500 to-cyan-700 bg-clip-text text-transparent",
+    sheen: true,
+  },
+};
+
 const TIERS: { plan: Plan; icon: React.ReactNode }[] = [
   { plan: "SILVER", icon: <Star className="h-5 w-5" /> },
   { plan: "GOLD", icon: <Crown className="h-5 w-5" /> },
@@ -190,21 +220,18 @@ export function BillingPanel({
           const picked = preselect === plan && !active;
           const total = priceForMonths(prices[plan], months);
           const full = prices[plan] * months;
+          const th = TIER_THEME[plan];
           return (
             <div
               key={plan}
-              className={`rounded-2xl border p-5 ${
-                picked
-                  ? "border-brand-400 bg-white ring-2 ring-brand-400"
-                  : active
-                    ? "border-brand-300 bg-brand-50/40"
-                    : "border-slate-200 bg-white"
+              className={`group rounded-2xl border bg-white p-5 transition-all duration-300 hover:-translate-y-1 ${th?.ring ?? "border-slate-200"} ${th?.hover ?? ""} ${
+                picked ? "ring-2 ring-brand-400" : active ? "bg-brand-50/30" : ""
               }`}
             >
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                {icon}
+              <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${th?.chip ?? "bg-slate-100 text-slate-700"} ${th?.sheen ? "chip-sheen" : ""}`}>
+                <span className={th?.iconExtra ?? ""}>{icon}</span>
               </span>
-              <p className="mt-3 font-display text-lg font-bold text-ink-900">{PLAN_LABEL[plan]}</p>
+              <p className={`mt-3 font-display text-lg font-bold ${th?.name ?? "text-ink-900"}`}>{PLAN_LABEL[plan]}</p>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="text-xl font-bold text-ink-900">{formatManat(total)}</span>
                 {discountPct > 0 && (

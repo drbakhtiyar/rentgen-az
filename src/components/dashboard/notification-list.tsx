@@ -116,7 +116,8 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
           </button>
         </div>
       )}
-      <ul className="space-y-2">
+      {/* 2026-08-19: siyahı → 2 sütunlu kompakt bloklar (istifadəçi istəyi) */}
+      <ul className="grid gap-2.5 lg:grid-cols-2">
         {items.map((n) => (
           <li key={n.id}>
             <button

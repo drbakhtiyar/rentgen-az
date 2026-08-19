@@ -67,7 +67,8 @@ export default async function DoctorCentersPage() {
       {/* Partnyorlarım — asistent üçün əsas bölmə */}
       <Panel title={`Partnyorlarım (${partnerCenters.length})`} className="mb-5">
         {partnerCenters.length > 0 ? (
-          <div className="space-y-2">
+          /* 2026-08-19: sətir siyahısı → blok grid */
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {partnerCenters.map((c) => (
               <div
                 key={c.id}

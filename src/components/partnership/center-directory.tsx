@@ -54,11 +54,11 @@ export function CenterDirectory({
       {shown.length === 0 ? (
         <p className="py-6 text-center text-sm text-slate-400">{emptyText}</p>
       ) : (
-        <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
+        <div className="grid max-h-[560px] gap-2.5 overflow-y-auto pr-1 sm:grid-cols-2">
           {shown.map((c) => (
             <div
               key={c.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-3"
+              className="flex items-center justify-between gap-2 rounded-xl border border-slate-100 p-3"
             >
               <span className="flex min-w-0 items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-slate-400">

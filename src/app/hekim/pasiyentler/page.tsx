@@ -141,28 +141,31 @@ export default async function DoctorPatientsPage({
       </div>
 
       {groups.length > 0 ? (
-        <div className="space-y-4">
+        /* 2026-08-19: tam-açıq siyahı → kompakt blok grid; detallar klikdə
+           açılır (native <details> — JS-siz) */
+        <div className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {groups.map((g) => (
-            <div
+            <details
               key={g.phone}
-              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[var(--shadow-soft)]"
+              className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[var(--shadow-soft)] open:col-span-full"
             >
-              {/* Patient header */}
-              <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
+              {/* Patient header — klik açır/bağlayır */}
+              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
                   {initials(g.name)}
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-ink-900">{g.name}</p>
-                  <p className="text-sm text-slate-500">{formatPhoneDisplay(g.phone)}</p>
+                  <p className="truncate text-xs text-slate-500">{formatPhoneDisplay(g.phone)}</p>
                 </div>
-                <span className="ml-auto inline-flex shrink-0 items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
-                  {g.items.length} müraciət
+                <span className="inline-flex shrink-0 items-center rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
+                  {g.items.length}
                 </span>
-              </div>
+                <span className="shrink-0 text-slate-300 transition-transform group-open:rotate-90">›</span>
+              </summary>
 
-              {/* Requests */}
-              <div className="space-y-2.5 p-4">
+              {/* Requests — yalnız açılanda görünür */}
+              <div className="space-y-2.5 border-t border-slate-100 p-4">
                 {g.items.map((r) => {
                   const partner = r.centerId ? partnerByCenter.get(r.centerId) ?? null : null;
                   const isPartner = partner === "ACCEPTED";
@@ -219,7 +222,7 @@ export default async function DoctorPatientsPage({
                   );
                 })}
               </div>
-            </div>
+            </details>
           ))}
         </div>
       ) : (

@@ -1,4 +1,5 @@
 import {
+  ScanLine,
   BarChart3,
   LayoutDashboard,
   Building2,
@@ -113,6 +114,7 @@ export const adminNav: NavItem[] = [
   { label: "Ödənişlər", href: "/admin/odenisler", icon: <Wallet /> },
   { label: "Xidmətlər", href: "/admin/xidmetler", icon: <ListChecks /> },
   { label: "SMS", href: "/admin/sms", icon: <MessageSquare /> },
+  { label: "PACS", href: "/admin/pacs", icon: <ScanLine /> },
   { label: "Parametrlər", href: "/admin/parametrler", icon: <Settings /> },
   { label: "Jurnal", href: "/admin/jurnal", icon: <History /> },
 ];
