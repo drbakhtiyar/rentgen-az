@@ -25,12 +25,13 @@
  */
 import http from "node:http";
 import crypto from "node:crypto";
+import { readFileSync } from "node:fs";
 
 const SECRET = process.env.PACS_SHARED_SECRET;
 const ORTHANC_USER = process.env.ORTHANC_ADMIN_USER;
 const ORTHANC_PASS = process.env.ORTHANC_ADMIN_PASS;
 const ORTHANC = process.env.ORTHANC_INTERNAL_URL || "http://orthanc:8042";
-const SSO_URL = process.env.PACS_SSO_URL || "https://rentgen.az/pacs/giris";
+const LOGIN_PAGE = readFileSync(new URL("./login.html", import.meta.url));
 const SESSION_TTL = Number(process.env.PACS_SESSION_TTL_SEC || 12 * 3600);
 const COOKIE = "pacs_s";
 if (!SECRET || !ORTHANC_USER || !ORTHANC_PASS) {
@@ -179,6 +180,11 @@ const server = http.createServer(async (req, res) => {
   try {
     if (url.pathname === "/healthz") return send(200, "ok");
 
+    // PACS-ın öz giriş səhifəsi (yalnız həkim/mərkəz; API rentgen.az-dadır)
+    if (url.pathname === "/login") {
+      return send(200, LOGIN_PAGE, { "content-type": "text/html; charset=utf-8" });
+    }
+
     // rentgen.az → signed token → session cookie → OHIF
     if (url.pathname === "/open") {
       const payload = verifyToken(url.searchParams.get("t"));
@@ -209,10 +215,9 @@ const server = http.createServer(async (req, res) => {
     // forward_auth for the OHIF app: no session → bounce to rentgen.az SSO
     if (url.pathname === "/gate") {
       if (session()) return send(200);
-      const next = req.headers["x-forwarded-uri"] || "/";
       const wantsHtml = (req.headers["accept"] || "").includes("text/html");
       if (!wantsHtml) return send(401, "unauthorized");
-      return send(302, "", { location: `${SSO_URL}?next=${encodeURIComponent(safeDest(next))}` });
+      return send(302, "", { location: "/login" });
     }
 
     // who is logged in (for the OHIF header bar)

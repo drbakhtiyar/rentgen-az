@@ -23,7 +23,6 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = (request.headers.get("host") ?? "").split(":")[0].toLowerCase();
   const isCrm = host.startsWith("crm.");
-  const isPacs = host.startsWith("pacs.");
 
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const session = token ? await verifySessionToken(token) : null;
@@ -47,21 +46,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // --- PACS subdomain (pacs.rentgen.az) → /pacs qapısı --------------------
-  // 2026-08-19: DICOM arxiv subdomeni. Viewer launch-a qədər kök "tezliklə"
-  // səhifəsini verir; /viewer yolları olduğu kimi işləyir (öz qapısı var).
-  if (isPacs) {
-    if (pathname === "/" ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/pacs";
-      return NextResponse.rewrite(url);
-    }
-    if (pathname.startsWith("/viewer") || pathname.startsWith("/pacs") || pathname.startsWith("/_next") || pathname.startsWith("/api")) {
-      return NextResponse.next();
-    }
-    // qalan hər şey ana sayta
-    return NextResponse.redirect(new URL(`https://rentgen.az${pathname}`));
-  }
+  // (pacs.rentgen.az artıq Vercel-ə gəlmir — 2026-08-20-dən DNS Hetzner
+  // serverinə baxır: Orthanc + OHIF + öz giriş səhifəsi. Bax infra/pacs/.)
 
   // --- Main site (rentgen.az) — only gate protected prefixes -------------
   // The CRM login page itself is public (phone-only OTP form).

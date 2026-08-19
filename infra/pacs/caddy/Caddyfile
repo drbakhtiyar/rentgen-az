@@ -23,6 +23,9 @@ pacs.rentgen.az {
   handle /whoami {
     reverse_proxy auth:9000
   }
+  handle /login {
+    reverse_proxy auth:9000
+  }
 
   # Static brand assets for the OHIF header (logo)
   handle_path /rx/* {

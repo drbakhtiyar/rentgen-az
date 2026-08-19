@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Giriş — rentgen.az PACS</title>
+<style>
+  :root { --iris:#4f46e5; --iris-d:#4338ca; --ink:#0f172a; --pearl:#f8f7f4; --line:#e2e8f0; }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(1200px 600px at 50% -10%, #eef2ff 0%, var(--pearl) 55%);
+    font-family: Manrope, -apple-system, "Segoe UI", sans-serif; color: var(--ink); padding: 24px;
+  }
+  .card { width: 100%; max-width: 400px; background: #fff; border: 1px solid var(--line);
+    border-radius: 24px; padding: 36px 32px; box-shadow: 0 20px 50px rgba(15,23,42,.08); }
+  .brand { display: flex; align-items: center; gap: 10px; justify-content: center; }
+  .brand img { height: 34px; width: 34px; border-radius: 9px; }
+  .brand b { font-size: 19px; letter-spacing: -.01em; }
+  .brand span { color: #64748b; font-weight: 600; font-size: 14px; }
+  h1 { font-size: 15px; font-weight: 600; color: #475569; text-align: center; margin: 14px 0 24px; }
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .roles button { padding: 12px 8px; border-radius: 14px; border: 1.5px solid var(--line);
+    background: #fff; font: 600 14.5px Manrope, sans-serif; color: #475569; cursor: pointer; transition: .15s; }
+  .roles button.on { border-color: var(--iris); color: var(--iris); background: #eef2ff; }
+  label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin: 0 0 6px 4px; }
+  input { width: 100%; padding: 13px 16px; border: 1.5px solid var(--line); border-radius: 14px;
+    font: 600 16px Manrope, sans-serif; color: var(--ink); outline: none; letter-spacing: .02em; }
+  input:focus { border-color: var(--iris); }
+  .otp { letter-spacing: .35em; text-align: center; font-size: 20px; }
+  .go { width: 100%; margin-top: 16px; padding: 14px; border: 0; border-radius: 999px;
+    background: var(--iris); color: #fff; font: 700 15.5px Manrope, sans-serif; cursor: pointer; transition: .15s; }
+  .go:hover { background: var(--iris-d); }
+  .go:disabled { opacity: .55; cursor: default; }
+  .msg { min-height: 20px; margin-top: 12px; text-align: center; font-size: 13.5px; font-weight: 600; }
+  .msg.err { color: #dc2626; } .msg.ok { color: #059669; }
+  .foot { margin-top: 20px; text-align: center; font-size: 12.5px; color: #94a3b8; }
+  .foot a { color: #6366f1; text-decoration: none; font-weight: 600; }
+  .back { background: none; border: 0; color: #64748b; font: 600 13px Manrope, sans-serif;
+    cursor: pointer; margin: 14px auto 0; display: block; }
+  .hide { display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand"><img src="/rx/logo.png" alt=""><b>rentgen.az</b><span>PACS</span></div>
+  <h1>Görüntü arxivinə giriş</h1>
+
+  <div id="step1">
+    <div class="roles">
+      <button type="button" id="r-doctor" class="on">Həkim</button>
+      <button type="button" id="r-center">Mərkəz</button>
+    </div>
+    <label for="phone">Mobil nömrə</label>
+    <input id="phone" type="tel" inputmode="tel" placeholder="050 123 45 67" autocomplete="tel">
+    <button class="go" id="send">SMS kod göndər</button>
+  </div>
+
+  <div id="step2" class="hide">
+    <label for="code">SMS ilə gələn kod</label>
+    <input id="code" class="otp" type="text" inputmode="numeric" maxlength="6" placeholder="••••••">
+    <button class="go" id="verify">Daxil ol</button>
+    <button class="back" id="back">← Nömrəni dəyiş</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+  <div class="foot">Hesabınız yoxdur? <a href="https://rentgen.az/qeydiyyat" target="_blank">rentgen.az-da qeydiyyat</a></div>
+</div>
+<script>
+(function () {
+  var API = 'https://rentgen.az/api/pacs/auth';
+  var $ = function (id) { return document.getElementById(id); };
+  var role = 'doctor';
+  var phone = '';
+  ['doctor', 'center'].forEach(function (r) {
+    $('r-' + r).onclick = function () {
+      role = r;
+      $('r-doctor').classList.toggle('on', r === 'doctor');
+      $('r-center').classList.toggle('on', r === 'center');
+    };
+  });
+  function msg(t, cls) { var m = $('msg'); m.textContent = t || ''; m.className = 'msg ' + (cls || ''); }
+  function busy(id, on, label) { var b = $(id); b.disabled = on; b.textContent = on ? 'Gözləyin…' : label; }
+  function post(body) {
+    return fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Xəta baş verdi' }; }); });
+  }
+  $('send').onclick = function () {
+    phone = $('phone').value.trim();
+    if (phone.replace(/\D/g, '').length < 9) { msg('Nömrəni tam yazın', 'err'); return; }
+    msg(''); busy('send', true, 'SMS kod göndər');
+    post({ op: 'send', phone: phone }).then(function (d) {
+      busy('send', false, 'SMS kod göndər');
+      if (!d.ok) { msg(d.error || 'Xəta baş verdi', 'err'); return; }
+      $('step1').classList.add('hide'); $('step2').classList.remove('hide');
+      msg(d.devCode ? 'DEV kod: ' + d.devCode : 'Kod göndərildi', 'ok');
+      $('code').focus();
+    }).catch(function () { busy('send', false, 'SMS kod göndər'); msg('Şəbəkə xətası', 'err'); });
+  };
+  $('verify').onclick = function () {
+    var code = $('code').value.trim();
+    if (!/^\d{4,8}$/.test(code)) { msg('Kodu daxil edin', 'err'); return; }
+    msg(''); busy('verify', true, 'Daxil ol');
+    post({ op: 'verify', phone: phone, code: code }).then(function (d) {
+      busy('verify', false, 'Daxil ol');
+      if (!d.ok || !d.openUrl) { msg(d.error || 'Kod yanlışdır', 'err'); return; }
+      msg('Uğurlu — açılır…', 'ok');
+      location.href = d.openUrl;
+    }).catch(function () { busy('verify', false, 'Daxil ol'); msg('Şəbəkə xətası', 'err'); });
+  };
+  $('back').onclick = function () { $('step2').classList.add('hide'); $('step1').classList.remove('hide'); msg(''); };
+  $('phone').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('send').click(); });
+  $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('verify').click(); });
+})();
+</script>
+</body>
+</html>
