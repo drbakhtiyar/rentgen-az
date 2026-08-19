@@ -47,7 +47,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     const request = await prisma.appointmentRequest.findUnique({
       where: { id: requestId },
       select: {
-        id: true, centerId: true, status: true, name: true,
+        id: true, centerId: true, status: true, name: true, phone: true,
         patient: { select: { userId: true } },
         doctor: { select: { userId: true } },
         doctorId: true,
@@ -80,7 +80,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
     if (request.doctorId && request.doctor?.userId && status !== "NEW") {
       const label = status === "COMPLETED" ? "tamamlandı" : status === "CANCELLED" ? "ləğv edildi" : "mərkəzlə əlaqədədir";
-      notifyUser(request.doctor.userId, "STATUS_UPDATE", "Göndərdiyiniz pasiyent üzrə yeniləmə", `${request.name || "Pasiyent"} — ${center.name}: müraciət ${label}.`, "/hekim/pasiyentler").catch(() => {});
+      notifyUser(request.doctor.userId, "STATUS_UPDATE", "Göndərdiyiniz pasiyent üzrə yeniləmə", `${request.name || "Pasiyent"} — ${center.name}: müraciət ${label}.`, `/hekim/pasiyentler?p=${request.phone.replace(/\D/g, "").slice(-9)}`).catch(() => {});
     }
 
     return NextResponse.json({ ok: true, status });

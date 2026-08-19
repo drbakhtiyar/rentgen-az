@@ -184,13 +184,16 @@ export default async function DoctorDashboardPage() {
           }
         >
           {groups.length > 0 ? (
-            <div className="space-y-4">
-              {groups.map((g) => (
-                <div
+            /* 2026-08-20: İcmalda SON 3 pasiyent, kompakt açılan bloklar
+               (Pasiyentlər səhifəsi ilə eyni naxış) */
+            <div className="space-y-2.5">
+              {groups.slice(0, 3).map((g) => (
+                <details
                   key={g.phone}
-                  className="rounded-xl border border-slate-100 p-4"
+                  name="icmal-pasiyent"
+                  className="group overflow-hidden rounded-xl border border-slate-100"
                 >
-                  <div className="flex flex-wrap items-center gap-2">
+                  <summary className="flex cursor-pointer list-none flex-wrap items-center gap-2 px-4 py-3 transition-colors hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
                     <span className="font-semibold text-ink-900">{g.name}</span>
                     <span className="text-sm text-slate-500">
                       {formatPhoneDisplay(g.phone)}
@@ -198,8 +201,9 @@ export default async function DoctorDashboardPage() {
                     <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
                       {g.items.length} {t.requestsWord}
                     </span>
-                  </div>
-                  <ul className="mt-3 divide-y divide-slate-100">
+                    <span className="ml-auto text-slate-300 transition-transform group-open:rotate-90">›</span>
+                  </summary>
+                  <ul className="divide-y divide-slate-100 border-t border-slate-100 px-4 pb-2">
                     {g.items.map((r) => {
                       const partner = r.centerId
                         ? partnerByCenter.get(r.centerId) ?? null
@@ -256,7 +260,7 @@ export default async function DoctorDashboardPage() {
                       );
                     })}
                   </ul>
-                </div>
+                </details>
               ))}
             </div>
           ) : (

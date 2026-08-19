@@ -8,6 +8,40 @@ export type SuggestOption = { value: string; label: string };
 const azLower = (s: string) => s.toLocaleLowerCase("az");
 
 /**
+ * Ağıllı uyğunluq (2026-08-20): diakritik fold (ə→e/a, ş→s...), translit
+ * (sh→ş, ch→ç), və hərf-buraxma dözümü — «bakl» → «Bakı», «gence» → «Gəncə».
+ * specializations-picker ilə eyni fəlsəfə.
+ */
+const fold = (x: string, eAsA = false) =>
+  x
+    .toLowerCase()
+    .replace(/i̇/g, "i")
+    .replace(/ə/g, eAsA ? "a" : "e")
+    .replace(/[ıî]/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ü/g, "u")
+    .replace(/ç/g, "c")
+    .replace(/ş/g, "s")
+    .replace(/ğ/g, "g")
+    .replace(/sh/g, "s")
+    .replace(/ch/g, "c");
+
+function subseq(needle: string, hay: string): boolean {
+  let i = 0;
+  for (const ch of hay) if (ch === needle[i]) i++;
+  return i === needle.length;
+}
+
+function smartMatch(label: string, query: string): boolean {
+  const l1 = fold(label);
+  const l2 = fold(label, true);
+  const q1 = fold(query);
+  if (l1.includes(q1) || l2.includes(q1)) return true;
+  // Hərf-buraxma yalnız 4+ hərfdə — qısa sorğuda hər şeyə uyğun gəlir
+  return q1.length >= 4 && (subseq(q1, l1) || subseq(q1, l2));
+}
+
+/**
  * Autocomplete combobox: type ≥3 letters, matching options appear as
  * suggestions (list order is preserved — pre-ranked lists keep their ranking).
  * Selecting stores option.value in a hidden input; free text without a pick
@@ -38,7 +72,7 @@ export function SuggestInput({
   const [open, setOpen] = React.useState(false);
   const query = azLower(text.trim());
   const matches =
-    query.length >= 3 ? options.filter((o) => azLower(o.label).includes(query)).slice(0, 8) : [];
+    query.length >= 3 ? options.filter((o) => smartMatch(o.label, query)).slice(0, 8) : [];
 
   function pick(o: SuggestOption) {
     setPicked(o.value);

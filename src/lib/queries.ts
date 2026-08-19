@@ -852,20 +852,27 @@ export async function getApprovedDoctors(filters: DoctorFilters = {}) {
   const where: Prisma.DoctorProfileWhereInput = { status: "APPROVED" };
   if (filters.city) where.city = filters.city;
   if (filters.spec) where.specializations = { has: filters.spec };
-  if (filters.q) {
-    where.OR = [
-      { firstName: { contains: filters.q, mode: "insensitive" } },
-      { lastName: { contains: filters.q, mode: "insensitive" } },
-      { clinic: { contains: filters.q, mode: "insensitive" } },
-    ];
-  }
   return safe(
-    () =>
-      prisma.doctorProfile.findMany({
+    async () => {
+      const rows = await prisma.doctorProfile.findMany({
         where,
         // Paid tiers (Gold/Platinum) rank first, then alphabetical.
         orderBy: [{ plan: "desc" }, { firstName: "asc" }],
-      }),
+      });
+      // Diakritik-aqnostik ad axtarışı (2026-08-20): «bext» → «Bəxtiyar»,
+      // «memmedov» → «Məmmədov». Mərkəz axtarışındakı foldAz məntiqi —
+      // həkim sayı azdır, JS filtri SQL contains-dən dəqiqdir.
+      const nq = filters.q ? foldQuery(filters.q) : "";
+      if (nq.length < 2) return rows;
+      const nqTight = nq.replace(/ /g, "");
+      return rows.filter((d) => {
+        const full = [d.firstName, d.lastName, d.fatherName ?? "", d.clinic ?? ""].join(" ");
+        const n1 = foldAz(full);
+        const n2 = foldAz(full, true);
+        if (n1.includes(nq) || n2.includes(nq)) return true;
+        return n1.replace(/ /g, "").includes(nqTight) || n2.replace(/ /g, "").includes(nqTight);
+      });
+    },
     [],
   );
 }

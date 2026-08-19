@@ -329,7 +329,7 @@ export async function updateRequestStatusAction(
         "STATUS_UPDATE",
         "Göndərdiyiniz pasiyent üzrə yeniləmə",
         `${req.name || "Pasiyent"} — ${center.name}: müraciət ${label}.`,
-        "/hekim/pasiyentler",
+        `/hekim/pasiyentler?p=${req.phone.replace(/\D/g, "").slice(-9)}`,
       );
     }
     const STATUS_AZ: Record<string, string> = {

@@ -97,6 +97,7 @@ async function notifyResultUploaded(requestId: string): Promise<void> {
       where: { id: requestId },
       select: {
         name: true,
+        phone: true,
         centerId: true,
         doctorId: true,
         patient: { select: { userId: true } },
@@ -124,7 +125,7 @@ async function notifyResultUploaded(requestId: string): Promise<void> {
           "RESULT_READY",
           "Pasiyentin rentgeni hazırdır",
           `${r.name} pasiyentin rentgen faylı yükləndi.`,
-          "/hekim/pasiyentler",
+          `/hekim/pasiyentler?p=${r.phone.replace(/\D/g, "").slice(-9)}`,
         );
       }
     }

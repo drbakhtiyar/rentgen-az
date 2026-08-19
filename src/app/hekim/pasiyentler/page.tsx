@@ -44,12 +44,14 @@ function prettifySlug(slug: string): string {
 export default async function DoctorPatientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; p?: string }>;
 }) {
   const { doctor, isOwner } = await requireDoctor("/hekim/pasiyentler");
   const canView = await viewerEnabled();
 
-  const { q } = await searchParams;
+  const { q, p } = await searchParams;
+  // Bildirişdən gələn pasiyent (?p=son9rəqəm) — bloku açıq gəlir (2026-08-20)
+  const openPhone = (p ?? "").replace(/\D/g, "").slice(-9);
   const query = (q ?? "").trim();
 
   const where: Prisma.AppointmentRequestWhereInput = { doctorId: doctor.id };
@@ -150,6 +152,7 @@ export default async function DoctorPatientsPage({
               /* name atributu = eksklüziv akkordeon: biri açılanda digəri
                  bağlanır (native HTML, JS-siz) — 2026-08-19 istifadəçi istəyi */
               name="pasiyent"
+              open={!!openPhone && g.phone.replace(/\D/g, "").endsWith(openPhone)}
               className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[var(--shadow-soft)] open:col-span-full"
             >
               {/* Patient header — klik açır/bağlayır */}
