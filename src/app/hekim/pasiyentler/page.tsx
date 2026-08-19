@@ -147,6 +147,9 @@ export default async function DoctorPatientsPage({
           {groups.map((g) => (
             <details
               key={g.phone}
+              /* name atributu = eksklüziv akkordeon: biri açılanda digəri
+                 bağlanır (native HTML, JS-siz) — 2026-08-19 istifadəçi istəyi */
+              name="pasiyent"
               className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[var(--shadow-soft)] open:col-span-full"
             >
               {/* Patient header — klik açır/bağlayır */}
