@@ -280,7 +280,7 @@ const server = http.createServer(async (req, res) => {
         const r = await fetch(`${RENTGEN_API}/api/pacs/ai`, {
           method: "POST",
           headers: { "content-type": "application/json", authorization: `Bearer ${svcToken}` },
-          body: JSON.stringify({ images: body.images, context }),
+          body: JSON.stringify({ images: body.images, messages: body.messages, context }),
           signal: AbortSignal.timeout(115_000),
         });
         const data = await r.json().catch(() => ({ ok: false, error: "Cavab oxunmadı" }));
