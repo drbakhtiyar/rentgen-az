@@ -22,7 +22,11 @@ const STRONG: RegExp[] = [
   // AZ: "mesajınız/sualınız … cavablandırılacaq"
   /(mesaj[ıi]n[ıi]z|sual[ıi]n[ıi]z|müraciətiniz)[^.!?]{0,70}cavabland[ıi]r[ıi]lacaq/iu,
   /(ən )?q[ıi]sa zamanda[^.!?]{0,50}(cavab|əlaqə saxlan)/iu,
-  /tezliklə[^.!?]{0,40}cavabland/iu,
+  // 2026-08-20: MediYus keysi — "Mesajınız üçün təşəkkür edirik. Biz hal-hazırda
+  // cavablaya bilməsək də, tezliklə cavab verəcəyik." heç birinə düşmürdü.
+  /(mesaj|müraciət|sual)[ıi]n[ıi]z[^.!?]{0,40}(üçün|görə)[^.!?]{0,25}təşəkkür/iu,
+  /tezliklə[^.!?]{0,40}cavab/iu,
+  /hal-haz[ıi]rda[^.!?]{0,40}cavab[^.!?]{0,30}bilmə/iu,
   /operator(umuz)? tərəfindən[^.!?]{0,50}cavab/iu,
   /bu (mesaj|cavab) avtomatik/iu,
   // RU

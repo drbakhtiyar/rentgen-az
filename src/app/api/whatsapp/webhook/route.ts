@@ -323,6 +323,10 @@ export async function POST(request: Request): Promise<Response> {
       if (res.ok && res.answer) {
         await sendWaText(m.from, res.answer);
         await mirror(m.from, m.text.body, res.answer);
+      } else if (res.silent) {
+        // Model qəsdən boş cavab qaytardı (adətən tanınmayan şablon-cavaba) —
+        // heç nə göndərmirik, yalnız qeyd düşür (2026-08-20, MediYus keysi).
+        await mirror(m.from, m.text.body, null, "🤫 AI qəsdən susdu (boş cavab) — mesaj cavabsız saxlanıldı");
       } else {
         const sent = await sendWaText(m.from, AI_FALLBACK);
         await mirror(

@@ -77,7 +77,7 @@ export async function askClaude(
   // məlumat toplama) qaydaları ardıcıl pozurdu (2026-08-11 testləri).
   // Panel yardımçısı Haiku-da qalır — sadə Q&A üçün kifayətdir və ucuzdur.
   model: "haiku" | "sonnet" = "haiku",
-): Promise<{ ok: boolean; answer?: string; error?: string }> {
+): Promise<{ ok: boolean; answer?: string; error?: string; empty?: boolean }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return {
@@ -110,7 +110,9 @@ export async function askClaude(
       .map((b) => b.text)
       .join("\n")
       .trim();
-    if (!answer) return { ok: false, error: "Cavab alınmadı. Yenidən cəhd edin." };
+    // Boş cavab ≠ nasazlıq: model (qaydalara görə) qəsdən susmuş ola bilər —
+    // çağıran tərəf `empty` bayrağı ilə fərqləndirir (2026-08-20, MediYus keysi).
+    if (!answer) return { ok: false, empty: true, error: "Cavab alınmadı. Yenidən cəhd edin." };
     return { ok: true, answer };
   } catch (e) {
     console.error("[ai-assistant] request failed:", (e as Error).message);
