@@ -76,11 +76,17 @@ pacs.rentgen.az {
     reverse_proxy ohif:80
   }
 
-  # Everything else → OHIF viewer, but only with a session (else 302 → rentgen.az SSO)
+  # Everything else → OHIF viewer, but only with a session (else 302 → /login).
+  # SPA marşrutları (uzantısız yollar) KEŞLƏNMİR — sessiya bitəndə brauzer köhnə
+  # index.html-i keşdən açıb qara ekranda qalmasın (2026-08-20 dərsi).
   handle {
     forward_auth auth:9000 {
       uri /gate
     }
+    @spa {
+      not path *.js *.css *.map *.png *.jpg *.gif *.ico *.svg *.wasm *.json *.woff *.woff2 *.webmanifest
+    }
+    header @spa Cache-Control "no-cache, no-store, must-revalidate"
     reverse_proxy ohif:80
   }
 
