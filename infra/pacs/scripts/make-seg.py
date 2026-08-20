@@ -48,7 +48,30 @@ LATIN = {
     "sternocleidomastoid_right": "M. sternocleidomastoideus dex.",
     "atlas_C1": "Atlas (C1)", "axis_C2": "Axis (C2)",
 }
+DENTAL = {
+    "lower_jawbone": "Mandibula", "upper_jawbone": "Maxilla",
+    "left_inferior_alveolar_canal": "Canalis mandibulae sin. (n. alveolaris inf.)",
+    "right_inferior_alveolar_canal": "Canalis mandibulae dex. (n. alveolaris inf.)",
+    "left_maxillary_sinus": "Sinus maxillaris sin.", "right_maxillary_sinus": "Sinus maxillaris dex.",
+    "pharynx": "Pharynx", "bridge": "Pons prothetica (körpü)", "crown": "Corona prothetica", "implant": "Implantum",
+}
+TOOTH_TYPE = {
+    "central_incisor": "Dens incisivus centralis", "lateral_incisor": "Dens incisivus lateralis",
+    "canine": "Dens caninus", "first_premolar": "Dens premolaris I", "second_premolar": "Dens premolaris II",
+    "first_molar": "Dens molaris I", "second_molar": "Dens molaris II", "third_molar": "Dens molaris III",
+}
+import re as _re
 def latin(name: str) -> str:
+    if name in DENTAL:
+        return DENTAL[name]
+    m = _re.match(r"^(upper|lower)_(right|left)_(.+?)(_pulp)?_fdi(\d+)$", name)
+    if m:
+        jaw, side, ttype, pulp, fdi = m.groups()
+        base = TOOTH_TYPE.get(ttype, ttype.replace("_", " ").title())
+        lat = f"{base} {'sup.' if jaw == 'upper' else 'inf.'} {'dex.' if side == 'right' else 'sin.'}"
+        if pulp:
+            lat = f"Pulpa — {lat}"
+        return f"{lat} ({fdi})"
     if name in LATIN:
         return LATIN[name]
     n = name
