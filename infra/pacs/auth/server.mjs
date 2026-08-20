@@ -242,6 +242,15 @@ const server = http.createServer(async (req, res) => {
       const s = session();
       if (!s) return send(401, "unauthorized");
       const fwdUri = req.headers["x-forwarded-uri"] || "/";
+      const fwdMethod = (req.headers["x-forwarded-method"] || "GET").toUpperCase();
+      // STOW (ölçmə SR / seqmentasiya saxlanması): POST /dicom-web/studies[/uid].
+      // Study-scoped URL varsa adi yoxlamadan keçir; kök STOW üçün istənilən
+      // etibarlı sessiyaya icazə veririk (autentifikasiyalı həkim/mərkəz).
+      if (fwdMethod === "POST" && /\/dicom-web\/studies(\/[0-9.]+)?$/.test(new URL(fwdUri, "http://x").pathname.replace(/^\/orthanc/, ""))) {
+        const want = requestedStudies(fwdUri);
+        if (!want || (await allowed(s, fwdUri))) return send(200, "", { authorization: ADMIN_BASIC });
+        return send(403, "forbidden");
+      }
       if (!(await allowed(s, fwdUri))) return send(403, "forbidden");
       return send(200, "", { authorization: ADMIN_BASIC });
     }

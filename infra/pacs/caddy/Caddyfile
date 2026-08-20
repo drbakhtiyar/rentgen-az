@@ -34,8 +34,13 @@ pacs.rentgen.az {
     file_server
   }
 
-  # OHIF study list → scoped by the session (auth service filters by labels)
-  handle /orthanc/dicom-web/studies {
+  # OHIF study list (yalnız GET) → scoped by the session (auth filters by labels).
+  # POST /dicom-web/studies = STOW (ölçmə SR/SEG saxlanması) → adi /verify yolu ilə gedir.
+  @qidoStudies {
+    method GET
+    path /orthanc/dicom-web/studies
+  }
+  handle @qidoStudies {
     rewrite * /qido-studies?{query}
     reverse_proxy auth:9000
   }

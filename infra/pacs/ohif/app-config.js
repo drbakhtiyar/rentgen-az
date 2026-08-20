@@ -24,7 +24,16 @@ window.config = {
   showStudyList: true,
   extensions: [],
   modes: [],
-  customizationService: {},
+  customizationService: {
+    'cornerstone.windowLevelPresets': {
+      CT: [
+        { id: 'ct-bone', description: 'Sümük', window: '2500', level: '480' },
+        { id: 'ct-soft', description: 'Yumşaq toxuma', window: '400', level: '40' },
+        { id: 'ct-dental', description: 'Dental (geniş)', window: '4094', level: '1048' },
+        { id: 'ct-lung', description: 'Ağciyər', window: '1500', level: '-600' },
+      ],
+    },
+  },
   investigationalUseDialog: { option: 'never' },
   whiteLabeling: {
     createLogoComponentFn: function (React) {
