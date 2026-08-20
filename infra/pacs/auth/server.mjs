@@ -291,6 +291,43 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // Seqmentasiya: sifariş + status (fayl-növbə; host cron seg-worker.sh icra edir)
+    if (url.pathname === "/segment" && req.method === "POST") {
+      const s = session();
+      if (!s) return json(401, { ok: false, error: "Sessiya bitib" });
+      let raw = ""; for await (const c of req) { raw += c; if (raw.length > 10000) break; }
+      let body = {}; try { body = JSON.parse(raw); } catch {}
+      const studyUid = typeof body.studyUid === "string" ? body.studyUid.trim() : "";
+      const task = ["teeth", "total", "craniofacial_structures", "headneck_bones_vessels"].includes(body.task) ? body.task : "total";
+      if (!studyUid) return json(400, { ok: false, error: "studyUid yoxdur" });
+      if (!(await sessionAllowsStudy(s, studyUid))) return json(403, { ok: false, error: "forbidden" });
+      const st = await studyByUid(studyUid);
+      if (!st) return json(404, { ok: false, error: "Tədqiqat tapılmadı" });
+      const fs = await import("node:fs/promises");
+      await fs.mkdir("/jobs", { recursive: true });
+      const running = await fs.access(`/jobs/${st.id}.running`).then(() => true).catch(() => false);
+      const queued = await fs.access(`/jobs/${st.id}.job`).then(() => true).catch(() => false);
+      if (!running && !queued) {
+        await fs.writeFile(`/jobs/${st.id}.job`, task);
+        await fs.rm(`/jobs/${st.id}.status`, { force: true });
+      }
+      return json(200, { ok: true, status: running ? "running" : "queued" });
+    }
+    if (url.pathname === "/segment-status") {
+      const s = session();
+      if (!s) return json(401, { ok: false });
+      const studyUid = url.searchParams.get("studyUid") || "";
+      if (!studyUid || !(await sessionAllowsStudy(s, studyUid))) return json(403, { ok: false });
+      const st = await studyByUid(studyUid);
+      if (!st) return json(404, { ok: false });
+      const fs = await import("node:fs/promises");
+      if (await fs.access(`/jobs/${st.id}.running`).then(() => true).catch(() => false)) return json(200, { ok: true, status: "running" });
+      if (await fs.access(`/jobs/${st.id}.job`).then(() => true).catch(() => false)) return json(200, { ok: true, status: "queued" });
+      const raw = await fs.readFile(`/jobs/${st.id}.status`, "utf8").catch(() => null);
+      if (raw) { try { return json(200, { ok: true, ...JSON.parse(raw) }); } catch {} }
+      return json(200, { ok: true, status: "none" });
+    }
+
     // forward_auth for /orthanc/*
     if (url.pathname === "/verify") {
       // Caller brings its own credentials (gateway peers, admin curl) → let Orthanc decide.

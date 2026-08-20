@@ -26,6 +26,12 @@ pacs.rentgen.az {
   handle /login {
     reverse_proxy auth:9000
   }
+  handle /segment {
+    reverse_proxy auth:9000
+  }
+  handle /segment-status {
+    reverse_proxy auth:9000
+  }
   handle /ai {
     request_body {
       max_size 14MB

@@ -96,6 +96,8 @@
     var actions = el('div', 'display:flex;gap:8px;align-items:center;');
     var sel = el('button', 'background:none;border:1px solid rgba(129,140,248,.5);border-radius:8px;color:#a5b4fc;font-size:12px;padding:3px 10px;cursor:pointer;', '\u25a3 Sah\u0259 se\u00e7');
     sel.onclick = startRegionSelect;
+    var segb = el('button', 'background:none;border:1px solid rgba(52,211,153,.5);border-radius:8px;color:#6ee7b7;font-size:12px;padding:3px 10px;cursor:pointer;', '\ud83e\uddb4 Seqment');
+    segb.onclick = requestSegmentation;
     var copy = el('button', 'background:none;border:1px solid rgba(148,163,184,.35);border-radius:8px;color:#94a3b8;font-size:12px;padding:3px 10px;cursor:pointer;', 'Kopyala');
     copy.onclick = function () {
       var last = convo.filter(function (m) { return m.role === 'assistant'; }).pop();
@@ -103,7 +105,7 @@
     };
     var close = el('button', 'background:none;border:0;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;', '\u00d7');
     close.onclick = function () { p.remove(); };
-    actions.appendChild(sel); actions.appendChild(copy); actions.appendChild(close); head.appendChild(actions);
+    actions.appendChild(sel); actions.appendChild(segb); actions.appendChild(copy); actions.appendChild(close); head.appendChild(actions);
     var body = el('div', 'flex:1 1 auto;padding:12px 14px;color:#cbd5e1;font-size:13.5px;line-height:1.55;overflow:auto;');
     body.id = PANEL_ID + '-body';
     var foot = el('div', 'flex:0 0 auto;display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(148,163,184,.25);');
@@ -192,6 +194,43 @@
       addMsg('user', q);
       callApi('Cavab haz\u0131rlan\u0131r\u2026');
     });
+  }
+
+  // ---------- seqmentasiya ----------
+  var segPolling = false;
+  function requestSegmentation() {
+    ensurePanel();
+    var modality = /\bMR\b/.test(document.body.innerText) ? 'MR' : 'CT';
+    var task = 'teeth';
+    try {
+      var t = prompt('Seqmentasiya n\u00f6v\u00fc:\n  teeth \u2014 dental CBCT (di\u015fl\u0259r FDI il\u0259, \u00e7\u0259n\u0259l\u0259r, kanallar, sinuslar)\n  total \u2014 b\u00fct\u00fcn b\u0259d\u0259n CT (104 struktur)\n  headneck_bones_vessels \u2014 ba\u015f-boyun s\u00fcm\u00fck/damar', 'teeth');
+      if (t === null) return;
+      task = (t || 'teeth').trim();
+    } catch (e) {}
+    addMsg('sys', 'Seqmentasiya sifari\u015f edildi (' + task + ') \u2014 CPU serverd\u0259 5-20 d\u0259q \u00e7\u0259k\u0259 bil\u0259r. Haz\u0131r olanda bildiri\u015f g\u0259l\u0259c\u0259k, s\u0259hif\u0259ni yenil\u0259yin.');
+    fetch('/segment', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studyUid: getStudyUid(), task: task }),
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.ok) { addMsg('sys', 'X\u0259ta: ' + (d.error || '')); return; }
+      if (!segPolling) { segPolling = true; pollSeg(); }
+    }).catch(function () { addMsg('sys', '\u015e\u0259b\u0259k\u0259 x\u0259tas\u0131.'); });
+  }
+  function pollSeg() {
+    setTimeout(function () {
+      fetch('/segment-status?studyUid=' + encodeURIComponent(getStudyUid()), { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.status === 'done') {
+            segPolling = false;
+            addMsg('sys', '\u2705 Seqmentasiya haz\u0131rd\u0131r! S\u0259hif\u0259ni yenil\u0259yin (\u2318R) \u2014 sol panel\u0259 SEG seriyas\u0131 d\u00fc\u015f\u0259c\u0259k; \u00fcz\u0259rin\u0259 iki d\u0259f\u0259 klik \u2192 r\u0259ngli strukturlar + adlar sa\u011f "Segmentation" panelind\u0259.');
+          } else if (d.status === 'failed') {
+            segPolling = false;
+            addMsg('sys', '\u274c Seqmentasiya al\u0131nmad\u0131: ' + (d.error || ''));
+          } else { pollSeg(); }
+        }).catch(function () { pollSeg(); });
+    }, 20000);
   }
 
   // ---------- sahə seçimi ----------

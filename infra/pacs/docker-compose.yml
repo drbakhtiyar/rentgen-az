@@ -40,6 +40,7 @@ services:
     volumes:
       - ./auth/server.mjs:/app/server.mjs:ro
       - ./auth/login.html:/app/login.html:ro
+      - ./seg-jobs:/jobs
     expose: ["9000"]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9000/healthz >/dev/null || exit 1"]
