@@ -31,7 +31,9 @@ cleanup_fail() {
 curl -sf -u "$AUTH" "$O/studies/$sid/archive" -o "$W/study.zip" || cleanup_fail "orthanc export"
 unzip -q "$W/study.zip" -d "$W/src" || cleanup_fail "unzip"
 
-/root/segvenv/bin/TotalSegmentator -i "$W/src" -o "$W/out" --ml -ta "$task" -d cpu > "$W/ts.log" 2>&1 \
+/root/segvenv/bin/python /opt/pacs/scripts/prep-nifti.py "$W/src" "$W/vol.nii.gz" > "$W/prep.log" 2>&1 \
+  || cleanup_fail "prep-nifti ($(tail -1 "$W/prep.log" | cut -c1-120))"
+/root/segvenv/bin/TotalSegmentator -i "$W/vol.nii.gz" -o "$W/out" --ml -ta "$task" -d cpu > "$W/ts.log" 2>&1 \
   || cleanup_fail "TotalSegmentator ($(tail -1 "$W/ts.log" | tr -d '"' | cut -c1-120))"
 
 NII=$(ls "$W"/out*.nii.gz "$W"/out/*.nii.gz 2>/dev/null | head -1)

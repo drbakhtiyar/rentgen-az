@@ -91,6 +91,18 @@ lab = np.asanyarray(nii.dataobj)  # (X, Y, Z) LPS/RAS...
 # əvəzinə TotalSegmentator-un dicom girişində saxladığı sıraya güvənirik:
 lab = np.flip(np.transpose(lab, (2, 1, 0)), axis=(0,))  # (Z,Y,X) → slice sırası
 lab = np.ascontiguousarray(lab)
+# kiçildilmiş çıxışı mənbə ölçüsünə qaytar
+tgt = (len(sources), int(sources[0].Rows), int(sources[0].Columns))
+if lab.shape != tgt:
+    fz = max(1, round(tgt[0] / lab.shape[0]))
+    fy = max(1, round(tgt[1] / lab.shape[1]))
+    fx = max(1, round(tgt[2] / lab.shape[2]))
+    if (fz, fy, fx) != (1, 1, 1):
+        lab = np.repeat(np.repeat(np.repeat(lab, fz, 0), fy, 1), fx, 2)
+    lab = lab[: tgt[0], : tgt[1], : tgt[2]]
+    if lab.shape != tgt:
+        pad = [(0, tgt[i] - lab.shape[i]) for i in range(3)]
+        lab = np.pad(lab, pad)
 # mənbə slice sayı ilə uyğunluq
 if lab.shape[0] != len(sources):
     # bəzi hallarda Z tərs olur
