@@ -44,6 +44,8 @@ const foldAz = (s: string, eAsA = false) =>
     .replace(/ç/g, "c")
     .replace(/ş/g, "s")
     .replace(/ğ/g, "g")
+    // «ayag» → «ayaq» tipli yazılışlar üçün q/g birləşdirilir (2026-08-21)
+    .replace(/q/g, "g")
     .replace(/\s+/g, " ")
     .trim();
 const foldQuery = (q: string) =>
@@ -69,6 +71,27 @@ export async function centerIdsForNameQuery(q: string): Promise<string[] | null>
         return n1.replace(/ /g, "").includes(nqTight) || n2.replace(/ /g, "").includes(nqTight);
       })
       .map((r) => r.id);
+
+    // Xidmət adına görə də axtar (2026-08-21): «ayag rentgeni» mərkəz adı
+    // deyil, xidmətdir — o xidməti təklif edən mərkəzlər nəticəyə qatılır.
+    const services = await prisma.service.findMany({ select: { id: true, name: true } });
+    const svcIds = services
+      .filter((sv) => {
+        const s1 = foldAz(sv.name);
+        const s2 = foldAz(sv.name, true);
+        if (s1.includes(nq) || s2.includes(nq)) return true;
+        const nqTight = nq.replace(/ /g, "");
+        return s1.replace(/ /g, "").includes(nqTight) || s2.replace(/ /g, "").includes(nqTight);
+      })
+      .map((sv) => sv.id);
+    if (svcIds.length) {
+      const cs = await prisma.centerService.findMany({
+        where: { serviceId: { in: svcIds }, center: { status: "APPROVED" } },
+        select: { centerId: true },
+      });
+      for (const c of cs) if (!ids.includes(c.centerId)) ids.push(c.centerId);
+    }
+
     return ids;
   } catch {
     return null;

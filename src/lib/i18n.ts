@@ -493,8 +493,8 @@ const az: Dict = {
     allServices: "Bütün xidmətlər",
     city: "Rayon / şəhər",
     allCities: "Bütün rayonlar",
-    centerName: "Mərkəz adı",
-    centerNamePlaceholder: "Mərkəzin adı",
+    centerName: "Mərkəz və ya xidmət adı",
+    centerNamePlaceholder: "Mərkəz və ya xidmət adı",
   },
   hero: {
     badge: "Azərbaycanın rentgen platforması",
@@ -1031,8 +1031,8 @@ const ru: Dict = {
     allServices: "Все услуги",
     city: "Район / город",
     allCities: "Все районы",
-    centerName: "Название центра",
-    centerNamePlaceholder: "Название центра",
+    centerName: "Центр или услуга",
+    centerNamePlaceholder: "Центр или услуга",
   },
   hero: {
     badge: "Рентген-платформа Азербайджана",

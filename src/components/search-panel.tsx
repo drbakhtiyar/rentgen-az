@@ -23,8 +23,8 @@ const AZ_LABELS: SearchLabels = {
   allServices: "Bütün xidmətlər",
   city: "Rayon / şəhər",
   allCities: "Bütün rayonlar",
-  centerName: "Mərkəz adı",
-  centerNamePlaceholder: "Mərkəzin adı",
+  centerName: "Mərkəz və ya xidmət adı",
+  centerNamePlaceholder: "Mərkəz və ya xidmət adı",
   search: "Axtar",
 };
 

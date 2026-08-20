@@ -36,7 +36,7 @@ unzip -q "$W/study.zip" -d "$W/src" || cleanup_fail "unzip"
 /root/segvenv/bin/TotalSegmentator -i "$W/vol.nii.gz" -o "$W/out" --ml -ta "$task" -d cpu > "$W/ts.log" 2>&1 \
   || cleanup_fail "TotalSegmentator ($(tail -1 "$W/ts.log" | tr -d '"' | cut -c1-120))"
 
-NII=$(ls "$W"/out*.nii.gz "$W"/out/*.nii.gz 2>/dev/null | head -1)
+NII=$(ls "$W"/out*.nii.gz "$W"/out*.nii "$W"/out/*.nii.gz "$W"/out/*.nii 2>/dev/null | head -1)
 [ -z "$NII" ] && cleanup_fail "nii tapılmadı"
 
 /root/segvenv/bin/python /opt/pacs/scripts/make-seg.py "$W/src" "$NII" "$task" "$W/seg.dcm" > "$W/seg.log" 2>&1 \
