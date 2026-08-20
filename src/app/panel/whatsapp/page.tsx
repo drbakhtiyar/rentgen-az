@@ -24,16 +24,20 @@ export const metadata: Metadata = buildMetadata({
  * spam siqnalı yaranmasın. Bax `src/lib/price-invite.ts`.
  */
 export default async function OperatorWhatsappPage(props: {
-  searchParams: Promise<{ q?: string; tab?: string }>;
+  searchParams: Promise<{ q?: string; tab?: string; mix?: string }>;
 }) {
   const user = await requireRole(["OPERATOR", "ADMIN"], "/panel");
-  const { q = "", tab } = await props.searchParams;
+  const { q = "", tab, mix: mixRaw } = await props.searchParams;
+  const mix = Math.max(0, parseInt(mixRaw ?? "", 10) || 0);
   const kind =
     tab === "faq" ? ("faq" as const)
     : tab === "card" ? ("card" as const)
     : tab === "cabinet" ? ("cabinet" as const)
     : ("price" as const);
-  const [{ remaining, candidates }, used] = await Promise.all([todaysBatch(kind), sentToday()]);
+  const [{ remaining, candidates, poolTotal, pageCount }, used] = await Promise.all([
+    todaysBatch(kind, mix),
+    sentToday(),
+  ]);
 
   return (
     <OperatorShell
@@ -100,6 +104,27 @@ export default async function OperatorWhatsappPage(props: {
       </Card>
 
       <WaSearch q={q} basePath="/panel/whatsapp" kind={kind} extraParams={kind === "price" ? {} : { tab: kind }} />
+
+      {/* «Mix» (2026-08-20): hər klik növbəti 20-lik dəstəni gətirir —
+          eyni siyahı stabil qalmasın, başqa mərkəzlər də görünsün */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-slate-500">
+          Namizəd hovuzu: <strong className="text-ink-900">{poolTotal}</strong> mərkəz
+          {pageCount > 1 && (
+            <span className="ml-1.5 text-slate-400">
+              (dəstə {(mix % pageCount) + 1} / {pageCount} — hər dəstə 20)
+            </span>
+          )}
+        </p>
+        {pageCount > 1 && (
+          <Link
+            href={`/panel/whatsapp?${new URLSearchParams({ ...(kind === "price" ? {} : { tab: kind }), ...(q ? { q } : {}), mix: String(mix + 1) }).toString()}`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-iris-pulse px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-iris-glow"
+          >
+            🔀 Mix — başqalarını göstər
+          </Link>
+        )}
+      </div>
 
       {candidates.length > 0 ? (
         <div className="space-y-3">

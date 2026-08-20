@@ -232,7 +232,10 @@ const COOLDOWN_DAYS = 7;
  */
 export async function todaysBatch(
   kind: WaKind = "price",
-): Promise<{ remaining: number; candidates: WaCandidate[] }> {
+  /** «Mix» sayğacı (2026-08-20): hər klikdə növbəti 20-lik pəncərə göstərilir —
+      siyahı stabil qalmasın, başqa mərkəzlər də çıxsın. */
+  mix = 0,
+): Promise<{ remaining: number; candidates: WaCandidate[]; poolTotal: number; pageCount: number }> {
   const used = await sentToday();
   const remaining = Math.max(0, WA_DAILY_LIMIT - used);
 
@@ -320,18 +323,28 @@ export async function todaysBatch(
     scored.push({ c, score, reason: why.join(" · ") });
   }
 
-  const pool = scored
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        (b.c.googleReviewCount ?? 0) - (a.c.googleReviewCount ?? 0),
-    )
-    .slice(0, remaining);
+  const sorted = scored.sort(
+    (a, b) =>
+      b.score - a.score ||
+      (b.c.googleReviewCount ?? 0) - (a.c.googleReviewCount ?? 0),
+  );
+
+  // Hər tabda 20 mərkəz; «Mix» növbəti 20-liyi gətirir (dairəvi). Göndərmə
+  // limiti ekranı kəsmir — limit dolanda göndərmə düyməsi onsuz da bloklanır.
+  const WINDOW = 20;
+  const poolTotal = sorted.length;
+  const pageCount = Math.max(1, Math.ceil(poolTotal / WINDOW));
+  let pool: typeof sorted;
+  if (remaining === 0) pool = [];
+  else {
+    const offset = (((mix % pageCount) + pageCount) % pageCount) * WINDOW;
+    pool = sorted.slice(offset, offset + WINDOW);
+  }
 
   const candidates: WaCandidate[] = [];
   for (const s of pool)
     candidates.push({ ...(await toCandidate(s.c, kind)), reason: s.reason });
-  return { remaining, candidates };
+  return { remaining, candidates, poolTotal, pageCount };
 }
 
 /** "Bəyaz Diş" ~ "beyaz dis" — axtarış üçün diakritik-həssas olmayan fold. */
