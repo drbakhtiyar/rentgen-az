@@ -69,6 +69,8 @@ window.config = {
       );
     },
   },
+  // Şəbəkə: kadr sorğuları paralel + prefetch aqressiv
+  maxNumRequests: { interaction: 100, thumbnail: 75, prefetch: 50 },
   defaultDataSourceName: 'orthanc',
   dataSources: [
     {
@@ -90,6 +92,12 @@ window.config = {
         dicomUploadEnabled: false,
         bulkDataURI: { enabled: true, relativeResolution: 'studies' },
         omitQuotationForMultipartRequest: true,
+        // Orthanc kadrları JPEG-LS-ə (itkisiz) transkod edir → ~3x az trafik.
+        // Fallback: adi octet-stream (dəstəklənməyən hallarda).
+        acceptHeader: [
+          'multipart/related; type=image/jls; transfer-syntax=1.2.840.10008.1.2.4.80; q=0.9',
+          'multipart/related; type=application/octet-stream; q=0.5',
+        ],
       },
     },
   ],
