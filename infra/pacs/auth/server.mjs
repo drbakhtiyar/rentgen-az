@@ -208,7 +208,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/logout") {
       return send(302, "", {
         "set-cookie": `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
-        location: "https://rentgen.az/",
+        location: "/login",
       });
     }
 

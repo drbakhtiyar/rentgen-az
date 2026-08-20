@@ -7,6 +7,8 @@
     if (!el || !user) return;
     var name = user.name || '';
     el.textContent = !name || name === user.roleLabel ? (user.roleLabel || '') : name + ' · ' + user.roleLabel;
+    var lo = document.getElementById('rx-logout');
+    if (lo) lo.style.display = 'inline-flex';
   }
   fetch('/whoami', { credentials: 'same-origin' })
     .then(function (r) { return r.ok ? r.json() : null; })
@@ -42,7 +44,19 @@ window.config = {
             marginLeft: '14px', paddingLeft: '14px', borderLeft: '1px solid rgba(148,163,184,0.35)',
             color: '#e2e8f0', fontSize: '13.5px', fontWeight: 500, whiteSpace: 'nowrap',
           },
-        }, '')
+        }, ''),
+        React.createElement('a', {
+          id: 'rx-logout',
+          href: '/logout',
+          title: 'Çıxış',
+          style: {
+            marginLeft: '10px', display: 'none', alignItems: 'center', gap: '5px',
+            color: '#94a3b8', fontSize: '13px', fontWeight: 600, textDecoration: 'none',
+            border: '1px solid rgba(148,163,184,0.35)', borderRadius: '999px', padding: '3px 12px',
+          },
+          onMouseEnter: function (e) { e.currentTarget.style.color = '#fecaca'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.5)'; },
+          onMouseLeave: function (e) { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.35)'; },
+        }, 'Çıxış')
       );
     },
   },
