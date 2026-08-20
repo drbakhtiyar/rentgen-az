@@ -33,8 +33,8 @@ window.config = {
           'a',
           { href: 'https://rentgen.az/', style: { display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' } },
           React.createElement('img', { src: '/rx/logo.png', alt: 'rentgen.az', style: { height: '28px', width: '28px', borderRadius: '7px' } }),
-          React.createElement('span', { style: { color: '#fff', fontWeight: 600, fontSize: '15px', letterSpacing: '0.2px' } }, 'rentgen.az'),
-          React.createElement('span', { style: { color: '#94a3b8', fontWeight: 500, fontSize: '13px', marginLeft: '2px' } }, 'PACS')
+          React.createElement('span', { style: { color: '#fff', fontWeight: 700, fontSize: '15.5px', letterSpacing: '0.2px' } }, 'rentgen.az'),
+          React.createElement('span', { style: { color: '#fff', fontWeight: 700, fontSize: '15.5px', letterSpacing: '0.2px', marginLeft: '1px', opacity: 0.85 } }, 'PACS')
         ),
         React.createElement('span', {
           id: 'rx-user',
