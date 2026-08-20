@@ -26,6 +26,12 @@ pacs.rentgen.az {
   handle /login {
     reverse_proxy auth:9000
   }
+  handle /ai {
+    request_body {
+      max_size 14MB
+    }
+    reverse_proxy auth:9000
+  }
 
   # Static brand assets for the OHIF header (logo)
   handle_path /rx/* {

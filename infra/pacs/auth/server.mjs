@@ -33,6 +33,7 @@ const ORTHANC_PASS = process.env.ORTHANC_ADMIN_PASS;
 const ORTHANC = process.env.ORTHANC_INTERNAL_URL || "http://orthanc:8042";
 const LOGIN_PAGE = readFileSync(new URL("./login.html", import.meta.url));
 const SESSION_TTL = Number(process.env.PACS_SESSION_TTL_SEC || 12 * 3600);
+const RENTGEN_API = process.env.RENTGEN_API_URL || "https://rentgen.az";
 const COOKIE = "pacs_s";
 if (!SECRET || !ORTHANC_USER || !ORTHANC_PASS) {
   console.error("missing PACS_SHARED_SECRET / ORTHANC_ADMIN_USER / ORTHANC_ADMIN_PASS");
@@ -231,6 +232,63 @@ const server = http.createServer(async (req, res) => {
         roleLabel: ROLE_LABEL[s.role] || s.role,
         scope: s.study === "*" ? "all" : typeof s.study === "string" ? "study" : "labels",
       });
+    }
+
+    // AI qaralama: brauzer (sessiyalı) → biz kontekst yığırıq → rentgen.az → Claude.
+    // Pasiyent ADI Anthropic-ə getmir — yalnız yaş/cins/modallıq/təsvir.
+    if (url.pathname === "/ai" && req.method === "POST") {
+      const s = session();
+      if (!s) return json(401, { ok: false, error: "Sessiya bitib — səhifəni yeniləyin" });
+      let raw = "";
+      let size = 0;
+      for await (const chunk of req) {
+        size += chunk.length;
+        if (size > 12_000_000) return json(413, { ok: false, error: "Görüntülər çox böyükdür" });
+        raw += chunk;
+      }
+      let body;
+      try {
+        body = JSON.parse(raw);
+      } catch {
+        return json(400, { ok: false, error: "Yanlış sorğu" });
+      }
+      const studyUid = typeof body.studyUid === "string" ? body.studyUid.trim() : "";
+      if (studyUid && !(await sessionAllowsStudy(s, studyUid))) return json(403, { ok: false, error: "forbidden" });
+      // Tədqiqat konteksti (Orthanc-dan) — ad YOX
+      const context = { modality: "", studyDesc: "", age: "", sex: "", seriesDesc: body.seriesDesc || "", sliceInfo: body.sliceInfo || "" };
+      if (studyUid) {
+        const st = await studyByUid(studyUid);
+        if (st) {
+          try {
+            const j = await orthanc(`/studies/${st.id}`);
+            context.studyDesc = j.MainDicomTags?.StudyDescription || "";
+            const p = j.PatientMainDicomTags || {};
+            context.sex = p.PatientSex || "";
+            const bd = p.PatientBirthDate || "";
+            const sd = j.MainDicomTags?.StudyDate || "";
+            if (bd.length === 8 && sd.length === 8) context.age = String(Math.floor((+sd.slice(0, 4) - +bd.slice(0, 4)) + ((+sd.slice(4, 8) - +bd.slice(4, 8)) < 0 ? -1 : 0)));
+            const series = await orthanc(`/studies/${st.id}`).then((x) => x.Series?.[0]);
+            if (series) {
+              const sj = await orthanc(`/series/${series}`);
+              context.modality = sj.MainDicomTags?.Modality || "";
+            }
+          } catch {}
+        }
+      }
+      const svcToken = mint({ sub: s.sub, role: s.role, study: studyUid || "*" }, 120);
+      try {
+        const r = await fetch(`${RENTGEN_API}/api/pacs/ai`, {
+          method: "POST",
+          headers: { "content-type": "application/json", authorization: `Bearer ${svcToken}` },
+          body: JSON.stringify({ images: body.images, context }),
+          signal: AbortSignal.timeout(115_000),
+        });
+        const data = await r.json().catch(() => ({ ok: false, error: "Cavab oxunmadı" }));
+        return json(r.status, data);
+      } catch (e) {
+        console.error("[pacs-ai-proxy]", e?.message || e);
+        return json(502, { ok: false, error: "AI xidmətinə çatmaq olmur" });
+      }
     }
 
     // forward_auth for /orthanc/*

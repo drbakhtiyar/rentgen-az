@@ -66,6 +66,33 @@ export function mintPacsToken(opts: {
   return `${payload}.${sig}`;
 }
 
+/** Verify a token minted by us or by the PACS auth service (same HMAC secret). */
+export function verifyPacsToken(token: string): {
+  sub: string;
+  role: PacsRole;
+  name?: string;
+  study?: string;
+  labels?: string[];
+  exp: number;
+} | null {
+  if (!env.pacs.sharedSecret || !token) return null;
+  const i = token.lastIndexOf(".");
+  if (i < 1) return null;
+  const p = token.slice(0, i);
+  const sig = token.slice(i + 1);
+  const expect = b64u(createHmac("sha256", env.pacs.sharedSecret).update(p).digest());
+  if (sig.length !== expect.length) return null;
+  try {
+    const { timingSafeEqual } = require("node:crypto") as typeof import("node:crypto");
+    if (!timingSafeEqual(Buffer.from(sig), Buffer.from(expect))) return null;
+    const payload = JSON.parse(Buffer.from(p, "base64url").toString("utf8"));
+    if (!payload.exp || payload.exp < Date.now() / 1000) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export function pacsOpenUrl(opts: Parameters<typeof mintPacsToken>[0]): string {
   return `${env.pacs.url}/open?t=${mintPacsToken(opts)}`;
 }
