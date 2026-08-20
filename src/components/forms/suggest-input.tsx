@@ -32,7 +32,7 @@ function subseq(needle: string, hay: string): boolean {
   return i === needle.length;
 }
 
-function smartMatch(label: string, query: string): boolean {
+export function smartMatch(label: string, query: string): boolean {
   const l1 = fold(label);
   const l2 = fold(label, true);
   const q1 = fold(query);

@@ -40,6 +40,7 @@ type Dict = {
     allServices: string;
     city: string;
     allCities: string;
+    noMatches: string;
     centerName: string;
     centerNamePlaceholder: string;
   };
@@ -493,6 +494,7 @@ const az: Dict = {
     allServices: "Bütün xidmətlər",
     city: "Rayon / şəhər",
     allCities: "Bütün rayonlar",
+    noMatches: "Uyğun variant tapılmadı",
     centerName: "Mərkəz və ya xidmət adı",
     centerNamePlaceholder: "Mərkəz və ya xidmət adı",
   },
@@ -1031,6 +1033,7 @@ const ru: Dict = {
     allServices: "Все услуги",
     city: "Район / город",
     allCities: "Все районы",
+    noMatches: "Совпадений не найдено",
     centerName: "Центр или услуга",
     centerNamePlaceholder: "Центр или услуга",
   },
