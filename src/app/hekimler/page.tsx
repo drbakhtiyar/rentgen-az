@@ -91,9 +91,11 @@ export default async function DoctorsPage({
               </div>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {/* 2026-08-22: kartlara yüngül qalxma + ikon vıyıltısı (saytın
+                  digər kartları ilə eyni naxış: group + icon-wiggle) */}
               {advantages.map((a) => (
-                <Card key={a.h} className="flex flex-col gap-2 rounded-2xl p-3.5 sm:flex-row sm:items-start sm:gap-3 sm:p-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-iris-glow/10 text-iris-pulse [&>svg]:h-5 [&>svg]:w-5">
+                <Card key={a.h} className="group flex flex-col gap-2 rounded-2xl p-3.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-18px_rgba(64,60,213,0.35)] sm:flex-row sm:items-start sm:gap-3 sm:p-4">
+                  <span className="icon-wiggle flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-iris-glow/10 text-iris-pulse transition-colors duration-300 group-hover:bg-iris-glow/20 [&>svg]:h-5 [&>svg]:w-5">
                     {a.icon}
                   </span>
                   <div>
