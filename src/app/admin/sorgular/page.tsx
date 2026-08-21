@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/rbac";
 import { buildMetadata } from "@/lib/seo";
-import { formatDateAz, formatPhoneDisplay } from "@/lib/utils";
+import { formatDateAz } from "@/lib/utils";
+import { formatPhoneDisplay } from "@/lib/phone";
 import { MarkReadButton } from "./mark-read";
 
 export const dynamic = "force-dynamic";
