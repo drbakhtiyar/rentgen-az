@@ -1,9 +1,5 @@
-import {
-  Mail,
-  MapPin,
-  MessageCircle,
-  Clock,
-} from "lucide-react";
+import { Mail, MapPin, Clock } from "lucide-react";
+import { WhatsAppOutline } from "@/components/ui/whatsapp-icon";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
@@ -39,12 +35,11 @@ export default async function ContactPage() {
     // WhatsApp da adi əlaqə blokudur (2026-08-16): ayrıca düymə yoxdur —
     // nömrənin özünə toxunanda WhatsApp açılır.
     {
-      icon: MessageCircle,
+      icon: WhatsAppOutline,
       title: "WhatsApp",
       value: PLATFORM_WHATSAPP_DISPLAY,
       href: PLATFORM_WHATSAPP_URL,
       external: true,
-      tone: "whatsapp" as const,
     },
   ];
   const me = await getCurrentUser();
@@ -90,11 +85,7 @@ export default async function ContactPage() {
                   const content = (
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
                       <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 ${
-                          item.tone === "whatsapp"
-                            ? "bg-green-50 text-green-600"
-                            : "bg-brand-50 text-brand-600"
-                        }`}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 sm:h-10 sm:w-10"
                       >
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </span>
