@@ -5,8 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { ServiceIcon } from "@/components/ui/service-icon";
-import { useLocale } from "@/components/locale-context";
-import { countLabel, RU_FORMS } from "@/lib/i18n";
+import { countLabel, RU_FORMS, type Locale } from "@/lib/i18n";
 
 export type ExplorerService = {
   slug: string;
@@ -38,14 +37,16 @@ export function ServicesExplorer({
   categories,
   categoryLabels,
   labels,
+  locale,
 }: {
   services: ExplorerService[];
   categories: string[];
   /** AZ category (filter key) → display label (RU when applicable). */
   categoryLabels?: Record<string, string>;
   labels: { all: string; centerWord: string; more: string };
+  /** Serverdən gəlir — `useLocale()` yalnız panel qabığında (LocaleProvider) işləyir. */
+  locale: Locale;
 }) {
-  const locale = useLocale();
   const centerCount = (n: number) => countLabel(locale, n, labels.centerWord, RU_FORMS.center);
   const [active, setActive] = React.useState<string | null>(null);
   const shown = active ? services.filter((s) => s.category === active) : services;

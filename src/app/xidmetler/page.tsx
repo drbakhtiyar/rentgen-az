@@ -106,6 +106,7 @@ export default async function ServicesPage() {
               services={explorerServices}
               categories={categories}
               categoryLabels={categoryLabels}
+              locale={locale}
               labels={{
                 all: locale === "ru" ? "Все" : "Hamısı",
                 centerWord: d.centerWord,
