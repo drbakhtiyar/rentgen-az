@@ -534,6 +534,66 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       },
     ],
   },
+  // 2026-08-21: generik rentgen mətni yanlış idi — bu, görüntüləmə deyil,
+  // implantasiya üçün 3D ÇAP xidmətidir (istifadəçi düzəlişi).
+  "cerrahi-sablon-capi": {
+    metaTitle: "Cərrahi şablon çapı — implant üçün 3D çap | Rentgen.az",
+    metaDescription:
+      "İmplantasiya üçün cərrahi şablonun (surgical guide) 3D printerdə çapı. Bakıda bu xidməti göstərən təsdiqlənmiş mərkəzlər — qiymət və əlaqə Rentgen.az-da.",
+    keywords: [
+      "cərrahi şablon",
+      "surgical guide",
+      "implant şablonu",
+      "3D çap stomatologiya",
+      "naviqasiyalı implantasiya",
+      "Bakı",
+    ],
+    intro:
+      "Cərrahi şablon (surgical guide) — dental implantasiya zamanı implantın yerini, bucağını və dərinliyini cərraha dəqiq ötürən fərdi köməkçi qəlibdir. Bu xidmət rentgen müayinəsi deyil: hazır 3D plan əsasında şablonun 3D printerdə çapını əhatə edir.",
+    sections: [
+      {
+        heading: "Cərrahi şablon nədir və nə üçün lazımdır?",
+        body: "Cərrahi şablon pasiyentin çənəsinə tam oturan fərdi qəlibdir; üzərindəki yönləndirici yuvalar implant frezinin planlaşdırılmış nöqtəyə, düzgün bucaq və dərinliklə getməsini təmin edir. Nəticədə implantasiya daha proqnozlaşdırılan, qonşu köklər və sinir kanalları üçün daha təhlükəsiz olur.",
+      },
+      {
+        heading: "Şablon necə hazırlanır?",
+        body: "Əvvəlcə 3D tomoqrafiya (CBCT) və ağız içi skan məlumatları xüsusi planlama proqramında birləşdirilir, implantın mövqeyi virtual planlaşdırılır. Təsdiqlənmiş plan əsasında şablon biouyğun polimerdən 3D printerdə çap olunur, yuvalara metal yönləndirici halqalar yerləşdirilir və sterilizasiyadan sonra cərraha təhvil verilir.",
+      },
+      {
+        heading: "Bakıda cərrahi şablon çapı qiyməti",
+        body: "Qiymət şablonun növündən (bir və ya bir neçə implant üçün), materialdan və halqaların sayından asılıdır. Rentgen.az-da bu xidməti göstərən mərkəzlərin qiymətlərini müqayisə edib birbaşa əlaqə saxlaya bilərsiniz.",
+      },
+    ],
+    benefits: [
+      "İmplantın planlaşdırılan mövqeyə millimetrik dəqiqliklə yerləşdirilməsi",
+      "Sinir kanalı və sinuslara zədə riskinin azalması",
+      "Əməliyyat vaxtının qısalması, çox vaxt tikişsiz (flapless) texnika imkanı",
+      "Rəqəmsal plan — nəticənin əvvəlcədən proqnozlaşdırılması",
+    ],
+    whenNeeded: [
+      "Naviqasiyalı (guided) implantasiya planlaşdırılanda",
+      "Bir neçə implantın eyni seansda yerləşdirilməsində",
+      "Anatomik cəhətdən riskli zonalarda (sinir kanalı, sinus yaxınlığı)",
+      "Tam çənə bərpası (All-on-4/All-on-6) əməliyyatlarında",
+    ],
+    faq: [
+      {
+        question: "Cərrahi şablon çapı zamanı şüalanma varmı?",
+        answer:
+          "Xeyr. Şablon çapı laboratoriya-istehsal xidmətidir və şüalanma ilə bağlı deyil. Şüalanma yalnız planlama üçün lazım olan 3D tomoqrafiya (CBCT) mərhələsində, ayrıca müayinə kimi tətbiq olunur.",
+      },
+      {
+        question: "Şablonun hazırlanması nə qədər vaxt aparır?",
+        answer:
+          "Adətən plan təsdiqləndikdən sonra 1-3 iş günü ərzində çap və hazırlıq tamamlanır; mərkəzdən asılı olaraq müddət dəyişə bilər.",
+      },
+      {
+        question: "Cərrahi şablon hansı məlumatlar əsasında hazırlanır?",
+        answer:
+          "3D tomoqrafiya (CBCT) və ağız içi skan (və ya gips model skanı) məlumatları birləşdirilərək rəqəmsal plan qurulur — şablon məhz bu plana əsasən çap olunur.",
+      },
+    ],
+  },
 };
 
 /** Russian hand-written rich content, mirroring SERVICE_CONTENT (dental slugs). */
@@ -809,6 +869,64 @@ export const SERVICE_CONTENT_RU: Record<string, ServiceContent> = {
         question: "Можно ли делать дентальный рентген беременным?",
         answer:
           "О беременности обязательно нужно сообщить врачу. Врач принимает решение, оценивая необходимость и меры защиты.",
+      },
+    ],
+  },
+  "cerrahi-sablon-capi": {
+    metaTitle: "Печать хирургического шаблона — 3D-печать для имплантации | Rentgen.az",
+    metaDescription:
+      "3D-печать хирургического шаблона (surgical guide) для дентальной имплантации. Проверенные центры в Баку — цены и контакты на Rentgen.az.",
+    keywords: [
+      "хирургический шаблон",
+      "surgical guide",
+      "шаблон для имплантации",
+      "3D-печать стоматология",
+      "навигационная имплантация",
+      "Баку",
+    ],
+    intro:
+      "Хирургический шаблон (surgical guide) — это индивидуальный направляющий трафарет, который во время имплантации точно передаёт хирургу запланированное положение, угол и глубину имплантата. Это не рентгеновское исследование: услуга включает 3D-печать шаблона по готовому цифровому плану.",
+    sections: [
+      {
+        heading: "Что такое хирургический шаблон и зачем он нужен?",
+        body: "Шаблон точно садится на челюсть пациента; направляющие втулки ведут фрезу в запланированную точку под нужным углом и на нужную глубину. Имплантация становится более предсказуемой и безопасной для соседних корней и нервных каналов.",
+      },
+      {
+        heading: "Как изготавливается шаблон?",
+        body: "Данные 3D-томографии (КЛКТ) и внутриротового сканирования объединяются в программе планирования, положение имплантата планируется виртуально. По утверждённому плану шаблон печатается из биосовместимого полимера на 3D-принтере, устанавливаются металлические направляющие втулки, после стерилизации шаблон передаётся хирургу.",
+      },
+      {
+        heading: "Цена печати хирургического шаблона в Баку",
+        body: "Цена зависит от типа шаблона (на один или несколько имплантатов), материала и числа втулок. На Rentgen.az можно сравнить цены центров и связаться с ними напрямую.",
+      },
+    ],
+    benefits: [
+      "Миллиметровая точность установки имплантата по плану",
+      "Меньше риск повреждения нервного канала и синусов",
+      "Короче время операции, часто возможна безлоскутная техника",
+      "Цифровой план — предсказуемый результат заранее",
+    ],
+    whenNeeded: [
+      "При навигационной (guided) имплантации",
+      "При установке нескольких имплантатов за один приём",
+      "В анатомически рискованных зонах (нервный канал, близость синуса)",
+      "При полном восстановлении челюсти (All-on-4/All-on-6)",
+    ],
+    faq: [
+      {
+        question: "Есть ли облучение при печати хирургического шаблона?",
+        answer:
+          "Нет. Печать шаблона — лабораторно-производственная услуга без облучения. Облучение возможно только на этапе 3D-томографии (КЛКТ), которая проводится отдельно для планирования.",
+      },
+      {
+        question: "Сколько времени занимает изготовление?",
+        answer:
+          "Обычно 1-3 рабочих дня после утверждения плана; срок зависит от центра.",
+      },
+      {
+        question: "На основе каких данных делается шаблон?",
+        answer:
+          "Объединяются данные КЛКТ и внутриротового скана (или скана гипсовой модели) — шаблон печатается строго по этому цифровому плану.",
       },
     ],
   },
