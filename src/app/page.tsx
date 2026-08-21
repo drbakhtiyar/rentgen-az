@@ -15,6 +15,7 @@ import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { SERVICE_ICON_URLS } from "@/lib/service-icon-map";
+import { serviceCardText } from "@/content/services";
 import { SmartSearch } from "@/components/smart-search";
 import { HeroVisual } from "@/components/hero-visual";
 import { CenterCard } from "@/components/centers/center-card";
@@ -213,8 +214,8 @@ export default async function HomePage() {
                       {s.name}
                     </h3>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-ash-2">
-                    {s.description}
+                  <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-ash-2">
+                    {serviceCardText(s.slug, s.name, s.category, locale, s.description)}
                   </p>
                   <div className="mt-auto flex items-center justify-between pt-4">
                     {counts[s.slug] ? (

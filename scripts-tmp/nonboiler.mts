@@ -1,0 +1,11 @@
+import { config } from "dotenv";
+config(); config({ path: ".env.local", override: true });
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma/client";
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
+const rows = await prisma.service.findMany({ where: { isActive: true }, select: { slug: true, name: true, description: true } });
+const B = "Bakıda bu müayinəni göstərən təsdiqlənmiş mərkəzlər";
+const other = rows.filter(r => !r.description || !r.description.includes(B));
+console.log(`şablonsuz: ${other.length}`);
+for (const r of other) console.log(`  ${r.name}  →  ${(r.description ?? "(BOŞ)").slice(0,90)}`);
+await prisma.$disconnect();

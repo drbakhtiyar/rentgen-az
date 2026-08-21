@@ -10,7 +10,6 @@ import { countLabel, RU_FORMS, type Locale } from "@/lib/i18n";
 export type ExplorerService = {
   slug: string;
   name: string;
-  description: string | null;
   icon: string | null;
   iconUrl: string | null;
   /** Premium böyük ikon (Blob) — varsa kart vizual tile ilə göstərilir. */

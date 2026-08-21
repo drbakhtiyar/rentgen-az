@@ -851,3 +851,18 @@ model AdminActionLog {
 
   @@index([createdAt])
 }
+
+/// Əlaqə səhifəsinin OTP-təsdiqli yazılı sorğuları (2026-08-22, analizler.az
+/// naxışının portu). Yalnız kod təsdiqindən sonra yazılır — spam qorunması.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+  @@index([createdAt])
+}

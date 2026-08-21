@@ -55,9 +55,6 @@ export default async function ServicesPage() {
       return {
         slug: s.slug,
         name,
-        description: ru
-          ? `${name} — проверенные центры в Баку: цены, адреса и прямая связь.`
-          : s.description,
         icon: s.icon,
         iconUrl: s.iconUrl,
         bigIcon: SERVICE_ICON_URLS[s.slug] ?? null,

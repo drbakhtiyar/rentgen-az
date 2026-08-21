@@ -1070,3 +1070,37 @@ export function getServiceContent(
     return SERVICE_CONTENT_RU[slug] ?? GEN[slug]?.ru ?? generic(name, category, "ru");
   return SERVICE_CONTENT[slug] ?? GEN[slug]?.az ?? generic(name, category, "az");
 }
+
+/**
+ * Kataloq/ana səhifə kartının bir cümləlik təsviri.
+ *
+ * Baza sütunu (`Service.description`) admin panelindən redaktə olunur, ona görə
+ * ORADA əl ilə yazılmış mətn varsa o üstündür. Lakin sütunun böyük hissəsi
+ * (2026-08-22 auditində 122-dən 101-i) generik şablon və ya boşdur — belə
+ * hallarda xidmətin öz `intro` mətninin ilk cümləsi götürülür. Beləliklə kart
+ * mətni hər iki dildə xidmətə-xas olur və RU üçün ayrıca doldurma tələb etmir.
+ */
+const CARD_BOILERPLATE: RegExp[] = [
+  /Bakıda bu müayinəni göstərən təsdiqlənmiş mərkəzlər/i,
+  /^Bakıda .+ xidməti göstərən təsdiqlənmiş rentgen mərkəzləri/i,
+  /проверенные центры в Баку: цены, адреса и прямая связь/i,
+];
+
+/** İlk tam cümlə (nöqtə/sual/nida işarəsinə qədər), boşluqlar normallaşdırılmış. */
+function firstSentence(text: string): string {
+  const t = text.trim().replace(/\s+/g, " ");
+  const m = /^(.+?[.!?])(\s|$)/.exec(t);
+  return m ? m[1] : t;
+}
+
+export function serviceCardText(
+  slug: string,
+  name: string,
+  category: string | null | undefined,
+  locale: Locale,
+  dbDescription?: string | null,
+): string {
+  const own = dbDescription?.trim();
+  if (own && !CARD_BOILERPLATE.some((re) => re.test(own))) return own;
+  return firstSentence(getServiceContent(slug, name, category ?? undefined, locale).intro);
+}
