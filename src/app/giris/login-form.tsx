@@ -39,6 +39,15 @@ export function LoginForm({
     return () => clearInterval(id);
   }, [cooldown]);
 
+  // Brauzerin «Please fill out this field» xəbərdarlığı dilə uyğunlaşdırılır
+  // (2026-08-22): required xanalar boş göndəriləndə öz mətnimiz çıxır.
+  const requiredMsg =
+    locale === "ru" ? "Заполните это поле." : "Bu xananı doldurun.";
+  const onInvalidReq = (e: React.FormEvent<HTMLInputElement>) =>
+    e.currentTarget.setCustomValidity(requiredMsg);
+  const clearValidity = (e: React.FormEvent<HTMLInputElement>) =>
+    e.currentTarget.setCustomValidity("");
+
   function submitPhone(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -142,6 +151,8 @@ export function LoginForm({
                   className="pl-9"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  onInvalid={onInvalidReq}
+                  onInput={clearValidity}
                   required
                 />
               </div>
@@ -198,6 +209,8 @@ export function LoginForm({
                   className="pl-9 text-center text-lg tracking-[0.5em] font-mono"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  onInvalid={onInvalidReq}
+                  onInput={clearValidity}
                   required
                 />
               </div>

@@ -87,6 +87,14 @@ export function ContactForm({ ru = false }: { ru?: boolean }) {
         again: "Yeni sorğu göndər",
       };
 
+  const requiredMsg = ru ? "Заполните это поле." : "Bu xananı doldurun.";
+  const onInvalidReq = (
+    e: React.FormEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => e.currentTarget.setCustomValidity(requiredMsg);
+  const clearValidity = (
+    e: React.FormEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => e.currentTarget.setCustomValidity("");
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (busy) return;
@@ -166,6 +174,8 @@ export function ContactForm({ ru = false }: { ru?: boolean }) {
               autoComplete="one-time-code"
               maxLength={6}
               required
+              onInvalid={onInvalidReq}
+              onInput={clearValidity}
               autoFocus
               placeholder="••••••"
               className={`mt-2 text-center text-lg font-semibold tracking-[0.4em] ${field}`}
@@ -204,7 +214,7 @@ export function ContactForm({ ru = false }: { ru?: boolean }) {
           <label className={label} htmlFor="c-name">
             {t.name} <span className="text-red-500">*</span>
           </label>
-          <input id="c-name" name="name" required maxLength={120} placeholder={t.namePh} className={`mt-2 ${field}`} />
+          <input id="c-name" name="name" required onInvalid={onInvalidReq} onInput={clearValidity} maxLength={120} placeholder={t.namePh} className={`mt-2 ${field}`} />
         </div>
         <div>
           <label className={label} htmlFor="c-phone">
@@ -214,6 +224,8 @@ export function ContactForm({ ru = false }: { ru?: boolean }) {
             id="c-phone"
             name="phone"
             required
+            onInvalid={onInvalidReq}
+            onInput={clearValidity}
             inputMode="tel"
             autoComplete="tel"
             placeholder="050 123 45 67"
@@ -226,7 +238,7 @@ export function ContactForm({ ru = false }: { ru?: boolean }) {
         <label className={label} htmlFor="c-subject">
           {t.subject} <span className="text-red-500">*</span>
         </label>
-        <select id="c-subject" name="subject" required defaultValue="" className={`mt-2 ${field}`}>
+        <select id="c-subject" name="subject" required onInvalid={onInvalidReq} onInput={clearValidity} defaultValue="" className={`mt-2 ${field}`}>
           <option value="" disabled>{t.subjectPh}</option>
           {subjects.map((s) => (
             <option key={s} value={s}>{s}</option>
