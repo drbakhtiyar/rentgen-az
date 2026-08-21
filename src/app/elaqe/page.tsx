@@ -1,5 +1,14 @@
 import { Mail, MapPin, Clock } from "lucide-react";
 import { WhatsAppOutline } from "@/components/ui/whatsapp-icon";
+
+/** Axiora «A» emblemi — lucide ikonları ilə eyni ölçü müqaviləsində. */
+function AxioraMark({ className }: { className?: string }) {
+  return (
+    <span className={`${className ?? ""} flex items-center justify-center font-display font-bold leading-none`}>
+      A
+    </span>
+  );
+}
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { PageHeroVisual, PAGE_HERO } from "@/components/services-hero-visual";
@@ -33,6 +42,14 @@ export default async function ContactPage() {
       title: "WhatsApp",
       value: PLATFORM_WHATSAPP_DISPLAY,
       href: PLATFORM_WHATSAPP_URL,
+      external: true,
+    },
+    // Axiora imzası (2026-08-22): digər kartlarla eyni formatda 5-ci kart
+    {
+      icon: AxioraMark,
+      title: locale === "ru" ? "Компания" : "Şirkət",
+      value: locale === "ru" ? "Проект компании Axiora" : "Axiora şirkətinin layihəsi",
+      href: "https://axiora.az",
       external: true,
     },
   ];
@@ -103,20 +120,6 @@ export default async function ContactPage() {
                 })}
               </div>
 
-              {/* Axiora imzası (2026-08-22): əlaqə kartlarının altında,
-                  çətir şirkətə yönləndirən düymə */}
-              <a
-                href="https://axiora.az"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition-all duration-300 hover:-translate-y-0.5 hover:border-iris-veil hover:text-iris-pulse hover:shadow-[0_10px_28px_-12px_rgba(64,60,213,0.4)]"
-              >
-                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-iris-pulse to-iris-glow text-[10px] font-bold text-white">
-                  A
-                </span>
-                {locale === "ru" ? "Проект компании Axiora" : "Axiora şirkətinin layihəsi"}
-                <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
-              </a>
             </div>
 
             {/* 2026-08-22: analizler.az naxışı — OTP-təsdiqli «Sorğu göndərin»
