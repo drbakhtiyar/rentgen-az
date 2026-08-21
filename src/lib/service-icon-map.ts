@@ -138,4 +138,8 @@ export const SERVICE_ICON_URLS: Record<string, string> = {
   "uroloji-usm": `${BLOB}/uroloji-usm.png`,
   "limfa-duyunleri-usm": `${BLOB}/limfa-duyunleri-usm.png`,
   "yumsaq-toxuma-usm": `${BLOB}/yumsaq-toxuma-usm.png`,
+
+  // 2026-08-21 son 2 — kataloq yenidən TAM (bütün aktiv xidmətlərdə ikon)
+  "unvanda-rentgen-xidmeti": `${BLOB}/unvanda-rentgen-xidmeti.png`,
+  "qarin-boslugu-rentgeni": `${BLOB}/qarin-boslugu-rentgeni.png`,
 };
