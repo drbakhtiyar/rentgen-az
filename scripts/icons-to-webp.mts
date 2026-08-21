@@ -10,6 +10,9 @@ import sharp from "sharp";
 import { put, list } from "@vercel/blob";
 import { SERVICE_ICON_URLS } from "../src/lib/service-icon-map";
 
+// QEYD: xəritə artıq .webp-ə işarə edir. Yenidən işə salsan mənbə PNG-ni
+// açıq şəkildə göstərmək lazımdır — aşağıdakı `srcUrl` bunu edir.
+
 const SIZE = 768;
 const QUALITY = 82;
 const token = process.env.BLOB_READ_WRITE_TOKEN!;
@@ -34,7 +37,8 @@ for (const [slug, url] of entries) {
   const target = `service-icons/${slug}.webp`;
   if (existing.has(target)) { skipped++; continue; }
   try {
-    const res = await fetch(url);
+    const srcUrl = url.replace(/\.webp$/, ".png");
+    const res = await fetch(srcUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const src = Buffer.from(await res.arrayBuffer());
     const out = await sharp(src)
