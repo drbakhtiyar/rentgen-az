@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Stethoscope, MapPin, BadgeCheck, ArrowUpRight } from "lucide-react";
+import { Stethoscope, MapPin, BadgeCheck, ArrowUpRight, Clock, GraduationCap } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { doctorName } from "@/lib/utils";
@@ -17,6 +17,8 @@ export type DoctorCardData = {
   diplomaUrl: string | null;
   certificateUrl: string | null;
   plan?: string; // PLATINUM → highlighted card
+  careerStartYear?: number | null; // «Təcrübə: X il» nişanı (2026-08-21)
+  education?: string[];
 };
 
 export function DoctorCard({
@@ -31,6 +33,10 @@ export function DoctorCard({
   const specs = doctor.specializations.slice(0, 3);
   const extra = doctor.specializations.length - specs.length;
   const premium = doctor.plan === "PLATINUM"; // "tam brendinq" — vurğulanmış kart
+  const expYears = doctor.careerStartYear
+    ? Math.max(0, new Date().getFullYear() - doctor.careerStartYear)
+    : null;
+  const eduLine = doctor.education?.[0] ?? null;
 
   return (
     <Card
@@ -43,6 +49,11 @@ export function DoctorCard({
       {premium && (
         <span className="absolute right-3 top-3 rounded-full bg-iris-pulse px-2 py-0.5 text-[10px] font-semibold shadow-[0_0_16px_rgba(60,57,185,0.45)] uppercase tracking-wide text-white">
           Premium
+        </span>
+      )}
+      {expYears !== null && expYears > 0 && (
+        <span className={`absolute right-3 inline-flex items-center gap-1 rounded-full bg-iris-glow/10 px-2 py-0.5 text-[11px] font-semibold text-iris-glow ${premium ? "top-9" : "top-3"}`}>
+          <Clock className="h-3 w-3" /> {expYears} il
         </span>
       )}
       <div className="flex items-start gap-3">
@@ -93,6 +104,13 @@ export function DoctorCard({
             </span>
           )}
         </div>
+      )}
+
+      {eduLine && (
+        <p className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-slate-500">
+          <GraduationCap className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
+          <span className="line-clamp-2">{eduLine}</span>
+        </p>
       )}
 
       <Link

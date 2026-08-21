@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Stars } from "@/components/reviews/stars";
+import { countLabel, RU_FORMS } from "@/lib/i18n";
 import { saveGooglePlaceAction, removeGooglePlaceAction } from "@/app/merkez/actions";
 import { useLocale } from "@/components/locale-context";
 
@@ -49,7 +50,9 @@ const RU = {
 
 export function GoogleRatingCard({ current }: { current: Current }) {
   const router = useRouter();
-  const t = useLocale() === "ru" ? RU : AZ;
+  const locale = useLocale();
+  const t = locale === "ru" ? RU : AZ;
+  const reviewLabel = (n: number) => countLabel(locale, n, t.reviews, RU_FORMS.review);
   const [query, setQuery] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -88,7 +91,7 @@ export function GoogleRatingCard({ current }: { current: Current }) {
           <span className="text-2xl font-bold text-ink-900">{current.rating!.toFixed(1)}</span>
           <Stars value={current.rating!} />
           <span className="text-sm text-slate-500">
-            {current.reviewCount ?? 0} {t.reviews} · Google
+            {reviewLabel(current.reviewCount ?? 0)} · Google
           </span>
           <span className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
             <CheckCircle2 className="h-4 w-4" /> {t.shown}

@@ -1052,12 +1052,21 @@ export const SERVICE_CONTENT_RU: Record<string, ServiceContent> = {
   },
 };
 
+/**
+ * Generasiya olunmuş dolğun kontent (2026-08-21): hər aktiv xidmət üçün
+ * xidmətə-xas AZ+RU mətn — scripts-tmp/gen-service-content.mts ilə yazılır.
+ * Prioritet: əl yazması > generasiya > generik şablon.
+ */
+import GENERATED from "./services-generated.json";
+const GEN = GENERATED as unknown as Record<string, { az: ServiceContent; ru: ServiceContent }>;
+
 export function getServiceContent(
   slug: string,
   name: string,
   category?: string,
   locale: Locale = "az",
 ): ServiceContent {
-  if (locale === "ru") return SERVICE_CONTENT_RU[slug] ?? generic(name, category, "ru");
-  return SERVICE_CONTENT[slug] ?? generic(name, category, "az");
+  if (locale === "ru")
+    return SERVICE_CONTENT_RU[slug] ?? GEN[slug]?.ru ?? generic(name, category, "ru");
+  return SERVICE_CONTENT[slug] ?? GEN[slug]?.az ?? generic(name, category, "az");
 }

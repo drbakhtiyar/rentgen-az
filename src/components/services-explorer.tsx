@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { ServiceIcon } from "@/components/ui/service-icon";
+import { useLocale } from "@/components/locale-context";
+import { countLabel, RU_FORMS } from "@/lib/i18n";
 
 export type ExplorerService = {
   slug: string;
@@ -43,6 +45,8 @@ export function ServicesExplorer({
   categoryLabels?: Record<string, string>;
   labels: { all: string; centerWord: string; more: string };
 }) {
+  const locale = useLocale();
+  const centerCount = (n: number) => countLabel(locale, n, labels.centerWord, RU_FORMS.center);
   const [active, setActive] = React.useState<string | null>(null);
   const shown = active ? services.filter((s) => s.category === active) : services;
   const catLabel = (c: string) => categoryLabels?.[c] ?? c;
@@ -98,7 +102,7 @@ export function ServicesExplorer({
                   />
                   {s.count > 0 && (
                     <span className="absolute right-2 top-2 rounded-full bg-[#070b20]/60 px-2 py-0.5 text-[10px] font-medium text-mint-vital ring-1 ring-mint-vital/40 backdrop-blur-sm">
-                      {s.count} {labels.centerWord}
+                      {centerCount(s.count)}
                     </span>
                   )}
                 </div>
@@ -144,7 +148,7 @@ export function ServicesExplorer({
                     )}
                     {s.count > 0 && (
                       <span className="text-slate-500">
-                        {s.count} {labels.centerWord}
+                        {centerCount(s.count)}
                       </span>
                     )}
                   </div>

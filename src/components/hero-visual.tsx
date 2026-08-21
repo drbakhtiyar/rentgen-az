@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { AZ_MAINLAND, AZ_NAKHCHIVAN, AZ_CITY_COORDS, cityCoords, canonCity, CITY_RU } from "@/lib/az-cities";
 import { AZ_RAYONS, AZ_OUTLINE } from "@/lib/az-rayons";
+import { ruCount, RU_FORMS } from "@/lib/i18n";
 
 /**
  * Decorative Azerbaijan map hero visual — two variants:
@@ -247,7 +248,13 @@ export function HeroVisual({
         <span className="text-[11px] font-medium text-clinical">{ru ? "Центры по всему Азербайджану" : "Bütün Azərbaycan üzrə mərkəzlər"}</span>
         <span className="flex items-center gap-1.5 text-[11px] text-pearl/70">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-vital" />
-          {VARIANT === "rayons" ? `${coveredCount} ${ru ? "районов" : "rayon"}` : `${markers.length} ${ru ? "городов" : "şəhər"}`}
+          {VARIANT === "rayons"
+            ? ru
+              ? ruCount(coveredCount, RU_FORMS.rayon)
+              : `${coveredCount} rayon`
+            : ru
+              ? ruCount(markers.length, RU_FORMS.city)
+              : `${markers.length} şəhər`}
         </span>
       </div>
     </div>

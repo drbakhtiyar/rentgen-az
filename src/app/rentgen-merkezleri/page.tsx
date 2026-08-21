@@ -22,7 +22,7 @@ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getLocale } from "@/lib/i18n-server";
 import { cityLabel } from "@/lib/az-cities";
 import { centerIdsForNameQuery } from "@/lib/queries";
-import { getDict } from "@/lib/i18n";
+import { getDict, ruPlural, RU_FORMS } from "@/lib/i18n";
 import { parseSort, combinedRatingScore, bayesian } from "@/lib/rating";
 import { getCityPages } from "@/lib/city-pages";
 import Link from "next/link";
@@ -166,7 +166,7 @@ export default async function CentersPage({
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600">
               <span className="font-semibold text-ink-900">{total}</span>{" "}
-              {d.centers.found}
+              {locale === "ru" ? ruPlural(total, RU_FORMS.centerFound) : d.centers.found}
               {totalPages > 1 && (
                 <span className="text-slate-400"> · {d.centers.page} {page}/{totalPages}</span>
               )}

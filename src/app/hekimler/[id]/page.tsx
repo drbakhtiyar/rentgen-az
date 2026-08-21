@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Stethoscope, MapPin, BadgeCheck, AtSign, Globe, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Stethoscope, MapPin, BadgeCheck, AtSign, Globe, ArrowRight, ArrowUpRight, Clock, GraduationCap, Award, Briefcase, ListChecks } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
@@ -58,6 +58,11 @@ export default async function DoctorProfilePage({
     doctor.workplaceStatus === "ACCEPTED" && doctor.workplaceCenter?.status === "APPROVED"
       ? doctor.workplaceCenter
       : null;
+  // Təcrübə ili (2026-08-21): fəaliyyətə başlama ilindən avtomatik hesablanır
+  const expYears = doctor.careerStartYear
+    ? Math.max(0, new Date().getFullYear() - doctor.careerStartYear)
+    : null;
+  const ru = locale === "ru";
   const instagramUrl = doctor.instagram
     ? doctor.instagram.startsWith("http")
       ? doctor.instagram
@@ -99,6 +104,11 @@ export default async function DoctorProfilePage({
               <BadgeCheck className="h-4 w-4" /> {t.verified}
             </span>
           )}
+          {expYears !== null && expYears > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white">
+              <Clock className="h-4 w-4 text-cyan-300" /> {ru ? `Стаж: ${expYears} лет` : `Təcrübə: ${expYears} il`}
+            </span>
+          )}
           {doctor.city && (
             <span className="flex items-center gap-1.5 text-sm text-slate-300">
               <MapPin className="h-4 w-4 text-cyan-400" /> {doctor.city}
@@ -113,7 +123,7 @@ export default async function DoctorProfilePage({
             <div className="space-y-6">
               <Card className="p-6">
                 <div className="flex items-start gap-4">
-                  <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+                  <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
                     {doctor.photoUrl ? (
                       <Image
                         src={doctor.photoUrl}
@@ -125,6 +135,11 @@ export default async function DoctorProfilePage({
                       />
                     ) : (
                       <Stethoscope className="h-8 w-8" />
+                    )}
+                    {verified && (
+                      <span className="absolute bottom-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white shadow" title="Təsdiqlənmiş həkim">
+                        <BadgeCheck className="h-3.5 w-3.5" />
+                      </span>
                     )}
                   </span>
                   <div>
@@ -193,6 +208,42 @@ export default async function DoctorProfilePage({
                 )}
               </Card>
 
+              {/* Ekspertiza — nə ilə məşğuldur (2026-08-21 zəngin profil) */}
+              {doctor.expertise.length > 0 && (
+                <Card className="p-6">
+                  <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink-900">
+                    <ListChecks className="h-5 w-5 text-brand-500" />
+                    {ru ? "Чем занимается врач" : "Həkim nə ilə məşğuldur"}
+                  </h2>
+                  <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {doctor.expertise.map((e) => (
+                      <li key={e} className="flex items-start gap-2 text-sm text-slate-700">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
+                        {e}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
+
+              {/* İş təcrübəsi */}
+              {doctor.workHistory.length > 0 && (
+                <Card className="p-6">
+                  <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink-900">
+                    <Briefcase className="h-5 w-5 text-brand-500" />
+                    {ru ? "Опыт работы" : "İş təcrübəsi"}
+                  </h2>
+                  <ul className="mt-4 space-y-2.5">
+                    {doctor.workHistory.map((w) => (
+                      <li key={w} className="flex items-start gap-2.5 text-sm text-slate-700">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
+                        {w}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
+
               {doctorLimits(doctor.plan).portfolio && doctor.portfolio.length > 0 && (
                 <Card className="mt-6 p-6">
                   <h2 className="font-display text-lg font-bold text-ink-900">
@@ -217,6 +268,40 @@ export default async function DoctorProfilePage({
             </div>
 
             <aside className="space-y-6">
+              {/* Təhsil (2026-08-21 zəngin profil) */}
+              {doctor.education.length > 0 && (
+                <Card className="p-6">
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500">
+                    <GraduationCap className="h-4 w-4 text-brand-500" /> {ru ? "Образование" : "Təhsil"}
+                  </h3>
+                  <ul className="mt-3 space-y-2.5">
+                    {doctor.education.map((e) => (
+                      <li key={e} className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
+                        {e}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
+
+              {/* Kurslar və konfranslar */}
+              {doctor.courses.length > 0 && (
+                <Card className="p-6">
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500">
+                    <Award className="h-4 w-4 text-brand-500" /> {ru ? "Курсы и конференции" : "Kurslar və konfranslar"}
+                  </h3>
+                  <ul className="mt-3 space-y-2.5">
+                    {doctor.courses.map((c) => (
+                      <li key={c} className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
+
               <Card className="p-6">
                 <h3 className="font-display text-base font-bold text-ink-900">
                   {t.needXray}

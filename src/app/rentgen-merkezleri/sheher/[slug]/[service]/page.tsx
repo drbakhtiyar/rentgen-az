@@ -13,7 +13,7 @@ import { getCityStats } from "@/lib/city-pages";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
 import { getLocale } from "@/lib/i18n-server";
-import { getDict } from "@/lib/i18n";
+import { getDict, ruPlural, RU_FORMS } from "@/lib/i18n";
 import { parseSort, combinedRatingScore } from "@/lib/rating";
 import { locative } from "@/lib/center-description";
 import { serviceNameRu, categoryRu } from "@/content/services-ru";
@@ -150,7 +150,8 @@ export default async function CityServicePage({
         <Container>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-slate-600">
-              <span className="font-semibold text-ink-900">{sorted.length}</span> {d.centers.found}
+              <span className="font-semibold text-ink-900">{sorted.length}</span>{" "}
+              {locale === "ru" ? ruPlural(sorted.length, RU_FORMS.centerFound) : d.centers.found}
               <span className="text-slate-400"> · {page.city.name} · {svc}</span>
             </p>
             <Link

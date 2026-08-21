@@ -15,7 +15,7 @@ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
 import { getLocale } from "@/lib/i18n-server";
 import { serviceNameRu } from "@/content/services-ru";
-import { getDict } from "@/lib/i18n";
+import { getDict, ruPlural, RU_FORMS } from "@/lib/i18n";
 import { parseSort, combinedRatingScore } from "@/lib/rating";
 
 export const revalidate = 300;
@@ -201,7 +201,8 @@ export default async function CityPage({
 
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600">
-              <span className="font-semibold text-ink-900">{sorted.length}</span> {d.centers.found}
+              <span className="font-semibold text-ink-900">{sorted.length}</span>{" "}
+              {locale === "ru" ? ruPlural(sorted.length, RU_FORMS.centerFound) : d.centers.found}
               <span className="text-slate-400"> · {city.name}</span>
             </p>
           </div>

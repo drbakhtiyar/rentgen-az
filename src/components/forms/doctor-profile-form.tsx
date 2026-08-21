@@ -39,6 +39,11 @@ export type DoctorFormDefaults = {
   specialtyUrl?: string;
   workplaceCenterId?: string;
   workplaceStatus?: string;
+  careerStartYear?: number | null;
+  education?: string[];
+  courses?: string[];
+  workHistory?: string[];
+  expertise?: string[];
 };
 
 type SaveInput = {
@@ -58,6 +63,11 @@ type SaveInput = {
   residencyUrl: string;
   internshipUrl: string;
   specialtyUrl: string;
+  careerStartYear: number | null;
+  education: string[];
+  courses: string[];
+  workHistory: string[];
+  expertise: string[];
   workplaceCenterId: string;
 };
 
@@ -191,6 +201,9 @@ export function DoctorProfileForm({
     );
   }
 
+  /** Textarea → massiv: hər qeyri-boş sətir bir bənddir (2026-08-21). */
+  const lines = (v: string) => v.split("\n").map((x) => x.trim()).filter(Boolean);
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -217,6 +230,11 @@ export function DoctorProfileForm({
         residencyUrl,
         internshipUrl,
         specialtyUrl,
+        careerStartYear: get("careerStartYear") ? parseInt(get("careerStartYear"), 10) : null,
+        education: lines(get("education")),
+        courses: lines(get("courses")),
+        workHistory: lines(get("workHistory")),
+        expertise: lines(get("expertise")),
       });
       if (!res.ok) {
         setError(res.error ?? t.genericError);
@@ -361,6 +379,92 @@ export function DoctorProfileForm({
         {/* 2026-08-19: siyahı genişləndi (40+ ixtisas) — çiplər əvəzinə
             axtarışlı seçici (fold-fuzzy: dəqiq yazmasa da tapır) */}
         <SpecializationsPicker value={specs} onChange={setSpecs} />
+      </div>
+
+      {/* Zəngin profil (2026-08-21): təcrübə + təhsil + kurslar + karyera +
+          ekspertiza — hamısı sətir-sətir yazılır, profildə bullet olur */}
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+        <p className="text-sm font-semibold text-ink-800">
+          {ru ? "Расширенный профиль" : "Zəngin profil"}{" "}
+          <span className="font-normal text-slate-400">
+            {ru ? "показывается пациентам в вашем профиле" : "pasiyentlərə profilinizdə göstərilir"}
+          </span>
+        </p>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <Field
+            label={ru ? "Год начала деятельности" : "Fəaliyyətə başlama ili"}
+            htmlFor="careerStartYear"
+            hint={ru ? "для бейджа «Стаж: X лет»" : "«Təcrübə: X il» nişanı üçün"}
+          >
+            <Input
+              id="careerStartYear"
+              name="careerStartYear"
+              type="number"
+              min={1950}
+              max={new Date().getFullYear()}
+              defaultValue={defaults?.careerStartYear ?? ""}
+              placeholder="2008"
+            />
+          </Field>
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <Field
+            label={ru ? "Образование" : "Təhsil"}
+            htmlFor="education"
+            hint={ru ? "каждая строка — отдельный пункт" : "hər sətir bir bənddir"}
+          >
+            <textarea
+              id="education"
+              name="education"
+              rows={4}
+              defaultValue={(defaults?.education ?? []).join("\n")}
+              placeholder={"2003–2009 · Azərbaycan Tibb Universiteti — Müalicə işi\n2009–2010 · İnternatura — ..."}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-brand-400"
+            />
+          </Field>
+          <Field
+            label={ru ? "Курсы и конференции" : "Kurslar və konfranslar"}
+            htmlFor="courses"
+            hint={ru ? "каждая строка — отдельный пункт" : "hər sətir bir bənddir"}
+          >
+            <textarea
+              id="courses"
+              name="courses"
+              rows={4}
+              defaultValue={(defaults?.courses ?? []).join("\n")}
+              placeholder={"2018 · «Sonsuzluğun müalicəsində müasir texnologiyalar» (Bakı)\n2021 · ..."}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-brand-400"
+            />
+          </Field>
+          <Field
+            label={ru ? "Опыт работы" : "İş təcrübəsi"}
+            htmlFor="workHistory"
+            hint={ru ? "каждая строка — отдельный пункт" : "hər sətir bir bənddir"}
+          >
+            <textarea
+              id="workHistory"
+              name="workHistory"
+              rows={4}
+              defaultValue={(defaults?.workHistory ?? []).join("\n")}
+              placeholder={"2016 – indiyədək · Leyla Medical Center\n2010–2016 · ..."}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-brand-400"
+            />
+          </Field>
+          <Field
+            label={ru ? "Чем занимаюсь (экспертиза)" : "Nə ilə məşğulam (ekspertiza)"}
+            htmlFor="expertise"
+            hint={ru ? "процедуры, заболевания — по строке" : "prosedurlar, xəstəliklər — sətir-sətir"}
+          >
+            <textarea
+              id="expertise"
+              name="expertise"
+              rows={4}
+              defaultValue={(defaults?.expertise ?? []).join("\n")}
+              placeholder={"İmplantasiya\nQapalı cərrahi əməliyyatlar\nOrtodontik müalicə"}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-brand-400"
+            />
+          </Field>
+        </div>
       </div>
 
       {/* Portfolio (Silver+) */}

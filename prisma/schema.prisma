@@ -665,6 +665,12 @@ model DoctorProfile {
   lastName        String?
   fatherName        String? // ata adı (2026-08-19, istəyə bağlı)
   clinic          String? // iş yeri / klinika
+  // Zəngin profil (2026-08-21): e-hekim.az təhlilindən sonra istifadəçi qərarı
+  careerStartYear Int? // fəaliyyətə başlama ili → «Təcrübə: X il» avtomatik
+  education       String[] @default([]) // hər sətir: «2003–2009 · ATU — Müalicə işi»
+  courses         String[] @default([]) // kurs/konfrans: «2018 · ... (Bakı)»
+  workHistory     String[] @default([]) // karyera: «2016–indiyədək · Leyla MC»
+  expertise       String[] @default([]) // nə müalicə edir / bacarıqlar (bullet)
   specialization  String? // (köhnə — sərbəst mətn, istifadə olunmur)
   specializations String[]     @default([]) // seçilmiş ixtisaslar
   portfolio       String[]     @default([]) // iş nümunələri (Silver+ brendinq)

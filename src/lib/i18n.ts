@@ -14,6 +14,49 @@ export function isLocale(v: unknown): v is Locale {
   return v === "az" || v === "ru";
 }
 
+/**
+ * Rus dilində say uzlaşması: 1 район / 2–4 района / 5–20 районов.
+ * `forms` sırası: [tək, az say (2–4), çox say (5+)].
+ */
+export function ruPlural(n: number, forms: readonly [string, string, string]): string {
+  const abs = Math.abs(n) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return forms[2];
+  if (last > 1 && last < 5) return forms[1];
+  if (last === 1) return forms[0];
+  return forms[2];
+}
+
+/** `ruPlural`-ın say ilə birlikdə formatlanmış variantı: "24 района". */
+export function ruCount(n: number, forms: readonly [string, string, string]): string {
+  return `${n} ${ruPlural(n, forms)}`;
+}
+
+/**
+ * Say + isim. Azərbaycan dilində saydan sonra isim dəyişmir ("24 rayon"),
+ * rus dilində isə uzlaşma tələb olunur ("24 района").
+ */
+export function countLabel(
+  locale: Locale,
+  n: number,
+  az: string,
+  ru: readonly [string, string, string],
+): string {
+  return locale === "ru" ? ruCount(n, ru) : `${n} ${az}`;
+}
+
+/** Tez-tez işlənən say formaları — bir yerdə saxlanılır ki, uzlaşma hər yerdə eyni olsun. */
+export const RU_FORMS = {
+  center: ["центр", "центра", "центров"],
+  doctor: ["врач", "врача", "врачей"],
+  review: ["отзыв", "отзыва", "отзывов"],
+  service: ["услуга", "услуги", "услуг"],
+  rayon: ["район", "района", "районов"],
+  city: ["город", "города", "городов"],
+  /** "N центр найден" — feli də uzlaşdırılıb. */
+  centerFound: ["центр найден", "центра найдено", "центров найдено"],
+} as const satisfies Record<string, readonly [string, string, string]>;
+
 type Dict = {
   nav: {
     centers: string;
@@ -1117,7 +1160,7 @@ const ru: Dict = {
     description:
       "Рентген, КТ, МРТ, УЗИ, маммография, денситометрия и стоматологическая томография — 112 услуг визуализации: найдите проверенные центры и сравните цены.",
     categorySuffix: "— услуги",
-    centerWord: "центр.",
+    centerWord: "центр",
     more: "Подробнее и центры",
   },
   doctors: {
@@ -1225,7 +1268,7 @@ const ru: Dict = {
     servicesTitle: "Все рентген-услуги",
     servicesDesc:
       "Виды рентгена и томографии, необходимые для диагностики и планирования лечения.",
-    centerCount: "центр.",
+    centerCount: "центр",
     more: "Подробнее",
     allServices: "Все услуги",
     centersEyebrow: "Проверенные центры",

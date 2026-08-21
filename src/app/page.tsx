@@ -35,7 +35,7 @@ import { getHomeFaq } from "@/content/faq";
 import { formatDateAz } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { serviceNameRu } from "@/content/services-ru";
-import { getDict } from "@/lib/i18n";
+import { getDict, ruCount, RU_FORMS } from "@/lib/i18n";
 import { pickCrossCategoryRandom } from "@/lib/random-services";
 
 export const revalidate = 300;
@@ -209,7 +209,9 @@ export default async function HomePage() {
                   <div className="mt-auto flex items-center justify-between pt-4">
                     {counts[s.slug] ? (
                       <span className="rounded-full border border-mint-vital/50 px-2.5 py-0.5 text-xs font-medium text-mint-vital">
-                        {counts[s.slug]} {d.home.centerCount}
+                        {locale === "ru"
+                          ? ruCount(counts[s.slug], RU_FORMS.center)
+                          : `${counts[s.slug]} ${d.home.centerCount}`}
                       </span>
                     ) : (
                       <span />
