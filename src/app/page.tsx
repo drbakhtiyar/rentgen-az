@@ -142,10 +142,20 @@ export default async function HomePage() {
       {/* ============ METRİK LENTİ — Highlighted Metric Blocks ============ */}
       <div className="bg-iris-canvas">
         <Container>
-          <div className="grid grid-cols-2 gap-3 py-10 sm:grid-cols-3 lg:grid-cols-5">
+          {/* 2026-08-21 istifadəçi qərarı: həkim sayı 320 döşəməsi ilə göstərilir —
+              real say 320-ni keçəndə avtomatik real rəqəmə keçir (321, 322…).
+              Pasiyent kartı real say 500-ə çatana qədər GİZLİDİR; çatanda
+              avtomatik qayıdır və real say davam edir. */}
+          <div
+            className={`grid grid-cols-2 gap-3 py-10 sm:grid-cols-3 ${
+              stats.patients >= 500 ? "lg:grid-cols-5" : "lg:grid-cols-4"
+            }`}
+          >
             <Metric value={`${stats.approvedCenters}`} label={d.home.statCenters} icon={<Building2 />} />
-            <Metric value={`${stats.doctors}`} label={d.home.statDoctors} icon={<Stethoscope />} />
-            <Metric value={`${stats.patients}`} label={d.home.statPatients} icon={<Users />} />
+            <Metric value={`${Math.max(stats.doctors, 320)}`} label={d.home.statDoctors} icon={<Stethoscope />} />
+            {stats.patients >= 500 && (
+              <Metric value={`${stats.patients}`} label={d.home.statPatients} icon={<Users />} />
+            )}
             <Metric value={`${allServices.length}`} label={d.home.statServices} icon={<ScanLine />} />
             <Metric value={`${stats.cities}`} label={d.home.statDistricts} icon={<MapPin />} />
           </div>

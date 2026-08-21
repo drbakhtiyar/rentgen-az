@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { marked } from "marked";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import { Container, Section } from "@/components/ui/container";
@@ -16,6 +16,7 @@ import { PLATFORM_WHATSAPP_URL } from "@/lib/constants";
 import { formatDateAz } from "@/lib/utils";
 import { getLocale } from "@/lib/i18n-server";
 import { getDict } from "@/lib/i18n";
+import { blogSlugForLocale } from "@/content/blog-translations";
 
 // The global header reads auth cookies, so all routes render dynamically (SSR).
 // Forcing dynamic avoids a static-optimization conflict for this catch-all route.
@@ -52,6 +53,17 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   const locale = await getLocale();
+
+  // Bloq yazıları hər dil üçün AYRI sətirdir və slug-ları fərqlidir. Slug cari
+  // dilə aid deyilsə (məs. /ru/blog/cbct-nedir) rus interfeysində azərbaycanca
+  // mətn göstərilirdi — tərcüməsi varsa onun öz URL-inə yönləndiririk.
+  // Tərcümə yoxdursa yönləndirmirik: `getLocale()` kuki ilə də təyin oluna
+  // bildiyi üçün "öz dilinə qaytar" qaydası sonsuz döngə yarada bilər.
+  if (post.locale !== locale) {
+    const twin = blogSlugForLocale(post.slug, locale);
+    if (twin) redirect(`${locale === "ru" ? "/ru" : ""}/blog/${twin}`);
+  }
+
   const ru = locale === "ru";
   const prefix = ru ? "/ru" : "";
   const t = getDict(locale).blog;
