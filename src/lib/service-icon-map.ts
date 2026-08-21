@@ -127,4 +127,15 @@ export const SERVICE_ICON_URLS: Record<string, string> = {
   // "3d-tomoqrafiya" generiki istifadəçi qərarı ilə deaktiv edildi).
   "usaqlarda-skolioz-rentgeni": `${BLOB}/usaqlarda-skolioz-rentgeni.png`,
   "3d-tomoqrafiya-frontal-nahiyye": `${BLOB}/3d-tomoqrafiya-frontal-nahiyye.png`,
+
+  // 2026-08-21 seriyası (9): floroskopiya + USM + yeni rentgen xidmətləri
+  "yasti-pencelik-rentgeni": `${BLOB}/yasti-pencelik-rentgeni.png`,
+  "said-sumukleri-rentgeni": `${BLOB}/said-sumukleri-rentgeni.png`,
+  "turk-yeheri-rentgeni": `${BLOB}/turk-yeheri-rentgeni.png`,
+  "dos-qefesi-rentgenoskopiyasi": `${BLOB}/dos-qefesi-rentgenoskopiyasi.png`,
+  "irriqoskopiya": `${BLOB}/irriqoskopiya.png`,
+  "ginekoloji-usm": `${BLOB}/ginekoloji-usm.png`,
+  "uroloji-usm": `${BLOB}/uroloji-usm.png`,
+  "limfa-duyunleri-usm": `${BLOB}/limfa-duyunleri-usm.png`,
+  "yumsaq-toxuma-usm": `${BLOB}/yumsaq-toxuma-usm.png`,
 };
