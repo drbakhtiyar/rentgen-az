@@ -27,7 +27,9 @@ import {
   AlertCircle,
   Bot,
   MessageCircle,
-  Plus,, MailQuestion } from "lucide-react";
+  Plus,
+  MailQuestion,
+} from "lucide-react";
 import type { NavItem } from "./nav";
 
 export const centerNav: NavItem[] = [
