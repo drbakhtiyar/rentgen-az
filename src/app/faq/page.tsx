@@ -64,7 +64,7 @@ export default async function FaqPage() {
           {/* «Cavabını tapmadınız?» — analizler.az-dakı blokun rentgen variantı
               (2026-08-16, istifadəçi istəyi). Nömrə platforma WhatsApp-ıdır —
               yazışmanı bot qarşılayır. */}
-          <div className="mx-auto mt-14 max-w-5xl rounded-3xl bg-iris-canvas px-6 py-10 text-center ring-1 ring-iris-border">
+          <div className="mx-auto mt-14 max-w-5xl rounded-3xl bg-iris-canvas px-6 pt-10 pb-8 text-center ring-1 ring-iris-border">
             <h2 className="font-display text-2xl font-semibold text-white">
               {locale === "ru" ? "Не нашли ответ?" : "Cavabını tapmadınız?"}
             </h2>

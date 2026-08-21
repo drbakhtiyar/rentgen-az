@@ -428,7 +428,11 @@ export default async function HomePage() {
       {/* ============ FİNAL CTA — Iris Glow panel ============ */}
       <section className="bg-iris-canvas pb-24 pt-4">
         <Container>
-          <div className="relative overflow-hidden rounded-[32px] bg-iris-glow px-6 py-16 text-center text-white sm:px-12">
+          <div
+            /* 2026-08-21: optik mərkəzləmə — başlığın sətir-boşluğu üstdə
+               «əriyir», alt boşluq gözə böyük görünürdü; pb qısaldıldı */
+            className="relative overflow-hidden rounded-[32px] bg-iris-glow px-6 pt-16 pb-[3.25rem] text-center text-white sm:px-12"
+          >
             <div className="relative mx-auto max-w-2xl">
               <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
                 {d.home.finalTitle}
