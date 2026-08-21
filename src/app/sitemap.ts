@@ -3,6 +3,7 @@ import { SITE_URL } from "@/lib/env";
 import { prisma } from "@/lib/db";
 import { getCityPages } from "@/lib/city-pages";
 import { getCityServicePages } from "@/lib/city-service-pages";
+import { blogSlugForLocale } from "@/content/blog-translations";
 
 export const revalidate = 3600;
 
@@ -142,21 +143,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     /* DB unavailable — skip dynamic entries */
   }
 
-  // Published blog posts — AZ and RU posts have DIFFERENT slugs (separate
-  // content), so they are listed at their own locale URL without hreflang
-  // pairing.
+  // Published blog posts — AZ and RU versions are separate rows with DIFFERENT
+  // slugs. Hər biri öz URL-i ilə verilir; cütü `blog-translations.ts`-də
+  // tanınırsa hreflang ilə bir-birinə bağlanır (Google fərqli slug-ları dil
+  // versiyası kimi qəbul edir, şərt eyni slug deyil).
   try {
     const posts = await prisma.blogPost.findMany({
       where: { published: true },
       select: { slug: true, updatedAt: true, locale: true },
     });
+    const publishedSlugs = new Set(posts.map((p) => p.slug));
     for (const p of posts) {
       const prefix = p.locale === "ru" ? "/ru" : "";
+      const url = `${SITE_URL}${prefix}/blog/${p.slug}`;
+      const otherLocale = p.locale === "ru" ? "az" : "ru";
+      const twin = blogSlugForLocale(p.slug, otherLocale);
+      const hasTwin = twin != null && twin !== p.slug && publishedSlugs.has(twin);
+      const twinUrl = hasTwin
+        ? `${SITE_URL}${otherLocale === "ru" ? "/ru" : ""}/blog/${twin}`
+        : null;
+      const az = p.locale === "az" ? url : twinUrl;
+      const ru = p.locale === "ru" ? url : twinUrl;
       entries.push({
-        url: `${SITE_URL}${prefix}/blog/${p.slug}`,
+        url,
         lastModified: p.updatedAt,
         changeFrequency: "monthly",
         priority: 0.6,
+        ...(az && ru
+          ? { alternates: { languages: { az, ru, "x-default": az } } }
+          : {}),
       });
     }
   } catch {

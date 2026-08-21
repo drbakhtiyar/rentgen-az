@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SITE_URL } from "./env";
 import { PLATFORM_WHATSAPP } from "./constants";
+import { blogSlugForLocale } from "@/content/blog-translations";
 
 export const SITE = {
   name: "Rentgen.az",
@@ -30,9 +31,33 @@ export function canonical(path = "/"): string {
 /**
  * Self-referencing canonical + bilingual hreflang for a public page.
  * `path` is the logical (un-prefixed) path; az lives at it, ru at `/ru<path>`.
+ *
+ * İstisna — bloq: AZ və RU yazılar ayrı sətirlərdir və slug-ları FƏRQLİDİR
+ * (`/blog/cbct-nedir` ↔ `/ru/blog/cbct-chto-eto`). Sadə prefiks məntiqi burada
+ * mövcud olmayan URL-ə işarə edirdi, ona görə slug dil üzrə çevrilir.
  */
 export function hreflangAlternates(path: string, locale: "az" | "ru") {
   const clean = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
+
+  const blog = /^\/blog\/([^/]+)$/.exec(clean);
+  if (blog) {
+    const slug = decodeURIComponent(blog[1]);
+    const azSlug = blogSlugForLocale(slug, "az");
+    const ruSlug = blogSlugForLocale(slug, "ru");
+    if (azSlug && ruSlug) {
+      const az = `${SITE_URL}/blog/${azSlug}`;
+      const ru = `${SITE_URL}/ru/blog/${ruSlug}`;
+      return {
+        canonical: locale === "ru" ? ru : az,
+        languages: { az, ru, "x-default": az },
+      };
+    }
+    // Cütü tanınmayan yazı (məs. admin paneldən yeni əlavə olunub) — yalnız öz
+    // dilində mövcuddur, ona görə alternativ elan etmirik.
+    const self = `${SITE_URL}${locale === "ru" ? "/ru" : ""}/blog/${slug}`;
+    return { canonical: self, languages: { "x-default": self } };
+  }
+
   const az = `${SITE_URL}${clean}`;
   const ru = `${SITE_URL}/ru${clean}`;
   return {

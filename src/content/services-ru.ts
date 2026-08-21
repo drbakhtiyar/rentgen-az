@@ -154,6 +154,23 @@ Object.assign(SERVICE_NAME_RU, {
   "Uroloji USM": "Урологическое УЗИ",
   "Limfa düyünləri USM": "УЗИ лимфатических узлов",
   "Yumşaq toxuma USM": "УЗИ мягких тканей",
+
+  // 2026-08-21: RU marquee/kataloqda AZ qalan 15 ad tamamlandı
+  "TMJ qapalı ağızla": "ВНЧС с закрытым ртом",
+  "TMJ açıq ağızla": "ВНЧС с открытым ртом",
+  "3D tomoqrafiya Üst Çənə": "3D томография верхней челюсти",
+  "3D tomoqrafiya Alt çənə": "3D томография нижней челюсти",
+  "3D tomoqrafiya Alt-Üst Çənə": "3D томография обеих челюстей",
+  "3D Tomoqrafiya hissevi": "3D томография сегментарная",
+  "3D tomoqrafiya Frontal Nahiyye": "3D томография фронтального отдела",
+  "3D tomoqrafiya Tam Üz": "3D томография всего лица",
+  "Cərrahi şablon çapı": "Печать хирургического шаблона",
+  "Cərrahi şablon Dizaynı": "Дизайн хирургического шаблона",
+  "Sefalometrik rentgen (analiz daxil)": "Цефалометрический рентген (с анализом)",
+  "Ağız içi intraoral skan": "Интраоральное сканирование",
+  "Burunətrafı və alın ciblərin KT-si": "КТ придаточных пазух носа и лобных пазух",
+  "Ünvanda rentgen xidməti": "Рентген на дому (выезд)",
+  "Qarın boşluğu rentgeni": "Рентген брюшной полости",
 });
 
 /** RU name for an AZ service name (falls back to the AZ name). */
