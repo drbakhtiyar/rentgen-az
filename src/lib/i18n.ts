@@ -787,7 +787,7 @@ const az: Dict = {
     eyebrow: "Bizimlə əlaqə",
     title: "Əlaqə",
     description:
-      "Suallarınız var? Bizimlə əlaqə saxlayın və ya aşağıdakı formanı doldurun — komandamız sizə kömək edəcək.",
+      "Suallarınız, təklifləriniz və əməkdaşlıq üçün bizə yazın — ən qısa zamanda cavablandıracağıq.",
     infoTitle: "Əlaqə məlumatları",
     phone: "Telefon",
     email: "E-poçt",
@@ -1325,7 +1325,7 @@ const ru: Dict = {
     eyebrow: "Свяжитесь с нами",
     title: "Контакты",
     description:
-      "Есть вопросы? Свяжитесь с нами или заполните форму ниже — наша команда поможет вам.",
+      "Пишите нам по вопросам, предложениям и сотрудничеству — ответим в кратчайшие сроки.",
     infoTitle: "Контактная информация",
     phone: "Телефон",
     email: "Эл. почта",
