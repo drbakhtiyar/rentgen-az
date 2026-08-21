@@ -594,6 +594,67 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       },
     ],
   },
+
+  // 2026-08-21: çapı səhifəsi ilə eyni düzəliş — dizayn da rentgen deyil,
+  // rəqəmsal planlama xidmətidir.
+  "cerrahi-sablon-dizayni": {
+    metaTitle: "Cərrahi şablon dizaynı — implantın rəqəmsal planlaması | Rentgen.az",
+    metaDescription:
+      "İmplantasiya üçün cərrahi şablonun (surgical guide) rəqəmsal dizaynı: CBCT + ağız içi skan əsasında virtual plan. Bakıda bu xidməti göstərən mərkəzlər — Rentgen.az.",
+    keywords: [
+      "cərrahi şablon dizaynı",
+      "surgical guide dizayn",
+      "implant planlaması",
+      "rəqəmsal implantologiya",
+      "naviqasiyalı implantasiya",
+      "Bakı",
+    ],
+    intro:
+      "Cərrahi şablon dizaynı — dental implantasiyanın rəqəmsal planlama mərhələsidir: 3D tomoqrafiya (CBCT) və ağız içi skan məlumatları əsasında implantın dəqiq mövqeyi virtual mühitdə müəyyən edilir və çap üçün şablon modeli hazırlanır. Bu xidmət rentgen müayinəsi deyil — kompüter üzərində aparılan planlama işidir.",
+    sections: [
+      {
+        heading: "Şablon dizaynı nəyi əhatə edir?",
+        body: "Xüsusi planlama proqramında CBCT və skan məlumatları üst-üstə salınır; sümük həcmi, sinir kanalı və sinusların mövqeyi qiymətləndirilir; implantın markası, ölçüsü, bucağı və dərinliyi seçilir. Plana uyğun olaraq yönləndirici yuvaları olan şablonun 3D modeli qurulur.",
+      },
+      {
+        heading: "Dizayn və çap: fərq nədədir?",
+        body: "Dizayn — virtual planlama və şablonun rəqəmsal modelinin hazırlanmasıdır; çap isə bu modelin 3D printerdə fiziki istehsalıdır. Bəzi mərkəzlər hər iki mərhələni birlikdə, bəziləri yalnız birini təklif edir — Rentgen.az-da hər iki xidmətin səhifəsi ayrıca mövcuddur.",
+      },
+      {
+        heading: "Bakıda cərrahi şablon dizaynı qiyməti",
+        body: "Qiymət planlaşdırılan implant sayından və işin mürəkkəbliyindən asılıdır. Rentgen.az-da bu xidməti göstərən mərkəzlərin qiymətlərini müqayisə edib birbaşa əlaqə saxlaya bilərsiniz.",
+      },
+    ],
+    benefits: [
+      "İmplant mövqeyinin əməliyyatdan əvvəl dəqiq planlaşdırılması",
+      "Anatomik risklərin (sinir kanalı, sinus) əvvəlcədən qiymətləndirilməsi",
+      "Protez-yönümlü planlama — son nəticəyə uyğun implant yerləşimi",
+      "Cərrah üçün proqnozlaşdırılan, sənədləşdirilmiş plan",
+    ],
+    whenNeeded: [
+      "Naviqasiyalı implantasiyaya hazırlıq mərhələsində",
+      "Çoxsaylı implant və tam çənə bərpası planlamasında",
+      "Sümük defisiti və ya riskli anatomiya olduqda",
+      "Protez planına uyğun dəqiq yerləşim tələb olunanda",
+    ],
+    faq: [
+      {
+        question: "Dizayn mərhələsində şüalanma varmı?",
+        answer:
+          "Xeyr. Dizayn tamamilə kompüter üzərində aparılır. Şüalanma yalnız planlama üçün istifadə olunan 3D tomoqrafiya (CBCT) müayinəsinə aiddir və o, ayrıca xidmətdir.",
+      },
+      {
+        question: "Dizayn üçün hansı məlumatlar lazımdır?",
+        answer:
+          "3D tomoqrafiya (CBCT) və ağız içi skan (və ya gips modelin skanı). Bu iki məlumat proqramda birləşdirilərək dəqiq virtual plan qurulur.",
+      },
+      {
+        question: "Dizayn nə qədər vaxt aparır?",
+        answer:
+          "Sadə hallarda 1 iş günü kifayət edir; çoxsaylı implant və mürəkkəb planlamada müddət arta bilər — dəqiq vaxtı mərkəz bildirir.",
+      },
+    ],
+  },
 };
 
 /** Russian hand-written rich content, mirroring SERVICE_CONTENT (dental slugs). */
@@ -927,6 +988,65 @@ export const SERVICE_CONTENT_RU: Record<string, ServiceContent> = {
         question: "На основе каких данных делается шаблон?",
         answer:
           "Объединяются данные КЛКТ и внутриротового скана (или скана гипсовой модели) — шаблон печатается строго по этому цифровому плану.",
+      },
+    ],
+  },
+
+  "cerrahi-sablon-dizayni": {
+    metaTitle: "Дизайн хирургического шаблона — цифровое планирование имплантации | Rentgen.az",
+    metaDescription:
+      "Цифровой дизайн хирургического шаблона (surgical guide): виртуальный план имплантации на основе КЛКТ и внутриротового скана. Центры в Баку — Rentgen.az.",
+    keywords: [
+      "дизайн хирургического шаблона",
+      "surgical guide дизайн",
+      "планирование имплантации",
+      "цифровая имплантология",
+      "навигационная имплантация",
+      "Баку",
+    ],
+    intro:
+      "Дизайн хирургического шаблона — это этап цифрового планирования имплантации: на основе КЛКТ и внутриротового сканирования положение имплантата определяется виртуально, и готовится цифровая модель шаблона для печати. Это не рентгеновское исследование, а компьютерное планирование.",
+    sections: [
+      {
+        heading: "Что включает дизайн шаблона?",
+        body: "В программе планирования совмещаются данные КЛКТ и скана; оцениваются объём кости, положение нервного канала и синусов; выбираются система, размер, угол и глубина имплантата. По плану строится 3D-модель шаблона с направляющими втулками.",
+      },
+      {
+        heading: "Дизайн и печать: в чём разница?",
+        body: "Дизайн — виртуальное планирование и подготовка цифровой модели; печать — физическое изготовление модели на 3D-принтере. Одни центры предлагают оба этапа вместе, другие — только один; на Rentgen.az у каждой услуги отдельная страница.",
+      },
+      {
+        heading: "Цена дизайна хирургического шаблона в Баку",
+        body: "Цена зависит от числа планируемых имплантатов и сложности случая. На Rentgen.az можно сравнить цены центров и связаться с ними напрямую.",
+      },
+    ],
+    benefits: [
+      "Точное планирование позиции имплантата до операции",
+      "Оценка анатомических рисков (нервный канал, синус) заранее",
+      "Протетически-ориентированное планирование под итоговую конструкцию",
+      "Предсказуемый, документированный план для хирурга",
+    ],
+    whenNeeded: [
+      "При подготовке к навигационной имплантации",
+      "При множественных имплантатах и полном восстановлении челюсти",
+      "При дефиците кости или рискованной анатомии",
+      "Когда требуется точная позиция под протез",
+    ],
+    faq: [
+      {
+        question: "Есть ли облучение на этапе дизайна?",
+        answer:
+          "Нет. Дизайн выполняется полностью на компьютере. Облучение относится только к КЛКТ, которая проводится отдельно для планирования.",
+      },
+      {
+        question: "Какие данные нужны для дизайна?",
+        answer:
+          "КЛКТ и внутриротовой скан (или скан гипсовой модели) — они совмещаются в программе для точного виртуального плана.",
+      },
+      {
+        question: "Сколько времени занимает дизайн?",
+        answer:
+          "В простых случаях достаточно одного рабочего дня; при множественных имплантатах срок может увеличиться — точное время сообщит центр.",
       },
     ],
   },
