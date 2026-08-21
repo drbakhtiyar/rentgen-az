@@ -116,6 +116,23 @@ export default async function ContactPage() {
                   : "Aşağıdakı formanı doldurun — sorğunuzu qəbul edib sizinlə əlaqə saxlayacağıq."}
               </p>
               <ContactForm ru={locale === "ru"} />
+
+              {/* Axiora imzası (2026-08-22, istifadəçi istəyi): çətir şirkətə
+                  yönləndirən diskret düymə */}
+              <div className="mt-6 border-t border-slate-100 pt-5 text-center">
+                <a
+                  href="https://axiora.az"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition-all duration-300 hover:-translate-y-0.5 hover:border-iris-veil hover:text-iris-pulse hover:shadow-[0_10px_28px_-12px_rgba(64,60,213,0.4)]"
+                >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-iris-pulse to-iris-glow text-[10px] font-bold text-white">
+                    A
+                  </span>
+                  {locale === "ru" ? "Проект компании Axiora" : "Axiora şirkətinin layihəsi"}
+                  <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+                </a>
+              </div>
             </Card>
           </div>
         </Container>
