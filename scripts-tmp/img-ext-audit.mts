@@ -23,7 +23,7 @@ for (const prefix of prefixes) {
       const real = SIG.find(([, f]) => f(head))?.[0] ?? "?";
       const declared = ext === "jpeg" ? "jpg" : ext;
       if (!known.includes(ext)) { bad.push(`${b.pathname}  → uzantı YOX, əsl: ${real}`); continue; }
-      if (real !== "?" && real !== declared) bad.push(`${b.pathname}  → uzantı .${ext}, əsl: ${real}  (${b.contentType})`);
+      if (real !== "?" && real !== declared) bad.push(`${b.pathname}  → uzantı .${ext}, əsl: ${real}  (blob)`);
     }
     cursor = r.hasMore ? r.cursor : undefined;
   } while (cursor);
