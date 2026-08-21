@@ -95,7 +95,7 @@ export function LoginForm({
           </p>
 
           {lockRole ? (
-            <div className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-brand-50 py-2.5 text-sm font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
+            <div className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-iris-glow/10 py-2.5 text-sm font-semibold text-iris-pulse ring-1 ring-inset ring-iris-veil/30">
               {t.roleDoctor}
             </div>
           ) : (
@@ -113,7 +113,7 @@ export function LoginForm({
                 onClick={() => setRole(opt.k)}
                 className={`rounded-lg py-2 text-sm font-semibold transition-colors ${
                   role === opt.k
-                    ? "bg-white text-brand-700 shadow-sm"
+                    ? "bg-white text-iris-pulse shadow-sm ring-1 ring-iris-veil/30"
                     : "text-slate-500 hover:text-ink-800"
                 }`}
               >
@@ -146,7 +146,7 @@ export function LoginForm({
                 />
               </div>
             </Field>
-            <Button type="submit" size="lg" className="w-full" disabled={pending}>
+            <Button type="submit" size="lg" className="w-full bg-iris-pulse hover:bg-iris-glow" disabled={pending}>
               {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {t.sendCode}
             </Button>
@@ -202,7 +202,7 @@ export function LoginForm({
                 />
               </div>
             </Field>
-            <Button type="submit" size="lg" className="w-full" disabled={pending}>
+            <Button type="submit" size="lg" className="w-full bg-iris-pulse hover:bg-iris-glow" disabled={pending}>
               {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {t.verify}
             </Button>
@@ -215,7 +215,7 @@ export function LoginForm({
               <button
                 type="button"
                 onClick={resend}
-                className="font-semibold text-brand-600 hover:text-brand-700"
+                className="font-semibold text-iris-pulse hover:text-iris-glow"
                 disabled={pending}
               >
                 {t.resend}

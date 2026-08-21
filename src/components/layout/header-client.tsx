@@ -41,8 +41,7 @@ export function HeaderClient({
   }, []);
 
   // Impilo üslubu (2026-08-12): bütün ictimai səhifələrdə header tünd (Deep
-  // Iris) rejimdədir — səhifə başlıqları da tünddür, bütöv görünür. Giriş/
-  // qeydiyyat və token səhifələri köhnə açıq headerdə qalır.
+  // Iris) rejimdədir — səhifə başlıqları da tünddür, bütöv görünür. Token səhifələri açıq headerdə qalır (giriş 2026-08-22-dən tünddür).
   const darkNav =
     pathname === "/" ||
     [
@@ -55,6 +54,7 @@ export function HeaderClient({
       "/elaqe",
       "/merkezler-ucun",
       "/hekimler-ucun",
+      "/giris",
       "/gizlilik-siyaseti",
       "/istifade-shertleri",
       "/bize-qoshul",
