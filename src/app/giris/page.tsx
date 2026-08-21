@@ -45,10 +45,11 @@ export default async function LoginPage({
   const lockRole = sp.only === "doctor" && role === "DOCTOR";
 
   return (
-    <div className="relative overflow-hidden bg-ink-950">
-      <div className="absolute inset-0 bg-grid-dark opacity-40" />
-      <div className="glow absolute -left-20 top-0 h-96 w-96 opacity-40" />
-      <div className="glow-cyan absolute bottom-0 right-0 h-80 w-80 opacity-40" />
+    /* 2026-08-22: köhnə ink-950+grid fonu → Impilo «observatory» kimliyi
+       (iris kanvası + klinik siyan parıltılar, saytın qalan tünd bölmələri kimi) */
+    <div className="relative overflow-hidden bg-observatory">
+      <div className="pointer-events-none absolute -left-24 top-10 h-96 w-96 rounded-full bg-clinical/15 blur-[80px]" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-iris-glow/30 blur-[90px]" />
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Ana səhifə", path: "/" },
@@ -57,14 +58,14 @@ export default async function LoginPage({
       />
       <Container className="relative grid min-h-[calc(100vh-4rem)] items-center gap-12 py-16 lg:grid-cols-2">
         <div className="hidden text-white lg:block">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-cyan-300">
+          <span className="inline-flex items-center gap-2 rounded-full bg-iris-shadow px-3 py-1 text-xs font-medium text-clinical ring-1 ring-iris-border">
             <Image src="/mark-square.png" alt="" width={16} height={16} className="h-4 w-4 rounded" />
             rentgen.az
           </span>
-          <h1 className="font-display mt-5 text-4xl font-bold leading-tight">
+          <h1 className="font-display mt-5 text-4xl font-semibold leading-tight tracking-[-0.02em]">
             {t.heroTitle}
           </h1>
-          <p className="mt-4 max-w-md text-slate-300">
+          <p className="mt-4 max-w-md text-pearl/85">
             {t.heroDesc}
           </p>
           <ul className="mt-8 space-y-4">
@@ -74,12 +75,12 @@ export default async function LoginPage({
               { icon: <ShieldCheck className="h-5 w-5" />, t: t.f3t, d: t.f3d },
             ].map((f, i) => (
               <li key={i} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600/20 text-cyan-300">
+                <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-iris-glow/20 text-clinical ring-1 ring-iris-border/60">
                   {f.icon}
                 </span>
                 <div>
                   <p className="font-semibold text-white">{f.t}</p>
-                  <p className="text-sm text-slate-400">{f.d}</p>
+                  <p className="text-sm text-ash-2/80">{f.d}</p>
                 </div>
               </li>
             ))}

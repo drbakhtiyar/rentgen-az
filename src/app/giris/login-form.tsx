@@ -84,7 +84,7 @@ export function LoginForm({
   }
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white p-6 shadow-2xl sm:p-8">
+    <div className="rounded-3xl bg-white p-6 shadow-[0_32px_80px_-24px_rgba(10,10,60,0.55)] ring-1 ring-white/60 sm:p-8">
       {step === "phone" ? (
         <>
           <h2 className="font-display text-2xl font-bold text-ink-900">
