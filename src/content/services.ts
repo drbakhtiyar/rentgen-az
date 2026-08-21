@@ -1100,7 +1100,10 @@ export function serviceCardText(
   locale: Locale,
   dbDescription?: string | null,
 ): string {
-  const own = dbDescription?.trim();
+  // `Service.description` sütunu YALNIZ azərbaycancadır (admin panelində tək
+  // dil sahəsi var), ona görə RU kartında ondan istifadə etmək olmaz — rus
+  // səhifəsində azərbaycanca cümlə görünərdi.
+  const own = locale === "az" ? dbDescription?.trim() : undefined;
   if (own && !CARD_BOILERPLATE.some((re) => re.test(own))) return own;
   return firstSentence(getServiceContent(slug, name, category ?? undefined, locale).intro);
 }

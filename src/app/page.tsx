@@ -211,7 +211,7 @@ export default async function HomePage() {
                       />
                     </div>
                     <h3 className="font-display text-lg font-semibold leading-snug tracking-tight text-white">
-                      {s.name}
+                      {locale === "ru" ? serviceNameRu(s.name) : s.name}
                     </h3>
                   </div>
                   <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-ash-2">
