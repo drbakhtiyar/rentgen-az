@@ -18,6 +18,9 @@ const CENTER_NAMES = [
   "Referans Bayıl Filialı",
   "Referans Yasamal Filialı",
   "Referans Sea Breeze Hospital",
+  // 2026-08-21 istifadəçi əlavəsi: Abşeron filialları da eyni qiymətlərlə
+  "Referans Masazır Filialı",
+  "Referans Xırdalan Tibb Mərkəzi",
 ];
 
 // xlsx sətri → xidmət slug xəritəsi (variantlar eyni sluga yığılır)
